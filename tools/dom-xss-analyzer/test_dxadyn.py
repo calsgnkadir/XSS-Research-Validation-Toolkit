@@ -780,6 +780,192 @@ def test_phase_1_2_total_shape_count_grew():
     assert len(out) == len(dxadyn.PAYLOAD_VARIANTS) * per_variant
 
 
+# --- Phase 1.2 milestone 2: 12 -> 25+ variants, 8 -> 13+ mutations ---------
+
+def test_phase_1_2_m2_variant_library_reached_25():
+    """Milestone 2 doubles the variant library. Full DoD is ~50."""
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 25
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= {
+        "svg-script-nested-breakout", "math-mtext-breakout",
+        "object-data-breakout", "embed-src-breakout",
+        "marquee-onstart-breakout", "select-onfocus-breakout",
+        "textarea-onfocus-breakout", "form-formaction-breakout",
+        "iframe-data-uri-breakout", "js-double-string-breakout",
+        "anchor-href-javascript-breakout",
+        "noscript-breakout", "style-tag-breakout",
+    }
+
+
+def test_phase_1_2_m2_svg_script_nested_bypasses_top_level_script_strip():
+    """svg-script-nested: sanitizers that strip <script> at top level
+    often forget SVG foreign content."""
+    cid, canary = dxadyn.make_canary("svg-script-nested-breakout")
+    assert '<svg><script>' in canary
+    assert '</script></svg>' in canary
+
+
+def test_phase_1_2_m2_math_mtext_uses_mglyph_sink():
+    """MathML foreign-content surface. mglyph is a rare-audit sink."""
+    cid, canary = dxadyn.make_canary("math-mtext-breakout")
+    assert '<math>' in canary and '<mglyph' in canary
+
+
+def test_phase_1_2_m2_object_data_uses_data_uri():
+    cid, canary = dxadyn.make_canary("object-data-breakout")
+    assert '<object data=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_embed_src_uses_data_uri():
+    cid, canary = dxadyn.make_canary("embed-src-breakout")
+    assert '<embed src=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_marquee_onstart_present():
+    cid, canary = dxadyn.make_canary("marquee-onstart-breakout")
+    assert '<marquee onstart=1>' in canary
+
+
+def test_phase_1_2_m2_select_and_textarea_variants_use_autofocus():
+    """Both need `autofocus onfocus=` since the browser only fires
+    focus events on the currently-focused element."""
+    for vname in ("select-onfocus-breakout", "textarea-onfocus-breakout"):
+        cid, canary = dxadyn.make_canary(vname)
+        assert 'autofocus' in canary and 'onfocus=1' in canary
+
+
+def test_phase_1_2_m2_form_formaction_override():
+    """HTML5 formaction attribute overrides the parent form's action."""
+    cid, canary = dxadyn.make_canary("form-formaction-breakout")
+    assert '<form>' in canary
+    assert 'formaction=javascript:1' in canary
+
+
+def test_phase_1_2_m2_iframe_data_uri_payload():
+    cid, canary = dxadyn.make_canary("iframe-data-uri-breakout")
+    assert '<iframe src=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_js_double_string_complements_script_breakout():
+    """script-breakout uses ' quote; js-double-string uses ". Together
+    they cover both JS string-quote conventions."""
+    _, single = dxadyn.PAYLOAD_VARIANTS["script-breakout"]
+    _, double = dxadyn.PAYLOAD_VARIANTS["js-double-string-breakout"]
+    # both share the <dXsS> marker but use opposite quotes to break out
+    _, single_suffix = dxadyn.make_canary("script-breakout")
+    _, double_suffix = dxadyn.make_canary("js-double-string-breakout")
+    assert "';" in single_suffix
+    assert '";' in double_suffix
+
+
+def test_phase_1_2_m2_anchor_href_javascript_present():
+    cid, canary = dxadyn.make_canary("anchor-href-javascript-breakout")
+    assert '<a href=javascript:1>' in canary
+
+
+def test_phase_1_2_m2_noscript_breakout_closes_noscript():
+    """The <noscript> parser scope is un-sanitized by some libraries."""
+    cid, canary = dxadyn.make_canary("noscript-breakout")
+    assert '<noscript>' in canary and '</noscript>' in canary
+
+
+def test_phase_1_2_m2_style_tag_breakout_uses_import():
+    cid, canary = dxadyn.make_canary("style-tag-breakout")
+    assert '<style>' in canary and '@import' in canary
+
+
+def test_phase_1_2_m2_waf_mutation_library_reached_13():
+    """Milestone 2 grows the mutation library from 8 to 13+."""
+    assert len(dxadyn._WAF_MUTATIONS) >= 13
+    names = {name for name, _ in dxadyn._WAF_MUTATIONS}
+    assert names >= {
+        "cr-in-tag", "form-feed-in-tag", "crlf-in-tag",
+        "null-byte-tag", "backslash-tag",
+    }
+
+
+def test_phase_1_2_m2_cr_in_tag_uses_carriage_return():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    cr = [t for t in triples if t[0] == "cr-in-tag"][0]
+    assert '<dXsS\r>' in cr[1] and '<dXsS\r>' in cr[2]
+
+
+def test_phase_1_2_m2_form_feed_in_tag_uses_form_feed():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    ff = [t for t in triples if t[0] == "form-feed-in-tag"][0]
+    assert '<dXsS\f>' in ff[1] and '<dXsS\f>' in ff[2]
+
+
+def test_phase_1_2_m2_crlf_in_tag_uses_both_line_terminators():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    crlf = [t for t in triples if t[0] == "crlf-in-tag"][0]
+    assert '<dXsS\r\n>' in crlf[1] and '<dXsS\r\n>' in crlf[2]
+
+
+def test_phase_1_2_m2_null_byte_tag_uses_percent_00():
+    """Null byte is transported as %00 so it survives URL/form encoding."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    nb = [t for t in triples if t[0] == "null-byte-tag"][0]
+    assert '<dXsS%00>' in nb[1] and '<dXsS%00>' in nb[2]
+
+
+def test_phase_1_2_m2_backslash_tag_present():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    bs = [t for t in triples if t[0] == "backslash-tag"][0]
+    assert '<dXsS\\>' in bs[1] and '<dXsS\\>' in bs[2]
+
+
+def test_phase_1_2_m2_all_new_variants_still_upgrade_to_executable():
+    """All 13 new variants use the -breakout naming convention and must
+    auto-upgrade to executable severity on HTML unencoded reflection."""
+    new_names = {
+        "svg-script-nested-breakout", "math-mtext-breakout",
+        "object-data-breakout", "embed-src-breakout",
+        "marquee-onstart-breakout", "select-onfocus-breakout",
+        "textarea-onfocus-breakout", "form-formaction-breakout",
+        "iframe-data-uri-breakout", "js-double-string-breakout",
+        "anchor-href-javascript-breakout",
+        "noscript-breakout", "style-tag-breakout",
+    }
+    for vname in new_names:
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_m2_shape_count_now_matches_full_matrix():
+    """Post-milestone-2: 25+ variants x 13+ mutations grows the total
+    canary shape space significantly beyond milestone-1."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # milestone 2 floor: 25 * (1 + 13) = 350
+    assert len(out) >= 25 * (1 + 13)
+
+
+def test_phase_1_2_m2_variant_library_is_diverse():
+    """Sanity: even though a few variants may share the plain `<dXsS>`
+    marker (body, script-breakout, js-double-string-breakout all rely on
+    the same raw grep-marker after their respective string escapes), the
+    library as a whole must have many distinct marker shapes -- otherwise
+    the WAF-bypass fan-out collapses to duplicates."""
+    markers = [m for _, m in dxadyn.PAYLOAD_VARIANTS.values()]
+    unique = set(markers)
+    # At least 75% distinct markers keeps the diversity claim honest.
+    assert len(unique) >= int(0.75 * len(markers)), (
+        f"only {len(unique)}/{len(markers)} distinct markers - "
+        "variants are collapsing into the same shape"
+    )
+
+
+def test_phase_1_2_m2_every_variant_yields_unique_cid_per_call():
+    """Regression guard: verdict ambiguity is prevented by CID uniqueness,
+    not marker uniqueness. Each canary generation must produce a fresh cid
+    so a shared marker (e.g. `<dXsS>`) never causes cross-variant matches."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    cids = [t[1] for t in out]
+    assert len(cids) == len(set(cids)), "duplicate cid across canaries"
+
+
 # --- probe_form / probe_link now accept variants + waf_bypass ---------------
 
 def test_probe_form_variants_kwarg_fan_out():
