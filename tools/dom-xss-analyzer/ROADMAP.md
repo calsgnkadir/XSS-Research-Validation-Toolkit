@@ -32,14 +32,24 @@ scanners skip.
 | Phase | Focus | Time | Ships | Depends on |
 |---|---|---|---|---|
 | **0** | Foundation cleanup | 2-3 gün | Quick-win fixes, honesty logging | — |
+| **0.5** | Benchmark harness | 3-4 gün | DalFox/XSStrike vs dxadyn on 20-target corpus | 0 |
 | **1** | Recall boost (no browser) | 2 hafta | Concurrency, payload library, workflow chaining, macro auth | 0 |
 | **2** | Browser layer (Playwright, opsiyonel dep) | 3 hafta | DOM XSS, JS exec proof, SPA discovery, CSRF rotation | 1 |
 | **3** | Blind XSS (out-of-band callback) | 1 hafta | Callback server + payload correlation | 1 |
-| **4** | Sound static (tree-sitter AST) | 4 hafta | AST parser, cross-file taint, real sanitize semantics | 0 |
+| **4** | Sound static (tree-sitter AST) | 4-6 hafta | AST parser, cross-file taint, real sanitize semantics | 0 |
 | **5** | Recon | 1-2 hafta | Subdomain enum, endpoint discovery, wordlist | 0 |
 | **6** | Product polish | 1-2 hafta | SARIF, plugin API, config file, GH Action | 1-5 |
+| **7** | CVE hunting campaign | ongoing | Novel CVEs on under-audited OSS using the bot | 1-4 |
 
-**Total: ~12-14 hafta full-time** — or ~6 ay part-time (2 gün/hafta).
+**Full-time toplam:** ~14-16 hafta (Phase 0-6). Phase 7 sürekli.
+
+**Part-time gerçekçi projeksiyon:**
+- 2 gün/hafta (haftada ~16 saat) → **9-11 ay**
+- Akşam/hafta sonu (~8 saat/hafta) → **14-18 ay**
+
+Full-time estimate iyimserdir: DOM XSS + tree-sitter AST tipik olarak
+ilan edilen sürenin 1.3-1.5× ını alır. Part-time bunun üstüne
+context-switch tax'ı ekler.
 
 ---
 
@@ -81,6 +91,39 @@ build on a wobbly base.
 
 **Phase 0 writeup:** *"The gaps between the writeups: hardening the tool
 between versions"* — sink dedup + verbose skip logging + cross-file taint.
+
+---
+
+## Phase 0.5 — Benchmark harness (3-4 gün)
+
+**Goal:** Stop shipping "feels faster / catches more" claims. Every future
+phase lands with a delta against DalFox and XSStrike on the same corpus.
+Without this, product claims are unverifiable.
+
+### 0.5.1 Reference corpus (1-2 gün)
+- Build `bench/targets.yaml`: 20 targets total — 5 known-vulnerable (Bludit
+  3.16.2, DVWA, XSS-game.appspot, Juice Shop, WebGoat), 5 known-clean
+  (own hardened projects), 10 real OSS with recent CVEs (pin versions)
+- Each target: docker-compose spec, expected findings JSON, license note
+- Test: `bench/setup.sh` brings every target up
+
+### 0.5.2 Runner + report (1-2 gün)
+- `bench/run.py` — runs dxadyn, DalFox, XSStrike against each target with a
+  fixed wall-clock budget (5 min/target)
+- Records: true positives, false positives, false negatives, wall clock,
+  requests sent
+- Output: `bench/results-YYYY-MM-DD.md` — comparison table + prose
+- Also a `bench/history.jsonl` — every run appended, so trend graphs later
+
+### 0.5.3 CI integration (1 gün)
+- Nightly GH Action runs the benchmark against a docker-composed subset
+- Uploads results as artifact; posts diff comment on PRs that touch the
+  scanner core
+- **DoD:** every merge to main updates the public benchmark markdown; a
+  regression (TP drop >10% or FP spike >20%) fails CI.
+
+**Phase 0.5 writeup:** *"Measuring the tool against its peers — the only
+honest way to say 'better'"*.
 
 ---
 
@@ -370,6 +413,65 @@ this are just directed testers.
 
 ---
 
+## Phase 7 — CVE hunting campaign (ongoing, starts after Phase 2)
+
+**Goal:** Use the bot to land novel CVEs on real OSS — not just re-verify
+known-CVE shapes. This is the phase that turns "portfolio tool" into
+"tool that earned its own trophy wall".
+
+### Target selection (crowded-lane avoidance)
+Skip WordPress core / heavily-audited plugins. Prefer:
+- Prestashop modules (crowded auditor pool much smaller than WP)
+- OpenCart / nopCommerce extensions
+- Turkish/EU niche CMSes (Umbraco community modules, ProcessWire)
+- Self-hosted admin panels (Cockpit CMS, Directus older versions, Rundeck)
+- IoT / embedded web UIs (router firmwares, NAS admin panels)
+
+### Workflow per candidate
+1. `dxa recon` (post-Phase 5) → discover surface
+2. `dxa` static → shortlist HIGH candidates
+3. `dxadyn --dom --blind` (post-Phase 2/3) → verify
+4. Local Docker reproduction with `proven-executable` or `proven-blind` verdict
+5. Coordinated disclosure through Patchstack / MITRE / vendor
+6. After public disclosure: add to writeup index
+
+### Milestones
+- **First novel CVE credited to you** (not duplicate) — target: 2 within 3
+  months of Phase 2 completion
+- **Bot mentioned in a CVE advisory** as the detection tool — target: 1
+- **Bug-bounty payout using dxadyn** on an in-scope program — target: 1
+
+### Discipline
+- Every reported finding must have a local Docker reproduction; no
+  "static-only" CVE reports
+- Every disclosure follows the vendor's SLA (typically 90 days)
+- Zero disclosure of unpatched issues in this repo
+- If a report is duplicate: log it honestly in `research/` (as we already do)
+  — duplicates prove the method works even if the trophy went elsewhere
+
+**Phase 7 writeup:** one per landed CVE + one meta-writeup on the campaign.
+
+---
+
+## Community & visibility (parallel track)
+
+Product needs users, not just phases. Weave in throughout, not at the end:
+
+| When | Action | Goal |
+|---|---|---|
+| End of Phase 1 (v4.0) | Post to r/netsec, HN Show, Turkish infosec Discord/Twitter | First 20 external users |
+| End of Phase 2 (v5.0) | YouTube demo (10 min): DOM XSS catch on live target | Visual proof + shareable |
+| End of Phase 3 (v5.1) | Blog post cross-linked from bug-bounty forums | Blind XSS operators find you |
+| End of Phase 4 (v6.0) | Conference talk submission (OWASP local chapter, BSides) | Credibility |
+| Ongoing | GitHub Discussions on for feature requests + bug reports | Feedback loop |
+| Every phase | Twitter/Bluesky thread with the phase writeup | Discovery |
+
+**Metric to track:** GitHub stars, unique cloners, issues opened by
+non-authors, discussions started. First real user is worth more than
+the next 10 features.
+
+---
+
 ## Milestones (portfolio-visible)
 
 - **v4.0** (end of Phase 1): 200+ payloads, concurrent, workflow chains, macro auth
@@ -423,5 +525,31 @@ It **is**:
 Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 `git log --grep="Phase N"` shows what landed when.
 
-Current state (2026-09-26): pre-Phase 0. Payload count 25. pytest 101.
-Writeups 11. Zero third-party deps.
+### Phase-by-phase status (updated 2026-09-26)
+
+| Phase | Status | Commit | Note |
+|---|---|---|---|
+| 0.1 Sink suppression widening | ✅ **DONE** | `b9ae7eb` | 5 new pair rules, 107 pytest |
+| 0.2 False-negative discipline | ✅ **DONE** | `cd09ecb` | `--verbose` + `--waf-log` |
+| 0.3 Sanitize heuristic tightening | ✅ **DONE** | `3e2bd4e` | two-tier + leak detection |
+| 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
+| 0.5 Benchmark harness | ⏳ **QUEUED** | — | added to roadmap 2026-09-26 |
+| 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
+| 1.2 Payload library 25 → 200+ | ⏳ **NEXT** | — | 5-7 gün work |
+| 1.3 Workflow chaining / state-machine | ⏳ queued | — | YAML flow spec |
+| 1.4 CSRF token rotation | ⏳ queued | — | header + refresh URL |
+| 1.5 Macro-based auth | ⏳ queued | — | flow.yaml per target |
+| 2 Browser layer (Playwright) | ⏳ queued | — | biggest single unlock |
+| 3 Blind XSS (OOB callback) | ⏳ queued | — | callback server |
+| 4 Sound static (tree-sitter AST) | ⏳ queued | — | 4-6 hafta, heaviest |
+| 5 Recon | ⏳ queued | — | subs + endpoints + dirs |
+| 6 Product polish | ⏳ queued | — | SARIF + plugin + GHA |
+| 7 CVE hunting campaign | ⏳ starts after Phase 2 | — | ongoing |
+
+**Foundation (Phase 0):** 4/4 ✅
+**Recall boost (Phase 1):** 1/5 (concurrency done, payloads next)
+**Class-level gaps closed:** 0/3 (DOM XSS + Blind + JS exec proof all pending)
+
+Current state (2026-09-26): Phase 1.1 done. Payload count 25. pytest 107.
+Writeups 11. Zero third-party deps. Novel CVEs credited to author: 0
+(1 Patchstack-valid duplicate, 1 patch-diff variant re-derivation).
