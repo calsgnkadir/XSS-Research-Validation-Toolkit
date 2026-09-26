@@ -1157,6 +1157,103 @@ def test_phase_1_2_m3_marker_diversity_stays_healthy():
     )
 
 
+# --- Phase 1.2 milestone 4: 44 -> 50 variants (Phase 1.2 complete) ---------
+
+_M4_NEW_VARIANTS = {
+    "link-onerror-breakout",
+    "frame-onload-breakout",
+    "track-onerror-breakout",
+    "input-onauxclick-breakout",
+    "button-formtarget-breakout",
+    "input-onfocusin-breakout",
+}
+
+
+def test_phase_1_2_m4_variant_library_reached_50():
+    """Milestone 4 closes Phase 1.2 with the variant library at 50.
+    Mutation library stays at 18 (honest ceiling for transform-both-
+    compatible shapes; entity-encoded families need Phase 2 browser
+    detection which uses a different marker/canary transform)."""
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 50
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= _M4_NEW_VARIANTS
+
+
+def test_phase_1_2_m4_link_onerror_present():
+    """<link rel=stylesheet href=x onerror=1>. Sanitizers focused on
+    script/img often miss <link> event handlers."""
+    cid, canary = dxadyn.make_canary("link-onerror-breakout")
+    assert '<link rel=stylesheet href=x onerror=1>' in canary
+
+
+def test_phase_1_2_m4_frame_onload_wraps_in_frameset():
+    """<frameset>...</frameset> is mandatory scope for <frame>."""
+    cid, canary = dxadyn.make_canary("frame-onload-breakout")
+    assert '<frameset>' in canary and '<frame onload=1>' in canary
+    assert '</frameset>' in canary
+
+
+def test_phase_1_2_m4_track_onerror_uses_video_wrapper():
+    """<track> needs a <video>/<audio> parent to be parsed."""
+    cid, canary = dxadyn.make_canary("track-onerror-breakout")
+    assert '<video>' in canary and '<track src=x onerror=1>' in canary
+
+
+def test_phase_1_2_m4_input_onauxclick_present():
+    """Middle/right-click event handler - rarely blocked by name."""
+    cid, canary = dxadyn.make_canary("input-onauxclick-breakout")
+    assert '<input onauxclick=1' in canary
+
+
+def test_phase_1_2_m4_button_formtarget_opens_new_tab():
+    """formtarget=_blank distinguishes this from form-formaction-breakout:
+    the exploit fires in a new tab, defeating iframe-sandbox."""
+    cid, canary = dxadyn.make_canary("button-formtarget-breakout")
+    assert 'formaction=javascript:1' in canary
+    assert 'formtarget=_blank' in canary
+
+
+def test_phase_1_2_m4_input_onfocusin_uses_autofocus():
+    """onfocusin bubbles; combined with autofocus fires without user
+    interaction, same trigger as input-autofocus-breakout but different
+    event handler name so blocklists focused on `onfocus` slip."""
+    cid, canary = dxadyn.make_canary("input-onfocusin-breakout")
+    assert 'onfocusin=1' in canary and 'autofocus' in canary
+
+
+def test_phase_1_2_m4_all_new_variants_upgrade_to_executable():
+    """All m4 -breakout variants must ride the CT gate to executable."""
+    for vname in _M4_NEW_VARIANTS:
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_m4_shape_count_reached_full_dod():
+    """Post-m4: 50 variants x (1 + 18 mutations) = 950 canary shapes with
+    --variants all --waf-bypass. This closes the Phase 1.2 DoD.
+
+    Mutation library stopped at 18 by design - see the roadmap note on
+    transform-both saturation. Entity-encoded families arrive in Phase
+    2 where the browser detects the client-side double-decode."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # DoD floor: 50 * (1 + 18) = 950
+    assert len(out) >= 950
+    assert len(dxadyn._WAF_MUTATIONS) == 18, (
+        "Mutation library grew past the documented ceiling of 18 - if this "
+        "was intentional, update the ceiling note in dxadyn.py"
+    )
+
+
+def test_phase_1_2_m4_marker_diversity_still_healthy_at_50():
+    """Same 75% floor across the wider library."""
+    markers = [m for _, m in dxadyn.PAYLOAD_VARIANTS.values()]
+    unique = set(markers)
+    assert len(unique) >= int(0.75 * len(markers)), (
+        f"only {len(unique)}/{len(markers)} distinct markers at 50 variants"
+    )
+
+
 # --- probe_form / probe_link now accept variants + waf_bypass ---------------
 
 def test_probe_form_variants_kwarg_fan_out():
