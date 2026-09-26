@@ -535,7 +535,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
 | 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
-| 1.2 Payload library 25 → 200+ | 🚧 **IN PROGRESS** (milestone 2) | pending | 25 variants × 13 mutations = 350 shapes; target ~50 × ~20 = 1000+ |
+| 1.2 Payload library 25 → 200+ | 🚧 **IN PROGRESS** (milestone 3) | pending | 40 variants × 18 mutations = 760 shapes; target ~50 × ~20 = 1000+ |
 | 1.3 Workflow chaining / state-machine | ⏳ queued | — | YAML flow spec |
 | 1.4 CSRF token rotation | ⏳ queued | — | header + refresh URL |
 | 1.5 Macro-based auth | ⏳ queued | — | flow.yaml per target |
@@ -550,25 +550,30 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 **Recall boost (Phase 1):** 1/5 (concurrency done, payloads next)
 **Class-level gaps closed:** 0/3 (DOM XSS + Blind + JS exec proof all pending)
 
-Current state (2026-09-27): Phase 0.5 + 1.2 milestone 2 done.
-- Payload variants: 5 -> 25 (milestone 1: +7 event-handler tags, +4 quote
-  and JS contexts; milestone 2: +13 covering SVG-nested-script, MathML,
-  object/embed, marquee, select/textarea/form-formaction, iframe-data-uri,
-  js-double-string, anchor-href-javascript, noscript, style-tag). Every
-  -breakout name auto-upgrades to executable severity via the existing
-  CT gate.
-- WAF mutations: 4 -> 13 (milestone 1: +4 tab/newline/slash-separator/
-  double-url-encode; milestone 2: +5 cr/form-feed/crlf/null-byte/backslash).
-- Total shapes with --variants all --waf-bypass: 25 -> 350 (~14x).
-- pytest 107 -> 192 (16 new bench + 16 milestone-1 + 23 milestone-2).
+Current state (2026-09-27): Phase 0.5 + 1.2 milestone 3 done.
+- Payload variants: 5 -> 40 (milestone 1: +7 event-handler tags, +4 quote
+  and JS contexts; milestone 2: +13 SVG-nested-script/MathML/object/embed/
+  marquee/select/textarea/form-formaction/iframe-data-uri/js-double-string/
+  anchor-javascript/noscript/style-tag; milestone 3: +15 CSS-context
+  (style-value/css-comment/css-import), dialog onbeforetoggle/oncancel,
+  attribute-list injection (bare `"` + handler, stays in tag), base-href
+  and meta-refresh navigation hijack, svg-animate onbegin, audio-source,
+  xmp legacy pre-formatted breakout, js-regex/js-comment complements,
+  template shadowrootmode). All -breakout auto-upgrades via CT gate.
+- WAF mutations: 4 -> 18 (milestone 1: +4 tab/newline/slash-separator/
+  double-url-encode; milestone 2: +5 cr/form-feed/crlf/null-byte/backslash;
+  milestone 3: +5 space-tab-mix/triple-url-encode/percent-lowercase/
+  split-cmt-suffix/cr-space-mix).
+- Total shapes with --variants all --waf-bypass: 25 -> 760 (~30x).
+- pytest 107 -> 215 (16 bench + 16 m1 + 23 m2 + 23 m3).
 - Writeups 11. Zero third-party deps. Novel CVEs credited to author: 0.
 
 Phase 1.2 remaining for full DoD (~50 variants x ~20 mutations):
-- Grow variants 25 -> ~50 (still missing: CSS-context expression, more
-  unicode/entity for backend-decoders, TabModel event handlers newer
-  than 2022, xhtml namespace corner cases)
-- Grow mutations 13 -> ~20 (still missing: entity-encode families,
-  JS-unicode-escape family for JS-context variants, tag-splitting via
-  CDATA, form-data multipart boundary tricks)
+- Grow variants 40 -> ~50 (need ~10 more; well-designed context-tuned
+  additions preferred over padding; entity-encoded families need Phase 2
+  browser to detect double-decode-in-attribute flows)
+- Grow mutations 18 -> ~20 (need 2 more genuinely novel ones; the space
+  of transform-both-compatible mutations is close to exhausted without
+  cross-context decoders)
 - Bludit fixture must catch executable via 3+ different variants
-- pytest 192 -> ~230
+- pytest 215 -> ~230

