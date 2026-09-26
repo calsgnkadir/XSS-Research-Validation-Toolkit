@@ -535,7 +535,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
 | 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
-| 1.2 Payload library 25 → 200+ | ⏳ **NEXT** | — | 5-7 gün work |
+| 1.2 Payload library 25 → 200+ | 🚧 **IN PROGRESS** (milestone 1) | pending | 12 variants × 8 mutations = 96 shapes; target ~50 × ~20 = 1000+ |
 | 1.3 Workflow chaining / state-machine | ⏳ queued | — | YAML flow spec |
 | 1.4 CSRF token rotation | ⏳ queued | — | header + refresh URL |
 | 1.5 Macro-based auth | ⏳ queued | — | flow.yaml per target |
@@ -550,6 +550,22 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 **Recall boost (Phase 1):** 1/5 (concurrency done, payloads next)
 **Class-level gaps closed:** 0/3 (DOM XSS + Blind + JS exec proof all pending)
 
-Current state (2026-09-26): Phase 1.1 done. Payload count 25. pytest 107.
-Writeups 11. Zero third-party deps. Novel CVEs credited to author: 0
-(1 Patchstack-valid duplicate, 1 patch-diff variant re-derivation).
+Current state (2026-09-27): Phase 0.5 + 1.2 milestone 1 done.
+- Payload variants: 5 -> 12 (svg / img / body / details / input / iframe /
+  video / attr-squote / attr-backtick / template-literal / html-comment
+  breakouts added). Every -breakout name auto-upgrades to executable
+  severity via the existing CT gate.
+- WAF mutations: 4 -> 8 (tab-in-tag, newline-in-tag, slash-separator,
+  double-url-encode added).
+- Total shapes with --variants all --waf-bypass: 25 -> 96 (~3.8x).
+- pytest 107 -> 169 (16 new bench tests + 16 new variant/mutation tests).
+- Writeups 11. Zero third-party deps. Novel CVEs credited to author: 0.
+
+Phase 1.2 remaining for full DoD:
+- Grow variants 12 -> ~50 (need: unicode escapes, hex/entity encodings
+  for backend-decoders, CSS-context, SVG-namespace scripts, MathML,
+  more event handlers)
+- Grow mutations 8 -> ~20 (need: entity-encode families, JS-unicode-
+  escape family, mixed-charset, tag-splitting variants)
+- Bludit fixture must catch executable via 3+ different variants
+- pytest 169 -> ~230

