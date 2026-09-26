@@ -46,12 +46,16 @@ Usage
 """
 
 import argparse
+import concurrent.futures
 import datetime
 import html as htmllib
 import http.cookiejar
+import random
 import re
 import secrets
 import sys
+import threading
+import time
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -139,6 +143,75 @@ def _opener():
 
 OPENER = _opener()
 EXTRA_HEADERS = {}          # populated by --header / --cookie CLI flags (v3.1)
+
+# Phase 1.1 (2026-09-27): concurrency + rate limit + jitter.
+# All three primitives are module-level state so any probe function that
+# calls fetch() picks them up without threading its own kwargs. `_rate_gate`
+# and `_jitter_gate` run INSIDE fetch(), so every HTTP request pays the same
+# rate + jitter cost regardless of which probe path made it.
+PARALLEL_WORKERS = 1          # 1 = sequential (default); set by --parallel N
+_RATE_LIMITER = None          # RateLimiter instance or None (unlimited)
+JITTER_MS_MIN = 0             # inclusive lower bound of pre-request sleep, ms
+JITTER_MS_MAX = 0             # inclusive upper bound (0/0 = no jitter)
+
+
+class _TokenBucket:
+    """Thread-safe token bucket. `_rate_gate()` calls .take() which blocks
+    until a token is available. Refills continuously (tokens += elapsed * rate)
+    up to `capacity`. Capacity = rate keeps bursts within a 1-second window.
+    Tiny (~30 lines), no third-party dep."""
+    def __init__(self, rate_per_sec):
+        self.rate = float(rate_per_sec)
+        self.capacity = float(rate_per_sec)
+        self.tokens = float(rate_per_sec)
+        self.last = time.monotonic()
+        self._lock = threading.Lock()
+
+    def take(self):
+        while True:
+            with self._lock:
+                now = time.monotonic()
+                self.tokens = min(self.capacity,
+                                  self.tokens + (now - self.last) * self.rate)
+                self.last = now
+                if self.tokens >= 1.0:
+                    self.tokens -= 1.0
+                    return
+                deficit = 1.0 - self.tokens
+                wait = deficit / self.rate
+            time.sleep(min(wait, 0.5))     # cap sleep so shutdown stays responsive
+
+
+def _rate_gate():
+    """Called at the top of fetch(). Blocks until the token bucket lets us
+    through; no-op if --rate wasn't set."""
+    if _RATE_LIMITER is not None:
+        _RATE_LIMITER.take()
+
+
+def _jitter_gate():
+    """Called at the top of fetch(). Sleeps a random duration in
+    [JITTER_MS_MIN, JITTER_MS_MAX] ms; no-op if both are 0. Uses random.uniform
+    (thread-safe under CPython)."""
+    if JITTER_MS_MAX > 0:
+        lo, hi = JITTER_MS_MIN, JITTER_MS_MAX
+        if lo > hi:
+            lo, hi = hi, lo
+        time.sleep(random.uniform(lo, hi) / 1000.0)
+
+
+def _parallel_map(func, items):
+    """Run `func(item)` for each item, either sequentially (PARALLEL_WORKERS
+    <= 1) or via a bounded ThreadPoolExecutor. Return results in INPUT order
+    so downstream code that iterates variants gets deterministic output.
+    Exceptions surface as usual - the executor swallows nothing."""
+    items = list(items)
+    if PARALLEL_WORKERS <= 1 or len(items) <= 1:
+        return [func(x) for x in items]
+    with concurrent.futures.ThreadPoolExecutor(
+            max_workers=min(PARALLEL_WORKERS, len(items))) as pool:
+        return list(pool.map(func, items))
+
 
 # Phase 0.2 (2026-09-26): false-negative discipline.
 # When the bot sends a canary and the SERVER actively refuses it (403, 429,
@@ -230,11 +303,23 @@ def _print_skip_summary():
           + ("" if WAF_LOG_FILE is None else f"  Full log: {WAF_LOG_FILE}."))
 
 
-def fetch(url, data=None, method=None):
+def fetch(url, data=None, method=None, extra=None):
     """GET (data=None) / POST (data=dict) / any HTTP method (method='PUT'|...).
     Returns (status, final_url, body, content_type). `content_type` comes from
     the response Content-Type header (lowercased, empty string if missing) and
-    is what the v3.7 gate uses to distinguish `application/json` from HTML."""
+    is what the v3.7 gate uses to distinguish `application/json` from HTML.
+
+    Phase 1.1: `extra` is a per-request headers dict. Unlike the module-level
+    EXTRA_HEADERS (which is set once by --header / --cookie and stays the same
+    across the run), `extra` is passed by the caller for THIS request only -
+    e.g. probe_headers plugs the injected header value here. This eliminates
+    the previous 'mutate EXTRA_HEADERS then pop' dance, which was not
+    thread-safe under --parallel.
+
+    Also honours RATE_LIMITER (Phase 1.1 token bucket) and JITTER_MS_MIN/MAX
+    (pre-request sleep) so bursts across threads don't stampede the target."""
+    _rate_gate()
+    _jitter_gate()
     if isinstance(data, (bytes, bytearray)):
         body_bytes = bytes(data)
     elif data is None:
@@ -243,6 +328,8 @@ def fetch(url, data=None, method=None):
         body_bytes = urllib.parse.urlencode(data).encode()
     headers = {"User-Agent": UA}
     headers.update(EXTRA_HEADERS)                            # user-supplied wins
+    if extra:
+        headers.update(extra)                                # per-request override
     kwargs = {"data": body_bytes, "headers": headers}
     if method:
         kwargs["method"] = method.upper()
@@ -497,54 +584,67 @@ def discover(base_url, body):
 def probe_form(form, variants=None, waf_bypass=False):
     """Inject a canary into each field in turn; report unencoded reflections.
     v3.10: fan-out through `variants` (+ optional --waf-bypass mutations).
-    Default single-variant behaviour preserved."""
+    Phase 1.1: (field × variant) tasks are flattened into one work list and
+    run via _parallel_map, so --parallel N submits them in parallel while
+    preserving input order in the result."""
     variants = variants or ["body"]
-    out = []
     fields = list(form["fields"]) or []
+    tasks = []
     for target in fields:
         for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
-            data = {k: (canary if k == target else (form["fields"][k] or "dxa"))
-                    for k in fields}
-            if form["method"] == "post":
-                status, _, body, _ct = fetch(form["action"], data=data)
-            else:
-                url = form["action"] + ("&" if "?" in form["action"] else "?") + \
-                    urllib.parse.urlencode(data)
-                status, _, body, _ct = fetch(url)
-            v = verdict(cid, body, marker)
-            if v in ("unencoded", "attr-only"):
-                ctx = find_context(cid, body or "")
-                out.append(_finding(form["action"], form["method"], target, v, status,
-                                    context=ctx, canary_id=cid, content_type=_ct,
-                                    variant=vname))
-            else:
-                _maybe_record_skip(v, cid, form["action"], form["method"],
-                                   vname, status, body, canary)
-    return out
+            tasks.append((target, vname, cid, canary, marker))
+
+    def _probe_one(task):
+        target, vname, cid, canary, marker = task
+        data = {k: (canary if k == target else (form["fields"][k] or "dxa"))
+                for k in fields}
+        if form["method"] == "post":
+            status, _, body, _ct = fetch(form["action"], data=data)
+        else:
+            url = form["action"] + ("&" if "?" in form["action"] else "?") + \
+                urllib.parse.urlencode(data)
+            status, _, body, _ct = fetch(url)
+        v = verdict(cid, body, marker)
+        if v in ("unencoded", "attr-only"):
+            ctx = find_context(cid, body or "")
+            return _finding(form["action"], form["method"], target, v, status,
+                            context=ctx, canary_id=cid, content_type=_ct,
+                            variant=vname)
+        _maybe_record_skip(v, cid, form["action"], form["method"],
+                           vname, status, body, canary)
+        return None
+
+    return [f for f in _parallel_map(_probe_one, tasks) if f is not None]
 
 
 def probe_link(link, variants=None, waf_bypass=False):
-    """Inject a canary into each existing GET param in turn; v3.10: fan-out."""
+    """Inject a canary into each existing GET param in turn; v3.10: fan-out.
+    Phase 1.1: parallelised same way as probe_form."""
     variants = variants or ["body"]
-    out = []
     parts = urllib.parse.urlsplit(link)
     params = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+    tasks = []
     for i, (name, _) in enumerate(params):
         for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
-            newq = [(n, canary if j == i else v) for j, (n, v) in enumerate(params)]
-            url = urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(newq)))
-            status, _, body, _ct = fetch(url)
-            v = verdict(cid, body, marker)
-            if v in ("unencoded", "attr-only"):
-                ctx = find_context(cid, body or "")
-                out.append(_finding(f"{parts.scheme}://{parts.netloc}{parts.path}",
-                                    "GET", name, v, status,
-                                    context=ctx, canary_id=cid, content_type=_ct,
-                                    variant=vname))
-            else:
-                _maybe_record_skip(v, cid, url, "GET",
-                                   vname, status, body, canary)
-    return out
+            tasks.append((i, name, vname, cid, canary, marker))
+
+    def _probe_one(task):
+        i, name, vname, cid, canary, marker = task
+        newq = [(n, canary if j == i else v) for j, (n, v) in enumerate(params)]
+        url = urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(newq)))
+        status, _, body, _ct = fetch(url)
+        v = verdict(cid, body, marker)
+        if v in ("unencoded", "attr-only"):
+            ctx = find_context(cid, body or "")
+            return _finding(f"{parts.scheme}://{parts.netloc}{parts.path}",
+                            "GET", name, v, status,
+                            context=ctx, canary_id=cid, content_type=_ct,
+                            variant=vname)
+        _maybe_record_skip(v, cid, url, "GET",
+                           vname, status, body, canary)
+        return None
+
+    return [f for f in _parallel_map(_probe_one, tasks) if f is not None]
 
 
 def _finding(where, method, param, v, status, context="unknown", canary_id=None,
@@ -669,18 +769,19 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
     variants = variants or ["body"]
     label = (f"header:{header_target}" if header_target else
              ("json" if json_body is not None else target_field))
-    out = []
-    cids = []
-    for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
-        cids.append(cid)
+    # Phase 1.1: fan the variant loop out in parallel. Each unit does its
+    # own submit + all check URLs for that variant. Findings are gathered
+    # in input order.
+    canaries = list(make_canaries_for(variants, waf_bypass))
+    cids = [cid for _, cid, _, _ in canaries]
+
+    def _one_variant(triple):
+        vname, cid, canary, marker = triple
+        rows = []
         sub_status, _ = _do_submit(target_url, target_field, extra_fields, canary,
                                    method=method, csrf_field=csrf_field,
                                    json_body=json_body, header_target=header_target)
-        # Phase 0.2: if the SUBMIT itself was actively rejected (WAF-403,
-        # 429, connection-error), record it. The check pass below still runs
-        # because a rejection at the submit layer can still coexist with
-        # a stored reflection on some prior write; but silence downstream
-        # will now be explained.
+        # Phase 0.2: submit-layer skip observability
         sub_was_skip, sub_reason = _classify_response(sub_status, "")
         if sub_was_skip:
             _record_skip(cid, target_url, method, vname, sub_status,
@@ -692,14 +793,18 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
             if v in ("unencoded", "attr-only"):
                 raw_ctx = find_context(cid, body or "")
                 ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-                out.append({"target": target_url, "field": label, "check_url": url,
-                            "reflection": v, "confidence": "high" if v == "unencoded" else "medium",
-                            "sub_status": sub_status, "check_status": st, "canary_id": cid,
-                            "context": ctx, "severity": sev, "content_type": _ct,
-                            "variant": vname})
+                rows.append({"target": target_url, "field": label, "check_url": url,
+                             "reflection": v, "confidence": "high" if v == "unencoded" else "medium",
+                             "sub_status": sub_status, "check_status": st, "canary_id": cid,
+                             "context": ctx, "severity": sev, "content_type": _ct,
+                             "variant": vname})
             else:
                 _maybe_record_skip(v, cid, url, "GET",
                                    f"{vname}[check]", st, body, canary)
+        return rows
+
+    per_variant_rows = _parallel_map(_one_variant, canaries)
+    out = [row for group in per_variant_rows for row in group]
     # Return first cid for backward-compat single-variant callers; the full list
     # is on findings[i].canary_id for multi-variant callers.
     return out, cids[0] if cids else ""
@@ -794,20 +899,18 @@ def _submit_json(target_url, json_template, canary, method="POST"):
 
 def _submit_header(target_url, header_name, canary, method="GET"):
     """Send target_url once with `canary` in `header_name`. Any HTTP method
-    is supported; the header is registered on EXTRA_HEADERS for the request
-    and popped afterwards so it doesn't leak."""
-    EXTRA_HEADERS[header_name] = canary
+    is supported. Phase 1.1: passes the header via fetch(extra=...) rather
+    than mutating EXTRA_HEADERS - which was not thread-safe under --parallel
+    (two threads racing on the same key)."""
     m = method.upper()
-    try:
-        if m == "GET":
-            st, final, _, _ct = fetch(target_url)
-        elif m == "POST":
-            st, final, _, _ct = fetch(target_url, data={})
-        else:
-            # PUT/PATCH/DELETE with empty body
-            st, final, _, _ct = fetch(target_url, data=b"", method=m)
-    finally:
-        EXTRA_HEADERS.pop(header_name, None)
+    hdr = {header_name: canary}
+    if m == "GET":
+        st, final, _, _ct = fetch(target_url, extra=hdr)
+    elif m == "POST":
+        st, final, _, _ct = fetch(target_url, data={}, extra=hdr)
+    else:
+        # PUT/PATCH/DELETE with empty body
+        st, final, _, _ct = fetch(target_url, data=b"", method=m, extra=hdr)
     return st, final
 
 
@@ -825,21 +928,26 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
     label = (f"header:{header_target}" if header_target else
              ("json" if json_body is not None else target_field))
 
-    # Phase 1: submit each variant, remember (vname, cid, marker, sub_status)
-    submits = []
-    landing = ""
-    for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
+    # Phase 1: submit each variant. Phase 1.1: parallelised via _parallel_map;
+    # each unit returns its (vname, cid, marker, sub_status, canary, landing)
+    # tuple. The first landing URL (input order) becomes the crawl seed root.
+    canaries = list(make_canaries_for(variants, waf_bypass))
+
+    def _one_submit(quad):
+        vname, cid, canary, marker = quad
         sub_status, this_landing = _do_submit(
             target_url, target_field, extra_fields, canary,
             method=method, csrf_field=csrf_field,
             json_body=json_body, header_target=header_target)
-        submits.append((vname, cid, marker, sub_status))
-        landing = landing or this_landing
-        # Phase 0.2: submit-layer skip observability
         sub_was_skip, sub_reason = _classify_response(sub_status, "")
         if sub_was_skip:
             _record_skip(cid, target_url, method, vname, sub_status,
                          f"submit:{sub_reason}", canary)
+        return (vname, cid, marker, sub_status, this_landing)
+
+    _results = _parallel_map(_one_submit, canaries)
+    submits = [(v, c, m, s) for (v, c, m, s, _l) in _results]
+    landing = next((l for _v, _c, _m, _s, l in _results if l), "")
     first_cid = submits[0][1] if submits else ""
 
     # Phase 2: assemble crawl seeds. {CID} in user seeds is replaced with the
@@ -876,13 +984,14 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
         if len(candidates) >= max_links:
             break
 
-    # Phase 3: fetch each candidate once, verdict against every variant
-    findings, checked = [], 0
-    for url in candidates:
-        st, _, body, _ct = fetch(url)
-        checked += 1
+    # Phase 3: fetch each candidate once, verdict against every variant.
+    # Phase 1.1: candidate fetches run in parallel (each fetch is
+    # independent - dedup happens after aggregation).
+    def _fetch_and_verdict(cand_url):
+        st, _, body, _ct = fetch(cand_url)
         if not body:
-            continue
+            return []
+        rows = []
         for vname, cid, marker, sub_status in submits:
             if cid not in body:
                 continue
@@ -890,13 +999,18 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
             if v in ("unencoded", "attr-only"):
                 raw_ctx = find_context(cid, body or "")
                 ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-                findings.append({"target": target_url, "field": label,
-                                 "check_url": url, "reflection": v,
-                                 "confidence": "high" if v == "unencoded" else "medium",
-                                 "sub_status": sub_status, "check_status": st,
-                                 "canary_id": cid, "auto_discovered": True,
-                                 "context": ctx, "severity": sev, "content_type": _ct,
-                                 "variant": vname})
+                rows.append({"target": target_url, "field": label,
+                             "check_url": cand_url, "reflection": v,
+                             "confidence": "high" if v == "unencoded" else "medium",
+                             "sub_status": sub_status, "check_status": st,
+                             "canary_id": cid, "auto_discovered": True,
+                             "context": ctx, "severity": sev, "content_type": _ct,
+                             "variant": vname})
+        return rows
+
+    per_cand = _parallel_map(_fetch_and_verdict, candidates)
+    findings = [row for group in per_cand for row in group]
+    checked = len(candidates)
 
     findings = dedupe_findings(findings)
     return findings, first_cid, {"submit_landing": landing, "checked_pages": checked,
@@ -909,30 +1023,35 @@ def probe_headers(url, header_names, variants=None, waf_bypass=False):
     means a header probe can try body / title-breakout / attr-breakout /
     script-breakout / url-scheme (+ optional 4 WAF mutations) per header."""
     variants = variants or ["body"]
-    findings = []
+
+    # Phase 1.1: flatten (header × variant) into one work list so the
+    # ThreadPoolExecutor can hit them all in parallel via _parallel_map.
+    tasks = []
     for name in header_names:
         for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
-            EXTRA_HEADERS[name] = canary
-            try:
-                status, _, body, _ct = fetch(url)
-            finally:
-                EXTRA_HEADERS.pop(name, None)
-            v = verdict(cid, body or "", marker)
-            if v in ("unencoded", "attr-only"):
-                raw_ctx = find_context(cid, body or "")
-                ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-                findings.append({
-                    "url": url, "method": "GET", "param": f"header:{name}",
-                    "reflection": v,
-                    "confidence": "high" if v == "unencoded" else "medium",
-                    "status": status, "context": ctx,
-                    "severity": sev, "canary_id": cid, "content_type": _ct,
-                    "variant": vname,
-                })
-            else:
-                _maybe_record_skip(v, cid, url, "GET",
-                                   f"{vname}[hdr:{name}]", status, body, canary)
-    return findings
+            tasks.append((name, vname, cid, canary, marker))
+
+    def _probe_one(task):
+        name, vname, cid, canary, marker = task
+        # per-request header via fetch(extra=), no global mutation -> thread-safe
+        status, _, body, _ct = fetch(url, extra={name: canary})
+        v = verdict(cid, body or "", marker)
+        if v in ("unencoded", "attr-only"):
+            raw_ctx = find_context(cid, body or "")
+            ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
+            return {
+                "url": url, "method": "GET", "param": f"header:{name}",
+                "reflection": v,
+                "confidence": "high" if v == "unencoded" else "medium",
+                "status": status, "context": ctx,
+                "severity": sev, "canary_id": cid, "content_type": _ct,
+                "variant": vname,
+            }
+        _maybe_record_skip(v, cid, url, "GET",
+                           f"{vname}[hdr:{name}]", status, body, canary)
+        return None
+
+    return [f for f in _parallel_map(_probe_one, tasks) if f is not None]
 
 
 def render_html(findings, target, mode, meta=None):
@@ -1126,6 +1245,26 @@ def main():
                          "--header 'Authorization: Bearer eyJ...' or "
                          "--header 'X-CSRF-Token: abc'")
 
+    # Phase 1.1: concurrency + rate limit + jitter
+    ap.add_argument("--parallel", type=int, default=1, metavar="N",
+                    help="run up to N submits in parallel (ThreadPoolExecutor). "
+                         "Default 1 = sequential (historical behaviour). "
+                         "10 is a sensible upper bound for a friendly local target; "
+                         "combine with --rate to stay polite. Fan-out paths that "
+                         "benefit most: --variants all --waf-bypass (25 shapes -> "
+                         "one round-trip's worth of wall-clock with N=10).")
+    ap.add_argument("--rate", type=float, default=0, metavar="RPS",
+                    help="token-bucket rate limit in requests per second across "
+                         "all workers. 0 = unlimited (default). Set with --parallel "
+                         "to cap the burst - e.g. --parallel 10 --rate 20 lets 10 "
+                         "workers share a 20/s budget so the target sees at most "
+                         "20 requests per wall-clock second.")
+    ap.add_argument("--jitter", default="", metavar="MIN-MAX",
+                    help="sleep a random duration in [MIN, MAX] milliseconds "
+                         "before every request. Format: '100-500' (both int). "
+                         "Helps avoid pattern-matched rate limiters that trigger "
+                         "on evenly-spaced probes.")
+
     # Phase 0.2: false-negative discipline
     ap.add_argument("--verbose", "-v", action="store_true",
                     help="print one [skip] line to stderr for every submit "
@@ -1145,6 +1284,27 @@ def main():
     VERBOSE = bool(args.verbose)
     WAF_LOG_FILE = args.waf_log or None
     SKIPPED_SUBMITS.clear()
+
+    # Phase 1.1: wire concurrency / rate / jitter into module state
+    global PARALLEL_WORKERS, _RATE_LIMITER, JITTER_MS_MIN, JITTER_MS_MAX
+    PARALLEL_WORKERS = max(1, int(args.parallel))
+    _RATE_LIMITER = _TokenBucket(args.rate) if args.rate > 0 else None
+    if args.jitter:
+        try:
+            lo, hi = (int(x.strip()) for x in args.jitter.split("-", 1))
+            JITTER_MS_MIN, JITTER_MS_MAX = min(lo, hi), max(lo, hi)
+        except ValueError:
+            print(f"[dxadyn] --jitter must be 'MIN-MAX' millis, got {args.jitter!r}",
+                  file=sys.stderr)
+            sys.exit(2)
+    else:
+        JITTER_MS_MIN = JITTER_MS_MAX = 0
+    if PARALLEL_WORKERS > 1 or _RATE_LIMITER or JITTER_MS_MAX:
+        _bits = []
+        if PARALLEL_WORKERS > 1: _bits.append(f"parallel={PARALLEL_WORKERS}")
+        if _RATE_LIMITER:        _bits.append(f"rate={args.rate}/s")
+        if JITTER_MS_MAX:        _bits.append(f"jitter={JITTER_MS_MIN}-{JITTER_MS_MAX}ms")
+        print(f"[dxadyn] concurrency: {', '.join(_bits)}")
 
     if args.cookie:
         apply_cookie(args.cookie)

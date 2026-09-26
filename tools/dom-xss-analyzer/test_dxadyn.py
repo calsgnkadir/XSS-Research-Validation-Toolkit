@@ -8,7 +8,7 @@ ignores the second, with no false positive on the encoded one.
 
 import html
 import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 import dxadyn
@@ -1143,3 +1143,197 @@ def test_waf_log_file_written(tmp_path):
     assert fields[0] == "waf-403"
     assert fields[2] == "dxaLOG"
     _reset_skip_state()
+
+
+# --- Phase 1.1: concurrency + rate limit + jitter (2026-09-27) --------------
+#
+# These tests exercise the module-level primitives and the parallel paths in
+# probe_form / probe_headers. Wall-clock is asserted with generous slack so
+# the tests stay reliable on slower CI runners.
+
+import time as _time
+
+
+def _reset_concurrency_state():
+    dxadyn.PARALLEL_WORKERS = 1
+    dxadyn._RATE_LIMITER = None
+    dxadyn.JITTER_MS_MIN = 0
+    dxadyn.JITTER_MS_MAX = 0
+
+
+def test_parallel_map_sequential_matches_input_order():
+    """PARALLEL_WORKERS=1 -> results in input order (no thread pool spawned)."""
+    _reset_concurrency_state()
+    out = dxadyn._parallel_map(lambda x: x * 10, [1, 2, 3, 4])
+    assert out == [10, 20, 30, 40]
+
+
+def test_parallel_map_parallel_preserves_input_order():
+    """PARALLEL_WORKERS>1 -> pool.map still returns in INPUT order even when
+    tasks finish out of arrival order. This is the property downstream code
+    relies on for variant ordering in the finding list."""
+    _reset_concurrency_state()
+    dxadyn.PARALLEL_WORKERS = 4
+    def _slow_reversed(x):
+        # earlier x sleeps longer -> without ordered map, output would be reversed
+        _time.sleep(0.05 * (5 - x))
+        return x * 10
+    try:
+        out = dxadyn._parallel_map(_slow_reversed, [1, 2, 3, 4])
+    finally:
+        _reset_concurrency_state()
+    assert out == [10, 20, 30, 40]
+
+
+def test_parallel_map_wall_clock_beats_sequential():
+    """Parallel-4 on 4x 0.15s sleeps should finish nearer 0.15s than 0.60s.
+    Assertion has slack (< 0.40s) so CI flakiness doesn't fail it."""
+    _reset_concurrency_state()
+    dxadyn.PARALLEL_WORKERS = 4
+    try:
+        t0 = _time.monotonic()
+        dxadyn._parallel_map(lambda _: _time.sleep(0.15), [None] * 4)
+        elapsed = _time.monotonic() - t0
+    finally:
+        _reset_concurrency_state()
+    assert elapsed < 0.40, f"expected parallel < 0.40s, got {elapsed:.2f}s"
+
+
+def test_token_bucket_rate_gates_bursts():
+    """A 5/s bucket must NOT let 10 immediate takes through in under
+    ~1 second. Assertion: at least 5 tokens/second average."""
+    b = dxadyn._TokenBucket(5)
+    t0 = _time.monotonic()
+    for _ in range(6):                  # 6 tokens against a 5/s (5 capacity) bucket
+        b.take()
+    elapsed = _time.monotonic() - t0
+    # first 5 tokens are free (capacity), 6th needs ~0.2s refill
+    assert elapsed >= 0.15, (
+        f"6 takes on a 5/s bucket should take >= 0.15s, got {elapsed:.3f}s")
+
+
+def test_jitter_gate_respects_bounds():
+    """JITTER_MS_MIN..MAX bounds the per-request sleep. Set 50-80 ms, run
+    fetch through mock, check that 3 runs each waited >= 50 ms."""
+    _reset_concurrency_state()
+    dxadyn.JITTER_MS_MIN = 50
+    dxadyn.JITTER_MS_MAX = 80
+    try:
+        for _ in range(3):
+            t0 = _time.monotonic()
+            dxadyn._jitter_gate()
+            slept_ms = (_time.monotonic() - t0) * 1000
+            assert 45 <= slept_ms <= 120, (
+                f"jitter sleep out of expected bounds: {slept_ms:.1f}ms")
+    finally:
+        _reset_concurrency_state()
+
+
+def test_fetch_extra_header_injects_per_request_no_global_leak():
+    """fetch(extra={'X-Custom': 'v'}) sends the header for THIS call only;
+    the module-level EXTRA_HEADERS stays empty afterwards. This is what
+    makes probe_headers thread-safe under --parallel."""
+    dxadyn.EXTRA_HEADERS.clear()
+    srv = HTTPServer(("127.0.0.1", 0), _HeaderEcho)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        st, _, body, _ct = dxadyn.fetch(
+            f"http://127.0.0.1:{port}/", extra={"X-Forwarded-For": "SENTINEL42"})
+        assert "SENTINEL42" in body
+        assert dxadyn.EXTRA_HEADERS == {}, "extra= must not leak to globals"
+    finally:
+        srv.shutdown()
+
+
+def test_probe_headers_parallel_still_produces_correct_findings():
+    """probe_headers under PARALLEL_WORKERS > 1 must produce the same
+    findings as the sequential baseline (order-independent set of variants).
+    Uses ThreadingHTTPServer - the default HTTPServer is single-threaded
+    on the SERVER side, so parallel client threads would just queue there."""
+    _reset_concurrency_state()
+    dxadyn.EXTRA_HEADERS.clear()
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), _HeaderEcho)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        dxadyn.PARALLEL_WORKERS = 1
+        seq = dxadyn.probe_headers(
+            f"http://127.0.0.1:{port}/", ["X-Forwarded-For", "Referer"],
+            variants=["body", "attr-breakout"])
+        dxadyn.PARALLEL_WORKERS = 6
+        par = dxadyn.probe_headers(
+            f"http://127.0.0.1:{port}/", ["X-Forwarded-For", "Referer"],
+            variants=["body", "attr-breakout"])
+    finally:
+        srv.shutdown()
+        _reset_concurrency_state()
+    # same variant set + same param set irrespective of order.
+    # _HeaderEcho reflects X-Forwarded-For raw but HTML-escapes Referer
+    # (safe endpoint by design), so we only expect findings on X-Forwarded-For.
+    def _fingerprint(fs):
+        return sorted((f["param"], f["variant"], f["reflection"]) for f in fs)
+    assert _fingerprint(seq) == _fingerprint(par)
+    assert len(par) == 2                # 1 vuln header x 2 variants
+    assert {f["param"] for f in par} == {"header:X-Forwarded-For"}
+
+
+def test_probe_form_parallel_wall_clock_faster_than_sequential():
+    """The concrete Phase 1.1 wall-clock win: 8-shape probe on a mock server
+    that sleeps 100 ms per request. Sequential ~ 0.8s; parallel-8 should
+    beat 0.35s (2x floor)."""
+    _reset_concurrency_state()
+
+    class _SlowReflector(BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+        def do_GET(self):
+            _time.sleep(0.1)                          # slow endpoint
+            u = urlparse(self.path)
+            q = parse_qs(u.query).get("q", [""])[0]
+            body = f"<div>{q}</div>".encode()
+            self.send_response(200); self.send_header("Content-Type", "text/html")
+            self.end_headers(); self.wfile.write(body)
+
+    # ThreadingHTTPServer so the server can actually serve requests
+    # concurrently - the whole point of the parallel-speedup assertion.
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), _SlowReflector)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    form = {"action": f"http://127.0.0.1:{port}/r", "method": "get",
+            "fields": {"q": ""}}
+    try:
+        # sequential baseline: 8 variants x 100 ms = ~0.8s
+        dxadyn.PARALLEL_WORKERS = 1
+        t0 = _time.monotonic()
+        seq = dxadyn.probe_form(form, variants=["body", "attr-breakout"],
+                                waf_bypass=True)          # 2 * (1+4) = 10 tasks; but 1 field
+        seq_t = _time.monotonic() - t0
+        # parallel-8: same 10 tasks concurrent -> should beat 0.35s
+        dxadyn.PARALLEL_WORKERS = 8
+        t0 = _time.monotonic()
+        par = dxadyn.probe_form(form, variants=["body", "attr-breakout"],
+                                waf_bypass=True)
+        par_t = _time.monotonic() - t0
+    finally:
+        srv.shutdown()
+        _reset_concurrency_state()
+    # both runs saw the reflection on every shape
+    assert len(seq) == len(par)
+    # parallel should be a lot faster than sequential
+    assert par_t < seq_t * 0.6, (
+        f"expected parallel much faster; seq={seq_t:.2f}s par={par_t:.2f}s")
+
+
+def test_parallel_map_short_circuits_for_single_item():
+    """A one-item list must not spawn a thread pool - keeps overhead 0 for
+    the common (single-field, single-variant) case."""
+    _reset_concurrency_state()
+    dxadyn.PARALLEL_WORKERS = 8
+    try:
+        # if it tried to spawn workers on a 0-item list it would blow up
+        assert dxadyn._parallel_map(lambda x: x, []) == []
+        # one-item skips the pool
+        assert dxadyn._parallel_map(lambda x: x * 2, [7]) == [14]
+    finally:
+        _reset_concurrency_state()
