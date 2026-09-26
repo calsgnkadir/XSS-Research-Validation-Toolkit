@@ -50,12 +50,14 @@ import concurrent.futures
 import datetime
 import html as htmllib
 import http.cookiejar
+import json
 import random
 import re
 import secrets
 import sys
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -1425,6 +1427,225 @@ def _parse_kv_list(text):
     return out
 
 
+# --- Phase 1.3: JSON workflow chaining (state machine) --------------------
+#
+# The engine reads a flow definition (register -> post -> verify pattern),
+# threads variables between steps, substitutes {VAR}/{RND}/{CANARY}/{CID}
+# placeholders, and runs the final verdict against the canary marker.
+# Zero-dep: JSON instead of YAML so no PyYAML dependency creeps in.
+#
+# Flow shape (see bench/flows/*.json for examples):
+#   {
+#     "name": "register-comment-verify",
+#     "steps": [
+#       {"name": "reg", "method": "POST", "url": "/api/register",
+#        "body": {"email": "u-{RND}@x.com"},
+#        "content_type": "application/json",
+#        "save": {"token": "$.token", "uid": "$.user.id"}},
+#       {"name": "post", "method": "POST", "url": "/api/comments",
+#        "headers": {"Authorization": "Bearer {token}"},
+#        "body": {"text": "{CANARY}"},
+#        "content_type": "application/json"},
+#       {"name": "check", "method": "GET",
+#        "url": "/comments/{uid}", "verdict": true}
+#     ]
+#   }
+
+def _jsonpath_get(data, expr):
+    """Tiny JSONPath subset. Supports `$`, `.key`, `[N]`, `[*]`.
+
+    Returns the extracted value, or None if any hop misses.
+    Not a full spec - we deliberately keep it narrow so a flow author
+    always knows what a path resolves to.
+    """
+    if not expr or not expr.startswith("$"):
+        return None
+    cur = data
+    i = 1
+    while i < len(expr):
+        c = expr[i]
+        if c == ".":
+            j = i + 1
+            while j < len(expr) and expr[j] not in ".[":
+                j += 1
+            key = expr[i + 1:j]
+            if not isinstance(cur, dict) or key not in cur:
+                return None
+            cur = cur[key]
+            i = j
+        elif c == "[":
+            j = expr.find("]", i)
+            if j == -1:
+                return None
+            token = expr[i + 1:j]
+            if token == "*":
+                if not isinstance(cur, list):
+                    return None
+                # star returns list of all children; caller decides
+                cur = list(cur)
+            else:
+                try:
+                    idx = int(token)
+                except ValueError:
+                    return None
+                if not isinstance(cur, list) or not (-len(cur) <= idx < len(cur)):
+                    return None
+                cur = cur[idx]
+            i = j + 1
+        else:
+            return None
+    return cur
+
+
+_PLACEHOLDER_RE = re.compile(r"\{([A-Z0-9_]+|[a-z][a-zA-Z0-9_]*)\}")
+
+
+def _substitute(value, vars_):
+    """Recursively substitute `{NAME}` placeholders in strings inside
+    value (which may be a str, dict, list, or primitive). `vars_` is the
+    running namespace: {RND, CANARY, CID, ...saved from previous steps}.
+
+    A missing placeholder is left as-is (`{unknown}` stays literal) so
+    the flow author can spot the typo in the sent request rather than
+    the engine silently substituting empty."""
+    if isinstance(value, str):
+        def _rep(m):
+            key = m.group(1)
+            if key in vars_:
+                return str(vars_[key])
+            return m.group(0)
+        return _PLACEHOLDER_RE.sub(_rep, value)
+    if isinstance(value, dict):
+        return {k: _substitute(v, vars_) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_substitute(v, vars_) for v in value]
+    return value
+
+
+def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
+    """Issue one HTTP request as part of a flow. Returns
+    (status, body_text, content_type_header, parsed_json_or_None)."""
+    method = (method or "GET").upper()
+    data = None
+    if body is not None:
+        if isinstance(body, (dict, list)) and content_type and \
+                "application/json" in content_type.lower():
+            data = json.dumps(body).encode("utf-8")
+        elif isinstance(body, (dict, list)):
+            data = urllib.parse.urlencode(body).encode("utf-8")
+        elif isinstance(body, str):
+            data = body.encode("utf-8")
+        else:
+            data = str(body).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method=method)
+    if content_type:
+        req.add_header("Content-Type", content_type)
+    for h, hv in (headers or {}).items():
+        req.add_header(h, hv)
+    for h, hv in EXTRA_HEADERS.items():
+        req.add_header(h, hv)
+    _rate_gate()
+    _jitter_gate()
+    try:
+        with OPENER.open(req, timeout=timeout) as resp:
+            raw = resp.read()
+            ct = resp.headers.get("Content-Type", "")
+            status = resp.status
+    except urllib.error.HTTPError as e:
+        raw = e.read() or b""
+        ct = e.headers.get("Content-Type", "") if e.headers else ""
+        status = e.code
+    except Exception as e:
+        return 0, f"__error__ {e}", "", None
+    text = raw.decode("utf-8", errors="replace")
+    parsed = None
+    if "application/json" in ct.lower():
+        try:
+            parsed = json.loads(text)
+        except (ValueError, json.JSONDecodeError):
+            parsed = None
+    return status, text, ct, parsed
+
+
+def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
+    """Execute a flow definition. Returns a summary dict:
+      {
+        'name': str, 'steps_run': int, 'vars': {...},
+        'verdicts': [ {step, url, status, reflection, marker} ],
+        'error': None | 'step_name: msg',
+      }
+    If any step has "verdict": true, the response body is checked for
+    the canary marker after the cid (same primitive as reflected/stored
+    modes). The first verdict step that finds an unencoded reflection
+    stops further verdict evaluation but the flow continues to run so
+    later cleanup steps can still fire.
+
+    canary / cid / marker are threaded in as the `{CANARY}` / `{CID}` /
+    `{MARKER}` placeholders. When None, a fresh body-variant canary is
+    minted."""
+    if canary is None or cid is None:
+        cid, canary = make_canary("body")
+        marker = marker or "<dXsS>"
+    marker = marker or "<dXsS>"
+
+    vars_ = {
+        "CANARY": canary,
+        "CID": cid,
+        "MARKER": marker,
+        "RND": secrets.token_hex(4),
+    }
+    summary = {
+        "name": flow.get("name", "unnamed"),
+        "steps_run": 0,
+        "vars": vars_,
+        "verdicts": [],
+        "error": None,
+    }
+
+    for step in flow.get("steps", []):
+        sname = step.get("name", f"step{summary['steps_run'] + 1}")
+        url = _substitute(step.get("url", ""), vars_)
+        method = step.get("method", "GET")
+        body = _substitute(step.get("body"), vars_)
+        headers = _substitute(step.get("headers", {}), vars_)
+        content_type = step.get("content_type")
+
+        status, text, ct, parsed = _fetch_flow_step(
+            method, url, body, headers, content_type, timeout=timeout,
+        )
+        summary["steps_run"] += 1
+
+        if status == 0:
+            summary["error"] = f"{sname}: {text}"
+            return summary
+
+        # Save extracted values into the running namespace.
+        for save_name, path in (step.get("save") or {}).items():
+            src = parsed if parsed is not None else text
+            if isinstance(src, (dict, list)):
+                vars_[save_name] = _jsonpath_get(src, path)
+            else:
+                vars_[save_name] = None
+
+        if step.get("verdict"):
+            v = verdict(cid, text, marker)
+            summary["verdicts"].append({
+                "step": sname, "url": url, "status": status,
+                "reflection": v, "marker": marker,
+            })
+
+    return summary
+
+
+def _load_flow(path):
+    """Load a JSON flow file, or return {'__error__': msg}."""
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except (OSError, ValueError, json.JSONDecodeError) as e:
+        return {"__error__": f"cannot load flow {path}: {e}"}
+
+
 def main():
     ap = argparse.ArgumentParser(description="dynamic reflection verifier (companion to dxa)")
     ap.add_argument("url", nargs="?", help="target URL for reflected mode (authorized/local only)")
@@ -1540,6 +1761,14 @@ def main():
                          "method, url, canary) as a tab-separated row to FILE. "
                          "Best-effort; a failed write never aborts the scan.")
 
+    # Phase 1.3: JSON workflow chaining
+    ap.add_argument("--flow", metavar="FILE", default="",
+                    help="run a JSON flow file - a series of HTTP steps with "
+                         "{VAR}/{RND}/{CANARY}/{CID} substitution and JSONPath "
+                         "save/restore between steps. Any step with \"verdict\": "
+                         "true is checked against the canary marker. See "
+                         "bench/flows/ for examples. Zero-dep (json > yaml).")
+
     args = ap.parse_args()
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
@@ -1587,6 +1816,32 @@ def main():
                    user_field=args.user_field, pass_field=args.pass_field,
                    csrf_field=args.csrf_field or None)
         print(f"[dxadyn] login {args.login} -> {'OK' if ok else 'FAILED (continuing anyway)'}")
+
+    # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
+    # carries its own steps + verdict step(s); we just run it and print.
+    if args.flow:
+        flow = _load_flow(args.flow)
+        if "__error__" in flow:
+            print(f"[dxadyn] {flow['__error__']}", file=sys.stderr)
+            sys.exit(2)
+        summary = run_flow(flow)
+        print(f"[dxadyn] flow '{summary['name']}' ran {summary['steps_run']} step(s)")
+        if summary["error"]:
+            print(f"[dxadyn] flow error: {summary['error']}", file=sys.stderr)
+            sys.exit(1)
+        hits = [v for v in summary["verdicts"] if v["reflection"] == "unencoded"]
+        if hits:
+            for v in hits:
+                print(f"  [EXECUTABLE] verdict at {v['step']}: {v['url']} "
+                      f"(HTTP {v['status']}, marker survived raw)")
+            sys.exit(0)
+        elif summary["verdicts"]:
+            for v in summary["verdicts"]:
+                print(f"  [{v['reflection']}] verdict at {v['step']}: {v['url']} (HTTP {v['status']})")
+            sys.exit(0)
+        else:
+            print("[dxadyn] flow ran; no verdict step defined (add \"verdict\": true).")
+            sys.exit(0)
 
     if args.stored:
         if not args.target:

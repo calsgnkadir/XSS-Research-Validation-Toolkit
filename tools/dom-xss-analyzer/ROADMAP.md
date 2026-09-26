@@ -536,7 +536,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
 | 1.2 Payload library 25 → 200+ | 🚧 **IN PROGRESS** (milestone 3) | pending | 40 variants × 18 mutations = 760 shapes; target ~50 × ~20 = 1000+ |
-| 1.3 Workflow chaining / state-machine | ⏳ queued | — | YAML flow spec |
+| 1.3 Workflow chaining / state-machine | ✅ **DONE** | pending | JSON flow (zero-dep), JSONPath save/restore, {VAR}/{RND}/{CANARY} sub, verdict step, 26 tests |
 | 1.4 CSRF token rotation | ⏳ queued | — | header + refresh URL |
 | 1.5 Macro-based auth | ⏳ queued | — | flow.yaml per target |
 | 2 Browser layer (Playwright) | ⏳ queued | — | biggest single unlock |
