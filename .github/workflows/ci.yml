@@ -27,3 +27,11 @@ jobs:
         run: |
           # the analyzer must still flag the intentionally-vulnerable examples
           python dxa.py examples/ --min-confidence high && exit 1 || echo "findings reported as expected"
+
+      - name: Benchmark harness tests
+        run: pytest bench/test_bench.py -q
+
+      - name: Benchmark smoke run (dxadyn on mock corpus, strict)
+        env:
+          BENCH_STRICT: "1"
+        run: python bench/run.py --out bench/results-ci.md

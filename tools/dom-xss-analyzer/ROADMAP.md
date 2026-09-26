@@ -533,7 +533,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 0.2 False-negative discipline | ✅ **DONE** | `cd09ecb` | `--verbose` + `--waf-log` |
 | 0.3 Sanitize heuristic tightening | ✅ **DONE** | `3e2bd4e` | two-tier + leak detection |
 | 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
-| 0.5 Benchmark harness | ⏳ **QUEUED** | — | added to roadmap 2026-09-26 |
+| 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
 | 1.2 Payload library 25 → 200+ | ⏳ **NEXT** | — | 5-7 gün work |
 | 1.3 Workflow chaining / state-machine | ⏳ queued | — | YAML flow spec |

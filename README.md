@@ -220,6 +220,8 @@ xss-attack-defense-lab/
 │       ├── examples/            – vulnerable + safe corpus per language (JS/CS/PHP/Java/Python)
 │       ├── test_dxa.py + test_dxadyn.py + test_dxa2dyn.py   – 101 pytest cases (CI)
 │       └── README.md            – tool docs + capability matrix
+├── bench/             – Phase 0.5 benchmark harness: dxadyn vs (opt-in) DalFox/XSStrike on a
+│                        reproducible corpus. Zero-dep, CI-gated. See [`bench/README.md`](bench/README.md).
 ├── research/          – Beyond the Lab: independent real-world research + externally-validated results
 ├── writeups/          – 11 mechanism-first explainers (01: filtering, 02: DOM XSS in a React SPA,
 │                        03: SQLi, 04: JWT, 05: IDOR/BOLA, 06: building the bot, 07: teaching the
