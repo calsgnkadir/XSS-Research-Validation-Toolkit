@@ -595,6 +595,18 @@ def fetch(url, data=None, method=None, extra=None):
     headers.update(EXTRA_HEADERS)                            # user-supplied wins
     if extra:
         headers.update(extra)                                # per-request override
+
+    # Phase 1.4: auto-refresh CSRF token on stateful requests. Fires only
+    # when: (a) a URL to refresh from is configured, (b) a header name to
+    # install into is configured, (c) this request has a body OR uses a
+    # non-GET method (so a token refresh does not itself refresh recursively).
+    # The guard flag inside refresh_csrf_token stops recursion when the
+    # refresh GET calls back into fetch().
+    if (CSRF_REFRESH_URL and CSRF_HEADER_NAME and not _in_csrf_refresh()
+            and (body_bytes is not None or (method and method.upper() != "GET"))):
+        tok = refresh_csrf_token()
+        if tok:
+            headers[CSRF_HEADER_NAME] = tok
     kwargs = {"data": body_bytes, "headers": headers}
     if method:
         kwargs["method"] = method.upper()
@@ -971,6 +983,68 @@ def _extract_csrf(body, field):
     m = re.search(r'name="' + re.escape(field) + r'"[^>]*value="([^"]+)"', body) \
         or re.search(r'value="([^"]+)"[^>]*name="' + re.escape(field) + r'"', body)
     return m.group(1) if m else None
+
+
+# --- Phase 1.4: CSRF token rotation ----------------------------------------
+#
+# Modern Rails / Laravel / Django-Rest / any SPA hosts a fresh CSRF token
+# on every request. The token is either in a `<meta name="csrf-token" ...>`
+# tag (Rails/Laravel SPA convention) or in a form-input hidden field
+# (server-rendered Rails/Django). Every stateful request MUST send it back
+# via a header (`X-CSRF-Token`, `X-CSRF-TOKEN`, `X-XSRF-TOKEN`) or a form
+# field of the same name.
+#
+# The pre-1.4 flow was: read the token once from the target page, cache
+# it, resend forever. That breaks on any target that rotates per request.
+# Phase 1.4: refresh the token from a configured URL before EACH stateful
+# submit and install it as a header (SPA case) automatically inside fetch.
+
+CSRF_REFRESH_URL = ""         # if set, GET before each stateful request
+CSRF_HEADER_NAME = ""         # if set, install refreshed token as this header
+_CSRF_REFRESH_GUARD = threading.local()
+
+_CSRF_PATTERNS = [
+    # Rails <meta name="csrf-token" content="...">
+    r'<meta\s+name=["\']?csrf-token["\']?\s+content=["\']([^"\']+)["\']',
+    # Laravel <meta name="_token" content="...">
+    r'<meta\s+name=["\']?_token["\']?\s+content=["\']([^"\']+)["\']',
+    # Django <meta name="csrfmiddlewaretoken" content="...">
+    r'<meta\s+name=["\']?csrfmiddlewaretoken["\']?\s+content=["\']([^"\']+)["\']',
+    # Form-input variants (Rails authenticity_token, Laravel _token,
+    # Django csrfmiddlewaretoken, generic csrf_token / tokenCSRF).
+    r'<input[^>]+name=["\']?(?:authenticity_token|_token|csrf_token|csrfmiddlewaretoken|tokenCSRF)["\']?[^>]+value=["\']([^"\']+)["\']',
+    r'<input[^>]+value=["\']([^"\']+)["\'][^>]+name=["\']?(?:authenticity_token|_token|csrf_token|csrfmiddlewaretoken|tokenCSRF)["\']?',
+]
+
+
+def _in_csrf_refresh():
+    return getattr(_CSRF_REFRESH_GUARD, "flag", False)
+
+
+def refresh_csrf_token(url=""):
+    """GET the given URL (or the module-level CSRF_REFRESH_URL) and return
+    the first CSRF token that matches any of the four documented patterns.
+    Returns "" on unreachable target, empty body, or no pattern match.
+    Never raises; the caller decides whether "" means abort or continue.
+
+    Guarded against recursion: if fetch() calls back into refresh while
+    already refreshing, it short-circuits so the token-fetch itself does
+    not re-trigger a token-fetch."""
+    url = url or CSRF_REFRESH_URL
+    if not url:
+        return ""
+    _CSRF_REFRESH_GUARD.flag = True
+    try:
+        status, _final, body, _ct = fetch(url)
+    finally:
+        _CSRF_REFRESH_GUARD.flag = False
+    if not body or (isinstance(body, str) and body.startswith("__error__")):
+        return ""
+    for pattern in _CSRF_PATTERNS:
+        m = re.search(pattern, body, re.IGNORECASE)
+        if m:
+            return m.group(1)
+    return ""
 
 
 def _cookie_jar():
@@ -1848,6 +1922,23 @@ def main():
                          "true is checked against the canary marker. See "
                          "bench/flows/ for examples. Zero-dep (json > yaml).")
 
+    # Phase 1.4: CSRF token rotation
+    ap.add_argument("--csrf-refresh", metavar="URL", default="",
+                    help="before each stateful request, GET this URL and "
+                         "extract a fresh CSRF token (looks for meta name="
+                         "'csrf-token'|'_token'|'csrfmiddlewaretoken' or "
+                         "form input authenticity_token|_token|csrf_token|"
+                         "csrfmiddlewaretoken|tokenCSRF). Pair with "
+                         "--csrf-header to install as HTTP header. Modern "
+                         "Rails/Laravel/Django-Rest need this because the "
+                         "token rotates per request.")
+    ap.add_argument("--csrf-header", metavar="NAME", default="",
+                    help="header name to carry the refreshed CSRF token, "
+                         "e.g. 'X-CSRF-Token' (Rails), 'X-CSRF-TOKEN' "
+                         "(Laravel), 'X-XSRF-TOKEN' (Angular). Requires "
+                         "--csrf-refresh. For form-field submission the "
+                         "existing --csrf-field flag stays in charge.")
+
     # Phase 1.5: macro-based auth
     ap.add_argument("--auth-flow", metavar="FILE", default="",
                     help="run a JSON auth flow BEFORE the scan starts. Same "
@@ -1888,6 +1979,17 @@ def main():
         if _RATE_LIMITER:        _bits.append(f"rate={args.rate}/s")
         if JITTER_MS_MAX:        _bits.append(f"jitter={JITTER_MS_MIN}-{JITTER_MS_MAX}ms")
         print(f"[dxadyn] concurrency: {', '.join(_bits)}")
+
+    # Phase 1.4: wire CSRF refresh + header into module state
+    global CSRF_REFRESH_URL, CSRF_HEADER_NAME
+    if args.csrf_header and not args.csrf_refresh:
+        print("[dxadyn] --csrf-header requires --csrf-refresh", file=sys.stderr)
+        sys.exit(2)
+    CSRF_REFRESH_URL = args.csrf_refresh or ""
+    CSRF_HEADER_NAME = args.csrf_header or ""
+    if CSRF_REFRESH_URL:
+        _hdr = f"header='{CSRF_HEADER_NAME}'" if CSRF_HEADER_NAME else "no header install"
+        print(f"[dxadyn] csrf: refresh from {CSRF_REFRESH_URL} ({_hdr})")
 
     if args.cookie:
         apply_cookie(args.cookie)

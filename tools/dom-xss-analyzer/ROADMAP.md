@@ -537,7 +537,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
 | 1.2 Payload library 25 → 200+ | 🚧 **IN PROGRESS** (milestone 3) | pending | 40 variants × 18 mutations = 760 shapes; target ~50 × ~20 = 1000+ |
 | 1.3 Workflow chaining / state-machine | ✅ **DONE** | pending | JSON flow (zero-dep), JSONPath save/restore, {VAR}/{RND}/{CANARY} sub, verdict step, 26 tests |
-| 1.4 CSRF token rotation | ⏳ queued | — | header + refresh URL |
+| 1.4 CSRF token rotation | ✅ **DONE** | pending | --csrf-refresh URL + --csrf-header NAME; 4-pattern extractor (Rails/Laravel/Django/generic); auto-inject in fetch(); 20 tests |
 | 1.5 Macro-based auth | ✅ **DONE** | pending | --auth-flow FILE; JWT via `auth:{header,value}` or cookie via jar; 8 tests |
 | 2 Browser layer (Playwright) | ⏳ queued | — | biggest single unlock |
 | 3 Blind XSS (OOB callback) | ⏳ queued | — | callback server |

@@ -32,6 +32,11 @@ _TOKENS: Dict[str, int] = {}          # token -> user id
 _COMMENTS: Dict[int, List[str]] = {}  # uid -> [raw text, ...]
 _NEXT_UID = 1
 
+# Phase 1.4 CSRF fixture: rotating token. Every GET /csrf mints a new
+# token; /csrf-protected accepts POSTs only when X-CSRF-Token matches
+# the LAST minted token.
+_CSRF_LAST_TOKEN: List[str] = [""]
+
 
 class _Handler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -66,6 +71,15 @@ class _Handler(http.server.BaseHTTPRequestHandler):
                 f'<form method="POST"><input name="msg"><button>go</button></form>'
                 f"<ul>{rows}</ul></body></html>",
             )
+        elif parsed.path == "/csrf":
+            # Rotating token: every GET returns a fresh <meta name="csrf-token">.
+            token = secrets.token_hex(8)
+            _CSRF_LAST_TOKEN[0] = token
+            self._send(
+                200,
+                f'<html><head><meta name="csrf-token" content="{token}">'
+                f'</head><body>ok</body></html>',
+            )
         elif parsed.path.startswith("/comments/"):
             # Flow-fixture: render one user's comments raw (vulnerable).
             try:
@@ -92,6 +106,14 @@ class _Handler(http.server.BaseHTTPRequestHandler):
             msg = form.get("msg", [""])[0]
             _GUESTBOOK.append(msg)
             self._send(200, '<html><body>ok. <a href="/guestbook">back</a></body></html>')
+        elif parsed.path == "/csrf-protected":
+            # Phase 1.4 fixture: accept POST only if the X-CSRF-Token header
+            # equals the most-recently-minted token. Fails 403 otherwise.
+            got = self.headers.get("X-CSRF-Token", "")
+            if got and got == _CSRF_LAST_TOKEN[0]:
+                self._send(200, "<html><body>accepted</body></html>")
+            else:
+                self._send(403, "<html><body>csrf failed</body></html>")
         elif parsed.path == "/api/register":
             # Flow-fixture: accept a JSON registration, return a token + uid.
             try:
@@ -154,6 +176,7 @@ class MockServer:
         _GUESTBOOK.clear()
         _TOKENS.clear()
         _COMMENTS.clear()
+        _CSRF_LAST_TOKEN[0] = ""
         _NEXT_UID = 1
 
 
