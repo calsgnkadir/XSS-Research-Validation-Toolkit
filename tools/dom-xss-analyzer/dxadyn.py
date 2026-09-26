@@ -1922,6 +1922,17 @@ def main():
                          "true is checked against the canary marker. See "
                          "bench/flows/ for examples. Zero-dep (json > yaml).")
 
+    # Phase 2.1: browser (Playwright) - opt-in, prints install line if
+    # playwright not on PATH. Later phases wire DOM-sink detection + JS
+    # exec proof onto this harness.
+    ap.add_argument("--dom", action="store_true",
+                    help="use a headless Chromium (via Playwright) instead "
+                         "of urllib to visit the target. Renders JS-heavy "
+                         "SPAs. Requires `pip install playwright && "
+                         "playwright install chromium`. Later phases add "
+                         "DOM sink hooks and JS-execution proof on top of "
+                         "this harness.")
+
     # Phase 1.4: CSRF token rotation
     ap.add_argument("--csrf-refresh", metavar="URL", default="",
                     help="before each stateful request, GET this URL and "
@@ -1979,6 +1990,45 @@ def main():
         if _RATE_LIMITER:        _bits.append(f"rate={args.rate}/s")
         if JITTER_MS_MAX:        _bits.append(f"jitter={JITTER_MS_MIN}-{JITTER_MS_MAX}ms")
         print(f"[dxadyn] concurrency: {', '.join(_bits)}")
+
+    # Phase 2.1: browser mode. For now the flag drives one thing -
+    # visit a URL via headless Chromium and print a summary. Later
+    # phases (2.2+) will make --dom compose with reflected/stored
+    # scan modes for DOM sink detection and JS-exec proof.
+    if args.dom:
+        try:
+            import dxadom
+        except ImportError as e:
+            print(f"[dxadom] harness import failed: {e}", file=sys.stderr)
+            sys.exit(2)
+        print(dxadom.summarize_availability())
+        ok, reason = dxadom.is_available()
+        if not ok:
+            sys.exit(2)
+        if not args.url:
+            # No URL given: the operator just wanted the availability
+            # check. Exit clean.
+            sys.exit(0)
+        if args.stored or args.flow or args.auth_flow:
+            print("[dxadom] --dom currently drives a bare URL visit only. "
+                  "Composition with --stored/--flow/--auth-flow is Phase 2.2+.",
+                  file=sys.stderr)
+            sys.exit(2)
+        with dxadom.BrowserSession() as sess:
+            summary = sess.visit(args.url)
+        print(f"[dxadom] visited {summary['url']} status={summary['status']} "
+              f"title={summary['title']!r} body_len={summary['body_len']}")
+        if summary["console"]:
+            print(f"[dxadom] console ({len(summary['console'])} msg):")
+            for line in summary["console"][:10]:
+                print(f"    {line}")
+        if summary["errors"]:
+            print(f"[dxadom] errors ({len(summary['errors'])}):",
+                  file=sys.stderr)
+            for line in summary["errors"]:
+                print(f"    {line}", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
 
     # Phase 1.4: wire CSRF refresh + header into module state
     global CSRF_REFRESH_URL, CSRF_HEADER_NAME
