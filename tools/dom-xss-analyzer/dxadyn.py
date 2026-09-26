@@ -1646,6 +1646,85 @@ def _load_flow(path):
         return {"__error__": f"cannot load flow {path}: {e}"}
 
 
+# --- Phase 1.5: macro-based auth (auth flows) ------------------------------
+#
+# An auth flow is just a `run_flow`-compatible spec with an optional top-level
+# `auth` field describing how to install the login result into subsequent
+# requests. Two shapes cover every real target we've seen:
+#
+#   Cookie session (default when `auth` is absent):
+#     {"steps": [{"method": "POST", "url": "/login",
+#                 "body": {"u": "x", "p": "y"}}]}
+#     Set-Cookie responses land in the module-level OPENER's cookie jar.
+#     Every later fetch() through OPENER carries them automatically. No
+#     header wiring needed.
+#
+#   JWT / bearer / API key (explicit):
+#     {"steps": [{"method": "POST", "url": "/api/login",
+#                 "content_type": "application/json",
+#                 "body": {"email": "x", "password": "y"},
+#                 "save": {"token": "$.token"}}],
+#      "auth": {"header": "Authorization", "value": "Bearer {token}"}}
+#     The saved token is substituted into `auth.value` and installed into
+#     EXTRA_HEADERS so every later fetch() adds the Authorization header.
+#
+# JWT-vs-cookie is not detected by inspecting the response; it is stated
+# by the flow author via presence/absence of the `auth` field. Explicit
+# beats magic - a real target sometimes issues BOTH a Set-Cookie AND a
+# JWT and the author chooses which one to reuse.
+
+
+def run_auth_flow(flow, timeout=10):
+    """Execute an auth flow. Returns a summary dict identical in shape to
+    `run_flow`'s, plus:
+      - 'auth_header': (name, value) tuple actually installed, or None
+      - 'authenticated': True if the flow completed AND either an auth
+        header was installed OR at least one Set-Cookie landed in the jar.
+
+    Side effect: installs the substituted auth header into EXTRA_HEADERS
+    on success. The caller is responsible for undoing this if it wants
+    multiple auth contexts in one process.
+    """
+    summary = run_flow(flow, timeout=timeout)
+    summary["auth_header"] = None
+    summary["authenticated"] = False
+
+    if summary["error"]:
+        return summary
+
+    # Explicit `auth` field wins - install the header.
+    auth = flow.get("auth")
+    if isinstance(auth, dict) and auth.get("header") and auth.get("value"):
+        header_name = auth["header"]
+        header_value = _substitute(auth["value"], summary["vars"])
+        # If a placeholder stayed literal ({unknown}) the token wasn't
+        # captured and we should NOT install a broken header.
+        if _PLACEHOLDER_RE.search(header_value):
+            summary["error"] = (
+                f"auth.value still has unresolved placeholder: {header_value}"
+            )
+            return summary
+        EXTRA_HEADERS[header_name] = header_value
+        summary["auth_header"] = (header_name, header_value)
+        summary["authenticated"] = True
+        return summary
+
+    # No explicit auth field: assume cookie session, look for anything
+    # in the cookie jar planted by the login steps.
+    try:
+        cj = _cookie_jar()
+        summary["authenticated"] = cj is not None and len(list(cj)) > 0
+    except Exception:
+        summary["authenticated"] = False
+    return summary
+
+
+def clear_auth_header(name):
+    """Remove a previously-installed auth header. Useful for tests and
+    for callers that want to switch auth contexts in one process."""
+    EXTRA_HEADERS.pop(name, None)
+
+
 def main():
     ap = argparse.ArgumentParser(description="dynamic reflection verifier (companion to dxa)")
     ap.add_argument("url", nargs="?", help="target URL for reflected mode (authorized/local only)")
@@ -1769,6 +1848,18 @@ def main():
                          "true is checked against the canary marker. See "
                          "bench/flows/ for examples. Zero-dep (json > yaml).")
 
+    # Phase 1.5: macro-based auth
+    ap.add_argument("--auth-flow", metavar="FILE", default="",
+                    help="run a JSON auth flow BEFORE the scan starts. Same "
+                         "engine as --flow. On success: if the flow has a "
+                         "top-level `auth: {header, value}` field, the "
+                         "substituted header (e.g. 'Authorization: Bearer "
+                         "{token}') is installed into every subsequent "
+                         "request. Otherwise cookies from the login steps "
+                         "stay in the cookie jar. Replaces --login/--user/"
+                         "--pass for anything more complex than a single "
+                         "HTML form POST.")
+
     args = ap.parse_args()
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
@@ -1808,7 +1899,41 @@ def main():
             print(f"[dxadyn] --header ignored (need 'Name: value'): {spec!r}",
                   file=sys.stderr)
 
-    if args.login:
+    # Phase 1.5: --auth-flow runs BEFORE the scan proper (--flow / --stored /
+    # reflected) so any subsequent HTTP path picks up the installed auth
+    # header + cookie jar automatically.
+    if args.auth_flow:
+        if args.login:
+            print("[dxadyn] both --auth-flow and --login given; "
+                  "--auth-flow wins, --login ignored", file=sys.stderr)
+        aflow = _load_flow(args.auth_flow)
+        if "__error__" in aflow:
+            print(f"[dxadyn] {aflow['__error__']}", file=sys.stderr)
+            sys.exit(2)
+        asummary = run_auth_flow(aflow)
+        if asummary["error"]:
+            print(f"[dxadyn] auth-flow error: {asummary['error']}",
+                  file=sys.stderr)
+            sys.exit(2)
+        if asummary["auth_header"]:
+            hname, _ = asummary["auth_header"]
+            print(f"[dxadyn] auth-flow '{asummary['name']}' installed "
+                  f"'{hname}' header + {asummary['steps_run']} step(s)")
+        elif asummary["authenticated"]:
+            print(f"[dxadyn] auth-flow '{asummary['name']}' set cookies "
+                  f"({asummary['steps_run']} step(s))")
+        else:
+            print(f"[dxadyn] auth-flow '{asummary['name']}' completed but "
+                  f"nothing stuck (no header, no cookie). Continuing "
+                  f"unauthenticated.", file=sys.stderr)
+
+        # If the operator ONLY passed --auth-flow (no scan mode selected),
+        # exit clean after auth installation - useful for a two-step run
+        # where the caller composes multiple dxadyn invocations.
+        if not (args.stored or args.flow or args.url):
+            sys.exit(0)
+
+    elif args.login:
         if not (args.user and args.password):
             print("[dxadyn] --login requires --user and --pass", file=sys.stderr)
             sys.exit(2)

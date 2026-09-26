@@ -331,3 +331,228 @@ def test_flow_example_file_parses():
     result = dxadyn._load_flow(str(p))
     assert result.get("name") == "register-then-post-comment-then-verify"
     assert len(result["steps"]) == 3
+
+
+# --- Phase 1.5: macro-based auth (run_auth_flow) ---------------------------
+
+
+@pytest.fixture(autouse=True)
+def _reset_extra_headers_after_test():
+    """Auth flows install headers into a module-level dict. Snapshot +
+    restore around every test so cross-test contamination cannot happen."""
+    snapshot = dict(dxadyn.EXTRA_HEADERS)
+    yield
+    dxadyn.EXTRA_HEADERS.clear()
+    dxadyn.EXTRA_HEADERS.update(snapshot)
+
+
+def test_auth_flow_installs_bearer_header_from_jwt(flow_server):
+    """Explicit auth={header,value} JWT/Bearer flow: after the login step
+    returns {token: ...}, the substituted 'Authorization: Bearer <tok>'
+    header must be installed into EXTRA_HEADERS."""
+    port = flow_server
+    flow = {
+        "name": "jwt-login",
+        "steps": [{
+            "name": "login",
+            "method": "POST",
+            "url": f"http://127.0.0.1:{port}/api/register",
+            "content_type": "application/json",
+            "body": {"email": "u-{RND}@x.test", "password": "p"},
+            "save": {"token": "$.token"},
+        }],
+        "auth": {"header": "Authorization", "value": "Bearer {token}"},
+    }
+    summary = dxadyn.run_auth_flow(flow)
+    assert summary["error"] is None
+    assert summary["authenticated"] is True
+    hname, hval = summary["auth_header"]
+    assert hname == "Authorization"
+    assert hval.startswith("Bearer tok-")
+    assert dxadyn.EXTRA_HEADERS["Authorization"] == hval
+
+
+def test_auth_flow_cookie_login_sets_no_header_but_marks_authenticated():
+    """Cookie flow with no `auth` field: no header installed, but the
+    cookie jar (populated by Set-Cookie) implies authentication."""
+    class _CookieHandler(http.server.BaseHTTPRequestHandler):
+        def log_message(self, format, *args):
+            return
+
+        def do_POST(self):
+            length = int(self.headers.get("Content-Length", "0") or "0")
+            self.rfile.read(length)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Set-Cookie", "session=deadbeef; Path=/")
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+    httpd = http.server.HTTPServer(("127.0.0.1", 0), _CookieHandler)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        # start with a fresh cookie jar so an old session doesn't pass the
+        # "cookies exist" check spuriously
+        dxadyn.OPENER = dxadyn._opener()
+        flow = {
+            "name": "cookie-login",
+            "steps": [{
+                "name": "login",
+                "method": "POST",
+                "url": f"http://127.0.0.1:{port}/login",
+                "content_type": "application/x-www-form-urlencoded",
+                "body": {"u": "admin", "p": "changeme"},
+            }],
+        }
+        summary = dxadyn.run_auth_flow(flow)
+        assert summary["error"] is None
+        assert summary["auth_header"] is None
+        assert summary["authenticated"] is True
+        assert "Authorization" not in dxadyn.EXTRA_HEADERS
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+def test_auth_flow_flags_unresolved_placeholder_as_error(flow_server):
+    """If the flow author asks for `Bearer {token}` but no step saved
+    `token`, the engine must NOT install a broken header - it flags the
+    error so the operator fixes the JSONPath."""
+    port = flow_server
+    flow = {
+        "name": "misconfigured",
+        "steps": [{
+            "name": "login",
+            "method": "POST",
+            "url": f"http://127.0.0.1:{port}/api/register",
+            "content_type": "application/json",
+            "body": {"email": "u-{RND}@x.test", "password": "p"},
+            "save": {"oops": "$.does_not_exist"},
+        }],
+        "auth": {"header": "Authorization", "value": "Bearer {token}"},
+    }
+    summary = dxadyn.run_auth_flow(flow)
+    assert summary["error"] and "placeholder" in summary["error"].lower()
+    assert summary["auth_header"] is None
+    assert "Authorization" not in dxadyn.EXTRA_HEADERS
+
+
+def test_auth_flow_carries_error_from_underlying_run_flow():
+    """A failed step surfaces via summary['error'] and blocks auth install."""
+    flow = {
+        "name": "unreachable",
+        "steps": [{"name": "boom", "method": "GET",
+                   "url": "http://127.0.0.1:1/x"}],
+        "auth": {"header": "Authorization", "value": "Bearer {tok}"},
+    }
+    summary = dxadyn.run_auth_flow(flow)
+    assert summary["error"] and "boom" in summary["error"]
+    assert summary["auth_header"] is None
+    assert summary["authenticated"] is False
+
+
+def test_auth_flow_multiple_saves_and_composite_header(flow_server):
+    """Composite auth values (e.g. `Bearer {token} X-User: {uid}`) work
+    because _substitute is called on the whole value string."""
+    port = flow_server
+    flow = {
+        "name": "multi",
+        "steps": [{
+            "name": "login",
+            "method": "POST",
+            "url": f"http://127.0.0.1:{port}/api/register",
+            "content_type": "application/json",
+            "body": {"email": "u-{RND}@x.test", "password": "p"},
+            "save": {"token": "$.token", "uid": "$.user.id"},
+        }],
+        "auth": {"header": "X-Auth", "value": "tok={token};uid={uid}"},
+    }
+    summary = dxadyn.run_auth_flow(flow)
+    assert summary["auth_header"][1].startswith("tok=tok-")
+    assert ";uid=1" in summary["auth_header"][1]
+
+
+def test_clear_auth_header_removes_installed_header(flow_server):
+    """clear_auth_header lets a caller switch auth contexts in one run."""
+    port = flow_server
+    flow = {
+        "name": "jwt-login",
+        "steps": [{
+            "name": "login",
+            "method": "POST",
+            "url": f"http://127.0.0.1:{port}/api/register",
+            "content_type": "application/json",
+            "body": {"email": "u-{RND}@x.test", "password": "p"},
+            "save": {"token": "$.token"},
+        }],
+        "auth": {"header": "Authorization", "value": "Bearer {token}"},
+    }
+    dxadyn.run_auth_flow(flow)
+    assert "Authorization" in dxadyn.EXTRA_HEADERS
+    dxadyn.clear_auth_header("Authorization")
+    assert "Authorization" not in dxadyn.EXTRA_HEADERS
+
+
+def test_auth_flow_installed_header_reaches_subsequent_flow_step(flow_server):
+    """The whole point of Phase 1.5: after run_auth_flow, a downstream
+    run_flow call must send the installed auth header on every request.
+    This test verifies end-to-end by hitting an endpoint that requires
+    the Bearer token."""
+    port = flow_server
+    # 1. Register + install Bearer header
+    auth = {
+        "name": "jwt-login",
+        "steps": [{
+            "name": "login",
+            "method": "POST",
+            "url": f"http://127.0.0.1:{port}/api/register",
+            "content_type": "application/json",
+            "body": {"email": "u-{RND}@x.test", "password": "p"},
+            "save": {"token": "$.token", "uid": "$.user.id"},
+        }],
+        "auth": {"header": "Authorization", "value": "Bearer {token}"},
+    }
+    a = dxadyn.run_auth_flow(auth)
+    assert a["authenticated"]
+    uid = a["vars"]["uid"]
+
+    # 2. A follow-on flow posts to the AUTH-REQUIRED endpoint. If the
+    # Authorization header did NOT ride along, the mock returns 401 and
+    # our subsequent GET finds no canary - so the verdict would be absent.
+    scan = {
+        "name": "post-authenticated",
+        "steps": [
+            {
+                "name": "post",
+                "method": "POST",
+                "url": f"http://127.0.0.1:{port}/api/comments",
+                "content_type": "application/json",
+                "body": {"text": "{CANARY}"},
+            },
+            {
+                "name": "check",
+                "method": "GET",
+                "url": f"http://127.0.0.1:{port}/comments/{uid}",
+                "verdict": True,
+            },
+        ],
+    }
+    scan_summary = dxadyn.run_flow(scan)
+    # If the Authorization header was NOT installed, post would 401 and
+    # the check would see an empty comments page -> reflection=absent.
+    assert scan_summary["verdicts"][0]["reflection"] == "unencoded"
+
+
+def test_auth_flow_example_files_parse():
+    """Both shipped auth example files must load and expose the expected
+    shape."""
+    jwt = dxadyn._load_flow(str(HERE / "examples" / "flows" / "jwt-login.json"))
+    assert jwt.get("auth", {}).get("header") == "Authorization"
+    assert "Bearer" in jwt["auth"]["value"]
+
+    cookie = dxadyn._load_flow(str(HERE / "examples" / "flows"
+                                    / "cookie-login.json"))
+    assert "auth" not in cookie
+    assert cookie["steps"][0]["method"] == "POST"
