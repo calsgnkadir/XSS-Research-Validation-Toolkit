@@ -2064,6 +2064,14 @@ def main():
             summary = sess.visit(args.url)
         print(f"[dxadom] visited {summary['url']} status={summary['status']} "
               f"title={summary['title']!r} body_len={summary['body_len']}")
+        # Phase 2.2: report DOM sink hits (executed sinks, not response
+        # body reflections). Each hit is one call into a dangerous sink.
+        sinks = summary.get("sinks", [])
+        if sinks:
+            print(f"[dxadom] DOM sink hits ({len(sinks)}):")
+            for hit in sinks[:20]:
+                arg = (hit.get("arg") or "")[:120].replace("\n", " ")
+                print(f"    {hit.get('sink')}: {arg}")
         if summary["console"]:
             print(f"[dxadom] console ({len(summary['console'])} msg):")
             for line in summary["console"][:10]:

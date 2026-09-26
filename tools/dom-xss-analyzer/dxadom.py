@@ -1,8 +1,10 @@
 """dxadom - the browser harness for dxa/dxadyn.
 
 Phase 2.1: skeleton + graceful availability check + basic navigation.
+Phase 2.2: DOM sink detection via a pre-user-JS init script that wraps
+           Element.innerHTML/outerHTML setters, document.write/writeln,
+           Range.createContextualFragment, eval, Function, Location.href.
 Later phases build on this:
-  2.2 - DOM sink detection (patch Element.innerHTML, eval, jQuery.html)
   2.3 - JS execution proof (alert dialog + console listener)
   2.4 - SPA hash-route discovery (history.pushState listener)
   2.5 - CSRF-in-header auto-detect (capture X-CSRF-Token from XHR/fetch)
@@ -45,6 +47,148 @@ _CHROMIUM_HINTS = [
         "~/Library/Caches/ms-playwright/chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium"
     ),
 ]
+
+
+# Phase 2.2: DOM sink detection init script. Runs BEFORE any user JS
+# via page.add_init_script(), replaces each dangerous sink with a
+# wrapper that records the call to window.__dxadom_sinks[] and then
+# delegates to the original. IIFE-wrapped so no globals leak besides
+# __dxadom_sinks itself.
+#
+# Every recorded entry is a plain object:
+#   { sink: str, arg: str (truncated to 4 KiB), stack: str, ts: number }
+#
+# Sinks patched:
+#   Element.prototype.innerHTML setter
+#   Element.prototype.outerHTML setter
+#   document.write / document.writeln
+#   Range.prototype.createContextualFragment
+#   window.eval (via reassignment)
+#   window.Function (via Proxy so both call + construct fire)
+#   Location.prototype.href setter (records; navigation still fires -
+#     see caveat in visit_with_sinks docstring)
+
+_SINK_INIT_SCRIPT = r"""
+(() => {
+  if (window.__dxadom_installed__) { return; }
+  window.__dxadom_installed__ = true;
+  window.__dxadom_sinks = [];
+  const cap = 4096;
+  const record = (name, arg) => {
+    try {
+      const s = (typeof arg === 'string') ? arg : String(arg);
+      // Suppress introspection into our own tracking: Playwright's
+      // page.evaluate() reads window.__dxadom_sinks via an eval-ish
+      // path and would otherwise record itself as a sink hit.
+      if (s.indexOf('__dxadom_sinks') >= 0) return;
+      window.__dxadom_sinks.push({
+        sink: name,
+        arg: s.length > cap ? s.slice(0, cap) + '...[truncated]' : s,
+        stack: (new Error()).stack || '',
+        ts: Date.now(),
+      });
+    } catch (_) { /* never break user JS */ }
+  };
+
+  // Element.prototype.innerHTML - setter interception via defineProperty
+  try {
+    const d = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    if (d && d.set) {
+      Object.defineProperty(Element.prototype, 'innerHTML', {
+        get: d.get,
+        set: function(v) { record('Element.innerHTML', v); return d.set.call(this, v); },
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+
+  // Element.prototype.outerHTML
+  try {
+    const d = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
+    if (d && d.set) {
+      Object.defineProperty(Element.prototype, 'outerHTML', {
+        get: d.get,
+        set: function(v) { record('Element.outerHTML', v); return d.set.call(this, v); },
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+
+  // document.write / writeln
+  try {
+    const origWrite = document.write;
+    document.write = function(...args) {
+      args.forEach(a => record('document.write', a));
+      return origWrite.apply(document, args);
+    };
+  } catch (_) {}
+  try {
+    const origWriteln = document.writeln;
+    document.writeln = function(...args) {
+      args.forEach(a => record('document.writeln', a));
+      return origWriteln.apply(document, args);
+    };
+  } catch (_) {}
+
+  // Range.prototype.createContextualFragment
+  try {
+    if (window.Range && Range.prototype.createContextualFragment) {
+      const orig = Range.prototype.createContextualFragment;
+      Range.prototype.createContextualFragment = function(s) {
+        record('Range.createContextualFragment', s);
+        return orig.call(this, s);
+      };
+    }
+  } catch (_) {}
+
+  // eval - direct reassignment covers the window-scoped eval reference;
+  // direct eval-in-scope calls still hit the original spec eval but the
+  // window.eval wrapper catches the common `window.eval(x)` pattern.
+  try {
+    const origEval = window.eval;
+    window.eval = function(s) { record('eval', s); return origEval(s); };
+  } catch (_) {}
+
+  // Function constructor - Proxy handles both call and construct.
+  try {
+    const origFn = window.Function;
+    window.Function = new Proxy(origFn, {
+      apply(t, thisArg, args) {
+        args.forEach(a => record('Function', a));
+        return Reflect.apply(t, thisArg, args);
+      },
+      construct(t, args) {
+        args.forEach(a => record('Function', a));
+        return Reflect.construct(t, args);
+      },
+    });
+  } catch (_) {}
+
+  // Location.href setter. Recording fires BEFORE navigation, but the
+  // subsequent nav wipes window.__dxadom_sinks. Callers who care about
+  // Location.href sinks should snapshot sinks BEFORE any user event
+  // that could trigger navigation, or wire a page.on('framenavigated')
+  // listener that pre-fetches sinks (Phase 2.3+).
+  try {
+    const d = Object.getOwnPropertyDescriptor(Location.prototype, 'href');
+    if (d && d.set) {
+      Object.defineProperty(Location.prototype, 'href', {
+        get: d.get,
+        set: function(v) { record('Location.href', v); return d.set.call(this, v); },
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+})();
+"""
+
+
+def sink_hits_for(sinks: List[dict], needle: str) -> List[dict]:
+    """Filter a sinks list to only entries whose `arg` contains `needle`.
+    Used to attribute DOM sink calls to an injected canary cid."""
+    if not needle:
+        return []
+    return [s for s in (sinks or []) if needle in (s.get("arg") or "")]
 
 
 def find_chromium_executable() -> Optional[str]:
@@ -154,30 +298,55 @@ class BrowserSession:
         """Navigate to url, return a summary dict:
           {
             'url': str, 'status': int | None, 'title': str,
-            'body_len': int, 'console': [str], 'errors': [str]
+            'body_len': int, 'console': [str], 'errors': [str],
+            'sinks': [ {sink, arg, stack, ts} ]     # Phase 2.2
           }
+
+        The sink init script runs BEFORE any user JS, so every subsequent
+        assignment to innerHTML/outerHTML, call to document.write /
+        eval / Function / Range.createContextualFragment, or setter on
+        Location.href gets recorded into window.__dxadom_sinks[]. After
+        `load`, we snapshot that list into `summary['sinks']`.
+
+        Caveat for Location.href sinks: recording fires BEFORE navigation
+        starts, but the navigation itself wipes the sinks array on the
+        NEW page. If the very first user JS on a page sets Location.href,
+        we may snapshot after the navigation completed and miss the
+        record. A framenavigated listener (Phase 2.3) will handle that.
 
         Never raises for network errors; those land in `errors`. Timeout
         is `self.timeout_ms`."""
         summary: dict = {
             "url": url, "status": None, "title": "",
-            "body_len": 0, "console": [], "errors": [],
+            "body_len": 0, "console": [], "errors": [], "sinks": [],
         }
         with self._page_scope() as page:
             page.on("console", lambda msg: summary["console"].append(
                 f"{msg.type}: {msg.text}"))
             page.on("pageerror", lambda exc: summary["errors"].append(str(exc)))
+            # Phase 2.2: install the sink init script BEFORE any user JS.
+            try:
+                page.add_init_script(_SINK_INIT_SCRIPT)
+            except Exception as e:                        # noqa: BLE001
+                summary["errors"].append(f"add_init_script(): {e}")
             try:
                 resp = page.goto(url, timeout=self.timeout_ms,
                                  wait_until="load")
                 summary["status"] = resp.status if resp else None
                 summary["title"] = page.title() or ""
-                # Guard body access - about:blank / very early failures
-                # can leave content() raising a TargetClosedError.
                 try:
                     summary["body_len"] = len(page.content())
                 except Exception as e:                    # noqa: BLE001
                     summary["errors"].append(f"content(): {e}")
+                # Snapshot the sinks list. If the page navigated away,
+                # __dxadom_sinks may be gone; treat that as no capture.
+                try:
+                    sinks = page.evaluate(
+                        "() => window.__dxadom_sinks || []")
+                    if isinstance(sinks, list):
+                        summary["sinks"] = sinks
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"sink-snapshot: {e}")
             except Exception as e:                        # noqa: BLE001
                 summary["errors"].append(f"goto(): {e}")
         return summary
