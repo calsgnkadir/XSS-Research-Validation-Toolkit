@@ -2001,14 +2001,19 @@ def test_phase_3_2_blind_variants_are_not_in_payload_variants():
         assert name not in dxadyn.PAYLOAD_VARIANTS
 
 
-def test_phase_3_2_blind_templates_carry_both_placeholders():
+def test_phase_3_2_blind_templates_carry_placeholders_in_suffix_only():
     """Every blind variant's suffix must contain both {CALLBACK} and
-    {CID} placeholders - otherwise the substitution is malformed."""
+    {CID} placeholders. Markers are the suffix-immediately-after-cid
+    and are literal strings (not templated) so verdict() can anchor on
+    cid then match the literal marker at that offset."""
     for name, (suffix, marker) in dxadyn.BLIND_VARIANTS.items():
         assert "{CALLBACK}" in suffix, f"{name}: no {{CALLBACK}} in suffix"
         assert "{CID}" in suffix, f"{name}: no {{CID}} in suffix"
-        assert "{CALLBACK}" in marker, f"{name}: no {{CALLBACK}} in marker"
-        assert "{CID}" in marker, f"{name}: no {{CID}} in marker"
+        # Markers do NOT carry placeholders - they are the raw substring
+        # verdict() expects to find right after cid in the response body.
+        assert "{CALLBACK}" not in marker, f"{name}: marker should be literal"
+        assert "{CID}" not in marker, f"{name}: marker should be literal"
+        assert marker, f"{name}: marker must be non-empty"
 
 
 def test_phase_3_2_make_canary_substitutes_placeholders(_blind_callback_set):
@@ -2034,14 +2039,19 @@ def test_phase_3_2_make_canary_cid_is_inside_url_not_prepended(_blind_callback_s
 
 def test_phase_3_2_make_canaries_for_yields_blind_with_callback(_blind_callback_set):
     """make_canaries_for(['blind-img']) yields exactly one tuple with
-    both placeholders substituted."""
+    the callback URL substituted into the canary. Marker stays literal
+    (the suffix that appears right after cid in the response body)."""
     out = list(dxadyn.make_canaries_for(["blind-img"]))
     assert len(out) == 1
     vname, cid, canary, marker = out[0]
     assert vname == "blind-img"
     assert cid in canary
     assert "http://cb.test:9999" in canary
-    assert "http://cb.test:9999" in marker
+    # marker is `>` for blind-img - what follows cid in the URL
+    assert marker == ">"
+    # Verify the marker actually anchors correctly: cid+marker must be a
+    # substring of the canary itself (proves verdict logic would fire).
+    assert cid + marker in canary
 
 
 def test_phase_3_2_make_canaries_for_skips_blind_without_callback():

