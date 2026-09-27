@@ -8,6 +8,8 @@ ignores the second, with no false positive on the encoded one.
 
 import html
 import threading
+
+import pytest
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -1965,3 +1967,168 @@ def test_parallel_map_short_circuits_for_single_item():
         assert dxadyn._parallel_map(lambda x: x * 2, [7]) == [14]
     finally:
         _reset_concurrency_state()
+
+
+# --- Phase 3.2: blind XSS payload family ------------------------------------
+
+_BLIND_VARIANT_NAMES = {
+    "blind-img", "blind-script", "blind-fetch",
+    "blind-svg-onload", "blind-iframe",
+}
+
+
+@pytest.fixture(autouse=False)
+def _blind_callback_set():
+    """Set BLIND_CALLBACK for the duration of a test and restore on exit."""
+    old = dxadyn.BLIND_CALLBACK
+    dxadyn.BLIND_CALLBACK = "http://cb.test:9999"
+    try:
+        yield "http://cb.test:9999"
+    finally:
+        dxadyn.BLIND_CALLBACK = old
+
+
+def test_phase_3_2_blind_variants_registered():
+    """The blind family has five documented shapes."""
+    assert set(dxadyn.BLIND_VARIANTS) == _BLIND_VARIANT_NAMES
+
+
+def test_phase_3_2_blind_variants_are_not_in_payload_variants():
+    """Blind variants are opt-in via BLIND_VARIANTS; they must NOT leak
+    into PAYLOAD_VARIANTS or `--variants all` would fire them without
+    a callback configured."""
+    for name in _BLIND_VARIANT_NAMES:
+        assert name not in dxadyn.PAYLOAD_VARIANTS
+
+
+def test_phase_3_2_blind_templates_carry_both_placeholders():
+    """Every blind variant's suffix must contain both {CALLBACK} and
+    {CID} placeholders - otherwise the substitution is malformed."""
+    for name, (suffix, marker) in dxadyn.BLIND_VARIANTS.items():
+        assert "{CALLBACK}" in suffix, f"{name}: no {{CALLBACK}} in suffix"
+        assert "{CID}" in suffix, f"{name}: no {{CID}} in suffix"
+        assert "{CALLBACK}" in marker, f"{name}: no {{CALLBACK}} in marker"
+        assert "{CID}" in marker, f"{name}: no {{CID}} in marker"
+
+
+def test_phase_3_2_make_canary_substitutes_placeholders(_blind_callback_set):
+    cid, canary = dxadyn.make_canary("blind-img")
+    assert cid.startswith("dxa") and len(cid) == 11
+    assert "http://cb.test:9999" in canary
+    assert cid in canary
+    # Templates gone - no unresolved placeholder in the sent shape.
+    assert "{CALLBACK}" not in canary and "{CID}" not in canary
+
+
+def test_phase_3_2_make_canary_cid_is_inside_url_not_prepended(_blind_callback_set):
+    """Blind payloads embed cid IN the URL rather than prepending it.
+    Prepending would produce `dxaCAFE"><img src=...>` where the leading
+    dxaCAFE lands as text in the DOM - noise, not signal."""
+    cid, canary = dxadyn.make_canary("blind-img")
+    # cid must NOT appear at position 0 of the canary (that would mean
+    # it was prepended before the payload)
+    assert not canary.startswith(cid)
+    # But it must appear inside the URL after /c/
+    assert f"/c/{cid}" in canary
+
+
+def test_phase_3_2_make_canaries_for_yields_blind_with_callback(_blind_callback_set):
+    """make_canaries_for(['blind-img']) yields exactly one tuple with
+    both placeholders substituted."""
+    out = list(dxadyn.make_canaries_for(["blind-img"]))
+    assert len(out) == 1
+    vname, cid, canary, marker = out[0]
+    assert vname == "blind-img"
+    assert cid in canary
+    assert "http://cb.test:9999" in canary
+    assert "http://cb.test:9999" in marker
+
+
+def test_phase_3_2_make_canaries_for_skips_blind_without_callback():
+    """No BLIND_CALLBACK set -> blind variants are silently skipped so
+    a `--variants all` run doesn't blow up on the missing config."""
+    dxadyn.BLIND_CALLBACK = ""
+    out = list(dxadyn.make_canaries_for(["blind-img", "body"]))
+    variant_names = {t[0] for t in out}
+    assert "blind-img" not in variant_names
+    assert "body" in variant_names
+
+
+def test_phase_3_2_blind_variants_do_not_participate_in_waf_mutations(_blind_callback_set):
+    """WAF mutations transform '<dXsS>' - the blind payload structure
+    would be broken by that. Blind variants explicitly opt out of
+    waf_bypass so the URL stays intact."""
+    out = list(dxadyn.make_canaries_for(["blind-img"], waf_bypass=True))
+    # Only the base variant, no `blind-img/case` etc.
+    assert len(out) == 1
+    assert "/" not in out[0][0]  # no mutation suffix in the name
+
+
+def test_phase_3_2_all_five_blind_shapes_substitute_cleanly(_blind_callback_set):
+    for name in _BLIND_VARIANT_NAMES:
+        out = list(dxadyn.make_canaries_for([name]))
+        assert len(out) == 1, f"{name} did not yield"
+        vname, cid, canary, marker = out[0]
+        assert "{CALLBACK}" not in canary and "{CID}" not in canary
+        assert "{CALLBACK}" not in marker and "{CID}" not in marker
+        assert cid in canary
+
+
+def test_phase_3_2_blind_fetch_carries_cookie_exfil_shape(_blind_callback_set):
+    """blind-fetch is the cookie exfiltration variant: it must POST
+    document.cookie to the callback."""
+    _, _, canary, _ = list(dxadyn.make_canaries_for(["blind-fetch"]))[0]
+    assert "fetch(" in canary
+    assert "method:\"POST\"" in canary
+    assert "document.cookie" in canary
+
+
+def test_phase_3_2_blind_script_uses_js_endpoint(_blind_callback_set):
+    """blind-script points at /c/<cid>.js so the callback returns a
+    parseable JS response and the payload doesn't throw."""
+    _, cid, canary, _ = list(dxadyn.make_canaries_for(["blind-script"]))[0]
+    assert f"/c/{cid}.js" in canary
+
+
+def test_phase_3_2_blind_svg_onload_uses_new_image(_blind_callback_set):
+    """blind-svg-onload's payload triggers via SVG onload and beacons
+    with `new Image()` - bypasses filters that block <img src=...>
+    but not <svg onload>."""
+    _, cid, canary, _ = list(dxadyn.make_canaries_for(["blind-svg-onload"]))[0]
+    assert "<svg onload=" in canary
+    assert "new Image()" in canary
+    assert f"/c/{cid}" in canary
+
+
+def test_phase_3_2_blind_iframe_uses_src_attribute(_blind_callback_set):
+    _, cid, canary, _ = list(dxadyn.make_canaries_for(["blind-iframe"]))[0]
+    assert "<iframe src=" in canary
+    assert f"/c/{cid}" in canary
+
+
+def test_phase_3_2_each_call_mints_a_fresh_cid(_blind_callback_set):
+    """Two back-to-back calls must produce distinct cids so verdicts
+    (and callback correlation) stay independent."""
+    c1, _ = dxadyn.make_canary("blind-img")
+    c2, _ = dxadyn.make_canary("blind-img")
+    assert c1 != c2
+
+
+def test_phase_3_2_variants_all_pulls_blind_only_when_callback_set(_blind_callback_set):
+    """--variants all extends the variant list with blind names only
+    when a callback is configured. Simulates the resolution logic in
+    main() by asserting on the extended set."""
+    variants = list(dxadyn.PAYLOAD_VARIANTS.keys())
+    if dxadyn.BLIND_CALLBACK:
+        variants += list(dxadyn.BLIND_VARIANTS.keys())
+    for name in _BLIND_VARIANT_NAMES:
+        assert name in variants
+
+
+def test_phase_3_2_variants_all_omits_blind_when_no_callback():
+    dxadyn.BLIND_CALLBACK = ""
+    variants = list(dxadyn.PAYLOAD_VARIANTS.keys())
+    if dxadyn.BLIND_CALLBACK:
+        variants += list(dxadyn.BLIND_VARIANTS.keys())
+    for name in _BLIND_VARIANT_NAMES:
+        assert name not in variants

