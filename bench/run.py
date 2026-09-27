@@ -60,9 +60,17 @@ def start_mock(handler: str):
 #    "budget_seconds": 120}
 
 def _docker_available() -> bool:
-    """Cheap check: is `docker` binary on PATH? We deliberately do NOT
-    connect to the daemon here (that would slow every bench run); the
-    subsequent `docker compose up` will surface a daemon-down error."""
+    """Docker targets are opt-in: default runs (CI, dev) skip them and
+    the report shows a `_note` so the operator knows nothing hung. Set
+    `BENCH_ENABLE_DOCKER=1` in the environment to opt in - the sprint
+    workflow does this explicitly on the operator's laptop where the
+    daemon is up and image pulls are acceptable.
+
+    Even when opted in, `docker` must be on PATH for the adapter to
+    actually try; missing binary is a separate condition from opt-in."""
+    if os.environ.get("BENCH_ENABLE_DOCKER", "").strip().lower() not in \
+            ("1", "true", "yes", "on"):
+        return False
     return shutil.which("docker") is not None
 
 
@@ -293,8 +301,9 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
         # Phase 7.0: real docker-composed target.
         if not _docker_available():
             row["results"]["_note"] = (
-                "docker not on PATH - install docker or run this bench "
-                "target outside CI")
+                "docker target skipped - set BENCH_ENABLE_DOCKER=1 and "
+                "ensure docker is on PATH to opt in on your operator "
+                "laptop; CI leaves these off by design")
             return row
         compose_file = target.get("compose_file")
         ready_url = target.get("url") or ""

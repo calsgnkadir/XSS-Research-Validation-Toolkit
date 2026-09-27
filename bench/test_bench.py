@@ -125,9 +125,12 @@ def test_parse_dxadyn_no_findings():
     assert parsed["stored"] == 0
 
 
-def test_end_to_end_runner_on_mock_corpus():
+def test_end_to_end_runner_on_mock_corpus(monkeypatch):
     """The whole harness against the real dxadyn CLI on the mock corpus.
-    This is the smoke test that guards regressions in the parser or corpus."""
+    This is the smoke test that guards regressions in the parser or corpus.
+    Docker targets are opt-in (BENCH_ENABLE_DOCKER=1); this test runs with
+    them skipped so the mock corpus is the whole scoring surface."""
+    monkeypatch.delenv("BENCH_ENABLE_DOCKER", raising=False)
     corpus = bench_run.load_corpus(HERE / "targets.json")
     report = bench_run.run_all(corpus, ["dxadyn"], only=None)
     totals = report["totals"]["dxadyn"]
@@ -141,13 +144,44 @@ def test_end_to_end_runner_on_mock_corpus():
 
 def test_docker_available_returns_bool(monkeypatch):
     """The check is a boolean function that never raises."""
+    monkeypatch.delenv("BENCH_ENABLE_DOCKER", raising=False)
     result = bench_run._docker_available()
     assert isinstance(result, bool)
 
 
-def test_docker_available_false_when_binary_missing(monkeypatch):
+def test_docker_available_false_by_default(monkeypatch):
+    """Docker targets are opt-in; BENCH_ENABLE_DOCKER unset -> False
+    even when the docker binary is on PATH. Keeps CI green without a
+    per-runner exclude list."""
+    monkeypatch.delenv("BENCH_ENABLE_DOCKER", raising=False)
+    monkeypatch.setattr(bench_run.shutil, "which", lambda name: "/usr/bin/docker")
+    assert bench_run._docker_available() is False
+
+
+def test_docker_available_true_with_env_and_binary(monkeypatch):
+    """The two-condition contract: env opt-in AND binary present."""
+    monkeypatch.setenv("BENCH_ENABLE_DOCKER", "1")
+    monkeypatch.setattr(bench_run.shutil, "which", lambda name: "/usr/bin/docker")
+    assert bench_run._docker_available() is True
+
+
+def test_docker_available_false_when_binary_missing_even_with_env(monkeypatch):
+    """Opt-in is necessary but not sufficient - missing docker binary
+    still returns False so the adapter's error path fires."""
+    monkeypatch.setenv("BENCH_ENABLE_DOCKER", "1")
     monkeypatch.setattr(bench_run.shutil, "which", lambda name: None)
     assert bench_run._docker_available() is False
+
+
+def test_docker_available_recognises_truthy_env_values(monkeypatch):
+    """Accept common truthy strings so a shell-set var is tolerant."""
+    monkeypatch.setattr(bench_run.shutil, "which", lambda name: "/usr/bin/docker")
+    for val in ("1", "true", "TRUE", "yes", "on"):
+        monkeypatch.setenv("BENCH_ENABLE_DOCKER", val)
+        assert bench_run._docker_available() is True, val
+    for val in ("0", "false", "no", "off", ""):
+        monkeypatch.setenv("BENCH_ENABLE_DOCKER", val)
+        assert bench_run._docker_available() is False, val
 
 
 def test_docker_compose_up_reports_missing_file(tmp_path):
@@ -174,10 +208,11 @@ def test_wait_for_http_returns_true_when_reachable():
         assert result is True
 
 
-def test_run_one_docker_target_skipped_when_no_docker(monkeypatch):
-    """Given a docker target row and no docker binary on PATH, the
-    runner records a `_note` explaining the skip and does NOT hang."""
-    monkeypatch.setattr(bench_run, "_docker_available", lambda: False)
+def test_run_one_docker_target_skipped_by_default(monkeypatch):
+    """Default state: BENCH_ENABLE_DOCKER unset -> docker target rows
+    are skipped with a `_note` explaining how to opt in. This is what
+    CI sees and why docker rows never break the green path."""
+    monkeypatch.delenv("BENCH_ENABLE_DOCKER", raising=False)
     target = {
         "id": "test-docker", "kind": "docker",
         "compose_file": "bench/targets/nope/docker-compose.yml",
@@ -188,12 +223,12 @@ def test_run_one_docker_target_skipped_when_no_docker(monkeypatch):
     row = bench_run.run_one(target, ["dxadyn"])
     assert row["id"] == "test-docker"
     assert "_note" in row["results"]
-    assert "docker" in row["results"]["_note"].lower()
+    assert "BENCH_ENABLE_DOCKER" in row["results"]["_note"]
 
 
 def test_run_one_docker_target_records_missing_compose_when_docker_present(monkeypatch):
-    """If docker IS installed but the compose file is missing, we get a
-    docker-setup error - never a crash."""
+    """If docker IS installed AND opted in but the compose file is missing,
+    we get a docker-setup error - never a crash."""
     monkeypatch.setattr(bench_run, "_docker_available", lambda: True)
     target = {
         "id": "test-missing", "kind": "docker",
