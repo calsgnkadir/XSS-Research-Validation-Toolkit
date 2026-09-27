@@ -1,11 +1,57 @@
 {
-  "corpus_version": "0.5.0-mvp",
+  "corpus_version": "0.7.0-cve-hunt",
   "notes": [
-    "Phase 0.5 MVP corpus. Grows toward 20 targets by end of Phase 1.",
+    "Phase 0.5 MVP grown with Phase 7.0 docker targets.",
     "Each target: expected findings under 'expect', budget in seconds.",
-    "'kind': mock (stdlib server, CI-friendly) | docker (compose) | url (already-up)."
+    "'kind': mock (stdlib server, CI-friendly) | docker (compose) | url (already-up).",
+    "Docker rows require a local docker daemon; CI skips them cleanly."
   ],
   "targets": [
+    {
+      "id": "bludit-3.16",
+      "kind": "docker",
+      "compose_file": "bench/targets/bludit/docker-compose.yml",
+      "url": "http://127.0.0.1:8080/",
+      "params": ["tags"],
+      "expect": {
+        "reflected": 0,
+        "stored": 1,
+        "dom": 0
+      },
+      "budget_seconds": 180,
+      "ready_timeout": 60,
+      "notes": "CVE-2026-4420-shape tag field stored XSS. Regression anchor from writeup 11."
+    },
+    {
+      "id": "dvwa",
+      "kind": "docker",
+      "compose_file": "bench/targets/dvwa/docker-compose.yml",
+      "url": "http://127.0.0.1:8081/",
+      "params": ["name"],
+      "expect": {
+        "reflected": 1,
+        "stored": 1,
+        "dom": 1
+      },
+      "budget_seconds": 300,
+      "ready_timeout": 60,
+      "notes": "Canonical XSS testbed. Set Security=Low for the baseline pass."
+    },
+    {
+      "id": "webgoat-8.2",
+      "kind": "docker",
+      "compose_file": "bench/targets/webgoat/docker-compose.yml",
+      "url": "http://127.0.0.1:8082/WebGoat/",
+      "params": ["input"],
+      "expect": {
+        "reflected": 1,
+        "stored": 1,
+        "dom": 0
+      },
+      "budget_seconds": 300,
+      "ready_timeout": 90,
+      "notes": "Java stack contrast to PHP-based Bludit and DVWA."
+    },
     {
       "id": "mock-reflected-easy",
       "kind": "mock",

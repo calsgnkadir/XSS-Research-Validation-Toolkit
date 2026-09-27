@@ -1,0 +1,30 @@
+# Bludit 3.16.x - CVE-2026-4420-shape stored XSS in tags field.
+#
+# The bot's writeup 11 demonstrated a live `executable` verdict on this
+# target. Phase 7.0 uses it as the regression anchor: every future
+# scanner change must still catch this shape or the change ships broken.
+#
+# Bring up:
+#     docker compose -f bench/targets/bludit/docker-compose.yml up -d
+#     # wait ~5s for Bludit to init
+# Default admin: admin / admin (Bludit's first-boot flow lets you set this)
+# Tear down:
+#     docker compose -f bench/targets/bludit/docker-compose.yml down
+
+services:
+  bludit:
+    image: bludit/bludit:3.16.2
+    container_name: cve-hunt-bludit
+    ports:
+      - "8080:80"
+    volumes:
+      - bludit-data:/var/www/html/bl-content
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  bludit-data:

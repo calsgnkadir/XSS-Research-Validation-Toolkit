@@ -44,6 +44,109 @@ def start_mock(handler: str):
     return MockServer(port=0)
 
 
+# ---------- Phase 7.0: docker target adapter --------------------------------
+#
+# For real OSS targets (Bludit / DVWA / WebGoat / Prestashop / ...) we spin
+# up a docker-compose stack, wait for it to become reachable, run the scan,
+# then tear it down. The adapter is opt-in - a runner without docker on
+# PATH prints one line and skips the docker rows, so CI still passes.
+#
+# Contract: a docker target in targets.json looks like:
+#   {"id": "bludit-3.16", "kind": "docker",
+#    "compose_file": "bench/targets/bludit/docker-compose.yml",
+#    "url": "http://127.0.0.1:8080/",
+#    "ready_path": "/",
+#    "expect": {"reflected": 0, "stored": 1, "dom": 0},
+#    "budget_seconds": 120}
+
+def _docker_available() -> bool:
+    """Docker targets are opt-in: default runs (CI, dev) skip them and
+    the report shows a `_note` so the operator knows nothing hung. Set
+    `BENCH_ENABLE_DOCKER=1` in the environment to opt in - the sprint
+    workflow does this explicitly on the operator's laptop where the
+    daemon is up and image pulls are acceptable.
+
+    Even when opted in, `docker` must be on PATH for the adapter to
+    actually try; missing binary is a separate condition from opt-in."""
+    if os.environ.get("BENCH_ENABLE_DOCKER", "").strip().lower() not in \
+            ("1", "true", "yes", "on"):
+        return False
+    return shutil.which("docker") is not None
+
+
+def _docker_compose_up(compose_file: str, timeout: int = 120) -> tuple[bool, str]:
+    """Bring the stack up in detached mode. Returns (ok, msg)."""
+    if not pathlib.Path(compose_file).is_file():
+        return False, f"compose file not found: {compose_file}"
+    try:
+        proc = subprocess.run(
+            ["docker", "compose", "-f", compose_file, "up", "-d"],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+        if proc.returncode != 0:
+            return False, (proc.stderr or proc.stdout or "unknown error")[-400:]
+    except subprocess.TimeoutExpired:
+        return False, f"docker compose up timed out after {timeout}s"
+    except Exception as e:                                # noqa: BLE001
+        return False, str(e)
+    return True, "up"
+
+
+def _docker_compose_down(compose_file: str, timeout: int = 60) -> None:
+    """Best-effort teardown. A stuck container is the operator's problem;
+    the runner never blocks longer than `timeout` on cleanup."""
+    try:
+        subprocess.run(
+            ["docker", "compose", "-f", compose_file, "down", "-v"],
+            capture_output=True, text=True, timeout=timeout, check=False,
+        )
+    except Exception:                                    # noqa: BLE001
+        pass
+
+
+def _wait_for_http(url: str, deadline_s: float = 60) -> bool:
+    """Poll the target URL until 2xx/3xx or the deadline expires."""
+    import urllib.request
+    end = time.time() + deadline_s
+    while time.time() < end:
+        try:
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if 200 <= resp.status < 400:
+                    return True
+        except Exception:                                # noqa: BLE001
+            pass
+        time.sleep(2)
+    return False
+
+
+class DockerTarget:
+    """Context manager wrapping docker-compose up/down around a scan."""
+
+    def __init__(self, compose_file: str, ready_url: str, ready_timeout: int = 90):
+        self.compose_file = compose_file
+        self.ready_url = ready_url
+        self.ready_timeout = ready_timeout
+        self.up_ok = False
+
+    def __enter__(self):
+        ok, msg = _docker_compose_up(self.compose_file)
+        self.up_ok = ok
+        if not ok:
+            self._up_msg = msg
+            return self
+        # Wait for HTTP readiness before handing control to the runner.
+        if not _wait_for_http(self.ready_url, deadline_s=self.ready_timeout):
+            self._up_msg = "container up but URL never became reachable"
+            self.up_ok = False
+        else:
+            self._up_msg = "ready"
+        return self
+
+    def __exit__(self, *exc):
+        _docker_compose_down(self.compose_file)
+
+
 # ---------- scanner adapters ----------
 # Each adapter returns a dict:
 #   {"reflected": int, "stored": int, "dom": int, "wall": float, "ok": bool,
@@ -181,15 +284,47 @@ def score(expected: Dict[str, int], observed: Dict[str, Any]) -> Dict[str, int]:
 def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
     row: Dict[str, Any] = {"id": target["id"], "expect": target["expect"], "results": {}}
     budget = int(target.get("budget_seconds", 60))
-    if target["kind"] != "mock":
-        row["results"]["_note"] = f"kind={target['kind']} not runnable in this session"
+
+    if target["kind"] == "mock":
+        with start_mock(target["handler"]) as srv:
+            base_url = f"http://127.0.0.1:{srv.port}"
+            for name in scanners:
+                fn = SCANNERS[name]
+                observed = fn(target, base_url, budget)
+                row["results"][name] = {
+                    "observed": observed,
+                    "score": score(target["expect"], observed),
+                }
         return row
-    with start_mock(target["handler"]) as srv:
-        base_url = f"http://127.0.0.1:{srv.port}"
-        for name in scanners:
-            fn = SCANNERS[name]
-            observed = fn(target, base_url, budget)
-            row["results"][name] = {"observed": observed, "score": score(target["expect"], observed)}
+
+    if target["kind"] == "docker":
+        # Phase 7.0: real docker-composed target.
+        if not _docker_available():
+            row["results"]["_note"] = (
+                "docker target skipped - set BENCH_ENABLE_DOCKER=1 and "
+                "ensure docker is on PATH to opt in on your operator "
+                "laptop; CI leaves these off by design")
+            return row
+        compose_file = target.get("compose_file")
+        ready_url = target.get("url") or ""
+        with DockerTarget(compose_file, ready_url,
+                          ready_timeout=target.get("ready_timeout", 90)) as dt:
+            if not dt.up_ok:
+                row["results"]["_note"] = f"docker setup: {dt._up_msg}"
+                return row
+            # base_url is the target URL directly; the scanner adapters
+            # split off the port from it just as they do for mock targets.
+            base_url = ready_url.rstrip("/")
+            for name in scanners:
+                fn = SCANNERS[name]
+                observed = fn(target, base_url, budget)
+                row["results"][name] = {
+                    "observed": observed,
+                    "score": score(target["expect"], observed),
+                }
+        return row
+
+    row["results"]["_note"] = f"kind={target['kind']} not runnable in this session"
     return row
 
 
