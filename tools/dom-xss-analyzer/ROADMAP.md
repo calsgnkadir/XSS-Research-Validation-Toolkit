@@ -535,7 +535,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
 | 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
 | 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
-| 1.2 Payload library 25 → 200+ | ✅ **DONE** | pending | 50 variants × 19 (1+18 mutations) = **950 shapes**; mutation library capped at 18 (transform-both-compatible ceiling; entity-encoded families move to Phase 2) |
+| 1.2 Payload library 25 → 200+ | ✅ **DONE** | merged | 50 variants × 19 (1+18 mutations) = **950 shapes**. Originally planned as m1-m5 across mutations to 20; m4 close-out merged what would have been m5 into a single milestone with a documented ceiling at 18 mutations. Adding 2 padding mutations was rejected on precision grounds; entity-encoded families need a canary-only API + browser detection (Phase 2, already shipped). Test explicitly asserts `len(_WAF_MUTATIONS) == 18` as a design guardrail. |
 | 1.3 Workflow chaining / state-machine | ✅ **DONE** | pending | JSON flow (zero-dep), JSONPath save/restore, {VAR}/{RND}/{CANARY} sub, verdict step, 26 tests |
 | 1.4 CSRF token rotation | ✅ **DONE** | pending | --csrf-refresh URL + --csrf-header NAME; 4-pattern extractor (Rails/Laravel/Django/generic); auto-inject in fetch(); 20 tests |
 | 1.5 Macro-based auth | ✅ **DONE** | pending | --auth-flow FILE; JWT via `auth:{header,value}` or cookie via jar; 8 tests |
