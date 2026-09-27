@@ -4,9 +4,15 @@ Phase 2.1: skeleton + graceful availability check + basic navigation.
 Phase 2.2: DOM sink detection via a pre-user-JS init script that wraps
            Element.innerHTML/outerHTML setters, document.write/writeln,
            Range.createContextualFragment, eval, Function, Location.href.
+Phase 2.3: JS execution proof - page.on('dialog') captures alert /
+           confirm / prompt / beforeunload calls; when a captured
+           dialog message contains an injected canary, severity is
+           bumped from `executable` to `proven-executable`.
+Phase 2.4: SPA route discovery - init script intercepts
+           history.pushState / replaceState / hashchange to capture
+           runtime navigations; static pass scans <script> text and
+           bundle content for React/Vue/Angular route declarations.
 Later phases build on this:
-  2.3 - JS execution proof (alert dialog + console listener)
-  2.4 - SPA hash-route discovery (history.pushState listener)
   2.5 - CSRF-in-header auto-detect (capture X-CSRF-Token from XHR/fetch)
 
 Zero-dep discipline for the CORE tool stays: this module imports
@@ -179,6 +185,45 @@ _SINK_INIT_SCRIPT = r"""
       });
     }
   } catch (_) {}
+
+  // Phase 2.4: SPA route discovery. React Router, Vue Router, Angular
+  // and hand-rolled hash-routers all navigate WITHOUT a full page load
+  // by calling history.pushState / replaceState or mutating location.hash.
+  // A plain crawler sees the initial URL only. We intercept the three
+  // documented mechanisms so post-load enumeration reveals every route
+  // the SPA opened during the current page's lifetime.
+  window.__dxadom_routes = [];
+  const recRoute = (kind, url) => {
+    try {
+      window.__dxadom_routes.push({
+        kind: kind,
+        url: String(url),
+        ts: Date.now(),
+      });
+    } catch (_) {}
+  };
+
+  try {
+    const origPush = history.pushState;
+    history.pushState = function(state, title, url) {
+      if (url != null) recRoute('pushState', url);
+      return origPush.apply(this, arguments);
+    };
+  } catch (_) {}
+
+  try {
+    const origReplace = history.replaceState;
+    history.replaceState = function(state, title, url) {
+      if (url != null) recRoute('replaceState', url);
+      return origReplace.apply(this, arguments);
+    };
+  } catch (_) {}
+
+  try {
+    window.addEventListener('hashchange', function() {
+      recRoute('hashchange', location.hash || '');
+    });
+  } catch (_) {}
 })();
 """
 
@@ -189,6 +234,93 @@ def sink_hits_for(sinks: List[dict], needle: str) -> List[dict]:
     if not needle:
         return []
     return [s for s in (sinks or []) if needle in (s.get("arg") or "")]
+
+
+# Phase 2.3: JS-execution proof. The alert/confirm/prompt/beforeunload
+# handlers on window are the classical XSS demo primitives. When our
+# injected payload reaches a DOM sink and the surrounding context lets
+# JS execute, the dialog fires. Playwright surfaces it via page.on
+# ('dialog') - we record + dismiss. A dialog whose text contains our
+# canary cid is a "proven-executable" hit, the highest severity tier.
+#
+# Severity chain grown by 2.3:
+#   attr-only  ->  breakout-req  ->  executable  ->  proven-executable
+# Existing chain (dxadyn._apply_ct_gate) tops out at `executable`.
+# Phase 2.3's promotion runs in the DOM path: post-visit, if any
+# dialog carries the canary marker, we bump the finding.
+
+PROVEN_EXECUTABLE = "proven-executable"
+
+
+def dialog_hits_for(dialogs: List[dict], needle: str) -> List[dict]:
+    """Filter a dialogs list to only entries whose `message` contains the
+    needle. Same shape as sink_hits_for: empty needle -> empty list,
+    None/[] input -> empty list.
+
+    A non-empty return means the browser actually ran an alert/confirm/
+    prompt with the canary embedded in the argument - the payload
+    executed, not just landed."""
+    if not needle:
+        return []
+    return [d for d in (dialogs or []) if needle in (d.get("message") or "")]
+
+
+# --- Phase 2.4: SPA route discovery -----------------------------------------
+#
+# Two complementary passes:
+#   1. Runtime capture (in the init script) - intercepts pushState /
+#      replaceState / hashchange, so any route the SPA opens during the
+#      first render lands in window.__dxadom_routes.
+#   2. Static extraction (extract_static_routes) - after load, we scan
+#      every <script> tag's text content for route-declaration patterns
+#      (React `<Route path="...">`, Vue `{ path: "..." }`, Angular
+#      `RouterLink`, bare `#/foo` hash-router literals). Static wins
+#      for routes the initial render never opens; runtime wins for
+#      route strings that were computed at runtime and never appear
+#      as literals.
+
+import re as _re
+
+# Route-string patterns. Every capture group extracts ONE path candidate.
+# Kept conservative: paths must start with `/` or `#/`, contain only URL-
+# safe chars, and be at least 2 chars. Names include `:param` / `*` for
+# dynamic segments.
+_ROUTE_PATTERNS = [
+    # React Router <Route path="/foo">, `path: "/foo"`, `to="/foo"`
+    _re.compile(r'''(?:path|to)\s*[=:]\s*["'](/[A-Za-z0-9_/:\-\.\*]{1,200})["']'''),
+    # Bare hash-router literal `#/foo` (Vue hash mode, jQuery-era SPAs)
+    _re.compile(r'''["'](#/[A-Za-z0-9_/:\-\.]{1,200})["']'''),
+    # Angular routerLink="/foo" (attribute value in HTML, not just JS).
+    # Case-insensitive: browsers lowercase attribute names when serializing
+    # DOM back to HTML, so a `routerLink="/foo"` in the raw response
+    # comes back as `routerlink="/foo"` from page.content().
+    _re.compile(r'''routerLink\s*=\s*["'](/[A-Za-z0-9_/:\-\.]{1,200})["']''',
+                _re.IGNORECASE),
+    # navigate("/foo") / router.push("/foo") - covers React Router 6,
+    # Next.js router.push, Vue Router push.
+    _re.compile(r'''(?:navigate|router\.push|router\.replace)\s*\(\s*["'](/[A-Za-z0-9_/:\-\.]{1,200})["']'''),
+]
+
+
+def extract_static_routes(script_text: str) -> List[str]:
+    """Regex-scan JS/HTML text for route declarations. Returns a
+    deduplicated, order-preserved list of route strings. Never raises;
+    an empty or None input returns [].
+
+    Precision-first: the patterns are conservative on purpose. A
+    false-positive route just adds one wasted crawl step; a false-
+    negative miss is worse (the whole surface stays invisible)."""
+    if not script_text:
+        return []
+    seen = set()
+    out: List[str] = []
+    for pat in _ROUTE_PATTERNS:
+        for m in pat.finditer(script_text):
+            route = m.group(1)
+            if route and route not in seen:
+                seen.add(route)
+                out.append(route)
+    return out
 
 
 def find_chromium_executable() -> Optional[str]:
@@ -299,7 +431,12 @@ class BrowserSession:
           {
             'url': str, 'status': int | None, 'title': str,
             'body_len': int, 'console': [str], 'errors': [str],
-            'sinks': [ {sink, arg, stack, ts} ]     # Phase 2.2
+            'sinks':   [ {sink, arg, stack, ts} ],     # Phase 2.2
+            'dialogs': [ {type, message, ts} ],        # Phase 2.3
+            'routes':  {                               # Phase 2.4
+              'runtime': [ {kind, url, ts} ],  # pushState/replaceState/hashchange
+              'static':  [str],                # regex-extracted from <script>
+            }
           }
 
         The sink init script runs BEFORE any user JS, so every subsequent
@@ -318,12 +455,37 @@ class BrowserSession:
         is `self.timeout_ms`."""
         summary: dict = {
             "url": url, "status": None, "title": "",
-            "body_len": 0, "console": [], "errors": [], "sinks": [],
+            "body_len": 0, "console": [], "errors": [],
+            "sinks": [], "dialogs": [],
+            "routes": {"runtime": [], "static": []},
         }
         with self._page_scope() as page:
             page.on("console", lambda msg: summary["console"].append(
                 f"{msg.type}: {msg.text}"))
             page.on("pageerror", lambda exc: summary["errors"].append(str(exc)))
+
+            # Phase 2.3: capture + auto-dismiss window.alert/confirm/prompt/
+            # beforeunload dialogs. Recording happens BEFORE dismissal so
+            # the message is always preserved. Every dialog MUST be
+            # dismissed or the page hangs waiting for a response - even
+            # if the recorder throws.
+            def _on_dialog(d):
+                import time as _t
+                try:
+                    summary["dialogs"].append({
+                        "type": d.type,
+                        "message": d.message or "",
+                        "ts": int(_t.time() * 1000),
+                    })
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"dialog record: {e}")
+                finally:
+                    try:
+                        d.dismiss()
+                    except Exception:                     # noqa: BLE001
+                        pass                              # already handled
+            page.on("dialog", _on_dialog)
+
             # Phase 2.2: install the sink init script BEFORE any user JS.
             try:
                 page.add_init_script(_SINK_INIT_SCRIPT)
@@ -347,6 +509,36 @@ class BrowserSession:
                         summary["sinks"] = sinks
                 except Exception as e:                    # noqa: BLE001
                     summary["errors"].append(f"sink-snapshot: {e}")
+
+                # Phase 2.4: snapshot runtime SPA routes (pushState /
+                # replaceState / hashchange captured by the init script).
+                try:
+                    runtime = page.evaluate(
+                        "() => window.__dxadom_routes || []")
+                    if isinstance(runtime, list):
+                        summary["routes"]["runtime"] = runtime
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"route-snapshot: {e}")
+
+                # Phase 2.4: static route extraction. Concatenate every
+                # inline <script> tag's text and every <a routerLink=...>
+                # attribute-carrying HTML fragment, then regex-scan for
+                # route declarations. Bundled external scripts are NOT
+                # fetched in this MVP - they will land in the SPA
+                # runtime capture above once React/Vue/Angular mounts.
+                try:
+                    script_texts = page.evaluate(
+                        "() => Array.from(document.scripts)"
+                        ".map(s => s.textContent || '').join('\\n')")
+                    html = ""
+                    try:
+                        html = page.content() or ""
+                    except Exception:                     # noqa: BLE001
+                        pass
+                    joined = (script_texts or "") + "\n" + html
+                    summary["routes"]["static"] = extract_static_routes(joined)
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"route-static: {e}")
             except Exception as e:                        # noqa: BLE001
                 summary["errors"].append(f"goto(): {e}")
         return summary
