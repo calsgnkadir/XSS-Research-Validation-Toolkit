@@ -12,8 +12,11 @@ Phase 2.4: SPA route discovery - init script intercepts
            history.pushState / replaceState / hashchange to capture
            runtime navigations; static pass scans <script> text and
            bundle content for React/Vue/Angular route declarations.
-Later phases build on this:
-  2.5 - CSRF-in-header auto-detect (capture X-CSRF-Token from XHR/fetch)
+Phase 2.5: CSRF-in-header auto-detect - page.on('request') captures
+           every XHR/fetch header, extract_auth_headers() pulls the
+           documented CSRF/session/auth families out of the observed
+           set so downstream reflected/stored probes can replay them
+           without manual --csrf-refresh + --csrf-header config.
 
 Zero-dep discipline for the CORE tool stays: this module imports
 playwright *inside* is_available() so an install missing playwright
@@ -302,6 +305,66 @@ _ROUTE_PATTERNS = [
 ]
 
 
+# --- Phase 2.5: CSRF-in-header auto-detect ---------------------------------
+#
+# Modern SPAs (Angular, React with axios interceptors, any XHR wrapper
+# that self-installs) attach anti-CSRF / session / API-key headers to
+# every stateful request without any HTML meta-tag or hidden form input.
+# Phase 1.4's --csrf-refresh + --csrf-header pair requires the operator
+# to know that URL and header name up front. Phase 2.5 removes that
+# knowledge burden: the browser session watches its own XHR/fetch
+# traffic, records the outgoing headers, and callers can pick out the
+# canonical CSRF / auth families with extract_auth_headers().
+#
+# Names recognized (case-insensitive; the extractor normalises keys).
+# Split into families so a caller can pick "just CSRF" or "all auth"
+# without walking the whole set.
+
+_CSRF_HEADER_NAMES = {
+    "x-csrf-token",     # Rails, Laravel meta-injected
+    "x-xsrf-token",     # Angular (double-submit cookie pattern)
+    "csrf-token",       # some hand-rolled SPAs
+    "x-csrftoken",      # Django REST framework
+    "anti-csrf-token",  # older .NET
+}
+_SESSION_HEADER_NAMES = {
+    "authorization",    # Bearer / Basic
+    "x-api-key",        # AWS API Gateway, many SaaS
+    "x-auth-token",     # Kubernetes, some SPAs
+    "x-access-token",   # JWT wrappers
+}
+_METADATA_HEADER_NAMES = {
+    "x-requested-with", # `XMLHttpRequest` marker Rails/Django expect
+    "x-correlation-id",
+    "x-request-id",
+}
+
+
+def extract_auth_headers(requests: List[dict]) -> dict:
+    """Walk a captured requests list, return a dict of every CSRF / session /
+    metadata header that appeared, keyed by canonical lower-case name and
+    valued by the MOST RECENT observed value.
+
+    Empty/None input returns {}. Requests without headers are skipped.
+    Header names not in the documented families are ignored - a random
+    `X-Custom-Foo` from user code does not get promoted to auth on its
+    own, but the operator can extend the families via the module-level
+    sets if a target needs it.
+
+    Returns {} when no known family matched; never raises."""
+    if not requests:
+        return {}
+    known = _CSRF_HEADER_NAMES | _SESSION_HEADER_NAMES | _METADATA_HEADER_NAMES
+    out: dict = {}
+    for req in requests:
+        headers = req.get("headers") or {}
+        for name, value in headers.items():
+            key = name.lower()
+            if key in known and value:
+                out[key] = value
+    return out
+
+
 def extract_static_routes(script_text: str) -> List[str]:
     """Regex-scan JS/HTML text for route declarations. Returns a
     deduplicated, order-preserved list of route strings. Never raises;
@@ -436,7 +499,14 @@ class BrowserSession:
             'routes':  {                               # Phase 2.4
               'runtime': [ {kind, url, ts} ],  # pushState/replaceState/hashchange
               'static':  [str],                # regex-extracted from <script>
-            }
+            },
+            'requests': [ {method, url, headers} ],    # Phase 2.5 - every
+                                                        # XHR/fetch made during
+                                                        # load, headers included
+            'auth_headers': { name_lower: value },     # Phase 2.5 - subset of
+                                                        # requests[].headers that
+                                                        # matched CSRF/session/
+                                                        # metadata families
           }
 
         The sink init script runs BEFORE any user JS, so every subsequent
@@ -458,6 +528,7 @@ class BrowserSession:
             "body_len": 0, "console": [], "errors": [],
             "sinks": [], "dialogs": [],
             "routes": {"runtime": [], "static": []},
+            "requests": [], "auth_headers": {},
         }
         with self._page_scope() as page:
             page.on("console", lambda msg: summary["console"].append(
@@ -469,6 +540,26 @@ class BrowserSession:
             # the message is always preserved. Every dialog MUST be
             # dismissed or the page hangs waiting for a response - even
             # if the recorder throws.
+            # Phase 2.5: capture every outgoing XHR/fetch request. We
+            # keep method + url + headers (small footprint, no body).
+            # `request` fires for the initial navigation too - we filter
+            # on resource_type so only script-initiated requests land in
+            # the auth-detection pool. Main-document nav doesn't set
+            # anti-CSRF headers itself, only the SPA's XHR/fetch do.
+            def _on_request(req):
+                try:
+                    if req.resource_type in ("document", "stylesheet",
+                                              "image", "font", "media"):
+                        return
+                    summary["requests"].append({
+                        "method": req.method,
+                        "url": req.url,
+                        "headers": dict(req.headers),
+                    })
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"request record: {e}")
+            page.on("request", _on_request)
+
             def _on_dialog(d):
                 import time as _t
                 try:
@@ -539,6 +630,16 @@ class BrowserSession:
                     summary["routes"]["static"] = extract_static_routes(joined)
                 except Exception as e:                    # noqa: BLE001
                     summary["errors"].append(f"route-static: {e}")
+
+                # Phase 2.5: post-process the captured requests list to
+                # extract the canonical CSRF / auth / metadata headers.
+                # Callers can install these into dxadyn.EXTRA_HEADERS to
+                # authenticate subsequent probes without --csrf-refresh.
+                try:
+                    summary["auth_headers"] = extract_auth_headers(
+                        summary["requests"])
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"auth-extract: {e}")
             except Exception as e:                        # noqa: BLE001
                 summary["errors"].append(f"goto(): {e}")
         return summary
