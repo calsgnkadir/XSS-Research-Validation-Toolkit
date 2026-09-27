@@ -2081,6 +2081,20 @@ def main():
             for d in dialogs[:20]:
                 msg = (d.get("message") or "")[:120].replace("\n", " ")
                 print(f"    {d.get('type')}: {msg}")
+        # Phase 2.4: report SPA routes discovered during load. Runtime
+        # captures history.pushState/replaceState/hashchange calls; static
+        # captures route declarations in <script> and routerLink= attrs.
+        routes = summary.get("routes") or {}
+        rt = routes.get("runtime") or []
+        st = routes.get("static") or []
+        if rt:
+            print(f"[dxadom] SPA runtime routes ({len(rt)}):")
+            for r in rt[:20]:
+                print(f"    {r.get('kind')}: {r.get('url')}")
+        if st:
+            print(f"[dxadom] SPA static routes ({len(st)}):")
+            for r in st[:20]:
+                print(f"    {r}")
         if summary["console"]:
             print(f"[dxadom] console ({len(summary['console'])} msg):")
             for line in summary["console"][:10]:

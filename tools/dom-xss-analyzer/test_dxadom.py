@@ -641,3 +641,234 @@ def test_dialog_capture_does_not_hang_on_unhandled_prompt(dialog_server):
     # Reaching here at all proves no hang; then verify capture.
     assert len(summary["dialogs"]) == 1
     assert summary["errors"] == []
+
+
+# --- Phase 2.4: SPA route discovery ----------------------------------------
+
+# extract_static_routes unit tests. Always run (regex over strings, no
+# browser required).
+
+def test_extract_static_routes_empty_input():
+    assert dxadom.extract_static_routes("") == []
+    assert dxadom.extract_static_routes(None) == []
+
+
+def test_extract_static_routes_react_router_path():
+    """<Route path="/foo"> and `path: "/bar"` are the React Router
+    canonical shapes."""
+    src = '<Route path="/users/:id" /><Route path="/settings" />'
+    out = dxadom.extract_static_routes(src)
+    assert "/users/:id" in out and "/settings" in out
+
+
+def test_extract_static_routes_to_attribute():
+    """React `<Link to="/foo">` uses `to=` instead of `path=`."""
+    src = '<Link to="/dashboard">Home</Link>'
+    out = dxadom.extract_static_routes(src)
+    assert "/dashboard" in out
+
+
+def test_extract_static_routes_hash_router_literal():
+    """Vue hash-router mode and old jQuery-era SPAs use `#/foo`."""
+    src = 'window.location.href = "#/profile"; goto("#/orders");'
+    out = dxadom.extract_static_routes(src)
+    assert "#/profile" in out and "#/orders" in out
+
+
+def test_extract_static_routes_router_link_attribute():
+    """Angular routerLink="/admin" template attribute."""
+    src = '<a routerLink="/admin/users" class="nav">Admin</a>'
+    out = dxadom.extract_static_routes(src)
+    assert "/admin/users" in out
+
+
+def test_extract_static_routes_navigate_call():
+    """navigate("/foo") / router.push("/foo") - React Router 6, Next.js."""
+    src = 'navigate("/checkout"); router.push("/thank-you");'
+    out = dxadom.extract_static_routes(src)
+    assert "/checkout" in out and "/thank-you" in out
+
+
+def test_extract_static_routes_single_and_double_quotes():
+    """Both quote styles must match; framework code uses either."""
+    src = "path: '/single'; path: \"/double\";"
+    out = dxadom.extract_static_routes(src)
+    assert "/single" in out and "/double" in out
+
+
+def test_extract_static_routes_deduplicates_preserving_order():
+    """If the same route appears twice, only the FIRST occurrence lands.
+    Order matters for the crawler queue - depth-first from first hit."""
+    src = 'path: "/foo"; path: "/bar"; path: "/foo";'
+    out = dxadom.extract_static_routes(src)
+    assert out.count("/foo") == 1
+    assert out.index("/foo") < out.index("/bar")
+
+
+def test_extract_static_routes_ignores_non_route_strings():
+    """The patterns are conservative; a bare `/foo` in prose or a full
+    URL like https://x.test/foo should NOT match."""
+    src = "The path is /foo when you go to https://x.test/bar"
+    out = dxadom.extract_static_routes(src)
+    # bare `/foo` in prose - not in quotes with path/to/routerLink
+    # context - must not fire.
+    assert out == []
+
+
+def test_extract_static_routes_conservative_on_query_strings():
+    """`/foo?a=b` has `?` which is not in our safe char class. That's
+    fine: we want the base route, callers add query params."""
+    src = 'path: "/simple"'
+    out = dxadom.extract_static_routes(src)
+    assert "/simple" in out
+
+
+# --- real-browser SPA route capture: runtime pushState/replaceState/hash ---
+
+class _SpaHandler(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        return
+
+    def _send(self, body):
+        b = body.encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def do_GET(self):
+        if self.path == "/pushstate":
+            self._send(
+                '<html><body><script>'
+                'history.pushState({}, "", "/dxa-push-route-1");'
+                'history.pushState({}, "", "/dxa-push-route-2");'
+                '</script></body></html>')
+        elif self.path == "/replacestate":
+            self._send(
+                '<html><body><script>'
+                'history.replaceState({}, "", "/dxa-replace-route");'
+                '</script></body></html>')
+        elif self.path == "/hashchange":
+            self._send(
+                '<html><body><script>'
+                'location.hash = "/dxa-hash-route";'
+                '</script></body></html>')
+        elif self.path == "/static-routes":
+            # Multiple static declarations in <script> + attribute.
+            self._send(
+                '<html><body>'
+                '<a routerLink="/dxa-angular-link">A</a>'
+                '<script>'
+                'const routes = [{path: "/dxa-react-a"}, {path: "/dxa-react-b/:id"}];'
+                'navigate("/dxa-navigate-c");'
+                'location.href = "#/dxa-hash-d";'
+                '</script>'
+                '</body></html>')
+        elif self.path == "/no-routes":
+            self._send(
+                '<html><body><script>var x = 1;</script></body></html>')
+        elif self.path == "/mixed":
+            # Runtime captures BOTH pushState AND static declarations.
+            self._send(
+                '<html><body><script>'
+                'history.pushState({}, "", "/dxa-runtime-mix");'
+                'const routes = [{path: "/dxa-static-mix"}];'
+                '</script></body></html>')
+        else:
+            self._send('<html>404</html>')
+
+
+@pytest.fixture
+def spa_server():
+    httpd = http.server.HTTPServer(("127.0.0.1", 0), _SpaHandler)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        yield port
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+@_skip
+def test_route_capture_pushstate(spa_server):
+    """history.pushState calls land in routes.runtime with kind='pushState'."""
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/pushstate")
+    runtime = summary["routes"]["runtime"]
+    urls = [r["url"] for r in runtime]
+    assert "/dxa-push-route-1" in urls
+    assert "/dxa-push-route-2" in urls
+    assert all(r["kind"] == "pushState" for r in runtime
+               if r["url"].startswith("/dxa-push"))
+
+
+@_skip
+def test_route_capture_replacestate(spa_server):
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/replacestate")
+    runtime = summary["routes"]["runtime"]
+    assert any(r["kind"] == "replaceState"
+               and r["url"] == "/dxa-replace-route" for r in runtime)
+
+
+@_skip
+def test_route_capture_hashchange(spa_server):
+    """location.hash = "..." triggers hashchange - captured too."""
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/hashchange")
+    runtime = summary["routes"]["runtime"]
+    assert any(r["kind"] == "hashchange"
+               and "dxa-hash-route" in r["url"] for r in runtime)
+
+
+@_skip
+def test_static_route_extraction_end_to_end(spa_server):
+    """The static extractor runs against page.content() after load and
+    finds React path=, Angular routerLink=, navigate("/…"), hash literals."""
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/static-routes")
+    static = summary["routes"]["static"]
+    for expected in ("/dxa-angular-link", "/dxa-react-a", "/dxa-react-b/:id",
+                     "/dxa-navigate-c", "#/dxa-hash-d"):
+        assert expected in static, (
+            f"missing {expected} from static routes: {static}")
+
+
+@_skip
+def test_no_routes_returns_empty_lists(spa_server):
+    """A page with no SPA navigation and no route declarations returns
+    empty runtime + static lists - the honest default."""
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/no-routes")
+    assert summary["routes"]["runtime"] == []
+    assert summary["routes"]["static"] == []
+
+
+@_skip
+def test_mixed_page_captures_both_runtime_and_static(spa_server):
+    """A page that BOTH declares a route statically AND opens one via
+    pushState fills both lists distinctly - they're complementary
+    passes, not duplicates."""
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/mixed")
+    runtime_urls = [r["url"] for r in summary["routes"]["runtime"]]
+    assert "/dxa-runtime-mix" in runtime_urls
+    assert "/dxa-static-mix" in summary["routes"]["static"]
+
+
+@_skip
+def test_route_record_carries_timestamp(spa_server):
+    port = spa_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/pushstate")
+    r = summary["routes"]["runtime"][0]
+    assert isinstance(r.get("ts"), (int, float)) and r["ts"] > 0

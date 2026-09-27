@@ -542,7 +542,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 2.1 Playwright install + harness | ✅ **DONE** | pending | `dxadom.py` with is_available / find_chromium / BrowserSession; --dom CLI flag; 12 tests (5 unit + 7 real-browser); browser CI job |
 | 2.2 DOM sink detection | ✅ **DONE** | pending | init script wraps 8 sinks (innerHTML/outerHTML setters, document.write/writeln, Range.CCF, eval, Function, Location.href); sink_hits_for() correlation helper; 14 new tests (3 unit + 11 real-browser); live CLI catches 4 sink types per page |
 | 2.3 JS execution proof | ✅ **DONE** | pending | page.on('dialog') captures alert/confirm/prompt/beforeunload; auto-dismiss; PROVEN_EXECUTABLE constant; dialog_hits_for() correlation; new severity tier at top of chain; 13 new tests (4 unit + 9 real-browser); live E2E catches alert() from `<img onerror>` payload |
-| 2.4 SPA hash-route discovery | ⏳ queued | — | history.pushState listener |
+| 2.4 SPA hash-route discovery | ✅ **DONE** | pending | init script intercepts pushState/replaceState/hashchange; static extractor scans <script> + attrs for React `<Route path>`, Angular `routerLink`, Vue hash literal, `navigate()` calls; 17 new tests (10 unit + 7 real-browser); live E2E catches 2 runtime + 4 static routes on mock SPA |
 | 2.5 CSRF-in-header auto-detect | ⏳ queued | — | capture X-CSRF-Token from XHR/fetch |
 | 3 Blind XSS (OOB callback) | ⏳ queued | — | callback server |
 | 4 Sound static (tree-sitter AST) | ⏳ queued | — | 4-6 hafta, heaviest |
