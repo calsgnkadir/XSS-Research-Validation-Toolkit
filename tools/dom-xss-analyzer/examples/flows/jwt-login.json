@@ -1,0 +1,18 @@
+{
+  "name": "jwt-bearer-login",
+  "description": "Canonical JWT/Bearer auth flow. POSTs credentials to a JSON login endpoint, saves the token via JSONPath, installs it as 'Authorization: Bearer <token>' on every subsequent request. Copy this file and edit URL/body/save-path for your target.",
+  "steps": [
+    {
+      "name": "login",
+      "method": "POST",
+      "url": "http://127.0.0.1:{PORT}/api/register",
+      "content_type": "application/json",
+      "body": {"email": "admin-{RND}@x.test", "password": "P@ss1234"},
+      "save": {"token": "$.token"}
+    }
+  ],
+  "auth": {
+    "header": "Authorization",
+    "value": "Bearer {token}"
+  }
+}

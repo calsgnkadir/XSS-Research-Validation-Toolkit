@@ -1,0 +1,61 @@
+{
+  "corpus_version": "0.5.0-mvp",
+  "notes": [
+    "Phase 0.5 MVP corpus. Grows toward 20 targets by end of Phase 1.",
+    "Each target: expected findings under 'expect', budget in seconds.",
+    "'kind': mock (stdlib server, CI-friendly) | docker (compose) | url (already-up)."
+  ],
+  "targets": [
+    {
+      "id": "mock-reflected-easy",
+      "kind": "mock",
+      "handler": "reflected_easy",
+      "url": "http://127.0.0.1:{port}/echo-land",
+      "params": ["q"],
+      "expect": {
+        "reflected": 1,
+        "stored": 0,
+        "dom": 0
+      },
+      "budget_seconds": 30
+    },
+    {
+      "id": "mock-reflected-escaped",
+      "kind": "mock",
+      "handler": "reflected_escaped",
+      "url": "http://127.0.0.1:{port}/safe-echo-land",
+      "params": ["q"],
+      "expect": {
+        "reflected": 0,
+        "stored": 0,
+        "dom": 0
+      },
+      "budget_seconds": 30
+    },
+    {
+      "id": "mock-stored-guestbook",
+      "kind": "mock",
+      "handler": "stored_guestbook",
+      "url": "http://127.0.0.1:{port}/guestbook",
+      "params": ["msg"],
+      "expect": {
+        "reflected": 0,
+        "stored": 1,
+        "dom": 0
+      },
+      "budget_seconds": 60
+    }
+  ],
+  "docker_targets_roadmap": [
+    "bludit-3.16.2 (CVE-2026-4420-shape stored XSS, expect 1 executable)",
+    "dvwa-latest (5 XSS variants across low/med/high)",
+    "juice-shop-latest (8 XSS challenges)",
+    "webgoat-8.2 (3 XSS lessons)",
+    "own-hardened: hotel-platform, wallet-api, mahrem (expect 0 XSS)",
+    "prestashop-8.1 (recent stored XSS module CVEs)",
+    "opencart-4.0 (2024 stored XSS CVEs)",
+    "cockpit-cms-2.5 (admin panel XSS)",
+    "directus-9 (older stored XSS)",
+    "rundeck-4.x (job description XSS)"
+  ]
+}

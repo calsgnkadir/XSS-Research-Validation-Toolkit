@@ -584,46 +584,674 @@ def test_ct_gate_plain_body_variant_unchanged():
 # --- v3.10 late: WAF-bypass mutations + reflected variants ------------------
 
 def test_waf_mutations_return_named_triples():
-    """_waf_mutations() must return (name, canary_str, marker_str) triples,
-    all four documented mutation shapes present."""
+    """_waf_mutations() must return (name, canary_str, marker_str) triples;
+    the v3.10 originals plus the Phase 1.2 additions must all be present."""
     triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
     names = [t[0] for t in triples]
-    assert names == ["case", "split-cmt", "whitespace", "url-encode"]
+    # v3.10 originals still first, in original order
+    assert names[:4] == ["case", "split-cmt", "whitespace", "url-encode"]
+    # Phase 1.2 additions all present (order-independent)
+    assert set(names[4:]) >= {"tab-in-tag", "newline-in-tag",
+                              "slash-separator", "double-url-encode"}
     # each mutation transforms both the canary and the marker
     for name, canary, marker in triples:
         assert marker != '<dXsS>', f"{name} marker must differ from base"
         assert canary.startswith('dxaAAAA')
 
 
-def test_make_canaries_for_waf_bypass_multiplies_by_five():
-    """One base variant + 4 mutations = 5 canary tuples."""
+def test_make_canaries_for_waf_bypass_multiplies_by_full_library():
+    """One base variant + N mutations = 1+N canary tuples. Number grows with
+    the library; this test asserts the invariant, not a hardcoded count."""
     out = list(dxadyn.make_canaries_for(["body"], waf_bypass=True))
-    assert len(out) == 5
-    # first is the base, others are named `body/<mutation>`
+    expected = 1 + len(dxadyn._WAF_MUTATIONS)
+    assert len(out) == expected
+    # first is the base
     assert out[0][0] == "body"
-    assert {t[0] for t in out[1:]} == {"body/case", "body/split-cmt",
-                                        "body/whitespace", "body/url-encode"}
-    # every mutation has its OWN cid (not reused from base)
+    # every follow-on is named `body/<mutation>`
+    for name, _, _, _ in out[1:]:
+        assert name.startswith("body/")
+    # every canary has its OWN cid (no reuse)
     cids = {t[1] for t in out}
-    assert len(cids) == 5
+    assert len(cids) == expected
 
 
 def test_make_canaries_for_waf_bypass_across_multiple_variants():
-    """N variants × 5 = N*5 canary tuples with waf_bypass=True."""
-    out = list(dxadyn.make_canaries_for(["body", "title-breakout"], waf_bypass=True))
-    assert len(out) == 10                          # 2 × 5
+    """N variants × (1 + M mutations) = N*(1+M) canary tuples."""
+    variants = ["body", "title-breakout"]
+    out = list(dxadyn.make_canaries_for(variants, waf_bypass=True))
+    expected = len(variants) * (1 + len(dxadyn._WAF_MUTATIONS))
+    assert len(out) == expected
     # both bases present
     names = [t[0] for t in out]
     assert "body" in names and "title-breakout" in names
-    # mutation names prefixed correctly
+    # a v3.10 mutation and a Phase 1.2 mutation are both wired per variant
     assert "title-breakout/case" in names
-    assert "body/split-cmt" in names
+    assert "body/tab-in-tag" in names
 
 
 def test_make_canaries_for_no_waf_bypass_stays_single_shape():
     """Default (waf_bypass=False) still yields exactly one tuple per variant."""
     out = list(dxadyn.make_canaries_for(["body", "attr-breakout"]))
     assert len(out) == 2
+
+
+# --- Phase 1.2: expanded variant library -----------------------------------
+
+def test_phase_1_2_variant_library_has_expected_size():
+    """After Phase 1.2 first milestone, library must include at least the
+    12+ documented shapes across event-handler / HTML5 / quote-style / JS."""
+    # Baseline (v3.10) five + Phase 1.2 additions -> >= 12
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 12
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= {
+        # v3.10 originals
+        "body", "title-breakout", "attr-breakout",
+        "script-breakout", "url-scheme",
+        # Phase 1.2 event-handler tags
+        "svg-breakout", "img-breakout",
+        "body-onload-breakout", "details-toggle-breakout",
+        "input-autofocus-breakout",
+        # HTML5 sanitizer bypass
+        "iframe-srcdoc-breakout", "video-source-breakout",
+        # quote-style
+        "attr-squote-breakout", "attr-backtick-breakout",
+        # JS/template
+        "template-literal-breakout", "html-comment-breakout",
+    }
+
+
+def test_phase_1_2_svg_breakout_payload_shape():
+    """svg-breakout must contain a real <svg onload=...> tag whose survival
+    proves executability, not just the <dXsS> grep-marker."""
+    cid, canary = dxadyn.make_canary("svg-breakout")
+    assert canary.startswith(cid)
+    assert '<svg onload=1>' in canary
+    assert '<dXsS>' in canary
+    # marker embeds the tag itself
+    _, marker = dxadyn.PAYLOAD_VARIANTS["svg-breakout"]
+    assert '<svg onload=1>' in marker
+
+
+def test_phase_1_2_img_breakout_payload_shape():
+    cid, canary = dxadyn.make_canary("img-breakout")
+    assert '<img src=x onerror=1>' in canary
+
+
+def test_phase_1_2_details_toggle_payload_shape():
+    cid, canary = dxadyn.make_canary("details-toggle-breakout")
+    assert '<details open ontoggle=1>' in canary
+
+
+def test_phase_1_2_iframe_srcdoc_payload_shape():
+    cid, canary = dxadyn.make_canary("iframe-srcdoc-breakout")
+    assert '<iframe srcdoc=' in canary
+
+
+def test_phase_1_2_attr_squote_uses_single_quote():
+    """Single-quote-context attribute breakout (many templates use ')."""
+    cid, canary = dxadyn.make_canary("attr-squote-breakout")
+    assert "'>" in canary
+
+
+def test_phase_1_2_attr_backtick_uses_backtick():
+    """Backtick-quoted attributes (some framework template contexts)."""
+    cid, canary = dxadyn.make_canary("attr-backtick-breakout")
+    assert '`>' in canary
+
+
+def test_phase_1_2_template_literal_uses_dollar_brace():
+    """JS template-literal context breakout (Vue/React inline scripts)."""
+    cid, canary = dxadyn.make_canary("template-literal-breakout")
+    assert '${' in canary
+
+
+def test_phase_1_2_html_comment_breakout_closes_comment():
+    """HTML-comment-context breakout: `-->` closes the surrounding comment."""
+    cid, canary = dxadyn.make_canary("html-comment-breakout")
+    assert '-->' in canary
+
+
+def test_phase_1_2_all_new_variants_upgrade_to_executable_on_html():
+    """Every -breakout name (existing + new) must upgrade to executable
+    severity when reflected unencoded in an HTML response. This is the
+    invariant that ties naming to CT-gate behavior."""
+    for vname in dxadyn.PAYLOAD_VARIANTS:
+        if not vname.endswith("-breakout"):
+            continue
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_all_new_variants_still_downgrade_on_json():
+    """Even -breakout variants stay `json-only` on a JSON Content-Type -
+    the CT gate is the hard boundary."""
+    for vname in dxadyn.PAYLOAD_VARIANTS:
+        if not vname.endswith("-breakout"):
+            continue
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "application/json",
+                                        variant=vname)
+        assert sev == "json-only", f"{vname} incorrectly executed on JSON"
+
+
+# --- Phase 1.2: expanded WAF mutation library -------------------------------
+
+def test_phase_1_2_tab_in_tag_mutation_shape():
+    """HTML5 permits tab as whitespace inside a tag; verify the mutation
+    produces `<dXsS\\t>` in both canary and marker."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    tab = [t for t in triples if t[0] == "tab-in-tag"][0]
+    _, canary, marker = tab
+    assert '<dXsS\t>' in canary
+    assert '<dXsS\t>' in marker
+
+
+def test_phase_1_2_newline_in_tag_mutation_shape():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    nl = [t for t in triples if t[0] == "newline-in-tag"][0]
+    assert '<dXsS\n>' in nl[1] and '<dXsS\n>' in nl[2]
+
+
+def test_phase_1_2_slash_separator_mutation_shape():
+    """`<tag/attr>` uses slash as HTML5-legal whitespace-like separator;
+    bypasses WAFs anchored on space after tag name."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    sl = [t for t in triples if t[0] == "slash-separator"][0]
+    assert '<dXsS/>' in sl[1] and '<dXsS/>' in sl[2]
+
+
+def test_phase_1_2_double_url_encode_mutation_shape():
+    """Double URL-encode: single-decode WAF sees `%253C`; double-decode
+    backend sees `<`."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    du = [t for t in triples if t[0] == "double-url-encode"][0]
+    assert '%253CdXsS%253E' in du[1]
+    assert '%253CdXsS%253E' in du[2]
+
+
+def test_phase_1_2_total_shape_count_grew():
+    """The whole point of Phase 1.2 first milestone: --variants all
+    --waf-bypass fans out to more shapes than the v3.10 baseline of 25."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # v3.10 baseline: 5 × 5 = 25. Post-1.2-milestone: at least 12 × 5 = 60.
+    assert len(out) >= 60
+    # And more concretely: every variant has its own base + every mutation
+    per_variant = 1 + len(dxadyn._WAF_MUTATIONS)
+    assert len(out) == len(dxadyn.PAYLOAD_VARIANTS) * per_variant
+
+
+# --- Phase 1.2 milestone 2: 12 -> 25+ variants, 8 -> 13+ mutations ---------
+
+def test_phase_1_2_m2_variant_library_reached_25():
+    """Milestone 2 doubles the variant library. Full DoD is ~50."""
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 25
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= {
+        "svg-script-nested-breakout", "math-mtext-breakout",
+        "object-data-breakout", "embed-src-breakout",
+        "marquee-onstart-breakout", "select-onfocus-breakout",
+        "textarea-onfocus-breakout", "form-formaction-breakout",
+        "iframe-data-uri-breakout", "js-double-string-breakout",
+        "anchor-href-javascript-breakout",
+        "noscript-breakout", "style-tag-breakout",
+    }
+
+
+def test_phase_1_2_m2_svg_script_nested_bypasses_top_level_script_strip():
+    """svg-script-nested: sanitizers that strip <script> at top level
+    often forget SVG foreign content."""
+    cid, canary = dxadyn.make_canary("svg-script-nested-breakout")
+    assert '<svg><script>' in canary
+    assert '</script></svg>' in canary
+
+
+def test_phase_1_2_m2_math_mtext_uses_mglyph_sink():
+    """MathML foreign-content surface. mglyph is a rare-audit sink."""
+    cid, canary = dxadyn.make_canary("math-mtext-breakout")
+    assert '<math>' in canary and '<mglyph' in canary
+
+
+def test_phase_1_2_m2_object_data_uses_data_uri():
+    cid, canary = dxadyn.make_canary("object-data-breakout")
+    assert '<object data=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_embed_src_uses_data_uri():
+    cid, canary = dxadyn.make_canary("embed-src-breakout")
+    assert '<embed src=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_marquee_onstart_present():
+    cid, canary = dxadyn.make_canary("marquee-onstart-breakout")
+    assert '<marquee onstart=1>' in canary
+
+
+def test_phase_1_2_m2_select_and_textarea_variants_use_autofocus():
+    """Both need `autofocus onfocus=` since the browser only fires
+    focus events on the currently-focused element."""
+    for vname in ("select-onfocus-breakout", "textarea-onfocus-breakout"):
+        cid, canary = dxadyn.make_canary(vname)
+        assert 'autofocus' in canary and 'onfocus=1' in canary
+
+
+def test_phase_1_2_m2_form_formaction_override():
+    """HTML5 formaction attribute overrides the parent form's action."""
+    cid, canary = dxadyn.make_canary("form-formaction-breakout")
+    assert '<form>' in canary
+    assert 'formaction=javascript:1' in canary
+
+
+def test_phase_1_2_m2_iframe_data_uri_payload():
+    cid, canary = dxadyn.make_canary("iframe-data-uri-breakout")
+    assert '<iframe src=data:text/html,' in canary
+
+
+def test_phase_1_2_m2_js_double_string_complements_script_breakout():
+    """script-breakout uses ' quote; js-double-string uses ". Together
+    they cover both JS string-quote conventions."""
+    _, single = dxadyn.PAYLOAD_VARIANTS["script-breakout"]
+    _, double = dxadyn.PAYLOAD_VARIANTS["js-double-string-breakout"]
+    # both share the <dXsS> marker but use opposite quotes to break out
+    _, single_suffix = dxadyn.make_canary("script-breakout")
+    _, double_suffix = dxadyn.make_canary("js-double-string-breakout")
+    assert "';" in single_suffix
+    assert '";' in double_suffix
+
+
+def test_phase_1_2_m2_anchor_href_javascript_present():
+    cid, canary = dxadyn.make_canary("anchor-href-javascript-breakout")
+    assert '<a href=javascript:1>' in canary
+
+
+def test_phase_1_2_m2_noscript_breakout_closes_noscript():
+    """The <noscript> parser scope is un-sanitized by some libraries."""
+    cid, canary = dxadyn.make_canary("noscript-breakout")
+    assert '<noscript>' in canary and '</noscript>' in canary
+
+
+def test_phase_1_2_m2_style_tag_breakout_uses_import():
+    cid, canary = dxadyn.make_canary("style-tag-breakout")
+    assert '<style>' in canary and '@import' in canary
+
+
+def test_phase_1_2_m2_waf_mutation_library_reached_13():
+    """Milestone 2 grows the mutation library from 8 to 13+."""
+    assert len(dxadyn._WAF_MUTATIONS) >= 13
+    names = {name for name, _ in dxadyn._WAF_MUTATIONS}
+    assert names >= {
+        "cr-in-tag", "form-feed-in-tag", "crlf-in-tag",
+        "null-byte-tag", "backslash-tag",
+    }
+
+
+def test_phase_1_2_m2_cr_in_tag_uses_carriage_return():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    cr = [t for t in triples if t[0] == "cr-in-tag"][0]
+    assert '<dXsS\r>' in cr[1] and '<dXsS\r>' in cr[2]
+
+
+def test_phase_1_2_m2_form_feed_in_tag_uses_form_feed():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    ff = [t for t in triples if t[0] == "form-feed-in-tag"][0]
+    assert '<dXsS\f>' in ff[1] and '<dXsS\f>' in ff[2]
+
+
+def test_phase_1_2_m2_crlf_in_tag_uses_both_line_terminators():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    crlf = [t for t in triples if t[0] == "crlf-in-tag"][0]
+    assert '<dXsS\r\n>' in crlf[1] and '<dXsS\r\n>' in crlf[2]
+
+
+def test_phase_1_2_m2_null_byte_tag_uses_percent_00():
+    """Null byte is transported as %00 so it survives URL/form encoding."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    nb = [t for t in triples if t[0] == "null-byte-tag"][0]
+    assert '<dXsS%00>' in nb[1] and '<dXsS%00>' in nb[2]
+
+
+def test_phase_1_2_m2_backslash_tag_present():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    bs = [t for t in triples if t[0] == "backslash-tag"][0]
+    assert '<dXsS\\>' in bs[1] and '<dXsS\\>' in bs[2]
+
+
+def test_phase_1_2_m2_all_new_variants_still_upgrade_to_executable():
+    """All 13 new variants use the -breakout naming convention and must
+    auto-upgrade to executable severity on HTML unencoded reflection."""
+    new_names = {
+        "svg-script-nested-breakout", "math-mtext-breakout",
+        "object-data-breakout", "embed-src-breakout",
+        "marquee-onstart-breakout", "select-onfocus-breakout",
+        "textarea-onfocus-breakout", "form-formaction-breakout",
+        "iframe-data-uri-breakout", "js-double-string-breakout",
+        "anchor-href-javascript-breakout",
+        "noscript-breakout", "style-tag-breakout",
+    }
+    for vname in new_names:
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_m2_shape_count_now_matches_full_matrix():
+    """Post-milestone-2: 25+ variants x 13+ mutations grows the total
+    canary shape space significantly beyond milestone-1."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # milestone 2 floor: 25 * (1 + 13) = 350
+    assert len(out) >= 25 * (1 + 13)
+
+
+def test_phase_1_2_m2_variant_library_is_diverse():
+    """Sanity: even though a few variants may share the plain `<dXsS>`
+    marker (body, script-breakout, js-double-string-breakout all rely on
+    the same raw grep-marker after their respective string escapes), the
+    library as a whole must have many distinct marker shapes -- otherwise
+    the WAF-bypass fan-out collapses to duplicates."""
+    markers = [m for _, m in dxadyn.PAYLOAD_VARIANTS.values()]
+    unique = set(markers)
+    # At least 75% distinct markers keeps the diversity claim honest.
+    assert len(unique) >= int(0.75 * len(markers)), (
+        f"only {len(unique)}/{len(markers)} distinct markers - "
+        "variants are collapsing into the same shape"
+    )
+
+
+def test_phase_1_2_m2_every_variant_yields_unique_cid_per_call():
+    """Regression guard: verdict ambiguity is prevented by CID uniqueness,
+    not marker uniqueness. Each canary generation must produce a fresh cid
+    so a shared marker (e.g. `<dXsS>`) never causes cross-variant matches."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    cids = [t[1] for t in out]
+    assert len(cids) == len(set(cids)), "duplicate cid across canaries"
+
+
+# --- Phase 1.2 milestone 3: 25 -> 40+ variants, 13 -> 18+ mutations --------
+
+_M3_NEW_VARIANTS = {
+    # CSS-context
+    "style-value-breakout", "css-comment-breakout", "css-import-breakout",
+    # HTML5 dialog
+    "dialog-onbeforetoggle-breakout", "dialog-oncancel-breakout",
+    # Attribute-list injection (stays inside tag)
+    "attr-inject-onerror-breakout", "attr-inject-onmouseover-breakout",
+    # URL/navigation hijack
+    "base-href-javascript-breakout", "meta-refresh-breakout",
+    # SVG animation + audio complement
+    "svg-animate-onbegin-breakout", "audio-onerror-breakout",
+    # Legacy pre-formatted text
+    "xmp-breakout",
+    # JS complements
+    "js-regex-breakout", "js-comment-close-breakout",
+    # Web Components
+    "template-shadow-breakout",
+}
+
+_M3_NEW_MUTATIONS = {
+    "space-tab-mix", "triple-url-encode", "percent-lowercase",
+    "split-cmt-suffix", "cr-space-mix",
+}
+
+
+def test_phase_1_2_m3_variant_library_reached_40():
+    """Milestone 3 pushes the variant library past 40. Full DoD is ~50."""
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 40
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= _M3_NEW_VARIANTS
+
+
+def test_phase_1_2_m3_style_value_breakout_uses_url_function():
+    """CSS style-attr value context: `; background:url(<dXsS>);` closes
+    the current property and opens a new one that carries the marker."""
+    cid, canary = dxadyn.make_canary("style-value-breakout")
+    assert 'background:url(' in canary and '<dXsS>' in canary
+
+
+def test_phase_1_2_m3_css_comment_breakout_closes_comment():
+    """CSS multi-line comment closer: `*/` returns to declaration ctx."""
+    cid, canary = dxadyn.make_canary("css-comment-breakout")
+    assert canary.startswith(cid) and '*/' in canary
+
+
+def test_phase_1_2_m3_css_import_breakout_closes_paren():
+    """CSS url(): `);` closes the url() function so the next token can
+    start a new declaration."""
+    cid, canary = dxadyn.make_canary("css-import-breakout")
+    assert ');' in canary and '<dXsS>' in canary
+
+
+def test_phase_1_2_m3_dialog_variants_use_open_attr():
+    """Both dialog variants must include `open` so the event fires without
+    a call to .showModal()."""
+    for vname in ("dialog-onbeforetoggle-breakout", "dialog-oncancel-breakout"):
+        cid, canary = dxadyn.make_canary(vname)
+        assert '<dialog open' in canary
+        assert 'on' in canary  # onbeforetoggle / oncancel
+
+
+def test_phase_1_2_m3_attr_inject_variants_stay_inside_tag():
+    """attr-inject variants inject a handler WITHOUT closing the tag
+    (bare `"` + handler + `//` swallow-comment, no `>` escape). This is
+    a distinct mechanism from attr-breakout (which uses `">` to escape)."""
+    for vname in ("attr-inject-onerror-breakout",
+                  "attr-inject-onmouseover-breakout"):
+        cid, canary = dxadyn.make_canary(vname)
+        assert '"' in canary and '=1//' in canary
+        # explicitly NOT closing the tag
+        assert '">' not in canary
+
+
+def test_phase_1_2_m3_base_href_javascript_present():
+    """<base href=javascript:> rewrites every subsequent relative URL to
+    javascript: context - one of the highest-impact single-tag XSS."""
+    cid, canary = dxadyn.make_canary("base-href-javascript-breakout")
+    assert '<base href=javascript:' in canary
+
+
+def test_phase_1_2_m3_meta_refresh_uses_javascript_url():
+    cid, canary = dxadyn.make_canary("meta-refresh-breakout")
+    assert '<meta http-equiv=refresh' in canary
+    assert 'javascript:' in canary
+
+
+def test_phase_1_2_m3_svg_animate_uses_onbegin():
+    """<svg><animate onbegin=1> fires without user interaction."""
+    cid, canary = dxadyn.make_canary("svg-animate-onbegin-breakout")
+    assert '<animate onbegin=1>' in canary
+
+
+def test_phase_1_2_m3_audio_onerror_complements_video():
+    cid, canary = dxadyn.make_canary("audio-onerror-breakout")
+    assert '<audio><source onerror=1>' in canary
+
+
+def test_phase_1_2_m3_xmp_breakout_closes_xmp():
+    """<xmp> holds pre-formatted text; </xmp> resumes normal parsing."""
+    cid, canary = dxadyn.make_canary("xmp-breakout")
+    assert canary.startswith(cid) and '</xmp>' in canary
+
+
+def test_phase_1_2_m3_js_regex_breakout_uses_slash_terminator():
+    """JS regex literal terminator + semicolon returns to statement ctx."""
+    cid, canary = dxadyn.make_canary("js-regex-breakout")
+    assert '/;' in canary and '<dXsS>' in canary
+
+
+def test_phase_1_2_m3_js_comment_close_uses_star_slash():
+    cid, canary = dxadyn.make_canary("js-comment-close-breakout")
+    assert '*/' in canary
+
+
+def test_phase_1_2_m3_template_shadow_carries_script():
+    """<template shadowrootmode=open> declarative shadow DOM; some
+    sanitizers stop at the template boundary and leave inner script alive."""
+    cid, canary = dxadyn.make_canary("template-shadow-breakout")
+    assert 'shadowrootmode' in canary and '<script>' in canary
+
+
+def test_phase_1_2_m3_all_new_variants_still_upgrade_to_executable():
+    """Every m3 -breakout must ride the CT gate to executable severity."""
+    for vname in _M3_NEW_VARIANTS:
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_m3_waf_mutation_library_reached_18():
+    """Milestone 3 grows the mutation library from 13 to 18."""
+    assert len(dxadyn._WAF_MUTATIONS) >= 18
+    names = {name for name, _ in dxadyn._WAF_MUTATIONS}
+    assert names >= _M3_NEW_MUTATIONS
+
+
+def test_phase_1_2_m3_space_tab_mix_shape():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    st = [t for t in triples if t[0] == "space-tab-mix"][0]
+    assert '<dXsS \t>' in st[1] and '<dXsS \t>' in st[2]
+
+
+def test_phase_1_2_m3_triple_url_encode_shape():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    tu = [t for t in triples if t[0] == "triple-url-encode"][0]
+    assert '%25253CdXsS%25253E' in tu[1] and '%25253CdXsS%25253E' in tu[2]
+
+
+def test_phase_1_2_m3_percent_lowercase_uses_lowercase_hex():
+    """RFC allows lowercase %-hex; some WAFs anchor uppercase only."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    pl = [t for t in triples if t[0] == "percent-lowercase"][0]
+    assert '%3cdXsS%3e' in pl[1] and '%3cdXsS%3e' in pl[2]
+    # explicitly NOT the uppercase form (which the existing url-encode uses)
+    assert '%3CdXsS%3E' not in pl[1]
+
+
+def test_phase_1_2_m3_split_cmt_suffix_shape():
+    """Comment split AFTER the tag content, not inside the tag name."""
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    scs = [t for t in triples if t[0] == "split-cmt-suffix"][0]
+    assert '<dXsS<!---->>' in scs[1] and '<dXsS<!---->>' in scs[2]
+
+
+def test_phase_1_2_m3_cr_space_mix_shape():
+    triples = dxadyn._waf_mutations('dxaAAAA"<dXsS>', '<dXsS>')
+    cs = [t for t in triples if t[0] == "cr-space-mix"][0]
+    assert '<dXsS\r >' in cs[1] and '<dXsS\r >' in cs[2]
+
+
+def test_phase_1_2_m3_shape_count_reached_760():
+    """Post-milestone-3: 40 variants x 18 mutations grows to 40 x 19 = 760
+    canary shapes with --variants all --waf-bypass."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # milestone 3 floor: 40 * (1 + 18) = 760
+    assert len(out) >= 760
+
+
+def test_phase_1_2_m3_marker_diversity_stays_healthy():
+    """After 40 variants some intentional marker sharing exists (bare
+    <dXsS> across body/script-breakout/js-double-string/js-regex; */<dXsS>
+    across css-comment/js-comment-close) - keep the invariant at >= 75%."""
+    markers = [m for _, m in dxadyn.PAYLOAD_VARIANTS.values()]
+    unique = set(markers)
+    assert len(unique) >= int(0.75 * len(markers)), (
+        f"only {len(unique)}/{len(markers)} distinct markers"
+    )
+
+
+# --- Phase 1.2 milestone 4: 44 -> 50 variants (Phase 1.2 complete) ---------
+
+_M4_NEW_VARIANTS = {
+    "link-onerror-breakout",
+    "frame-onload-breakout",
+    "track-onerror-breakout",
+    "input-onauxclick-breakout",
+    "button-formtarget-breakout",
+    "input-onfocusin-breakout",
+}
+
+
+def test_phase_1_2_m4_variant_library_reached_50():
+    """Milestone 4 closes Phase 1.2 with the variant library at 50.
+    Mutation library stays at 18 (honest ceiling for transform-both-
+    compatible shapes; entity-encoded families need Phase 2 browser
+    detection which uses a different marker/canary transform)."""
+    assert len(dxadyn.PAYLOAD_VARIANTS) >= 50
+    assert set(dxadyn.PAYLOAD_VARIANTS) >= _M4_NEW_VARIANTS
+
+
+def test_phase_1_2_m4_link_onerror_present():
+    """<link rel=stylesheet href=x onerror=1>. Sanitizers focused on
+    script/img often miss <link> event handlers."""
+    cid, canary = dxadyn.make_canary("link-onerror-breakout")
+    assert '<link rel=stylesheet href=x onerror=1>' in canary
+
+
+def test_phase_1_2_m4_frame_onload_wraps_in_frameset():
+    """<frameset>...</frameset> is mandatory scope for <frame>."""
+    cid, canary = dxadyn.make_canary("frame-onload-breakout")
+    assert '<frameset>' in canary and '<frame onload=1>' in canary
+    assert '</frameset>' in canary
+
+
+def test_phase_1_2_m4_track_onerror_uses_video_wrapper():
+    """<track> needs a <video>/<audio> parent to be parsed."""
+    cid, canary = dxadyn.make_canary("track-onerror-breakout")
+    assert '<video>' in canary and '<track src=x onerror=1>' in canary
+
+
+def test_phase_1_2_m4_input_onauxclick_present():
+    """Middle/right-click event handler - rarely blocked by name."""
+    cid, canary = dxadyn.make_canary("input-onauxclick-breakout")
+    assert '<input onauxclick=1' in canary
+
+
+def test_phase_1_2_m4_button_formtarget_opens_new_tab():
+    """formtarget=_blank distinguishes this from form-formaction-breakout:
+    the exploit fires in a new tab, defeating iframe-sandbox."""
+    cid, canary = dxadyn.make_canary("button-formtarget-breakout")
+    assert 'formaction=javascript:1' in canary
+    assert 'formtarget=_blank' in canary
+
+
+def test_phase_1_2_m4_input_onfocusin_uses_autofocus():
+    """onfocusin bubbles; combined with autofocus fires without user
+    interaction, same trigger as input-autofocus-breakout but different
+    event handler name so blocklists focused on `onfocus` slip."""
+    cid, canary = dxadyn.make_canary("input-onfocusin-breakout")
+    assert 'onfocusin=1' in canary and 'autofocus' in canary
+
+
+def test_phase_1_2_m4_all_new_variants_upgrade_to_executable():
+    """All m4 -breakout variants must ride the CT gate to executable."""
+    for vname in _M4_NEW_VARIANTS:
+        _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
+                                        variant=vname)
+        assert sev == "executable", f"{vname} did not upgrade to executable"
+
+
+def test_phase_1_2_m4_shape_count_reached_full_dod():
+    """Post-m4: 50 variants x (1 + 18 mutations) = 950 canary shapes with
+    --variants all --waf-bypass. This closes the Phase 1.2 DoD.
+
+    Mutation library stopped at 18 by design - see the roadmap note on
+    transform-both saturation. Entity-encoded families arrive in Phase
+    2 where the browser detects the client-side double-decode."""
+    all_variants = list(dxadyn.PAYLOAD_VARIANTS)
+    out = list(dxadyn.make_canaries_for(all_variants, waf_bypass=True))
+    # DoD floor: 50 * (1 + 18) = 950
+    assert len(out) >= 950
+    assert len(dxadyn._WAF_MUTATIONS) == 18, (
+        "Mutation library grew past the documented ceiling of 18 - if this "
+        "was intentional, update the ceiling note in dxadyn.py"
+    )
+
+
+def test_phase_1_2_m4_marker_diversity_still_healthy_at_50():
+    """Same 75% floor across the wider library."""
+    markers = [m for _, m in dxadyn.PAYLOAD_VARIANTS.values()]
+    unique = set(markers)
+    assert len(unique) >= int(0.75 * len(markers)), (
+        f"only {len(unique)}/{len(markers)} distinct markers at 50 variants"
+    )
 
 
 # --- probe_form / probe_link now accept variants + waf_bypass ---------------

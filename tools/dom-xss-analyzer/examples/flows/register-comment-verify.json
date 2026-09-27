@@ -1,0 +1,28 @@
+{
+  "name": "register-then-post-comment-then-verify",
+  "description": "Canonical 3-step flow: create user, post canary as authenticated comment, GET a public page and verdict the reflection. Illustrates JSON body, JSONPath save, {var} substitution and the final verdict step.",
+  "steps": [
+    {
+      "name": "register",
+      "method": "POST",
+      "url": "http://127.0.0.1:{PORT}/api/register",
+      "content_type": "application/json",
+      "body": {"email": "u-{RND}@x.test", "password": "P@ss1234"},
+      "save": {"token": "$.token", "uid": "$.user.id"}
+    },
+    {
+      "name": "post-comment",
+      "method": "POST",
+      "url": "http://127.0.0.1:{PORT}/api/comments",
+      "content_type": "application/json",
+      "headers": {"Authorization": "Bearer {token}"},
+      "body": {"text": "{CANARY}", "author_id": "{uid}"}
+    },
+    {
+      "name": "verdict-comments-page",
+      "method": "GET",
+      "url": "http://127.0.0.1:{PORT}/comments/{uid}",
+      "verdict": true
+    }
+  ]
+}

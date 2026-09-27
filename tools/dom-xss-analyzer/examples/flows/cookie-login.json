@@ -1,0 +1,13 @@
+{
+  "name": "cookie-session-login",
+  "description": "Cookie-session auth flow. The login POST returns Set-Cookie(s); the module-level cookie jar keeps them, and every subsequent request through OPENER carries them. No 'auth' section needed. Use for classical PHP/Rails/Django form logins.",
+  "steps": [
+    {
+      "name": "login",
+      "method": "POST",
+      "url": "http://127.0.0.1:{PORT}/login",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": {"username": "admin", "password": "changeme"}
+    }
+  ]
+}

