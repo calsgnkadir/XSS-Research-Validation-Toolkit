@@ -2095,6 +2095,21 @@ def main():
             print(f"[dxadom] SPA static routes ({len(st)}):")
             for r in st[:20]:
                 print(f"    {r}")
+        # Phase 2.5: report auto-detected auth headers. When set, the
+        # operator can wire them into subsequent probes without knowing
+        # the target's CSRF-refresh URL up front (Phase 1.4).
+        auth = summary.get("auth_headers") or {}
+        if auth:
+            print(f"[dxadom] auto-detected auth headers ({len(auth)}):")
+            for name, value in list(auth.items())[:20]:
+                short = value if len(value) < 60 else value[:57] + "..."
+                print(f"    {name}: {short}")
+        # Optional: report request count for context (useful when auth is
+        # empty - tells the operator if the page even made any XHRs).
+        reqs = summary.get("requests") or []
+        if reqs and not auth:
+            print(f"[dxadom] captured {len(reqs)} XHR/fetch request(s) "
+                  f"but no known auth header family matched")
         if summary["console"]:
             print(f"[dxadom] console ({len(summary['console'])} msg):")
             for line in summary["console"][:10]:

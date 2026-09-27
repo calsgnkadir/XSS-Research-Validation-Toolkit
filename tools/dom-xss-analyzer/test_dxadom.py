@@ -872,3 +872,252 @@ def test_route_record_carries_timestamp(spa_server):
         summary = sess.visit(f"http://127.0.0.1:{port}/pushstate")
     r = summary["routes"]["runtime"][0]
     assert isinstance(r.get("ts"), (int, float)) and r["ts"] > 0
+
+
+# --- Phase 2.5: CSRF-in-header auto-detect ---------------------------------
+
+# extract_auth_headers unit tests (always run - pure pyfunc, no browser).
+
+def test_extract_auth_headers_empty_inputs():
+    assert dxadom.extract_auth_headers([]) == {}
+    assert dxadom.extract_auth_headers(None) == {}
+
+
+def test_extract_auth_headers_pulls_x_csrf_token():
+    """Classic Rails / Laravel SPA pattern."""
+    reqs = [{"method": "POST", "url": "/api/x",
+             "headers": {"Content-Type": "application/json",
+                         "X-CSRF-Token": "rails-abc123"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {"x-csrf-token": "rails-abc123"}
+
+
+def test_extract_auth_headers_pulls_x_xsrf_token_angular():
+    reqs = [{"method": "GET", "url": "/api/x",
+             "headers": {"X-XSRF-TOKEN": "angular-xyz"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {"x-xsrf-token": "angular-xyz"}
+
+
+def test_extract_auth_headers_pulls_django_csrftoken():
+    """Django REST framework uses X-CSRFToken (no dash before Token)."""
+    reqs = [{"method": "POST", "url": "/api/x",
+             "headers": {"X-CSRFToken": "django-tok"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {"x-csrftoken": "django-tok"}
+
+
+def test_extract_auth_headers_pulls_bearer_authorization():
+    reqs = [{"method": "GET", "url": "/api/users",
+             "headers": {"Authorization": "Bearer eyJ0...token"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {"authorization": "Bearer eyJ0...token"}
+
+
+def test_extract_auth_headers_pulls_api_key_family():
+    reqs = [{"method": "GET", "url": "/api/x",
+             "headers": {"X-API-Key": "key-1", "X-Auth-Token": "sess-2"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out.get("x-api-key") == "key-1"
+    assert out.get("x-auth-token") == "sess-2"
+
+
+def test_extract_auth_headers_pulls_x_requested_with():
+    """XMLHttpRequest marker - Rails / Django expect this on AJAX POSTs."""
+    reqs = [{"method": "POST", "url": "/api/x",
+             "headers": {"X-Requested-With": "XMLHttpRequest"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {"x-requested-with": "XMLHttpRequest"}
+
+
+def test_extract_auth_headers_case_insensitive_on_input():
+    """Headers arrive with arbitrary case; extractor normalises to
+    lowercase keys so downstream code has a single source of truth."""
+    reqs = [
+        {"method": "GET", "url": "/x",
+         "headers": {"AUTHORIZATION": "Bearer 1"}},
+        {"method": "GET", "url": "/y",
+         "headers": {"authorization": "Bearer 2"}},
+        {"method": "GET", "url": "/z",
+         "headers": {"AuThOrIzAtIoN": "Bearer 3"}},
+    ]
+    out = dxadom.extract_auth_headers(reqs)
+    # Every entry stored under the same lowercase key; last write wins.
+    assert list(out.keys()) == ["authorization"]
+    assert out["authorization"] == "Bearer 3"
+
+
+def test_extract_auth_headers_takes_most_recent_value_per_key():
+    """When the same header appears in multiple requests with different
+    values (token rotation), the extractor keeps the LAST observed value
+    so callers replaying the header hit a still-fresh token."""
+    reqs = [
+        {"method": "POST", "url": "/a",
+         "headers": {"X-CSRF-Token": "first"}},
+        {"method": "POST", "url": "/b",
+         "headers": {"X-CSRF-Token": "second"}},
+        {"method": "POST", "url": "/c",
+         "headers": {"X-CSRF-Token": "third"}},
+    ]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out["x-csrf-token"] == "third"
+
+
+def test_extract_auth_headers_ignores_unknown_header_names():
+    """A random `X-Custom-Foo` from user code does NOT get promoted to
+    auth on its own - the family list is the boundary."""
+    reqs = [{"method": "GET", "url": "/x",
+             "headers": {"X-Custom-Foo": "bar",
+                         "Content-Type": "application/json",
+                         "User-Agent": "Mozilla/5.0"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {}
+
+
+def test_extract_auth_headers_ignores_empty_values():
+    """A present-but-empty header shouldn't be replayed - the target's
+    server likely rejects an empty CSRF token, so we don't propose one."""
+    reqs = [{"method": "POST", "url": "/x",
+             "headers": {"X-CSRF-Token": "", "Authorization": ""}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {}
+
+
+def test_extract_auth_headers_handles_headers_missing_key():
+    """Requests without a 'headers' key at all shouldn't crash the
+    extractor - just skipped."""
+    reqs = [{"method": "GET", "url": "/x"}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {}
+
+
+def test_extract_auth_headers_mixed_families_all_present():
+    """A page that has CSRF + Bearer + Requested-With yields all three
+    keyed by their lowercase names."""
+    reqs = [{"method": "POST", "url": "/api/x",
+             "headers": {"X-CSRF-Token": "csrf-1",
+                         "Authorization": "Bearer 2",
+                         "X-Requested-With": "XMLHttpRequest"}}]
+    out = dxadom.extract_auth_headers(reqs)
+    assert out == {
+        "x-csrf-token": "csrf-1",
+        "authorization": "Bearer 2",
+        "x-requested-with": "XMLHttpRequest",
+    }
+
+
+# --- real-browser tests: page makes XHR/fetch, headers auto-detected -------
+
+class _XhrFixture(http.server.BaseHTTPRequestHandler):
+    """Serves an HTML page that fires an XHR with our auth headers set.
+    Also has an /api endpoint that receives the XHR - we don't need to
+    do anything on its side, we're just observing the request Chromium
+    makes."""
+    def log_message(self, format, *args):
+        return
+
+    def _send(self, body, status=200, ctype="text/html; charset=utf-8"):
+        b = body.encode() if isinstance(body, str) else body
+        self.send_response(status)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def do_GET(self):
+        if self.path == "/":
+            self._send('''<html><body><script>
+fetch("/api/whoami", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": "dxaCSRF-observed",
+        "Authorization": "Bearer dxaBEARER-observed",
+        "X-Requested-With": "XMLHttpRequest"
+    },
+    body: JSON.stringify({q: 1})
+});
+</script></body></html>''')
+        elif self.path == "/no-xhr":
+            self._send('<html><body>quiet</body></html>')
+        elif self.path == "/xhr-no-auth":
+            # XHR without any known auth header family - proves the
+            # extractor doesn't invent one.
+            self._send('''<html><body><script>
+fetch("/api/x", {
+    method: "GET",
+    headers: {"X-Custom-Only": "not-known"}
+});
+</script></body></html>''')
+        elif self.path.startswith("/api/"):
+            self._send('{"ok": 1}', ctype="application/json")
+        else:
+            self._send("<html>404</html>", status=404)
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", "0") or "0")
+        self.rfile.read(length)
+        self._send('{"ok": 1}', ctype="application/json")
+
+
+@pytest.fixture
+def xhr_server():
+    httpd = http.server.HTTPServer(("127.0.0.1", 0), _XhrFixture)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        yield port
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+@_skip
+def test_xhr_headers_captured_and_auth_extracted(xhr_server):
+    """End-to-end: a page fires XHR with X-CSRF-Token / Authorization /
+    X-Requested-With, our visit picks up all three from the auto-detected
+    auth_headers dict."""
+    port = xhr_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/")
+    auth = summary["auth_headers"]
+    assert auth.get("x-csrf-token") == "dxaCSRF-observed"
+    assert auth.get("authorization") == "Bearer dxaBEARER-observed"
+    assert auth.get("x-requested-with") == "XMLHttpRequest"
+
+
+@_skip
+def test_requests_list_captures_xhr_only_not_document(xhr_server):
+    """The main document + stylesheets/images/fonts are filtered out;
+    only script-initiated (xhr/fetch) requests land in the pool that
+    feeds auth extraction."""
+    port = xhr_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/")
+    urls = [r["url"] for r in summary["requests"]]
+    # The page's XHR to /api/whoami must be present
+    assert any(u.endswith("/api/whoami") for u in urls)
+    # The top-level navigation to `/` must NOT be in the pool
+    assert not any(u.rstrip("/").endswith(f"127.0.0.1:{port}") for u in urls)
+
+
+@_skip
+def test_page_with_no_xhr_yields_empty_auth_headers(xhr_server):
+    """The honest default: page made no XHR -> no auth headers detected."""
+    port = xhr_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/no-xhr")
+    assert summary["auth_headers"] == {}
+
+
+@_skip
+def test_xhr_with_only_unknown_headers_yields_empty_auth(xhr_server):
+    """XHR fired with only headers OUTSIDE the documented families ->
+    extractor returns {} rather than inventing an auth surface."""
+    port = xhr_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/xhr-no-auth")
+    # Custom header is captured in requests but not surfaced as auth.
+    assert summary["auth_headers"] == {}
+    assert len(summary["requests"]) >= 1
