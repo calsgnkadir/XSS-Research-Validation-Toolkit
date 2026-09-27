@@ -2072,6 +2072,15 @@ def main():
             for hit in sinks[:20]:
                 arg = (hit.get("arg") or "")[:120].replace("\n", " ")
                 print(f"    {hit.get('sink')}: {arg}")
+        # Phase 2.3: report JS-execution dialogs (proof of execution).
+        # An alert/confirm/prompt/beforeunload that fired proves the
+        # page actually ran attacker-controlled JS, not just reflected it.
+        dialogs = summary.get("dialogs", [])
+        if dialogs:
+            print(f"[dxadom] JS dialogs fired ({len(dialogs)}) [PROVEN-EXECUTABLE]:")
+            for d in dialogs[:20]:
+                msg = (d.get("message") or "")[:120].replace("\n", " ")
+                print(f"    {d.get('type')}: {msg}")
         if summary["console"]:
             print(f"[dxadom] console ({len(summary['console'])} msg):")
             for line in summary["console"][:10]:

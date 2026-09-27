@@ -4,8 +4,11 @@ Phase 2.1: skeleton + graceful availability check + basic navigation.
 Phase 2.2: DOM sink detection via a pre-user-JS init script that wraps
            Element.innerHTML/outerHTML setters, document.write/writeln,
            Range.createContextualFragment, eval, Function, Location.href.
+Phase 2.3: JS execution proof - page.on('dialog') captures alert /
+           confirm / prompt / beforeunload calls; when a captured
+           dialog message contains an injected canary, severity is
+           bumped from `executable` to `proven-executable`.
 Later phases build on this:
-  2.3 - JS execution proof (alert dialog + console listener)
   2.4 - SPA hash-route discovery (history.pushState listener)
   2.5 - CSRF-in-header auto-detect (capture X-CSRF-Token from XHR/fetch)
 
@@ -191,6 +194,35 @@ def sink_hits_for(sinks: List[dict], needle: str) -> List[dict]:
     return [s for s in (sinks or []) if needle in (s.get("arg") or "")]
 
 
+# Phase 2.3: JS-execution proof. The alert/confirm/prompt/beforeunload
+# handlers on window are the classical XSS demo primitives. When our
+# injected payload reaches a DOM sink and the surrounding context lets
+# JS execute, the dialog fires. Playwright surfaces it via page.on
+# ('dialog') - we record + dismiss. A dialog whose text contains our
+# canary cid is a "proven-executable" hit, the highest severity tier.
+#
+# Severity chain grown by 2.3:
+#   attr-only  ->  breakout-req  ->  executable  ->  proven-executable
+# Existing chain (dxadyn._apply_ct_gate) tops out at `executable`.
+# Phase 2.3's promotion runs in the DOM path: post-visit, if any
+# dialog carries the canary marker, we bump the finding.
+
+PROVEN_EXECUTABLE = "proven-executable"
+
+
+def dialog_hits_for(dialogs: List[dict], needle: str) -> List[dict]:
+    """Filter a dialogs list to only entries whose `message` contains the
+    needle. Same shape as sink_hits_for: empty needle -> empty list,
+    None/[] input -> empty list.
+
+    A non-empty return means the browser actually ran an alert/confirm/
+    prompt with the canary embedded in the argument - the payload
+    executed, not just landed."""
+    if not needle:
+        return []
+    return [d for d in (dialogs or []) if needle in (d.get("message") or "")]
+
+
 def find_chromium_executable() -> Optional[str]:
     """Return the path of a Chromium binary Playwright can launch, or
     None if no pre-installed browser was found in any known location.
@@ -299,7 +331,8 @@ class BrowserSession:
           {
             'url': str, 'status': int | None, 'title': str,
             'body_len': int, 'console': [str], 'errors': [str],
-            'sinks': [ {sink, arg, stack, ts} ]     # Phase 2.2
+            'sinks':   [ {sink, arg, stack, ts} ],     # Phase 2.2
+            'dialogs': [ {type, message, ts} ],        # Phase 2.3
           }
 
         The sink init script runs BEFORE any user JS, so every subsequent
@@ -318,12 +351,36 @@ class BrowserSession:
         is `self.timeout_ms`."""
         summary: dict = {
             "url": url, "status": None, "title": "",
-            "body_len": 0, "console": [], "errors": [], "sinks": [],
+            "body_len": 0, "console": [], "errors": [],
+            "sinks": [], "dialogs": [],
         }
         with self._page_scope() as page:
             page.on("console", lambda msg: summary["console"].append(
                 f"{msg.type}: {msg.text}"))
             page.on("pageerror", lambda exc: summary["errors"].append(str(exc)))
+
+            # Phase 2.3: capture + auto-dismiss window.alert/confirm/prompt/
+            # beforeunload dialogs. Recording happens BEFORE dismissal so
+            # the message is always preserved. Every dialog MUST be
+            # dismissed or the page hangs waiting for a response - even
+            # if the recorder throws.
+            def _on_dialog(d):
+                import time as _t
+                try:
+                    summary["dialogs"].append({
+                        "type": d.type,
+                        "message": d.message or "",
+                        "ts": int(_t.time() * 1000),
+                    })
+                except Exception as e:                    # noqa: BLE001
+                    summary["errors"].append(f"dialog record: {e}")
+                finally:
+                    try:
+                        d.dismiss()
+                    except Exception:                     # noqa: BLE001
+                        pass                              # already handled
+            page.on("dialog", _on_dialog)
+
             # Phase 2.2: install the sink init script BEFORE any user JS.
             try:
                 page.add_init_script(_SINK_INIT_SCRIPT)

@@ -432,3 +432,212 @@ def test_sink_arg_is_truncated_beyond_4k(sink_server):
     assert len(hit["arg"]) < 4200      # 4096 + suffix
     assert "truncated" in hit["arg"]
     assert "dxaBIG_" in hit["arg"]     # marker still present at head
+
+
+# --- Phase 2.3: JS execution proof (dialog capture) ------------------------
+
+def test_dialog_hits_for_filters_by_needle():
+    """Unit: filter helper returns only entries whose message contains
+    the needle. Mirrors sink_hits_for contract exactly."""
+    dialogs = [
+        {"type": "alert",   "message": "dxaCAFE fired"},
+        {"type": "confirm", "message": "unrelated"},
+        {"type": "prompt",  "message": "dxaCAFE too"},
+    ]
+    hits = dxadom.dialog_hits_for(dialogs, "dxaCAFE")
+    assert len(hits) == 2
+    assert all("dxaCAFE" in h["message"] for h in hits)
+
+
+def test_dialog_hits_for_empty_needle_returns_empty():
+    """Empty needle must NOT match every entry."""
+    assert dxadom.dialog_hits_for(
+        [{"type": "alert", "message": "x"}], "") == []
+
+
+def test_dialog_hits_for_none_and_empty_inputs():
+    assert dxadom.dialog_hits_for(None, "dxa") == []
+    assert dxadom.dialog_hits_for([], "dxa") == []
+
+
+def test_proven_executable_constant_exposed():
+    """Downstream code (dxadyn severity upgrade) reads this constant."""
+    assert dxadom.PROVEN_EXECUTABLE == "proven-executable"
+
+
+# --- real-browser dialog capture: fixture pages that fire dialogs ----------
+
+class _DialogHandler(http.server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        return
+
+    def _send(self, body):
+        b = body.encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def do_GET(self):
+        import urllib.parse
+        parsed = urllib.parse.urlparse(self.path)
+        qs = urllib.parse.parse_qs(parsed.query)
+        p = qs.get("p", ["dxaHIT"])[0]
+        import json as _j
+        s = _j.dumps(p)
+        if parsed.path == "/alert":
+            self._send(f'<html><body><script>alert({s});</script></body></html>')
+        elif parsed.path == "/confirm":
+            self._send(f'<html><body><script>confirm({s});</script></body></html>')
+        elif parsed.path == "/prompt":
+            self._send(
+                f'<html><body><script>prompt({s});</script></body></html>')
+        elif parsed.path == "/multi":
+            # Distinct markers so correlation can split them.
+            self._send(
+                '<html><body><script>'
+                'alert("dxaAAAA_first");'
+                'alert("dxaBBBB_second");'
+                'confirm("dxaCCCC_third");'
+                '</script></body></html>')
+        elif parsed.path == "/no-dialog":
+            self._send('<html><body><script>var x = 1;</script></body></html>')
+        elif parsed.path == "/onerror-alert":
+            # The classic XSS proof shape: <img onerror=alert(...)>.
+            # Different vector than a direct alert() call - fires from
+            # an event handler triggered by a broken image load.
+            self._send(
+                f'<html><body>'
+                f'<img src=does-not-exist onerror=\'alert({s})\'>'
+                f'</body></html>')
+        else:
+            self._send('<html>404</html>')
+
+
+@pytest.fixture
+def dialog_server():
+    httpd = http.server.HTTPServer(("127.0.0.1", 0), _DialogHandler)
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        yield port
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+@_skip
+def test_dialog_alert_captured(dialog_server):
+    """The canonical XSS proof: alert('marker') fires -> we record it."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(
+            f"http://127.0.0.1:{port}/alert?p=dxaALERT_marker")
+    dialogs = summary["dialogs"]
+    assert len(dialogs) == 1
+    assert dialogs[0]["type"] == "alert"
+    assert dialogs[0]["message"] == "dxaALERT_marker"
+
+
+@_skip
+def test_dialog_confirm_captured(dialog_server):
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(
+            f"http://127.0.0.1:{port}/confirm?p=dxaCONF_marker")
+    dialogs = summary["dialogs"]
+    assert len(dialogs) == 1
+    assert dialogs[0]["type"] == "confirm"
+    assert dialogs[0]["message"] == "dxaCONF_marker"
+
+
+@_skip
+def test_dialog_prompt_captured(dialog_server):
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(
+            f"http://127.0.0.1:{port}/prompt?p=dxaPROMPT_marker")
+    dialogs = summary["dialogs"]
+    assert len(dialogs) == 1
+    assert dialogs[0]["type"] == "prompt"
+    assert dialogs[0]["message"] == "dxaPROMPT_marker"
+
+
+@_skip
+def test_multiple_dialogs_all_captured(dialog_server):
+    """3 back-to-back dialogs on one page - all three must land in the
+    list, order preserved, each auto-dismissed so the page doesn't hang."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/multi")
+    dialogs = summary["dialogs"]
+    assert len(dialogs) == 3
+    messages = [d["message"] for d in dialogs]
+    assert messages == ["dxaAAAA_first", "dxaBBBB_second", "dxaCCCC_third"]
+    assert [d["type"] for d in dialogs] == ["alert", "alert", "confirm"]
+
+
+@_skip
+def test_page_with_no_dialogs_returns_empty_list(dialog_server):
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/no-dialog")
+    assert summary["dialogs"] == []
+
+
+@_skip
+def test_dialog_from_onerror_handler_captured(dialog_server):
+    """<img onerror=alert(...)> - the classical XSS PoC shape. Different
+    trigger path (event handler on broken image) than a direct alert()
+    call, so verifies the dialog listener catches indirect fires too."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(
+            f"http://127.0.0.1:{port}/onerror-alert?p=dxaONERR_marker")
+    dialogs = summary["dialogs"]
+    assert any(d["type"] == "alert"
+               and d["message"] == "dxaONERR_marker" for d in dialogs)
+
+
+@_skip
+def test_dialog_hits_for_correlates_canary_across_many_dialogs(dialog_server):
+    """The multi-dialog page fires three distinct markers. Correlation
+    must split them - proves that dialog_hits_for + real capture combine
+    correctly for canary attribution."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/multi")
+    dialogs = summary["dialogs"]
+    a = dxadom.dialog_hits_for(dialogs, "dxaAAAA")
+    b = dxadom.dialog_hits_for(dialogs, "dxaBBBB")
+    c = dxadom.dialog_hits_for(dialogs, "dxaCCCC")
+    assert len(a) == 1 and a[0]["type"] == "alert"
+    assert len(b) == 1 and b[0]["type"] == "alert"
+    assert len(c) == 1 and c[0]["type"] == "confirm"
+
+
+@_skip
+def test_dialog_record_carries_timestamp(dialog_server):
+    """Every captured dialog must have a numeric timestamp so downstream
+    tools can order alerts vs sink hits."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/alert?p=dxaTS")
+    d = summary["dialogs"][0]
+    assert isinstance(d.get("ts"), (int, float)) and d["ts"] > 0
+
+
+@_skip
+def test_dialog_capture_does_not_hang_on_unhandled_prompt(dialog_server):
+    """A prompt() waits for a value; without our dismiss() the page
+    would hang forever. Test succeeds iff visit() returns within the
+    default 15s timeout - we default to dismiss (returns null to JS)."""
+    port = dialog_server
+    with dxadom.BrowserSession() as sess:
+        summary = sess.visit(
+            f"http://127.0.0.1:{port}/prompt?p=dxaHANG_test")
+    # Reaching here at all proves no hang; then verify capture.
+    assert len(summary["dialogs"]) == 1
+    assert summary["errors"] == []

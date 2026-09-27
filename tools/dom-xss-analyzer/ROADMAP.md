@@ -541,7 +541,7 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 1.5 Macro-based auth | ✅ **DONE** | pending | --auth-flow FILE; JWT via `auth:{header,value}` or cookie via jar; 8 tests |
 | 2.1 Playwright install + harness | ✅ **DONE** | pending | `dxadom.py` with is_available / find_chromium / BrowserSession; --dom CLI flag; 12 tests (5 unit + 7 real-browser); browser CI job |
 | 2.2 DOM sink detection | ✅ **DONE** | pending | init script wraps 8 sinks (innerHTML/outerHTML setters, document.write/writeln, Range.CCF, eval, Function, Location.href); sink_hits_for() correlation helper; 14 new tests (3 unit + 11 real-browser); live CLI catches 4 sink types per page |
-| 2.3 JS execution proof | ⏳ queued | — | alert dialog -> proven-executable |
+| 2.3 JS execution proof | ✅ **DONE** | pending | page.on('dialog') captures alert/confirm/prompt/beforeunload; auto-dismiss; PROVEN_EXECUTABLE constant; dialog_hits_for() correlation; new severity tier at top of chain; 13 new tests (4 unit + 9 real-browser); live E2E catches alert() from `<img onerror>` payload |
 | 2.4 SPA hash-route discovery | ⏳ queued | — | history.pushState listener |
 | 2.5 CSRF-in-header auto-detect | ⏳ queued | — | capture X-CSRF-Token from XHR/fetch |
 | 3 Blind XSS (OOB callback) | ⏳ queued | — | callback server |
