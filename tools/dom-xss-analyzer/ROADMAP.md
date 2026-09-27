@@ -550,7 +550,10 @@ Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
 | 4 Sound static (tree-sitter AST) | ⏳ queued | — | 4-6 hafta, heaviest |
 | 5 Recon | ⏳ queued | — | subs + endpoints + dirs |
 | 6 Product polish | ⏳ queued | — | SARIF + plugin + GHA |
-| 7 CVE hunting campaign | ⏳ starts after Phase 2 | — | ongoing |
+| 7.0 CVE hunting infrastructure | ✅ **DONE** | pending | Docker adapter in `bench/run.py` (up/down + HTTP readiness poll + graceful skip when daemon absent); 3 docker-compose targets (Bludit / DVWA / WebGoat); `research/2026-09-27-cve-hunt-sprint/` sprint plan with target-selection rationale + disclosure discipline; 10 new bench tests |
+| 7.1 Systematic scan pass | ⏳ **NEXT** | — | run bot against docker corpus, log TP/FP/FN, write results.md |
+| 7.2 Real target hunt | ⏳ queued | — | Prestashop/OpenCart/niche CMS structured audits |
+| 7.3 Disclosure + writeup 12 | ⏳ queued | — | Patchstack submissions, honest outcomes doc |
 
 **Foundation (Phase 0):** 4/4 ✅
 **Recall boost (Phase 1):** 1/5 (concurrency done, payloads next)
