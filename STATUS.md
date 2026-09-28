@@ -8,7 +8,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | Bileşen | Durum | Sınır |
 |---|---|---|
 | Statik regex analizi | Çalışan aday üretici | Sanitizer hard-clear FN ve dosya/kapsam eksikleri açık |
-| HTTP reflected/stored/flow/auth | Çalışan prototip | JSON serializer, auth başarı kontrolü, rate/CSRF yarışları açık |
+| HTTP reflected/stored/flow/auth | Çalışan prototip | JSON serializer ve JSON Content-Type paylaşımı düzeltildi; auth, rate/CSRF ve genel oturum yarışları açık |
 | Payload üretimi | 50 varyant, 18 mutation | 950 üretim; cid normalize edilince 895 farklı dize; çalışan exploit sayısı değil |
 | DOM gözlemci | Deneysel | Bare visit; auth/stored proof entegrasyonu yok |
 | DOM dialog çıktısı | **Düzeltildi** | Normal dialog OBSERVED-DIALOG; proof üretmiyor |

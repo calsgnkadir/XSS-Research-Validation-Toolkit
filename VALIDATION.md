@@ -1,6 +1,18 @@
 # Doğrulama kaydı — 2026-09-28
 
-## Ana roadmap ve callback düzeltmesi — güncel teslim
+## R2 JSON gönderimi — güncel teslim
+
+- Tam paket: **420 passed, 36 skipped, 1 warning**, 69.03 saniye.
+- 36 browser testi otomatik Chrome keşfi nedeniyle atlandı; browser entegrasyonu tamamlandı sayılmıyor.
+- Yeni yedi regresyon senaryosu: 950 payload'ın gerçek submit fonksiyonunda JSON round-trip'i; iç içe değer/anahtar ve kontrol karakterleri; üç geçersiz JSON durumu; anahtar çakışması; iki eşzamanlı JSON isteğinde ortak header izolasyonu.
+- Eski quote testi elle escape algoritmasını kopyalamak yerine gerçek submit fonksiyonunun çıktısını kontrol ediyor.
+- Odaklı JSON + dinamik test çalışması 176 geçti; son quote testi değişikliği yukarıdaki tam pakette doğrulandı.
+- Kanıtlar: [test logu](audit/2026-09-28/pytest-json-transport.log), [JUnit](audit/2026-09-28/pytest-json-transport.xml).
+
+Önceki 413 test sonucu callback teslimine aittir. JSON request kodlaması düzeltildi;
+flow modundaki response/XSS sınıflandırması, auth ve CSRF açık kalır.
+
+## Ana roadmap ve callback düzeltmesi — önceki teslim
 
 - Callback/dinamik odaklı testler: **206 passed**.
 - Tüm paket: **413 passed, 36 skipped, 1 warning**, 103.58 saniye. Atlanan 36 test Windows browser keşfi nedeniyle; cache yazma uyarısı var.

@@ -93,11 +93,11 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 
 ## R2 — Gönderim ve oturumu güvenilir yap
 
-- [ ] Canary JSON nesnesine yerleştirilir ve JSON serializer kullanılır; mevcut 950 örneğin hepsi seçilen geçerli şablonda parse edilir, canary round-trip korunur.
+- [x] Canary çözülmüş JSON nesnesine yerleştirilip JSON serializer ile gönderilir; mevcut 950 örnek seçilen geçerli şablonda parse edilir ve canary round-trip korunur. İç içe değerler ve kontrol karakterleri testli; geçersiz şablon gönderilmez.
 - [ ] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir.
 - [ ] Auth sonrası hedefe özel oturum kontrolü yapılabilir; oturum rolü kaydedilir.
 - [ ] 0.5/s gibi fractional rate ilerler; sıfır/negatif için açık doğrulama vardır; test gerçek uzun uyku gerektirmez.
-- [ ] Request header'ları görev başına taşınır. Paralel gönderimlerde Content-Type karışmaz.
+- [x] JSON gönderiminin Content-Type ayarı istek başına taşınır; iki eşzamanlı JSON isteği ortak EXTRA_HEADERS'ı değiştirmez. Genel oturum/CSRF paylaşımı aşağıdaki ayrı maddede açık kalır.
 - [ ] Tek kullanımlık CSRF için refresh+submit ve gerekli stored submit+read işlemleri uygun şekilde sıralanır.
 - [ ] Hata, timeout, rate-limit ve engelleme; “bulgu yok” durumundan ayrılır.
 - [ ] R1/R2 negatif örnekleri bir sonraki sürümde zorunlu regresyondur.

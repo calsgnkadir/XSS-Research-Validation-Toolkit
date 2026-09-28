@@ -1495,17 +1495,18 @@ def test_submit_header_target_stores_canary_and_view_reflects():
     assert "X-Forwarded-Fake" not in dxadyn.EXTRA_HEADERS
 
 
-def test_submit_json_escapes_quote_in_canary_correctly():
+def test_submit_json_escapes_quote_in_canary_correctly(monkeypatch):
     """The canary contains a raw `"` — the json_body template must remain
     valid JSON after {CANARY} substitution."""
     tmpl = '{"tags":"{CANARY}"}'
     fake_cid = 'dxa12345678'
     fake_canary = fake_cid + '"<dXsS>'
-    # simulate what _submit_json does internally
-    safe = tmpl.replace("{CANARY}", fake_canary
-        .replace("\\", "\\\\").replace('"', '\\"'))
+    sent = []
+    monkeypatch.setattr(dxadyn, "_fetch_json", lambda url, body, method:
+                        (sent.append(body) or (200, url, "", "application/json")))
+    dxadyn._submit_json("http://127.0.0.1/test", tmpl, fake_canary)
     import json as _json
-    obj = _json.loads(safe)                                  # must not raise
+    obj = _json.loads(sent[0])                              # must not raise
     assert obj["tags"] == fake_canary
 
 

@@ -8,7 +8,7 @@ Amaç, sonuçlarını kanıtla açıklayan ve başka bir araştırmacının da �
 Playwright ve blind callback parçaları deneysel. Otomatik sınıflandırmaların
 tamamı doğrulanmış XSS anlamına gelmez. Yeni CVE kredisi bu arşivden doğrulanmış değildir.
 
-**Doğrulama — 28 Eylül 2026:** 413 test geçti, 36 browser testi otomatik
+**Doğrulama — 28 Eylül 2026:** 420 test geçti, 36 browser testi otomatik
 Chrome keşfi nedeniyle atlandı. Bu sayı tüm XSS sınıflarının doğrulandığı
 anlamına gelmez. Normal dialog ve JavaScript kapalı callback karşı örnekleri
 mevcut Chrome ile ayrıca kontrol edildi. [Test sonuçları ve kanıtlar](VALIDATION.md).
@@ -28,7 +28,7 @@ mevcut Chrome ile ayrıca kontrol edildi. [Test sonuçları ve kanıtlar](VALIDA
 | Bileşen | İşlev | Sınır |
 |---|---|---|
 | dxa.py | JS/TS, C#, PHP, Java ve Python için regex kaynak/sink adayları | Destek diller arasında eşit değil; AST/sound data-flow değil |
-| dxadyn.py | HTTP reflection/stored, form/JSON/header, auth/flow ve HTML rapor | Auth, JSON ve severity sorunları roadmap'te açık |
+| dxadyn.py | HTTP reflection/stored, form/JSON/header, auth/flow ve HTML rapor | JSON gönderimi düzeltildi; auth, flow sınıflandırması ve severity sorunları açık |
 | dxadom.py | Playwright ile sayfa/sink/dialog/route/header gözlemi | Gözlem≠canary ile ilişkili execution proof |
 | dxa_callback.py | Yerel callback kayıt ve sorgulama | Eşleşen istek resource-callback; JavaScript proof değil |
 | dxa2dyn.py | Statik adaydan dinamik parametre önerisi | Tam otomatik kaynak→sink ispatı değil |

@@ -29,3 +29,16 @@ Bir ağ isteği kaydı, JavaScript çalışması ve yetki sınırını aşan gü
 ## Sonraki iş
 
 R1 ortak şema ve gönderilmiş deneme kaydı; ardından R2 auth/JSON/rate ve R8 sanitizer düzeltmeleri. Bu kayıt yeni CVE veya tüm blind XSS desteği tamamlandı iddiası değildir.
+
+## Ek çalışma — GitHub tutarlılığı ve R2 JSON gönderimi
+
+GitHub'ın canlı README'si ile web arama aracının eski taranmış görünümü ayrıldı.
+README'ye test/skip özeti eklendi; denetim ve sonuç dosyaları depo içine taşındı,
+yerel dosya yollarına giden kanıt bağlantıları düzeltildi.
+
+R2'de JSON gövdesi önce çözümlenip canary değerleri yerleştiriliyor, sonra JSON
+serializer ile kodlanıyor. Denetimde bozulabilen kontrol karakterleri dahil 950
+deneme gerçek gönderim fonksiyonundan geçirilerek geri okunuyor. İç içe değerler,
+geçersiz şablonlar ve eşzamanlı Content-Type kullanımı ayrı testlerle denetlendi.
+Bu değişiklik yanıtın XSS olup olmadığına karar veren flow sınıflandırmasını düzeltmez.
+Güncel tam test sonucu VALIDATION.md'dedir; R1, auth ve CSRF işleri açık kalır.

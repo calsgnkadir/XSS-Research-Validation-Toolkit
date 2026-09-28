@@ -1469,25 +1469,34 @@ def _submit_form(target_url, target_field, extra_fields, canary,
 def _fetch_json(url, body_bytes, method="POST"):
     """Send a JSON body with Content-Type: application/json. Any HTTP method
     is accepted (POST default; PUT/PATCH/DELETE for REST endpoints)."""
-    saved = EXTRA_HEADERS.get("Content-Type")
-    EXTRA_HEADERS["Content-Type"] = "application/json"
-    try:
-        result = fetch(url, data=bytes(body_bytes), method=method)
-    finally:
-        if saved is None:
-            EXTRA_HEADERS.pop("Content-Type", None)
-        else:
-            EXTRA_HEADERS["Content-Type"] = saved
-    return result
+    return fetch(url, data=bytes(body_bytes), method=method,
+                 extra={"Content-Type": "application/json"})
 
 
 def _submit_json(target_url, json_template, canary, method="POST"):
     """Send `json_template` (with `{CANARY}` substituted) to target_url as
     application/json. Method defaults to POST; REST APIs often need PUT/PATCH,
     which callers pass through. Returns (submit_status, landing_url)."""
-    safe = json_template.replace("{CANARY}", canary
-        .replace("\\", "\\\\").replace('"', '\\"'))
-    st, final, _, _ct = _fetch_json(target_url, safe.encode("utf-8"), method=method)
+    def substitute(value):
+        if isinstance(value, str):
+            return value.replace("{CANARY}", canary)
+        if isinstance(value, list):
+            return [substitute(item) for item in value]
+        if isinstance(value, dict):
+            result = {}
+            for key, item in value.items():
+                replaced_key = substitute(key)
+                if replaced_key in result:
+                    raise ValueError("JSON canary substitution produced duplicate keys")
+                result[replaced_key] = substitute(item)
+            return result
+        return value
+
+    # Work on decoded strings, then let the JSON encoder escape all control
+    # characters. Reject invalid templates before any HTTP request is made.
+    payload = substitute(json.loads(json_template))
+    body = json.dumps(payload, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    st, final, _, _ct = _fetch_json(target_url, body, method=method)
     return st, final
 
 

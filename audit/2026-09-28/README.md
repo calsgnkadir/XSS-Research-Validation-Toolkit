@@ -9,6 +9,7 @@ ve [VALIDATION](../../VALIDATION.md) kullanılır.
 - `audit-checks.json`, `browser-checks.json`: başlangıç karşı örnekleri.
 - `pytest-development.*`: ilk dialog düzeltmesi — 394 passed, 36 skipped.
 - `pytest-master-roadmap.*`: callback düzeltmesi — 413 passed, 36 skipped.
+- `pytest-json-transport.*`: JSON gönderimi düzeltmesi — 420 passed, 36 skipped.
 - `pytest-callback-focused.log`: odaklı 206 test.
 - `dom-dialog-fix-browser.json`, `resource-callback-fix-browser.json`: yerel Chrome kontrolleri.
 - `resource-callback-report.html`: düzeltilmiş rapor örneği (GitHub kaynak görünümü; indirip tarayıcıda açılabilir).
