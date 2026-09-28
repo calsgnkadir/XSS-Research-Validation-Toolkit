@@ -1,0 +1,5 @@
+{
+  "passed": true,
+  "exit_code": 0,
+  "output": "[dxadom] OK: C:/Program Files/Google/Chrome/Application/chrome.exe\n[dxadom] visited http://127.0.0.1:55896/notice status=200 title='' body_len=85\n[dxadom] JS dialogs observed (1) [OBSERVED-DIALOG]:\n[dxadom] No scanner-injected canary was verified; these dialogs do not establish XSS.\n    alert: Welcome to the demo\n"
+}

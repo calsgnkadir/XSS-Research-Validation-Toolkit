@@ -1,0 +1,156 @@
+{
+  "browser_version": "154.0.8037.58",
+  "eval_without_hook": {
+    "console": [
+      "LOCAL 42"
+    ],
+    "errors": []
+  },
+  "location_descriptor": {
+    "own": true,
+    "ownConfigurable": false,
+    "prototype": false
+  },
+  "html_mutations": {
+    "case": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "split-cmt": {
+      "tags": [
+        "D<!----"
+      ],
+      "text": "XsS>"
+    },
+    "whitespace": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "url-encode": {
+      "tags": [],
+      "text": "%3CdXsS%3E"
+    },
+    "tab-in-tag": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "newline-in-tag": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "slash-separator": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "double-url-encode": {
+      "tags": [],
+      "text": "%253CdXsS%253E"
+    },
+    "cr-in-tag": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "form-feed-in-tag": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "crlf-in-tag": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "null-byte-tag": {
+      "tags": [
+        "DXSS%00"
+      ],
+      "text": ""
+    },
+    "backslash-tag": {
+      "tags": [
+        "DXSS\\"
+      ],
+      "text": ""
+    },
+    "space-tab-mix": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    },
+    "triple-url-encode": {
+      "tags": [],
+      "text": "%25253CdXsS%25253E"
+    },
+    "percent-lowercase": {
+      "tags": [],
+      "text": "%3cdXsS%3e"
+    },
+    "split-cmt-suffix": {
+      "tags": [
+        "DXSS<!----"
+      ],
+      "text": ">"
+    },
+    "cr-space-mix": {
+      "tags": [
+        "DXSS"
+      ],
+      "text": ""
+    }
+  },
+  "image_with_javascript_disabled": {
+    "callback_count": 1
+  },
+  "eval_with_hook": {
+    "console": [],
+    "errors": [
+      "localSecret is not defined"
+    ],
+    "sinks": [
+      {
+        "sink": "eval",
+        "arg": "localSecret",
+        "stack": "Error\n    at record (<anonymous>:18:17)\n    at window.eval (<anonymous>:80:33)\n    at f (http://127.0.0.1:49836/eval:1:62)\n    at http://127.0.0.1:49836/eval:1:85",
+        "ts": 1790585904210
+      }
+    ],
+    "dialogs": []
+  },
+  "location_with_hook": {
+    "console": [],
+    "errors": [],
+    "sinks": [],
+    "dialogs": []
+  },
+  "delayed_with_hook": {
+    "console": [],
+    "errors": [],
+    "sinks": [],
+    "dialogs": []
+  },
+  "frame_with_hook": {
+    "console": [],
+    "errors": [],
+    "sinks": [],
+    "dialogs": []
+  },
+  "innocent_dialog_cli": {
+    "exit": 0,
+    "output": "[dxadom] OK: C:/Program Files/Google/Chrome/Application/chrome.exe\n[dxadom] visited http://127.0.0.1:49836/notice status=200 title='' body_len=85\n[dxadom] JS dialogs fired (1) [PROVEN-EXECUTABLE]:\n    alert: Welcome to the demo\n"
+  }
+}

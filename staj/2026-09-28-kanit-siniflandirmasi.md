@@ -18,8 +18,8 @@ CLI help, durum mesajı ve HTML raporu aynı anlamı taşıyacak şekilde günce
 
 - Odaklı callback + dinamik test paketi: 206 passed.
 - Normal HTTP istemcisiyle callback: browser veya JS olmadan resource-callback; test paketi içinde.
-- Chrome 154.0.8037.58, JavaScript kapalı: img yüklemesi bir callback oluşturdu; sonuç resource-callback. [JSON kayıt](../../xss-audit/resource-callback-fix-browser.json).
-- [Örnek HTML raporu](../../xss-audit/resource-callback-report.html) execution veya başka kullanıcı iddiası içermiyor.
+- Chrome 154.0.8037.58, JavaScript kapalı: img yüklemesi bir callback oluşturdu; sonuç resource-callback. [JSON kayıt](../audit/2026-09-28/resource-callback-fix-browser.json).
+- [Örnek HTML raporu](../audit/2026-09-28/resource-callback-report.html) execution veya başka kullanıcı iddiası içermiyor.
 - Tam test paketi sonucu [VALIDATION](../VALIDATION.md) içinde; atlanan testler başarı gibi sayılmaz.
 
 ## Öğrenilen

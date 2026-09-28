@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "browser_version": "154.0.8037.58",
+  "javascript_enabled": false,
+  "callback_count": 1,
+  "matched_findings": 1,
+  "severity": "resource-callback",
+  "evidence_level": "resource-callback"
+}

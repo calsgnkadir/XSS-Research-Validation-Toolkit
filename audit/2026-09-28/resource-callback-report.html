@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dxadyn report - local JS-disabled fixture</title>
+<style>
+ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:28px}
+ h1{font-size:20px;margin:0 0 4px} .sub{color:#8b949e;font-size:13px;margin-bottom:12px}
+ .stats{display:flex;gap:14px;margin:18px 0 12px;flex-wrap:wrap}
+ .stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 16px;min-width:110px}
+ .stat .n{font-size:22px;font-weight:700} .stat .l{color:#8b949e;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+ .meta{list-style:none;padding:10px 14px;margin:0 0 18px;background:#161b22;border:1px solid #30363d;border-radius:8px;font-size:13px}
+ .meta li{margin:2px 0} .meta b{color:#8b949e;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+ table{width:100%;border-collapse:collapse;font-size:13px}
+ th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #21262d;vertical-align:top}
+ th{color:#8b949e;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+ .badge{color:#0d1117;font-weight:700;font-size:11px;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+ .mono{font-family:ui-monospace,Consolas,monospace} .muted{color:#8b949e}
+ .small{font-size:11px} .url{word-break:break-all;color:#79c0ff}
+ .warn{background:#3d1d0a;border:1px solid #d29922;color:#e6edf3;padding:8px 12px;border-radius:6px;margin:14px 0;font-size:12px}
+ footer{color:#8b949e;font-size:12px;margin-top:22px}
+</style>
+<h1>dxadyn - dynamic XSS report</h1>
+<div class="sub">target: <span class="mono">local JS-disabled fixture</span> &middot; mode: <span class="mono">regression</span> &middot; generated: 2026-09-28 17:20</div>
+
+<div class="stats">
+ <div class="stat"><div class="n">1</div><div class="l">unique candidates</div></div>
+ <div class="stat"><div class="n" style="color:#f85149">0</div><div class="l">executable</div></div>
+ <div class="stat"><div class="n" style="color:#d29922">0</div><div class="l">needs breakout</div></div>
+ <div class="stat"><div class="n" style="color:#58a6ff">1</div><div class="l">resource callbacks</div></div>
+</div>
+<div class='blind-block'><h2 style='margin:22px 0 6px;font-size:15px;color:#58a6ff'>Resource callbacks observed (1)</h2><div class='sub'>A matching HTTP request was recorded. This does not establish JavaScript execution, storage, or another user's session. User-Agent, IP and Referer are request metadata, not proof of identity.</div><table style='margin-top:6px'><tr><th>variant</th><th>cid</th><th>hit at</th><th>from ip</th><th>user-agent</th><th>referer</th></tr><tr><td class='mono small'>blind-img</td><td class='mono'>dxaNoJavaScriptRegression</td><td class='mono small'>2026-09-28 17:20:45</td><td class='mono small'>127.0.0.1</td><td class='mono small muted'>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</td><td class='mono small url'>-</td></tr></table></div>
+<div class='warn'>EXECUTABLE = a raw &lt;img onerror&gt; payload runs as-is (body/free context). NEEDS-BREAKOUT = the value survives raw but is inside &lt;title&gt; / &lt;script&gt; / an attribute value, so a follow-on payload (e.g. &lt;/title&gt; or a &quot; breakout) is required for real execution.</div>
+<table>
+ <tr><th>severity</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
+ <tr><td><span class='badge' style='background:#58a6ff'>RESOURCE-CALLBACK</span></td><td class='mono small'>body</td><td><span class='badge' style='background:#f85149'>unencoded</span></td><td class='mono'>reflected</td><td class='mono'>POST</td><td class='mono'>message</td><td class='mono muted url'>http://127.0.0.1/fixture</td><td class='muted small'>HTTP 200</td></tr>
+</table>
+<footer>dxadyn - deterministic dynamic XSS verifier. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>

@@ -7,7 +7,7 @@ STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.
 ## Kapsam ve çalışma düzeni
 
 Kaynaklar: ZIP'teki 76 dosyanın denetimi, iki eski sohbet metni ve kullanıcının son öncelikleri.
-[Denetim raporu](../xss-audit/DENETIM-RAPORU-TR.md) başlangıç bulgularını,
+[Denetim raporu](audit/2026-09-28/DENETIM-RAPORU-TR.md) başlangıç bulgularını,
 [dosya–görev eşlemesi](DOSYA-KAPSAM.md) bütün orijinal dosyaların hangi işte takip edildiğini gösterir.
 Orijinal ZIP ve denetim kopyası korunur. Mevcut çalışma alanı `xss-bot-work`.
 ZIP dışındaki resmî staj PDF'leri önceki kapsam kararı uyarınca dahil değildir.

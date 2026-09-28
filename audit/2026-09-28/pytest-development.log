@@ -1,0 +1,50 @@
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+.................sssss...sssssssssss....sssssssss..........sssssss...... [ 50%]
+.......ssss............................................................. [ 66%]
+........................................................................ [ 83%]
+......................................................................   [100%]
+============================== warnings summary ===============================
+bench/test_bench.py::test_end_to_end_runner_on_mock_corpus
+  [workspace]\xss-bot-work\bench\run.py:347: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "run_at": _dt.datetime.utcnow().isoformat() + "Z",
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:134: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:145: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:154: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:164: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:173: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:304: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:316: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:327: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:338: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:349: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:359: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:369: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:379: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:387: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:403: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:419: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:531: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:544: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:556: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:568: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:582: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:590: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:604: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:621: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:632: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:795: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:809: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:819: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:830: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:844: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:855: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:868: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:1076: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:1090: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:1105: chromium binary not found in any known location - run `playwright install chromium`
+SKIPPED [1] tools\dom-xss-analyzer\test_dxadom.py:1114: chromium binary not found in any known location - run `playwright install chromium`
+394 passed, 36 skipped, 1 warning in 68.83s (0:01:08)

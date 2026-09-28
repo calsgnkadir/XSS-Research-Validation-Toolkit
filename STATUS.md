@@ -1,6 +1,9 @@
 # Doğrulanmış durum
 
-28 Eylül 2026. Güncel plan: [ROADMAP](ROADMAP.md). Bu durum ZIP'ten oluşturulan yerel geliştirme kopyasına aittir; GitHub/commit/push doğrulaması değildir.
+28 Eylül 2026. Güncel plan: [ROADMAP](ROADMAP.md). ZIP üzerinden başlayan düzeltmeler
+`2703d1a` ile GitHub main dalına aktarıldı. Canlı GitHub API'si güncel README'yi
+doğruladı; web arama sonuçları eski taranmış metni gösterebilir. Bu durum yeni
+CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 
 | Bileşen | Durum | Sınır |
 |---|---|---|

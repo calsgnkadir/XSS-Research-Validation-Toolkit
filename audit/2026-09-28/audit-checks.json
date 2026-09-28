@@ -1,0 +1,99 @@
+{
+  "original_files": 76,
+  "python_test_functions": 424,
+  "payloads": {
+    "variants": 50,
+    "mutations": 18,
+    "generated": 950,
+    "unique_bytes_without_cid": 895,
+    "variants_with_no_mutation_effect": [
+      "attr-inject-onerror-breakout",
+      "attr-inject-onmouseover-breakout"
+    ]
+  },
+  "invalid_json_shapes": {
+    "count": 336,
+    "examples": [
+      "body/tab-in-tag",
+      "body/newline-in-tag",
+      "body/cr-in-tag",
+      "body/form-feed-in-tag",
+      "body/crlf-in-tag",
+      "body/space-tab-mix",
+      "body/cr-space-mix",
+      "title-breakout/tab-in-tag",
+      "title-breakout/newline-in-tag",
+      "title-breakout/cr-in-tag",
+      "title-breakout/form-feed-in-tag",
+      "title-breakout/crlf-in-tag"
+    ]
+  },
+  "static_taint": {
+    "known_safe_plus_raw": [
+      "q"
+    ],
+    "identity_sanitizer": [
+      "q"
+    ],
+    "raw_control": [
+      "out",
+      "q"
+    ]
+  },
+  "failed_auth": {
+    "authenticated": true,
+    "header": [
+      "Authorization",
+      "Bearer None"
+    ],
+    "error": null
+  },
+  "json_flow_cli": {
+    "exit": 0,
+    "output": "[dxadyn] flow 'unnamed' ran 1 step(s)\n  [EXECUTABLE] verdict at step1: http://127.0.0.1/json (HTTP 200, marker survived raw)\n"
+  },
+  "http_only_proof": {
+    "promoted": 1,
+    "severity": "proven-blind",
+    "javascript_executed": false
+  },
+  "hidden_blind_callback": {
+    "cid": "dxab2990437",
+    "callback_hits": 1,
+    "findings": 0,
+    "promoted": 0
+  },
+  "benchmark_partial_recall": {
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  "benchmark_crash": {
+    "reflected": 0,
+    "stored": 0,
+    "dom": 0,
+    "wall": 0.1,
+    "ok": true,
+    "raw_tail": "Traceback: scanner crashed"
+  },
+  "benchmark_json_as_xss": {
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  "rate_half_request_per_second": {
+    "still_waiting_after_simulated_seconds": 10.0,
+    "capacity": 0.5,
+    "tokens": 0.5
+  },
+  "report_rows": {
+    "reports/2026-09-26-v310-live/A-hotel-platform-25shape.html": 25,
+    "reports/2026-09-26-v310-live/B1-mahrem-static.html": 78,
+    "reports/2026-09-26-v310-live/B2-mahrem-reflected.html": 1,
+    "reports/2026-09-26-v310-live/C1-wallet-reflected.html": 1,
+    "reports/2026-09-26-v310-live/C2-wallet-stored-25shape.html": 25,
+    "reports/2026-09-26-v310-live/D1-bludit-body-breakout-req.html": 1,
+    "reports/2026-09-26-v310-live/D2-bludit-title-breakout-EXECUTABLE.html": 1,
+    "tools/dom-xss-analyzer/dxadyn-report-preview.html": 1
+  }
+}

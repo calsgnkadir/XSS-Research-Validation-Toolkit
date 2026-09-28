@@ -9,9 +9,10 @@
 - Canary id'si eksik/boş/farklı olduğunda eşleştirme reddedilir; HTTP yöntemi veya payload ailesi JS yürütme kanıtı sayılmaz.
 - CLI help ve HTML resource-callback anlamını taşıyor; HTML'de istek metadata'sı escape ediliyor.
 
-Kanıtlar: [tam test logu](../xss-audit/pytest-master-roadmap.log), [JUnit](../xss-audit/pytest-master-roadmap.xml),
-[odaklı test logu](../xss-audit/pytest-callback-focused.log), [Chrome sonucu](../xss-audit/resource-callback-fix-browser.json),
-[Chrome test scripti](../xss-audit/verify_resource_callback_fix.py), [örnek rapor](../xss-audit/resource-callback-report.html).
+Kanıtlar: [tam test logu](audit/2026-09-28/pytest-master-roadmap.log), [JUnit](audit/2026-09-28/pytest-master-roadmap.xml),
+[odaklı test logu](audit/2026-09-28/pytest-callback-focused.log), [Chrome sonucu](audit/2026-09-28/resource-callback-fix-browser.json),
+[örnek rapor](audit/2026-09-28/resource-callback-report.html). Otomatik regresyonlar
+`tools/dom-xss-analyzer/test_blind_correlation.py` içindedir.
 
 Sınır: bu teslimde gerçek canary execution motoru veya yansımasız kalıcı blind takip yapılmadı. Callback gözlemi ile açıklık/etki ayrı tutuldu; ortak kanıt şeması henüz tamamlanmadı.
 
@@ -28,16 +29,18 @@ Dar regresyon: `python -m pytest tools/dom-xss-analyzer/test_dom_cli_evidence.py
 
 Bu çalışma alanındaki ham kanıtlar:
 
-- [Tam test logu](../xss-audit/pytest-development.log)
-- [JUnit sonucu](../xss-audit/pytest-development.xml)
-- [Gerçek tarayıcı sonucu](../xss-audit/dom-dialog-fix-browser.json)
-- [Yerel tarayıcı kontrol scripti](../xss-audit/verify_dom_dialog_fix.py)
+- [Tam test logu](audit/2026-09-28/pytest-development.log)
+- [JUnit sonucu](audit/2026-09-28/pytest-development.xml)
+- [Gerçek tarayıcı sonucu](audit/2026-09-28/dom-dialog-fix-browser.json)
+- Otomatik CLI regresyonları: `tools/dom-xss-analyzer/test_dom_cli_evidence.py`.
 
-Bu göreli bağlantılar yerel geliştirme klasörü yanındaki denetim klasörünü gösterir;
-depo tek başına yayımlanmadan önce ilgili kanıtlar kalıcı repo/CI artifact konumuna taşınmalıdır.
+Bu bağlantılar depodaki tarihsel kanıtlara gider. Yerel kullanıcı dizinleri paylaşım
+kopyalarında maskelendi; test sonuçları değiştirilmedi. Eski denetim scriptlerinin
+tümü bu kanıt paketine dahil değildir; paket açıklaması `audit/2026-09-28/README.md` içindedir.
 
 ## İlk teslimin sınırı (tarihsel)
 
 Yalnız bare-visit dialog çıktısındaki yanlış proof iddiası düzeltildi. Yeni execution doğrulama motoru eklenmedi. Blind korelasyon, breakout severity, auth, JSON ve benchmark kusurları açık; ROADMAP'te ayrı kabul koşulları var.
 
-Orijinal ZIP ve denetim kaynak kopyası korunmuştur. Çalışma klasörü ZIP'ten türediği için Git geçmişi içermez; commit/push veya yayımlanmış sürüm iddiası yoktur.
+Orijinal ZIP ve denetim kaynak kopyası korunmuştur. İlk düzeltmeler `2703d1a`
+ile Git geçmişine ve GitHub main dalına aktarıldı. Sürüm etiketi oluşturulmadı.
