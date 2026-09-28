@@ -1,3 +1,5 @@
+> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+
 # Three HIGH to one: a precision journey on real code
 
 > **TL;DR** — After [Writeup 08](08-what-does-not-shout-matters.md) added Java

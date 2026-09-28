@@ -1,0 +1,590 @@
+> Historical plan and unverified completion claims. Superseded by the [current roadmap](../../ROADMAP.md) and [status](../../STATUS.md).
+
+# dxa/dxadyn — Professional Scanner Roadmap
+
+**Started:** 2026-09-26
+**Target:** OSS XSS scanner competitive with DalFox / XSStrike at their level;
+**not** a Burp Scanner replacement (that's a $30k/yr commercial product with
+30+ engineers behind it).
+
+**Honest ceiling:** Even at 100% of this roadmap, the tool won't have Burp's
+recon breadth, active/passive scan surface for non-XSS classes, session
+handling maturity, or extension marketplace. What it *will* have: XSS-class
+depth (static + dynamic + DOM + blind) with a precision discipline most OSS
+scanners skip.
+
+---
+
+## Guiding principles (do not violate)
+
+1. **Precision over recall.** A finding the tool reports must be defensible.
+   False-positive rate is the metric that separates hobby tools from ones
+   people actually use. Every recall boost lands with a precision test.
+2. **Zero-dep stays default; heavy deps become opt-in.** Playwright, tree-sitter,
+   etc. install with `pip install dxa[browser]` etc. Core install remains stdlib.
+3. **Every phase ships a writeup.** Portfolio value is the trail, not the summit.
+4. **Tests before merge.** Every phase adds pytest cases; CI stays green.
+5. **Turkish/local authorized targets only** — Juice Shop, Bludit lab, PortSwigger
+   Academy, own projects, bug-bounty programs with explicit scope.
+
+---
+
+## Phase overview
+
+| Phase | Focus | Time | Ships | Depends on |
+|---|---|---|---|---|
+| **0** | Foundation cleanup | 2-3 gün | Quick-win fixes, honesty logging | — |
+| **0.5** | Benchmark harness | 3-4 gün | DalFox/XSStrike vs dxadyn on 20-target corpus | 0 |
+| **1** | Recall boost (no browser) | 2 hafta | Concurrency, payload library, workflow chaining, macro auth | 0 |
+| **2** | Browser layer (Playwright, opsiyonel dep) | 3 hafta | DOM XSS, JS exec proof, SPA discovery, CSRF rotation | 1 |
+| **3** | Blind XSS (out-of-band callback) | 1 hafta | Callback server + payload correlation | 1 |
+| **4** | Sound static (tree-sitter AST) | 4-6 hafta | AST parser, cross-file taint, real sanitize semantics | 0 |
+| **5** | Recon | 1-2 hafta | Subdomain enum, endpoint discovery, wordlist | 0 |
+| **6** | Product polish | 1-2 hafta | SARIF, plugin API, config file, GH Action | 1-5 |
+| **7** | CVE hunting campaign | ongoing | Novel CVEs on under-audited OSS using the bot | 1-4 |
+
+**Full-time toplam:** ~14-16 hafta (Phase 0-6). Phase 7 sürekli.
+
+**Part-time gerçekçi projeksiyon:**
+- 2 gün/hafta (haftada ~16 saat) → **9-11 ay**
+- Akşam/hafta sonu (~8 saat/hafta) → **14-18 ay**
+
+Full-time estimate iyimserdir: DOM XSS + tree-sitter AST tipik olarak
+ilan edilen sürenin 1.3-1.5× ını alır. Part-time bunun üstüne
+context-switch tax'ı ekler.
+
+---
+
+## Phase 0 — Foundation cleanup (2-3 gün)
+
+**Goal:** Fix easy gaps that stayed open through v3.10 so later phases don't
+build on a wobbly base.
+
+### 0.1 Sink suppression table widening (30 dk)
+- Add rules: `(jquery-html, innerHTML)`, `(react-dangerous, innerHTML)`,
+  `(twig-raw, echo)`, `(mustache-triple, template)`
+- Test: every rule with `test_sink_dedup_new_family_<name>` fixture
+- **DoD:** static findings on hotel-platform stay 1 HIGH; no regression on
+  Bludit demo.
+
+### 0.2 False-negative discipline (2-3 saat)
+- New `--verbose` flag: when a submit is rejected (400/403/rate-limit),
+  the finding row prints `skipped: <reason>` instead of silent
+- New `--waf-log`: if a canary is blocked (POST returns 400 or 403 with
+  "blocked" in body), log the payload and the reason
+- Test: mock server returning 403 → tool prints "skipped: waf-block"
+- **DoD:** "no reflections found" turns into "N reflections found, K
+  payloads blocked" — silence stops being ambiguous.
+
+### 0.3 Sanitize heuristic tightening (1-2 saat)
+- Downgrade sanitize-hint from a strict signal to a weighted score
+- If `sanitize()` is followed inline by `+ untrustedString` on same taint path,
+  DON'T squelch (the sanitized value was discarded)
+- Test fixture: `sanitizeButKeepsHtml(x) + userInput` → HIGH stays HIGH
+- **DoD:** the pathological case in [writeup 09](../../writeups/09-three-high-to-one-a-precision-journey.md)
+  stays green; false-negative on the new fixture drops.
+
+### 0.4 Cross-file basic taint (4-5 saat)
+- Given a project root, scan every file once, build a `{function → returns_tainted}` map
+- Second pass: if a sink argument is `foo(x)` and `foo` is in the map as tainted, mark tainted
+- No AST yet; regex-based; scope limited to same-package
+- Test: two-file fixture `util.py` (returns raw request) + `app.py` (calls util.func in innerHTML)
+- **DoD:** Bludit and Juice Shop each pick up one more finding they missed before.
+
+**Phase 0 writeup:** *"The gaps between the writeups: hardening the tool
+between versions"* — sink dedup + verbose skip logging + cross-file taint.
+
+---
+
+## Phase 0.5 — Benchmark harness (3-4 gün)
+
+**Goal:** Stop shipping "feels faster / catches more" claims. Every future
+phase lands with a delta against DalFox and XSStrike on the same corpus.
+Without this, product claims are unverifiable.
+
+### 0.5.1 Reference corpus (1-2 gün)
+- Build `bench/targets.yaml`: 20 targets total — 5 known-vulnerable (Bludit
+  3.16.2, DVWA, XSS-game.appspot, Juice Shop, WebGoat), 5 known-clean
+  (own hardened projects), 10 real OSS with recent CVEs (pin versions)
+- Each target: docker-compose spec, expected findings JSON, license note
+- Test: `bench/setup.sh` brings every target up
+
+### 0.5.2 Runner + report (1-2 gün)
+- `bench/run.py` — runs dxadyn, DalFox, XSStrike against each target with a
+  fixed wall-clock budget (5 min/target)
+- Records: true positives, false positives, false negatives, wall clock,
+  requests sent
+- Output: `bench/results-YYYY-MM-DD.md` — comparison table + prose
+- Also a `bench/history.jsonl` — every run appended, so trend graphs later
+
+### 0.5.3 CI integration (1 gün)
+- Nightly GH Action runs the benchmark against a docker-composed subset
+- Uploads results as artifact; posts diff comment on PRs that touch the
+  scanner core
+- **DoD:** every merge to main updates the public benchmark markdown; a
+  regression (TP drop >10% or FP spike >20%) fails CI.
+
+**Phase 0.5 writeup:** *"Measuring the tool against its peers — the only
+honest way to say 'better'"*.
+
+---
+
+## Phase 1 — Recall boost, no browser (2 hafta)
+
+**Goal:** Grow reachable surface without adding a browser dependency.
+Concurrency, payload library, workflow chaining, macro auth.
+
+### 1.1 Concurrency (2-3 gün)
+- `ThreadPoolExecutor(max_workers=10)` — configurable via `--parallel N`
+- Rate limiting: `--rate 5/s` token bucket
+- Jitter: `--jitter 100-500ms` between requests
+- Careful with cookie jar — one lock per session
+- Test: mock server with 25 shape probe, wall clock < 3s with `--parallel 10`
+- **DoD:** hotel-platform 25-shape stored round drops from ~15s to <3s.
+
+### 1.2 Payload library expansion 25 → 200+ (5-7 gün)
+Add mutation families beyond the current 4:
+- **Unicode variants**: `<img src=x onerror=alert(1)>` → `<\u{0069}mg ...>`;
+  `<script>` → `<script>` etc.
+- **HTML entity escaping**: `<img` → `&lt;img`, `&amp;lt;img` (double-encoded)
+- **Hex encoding**: `%3Cimg` → `%253Cimg` (double-URL-encoded); the "gadget stack"
+- **CSS expression**: `expression()` shape for IE (historical, but some legacy
+  admin panels still care)
+- **SVG-based**: `<svg><script>...</script></svg>`, `<svg><use href="data:...">`
+- **Data URI**: `data:text/html;base64,PHNjcmlwdD5hbGVydDEpPC9zY3JpcHQ+`
+- **ES6 template literal breakout**: `${alert(1)}` variants for `` ` ``-quoted contexts
+- **Nested comment breakout**: `-->` , `--!>`
+- **JS event handler diversification**: currently only `onerror`; add `onload`,
+  `onfocus autofocus`, `ontoggle`, `onpointerenter`, `onbeforetoggle`
+- Grow `PAYLOAD_VARIANTS` from 5 shapes to ~50 shapes; grow `_WAF_MUTATIONS`
+  from 4 to ~20 named mutations
+- Total canary shapes with `--variants all --waf-bypass`: ~50 × 20 = 1000+
+  (down-samplable via `--variants top-10`, `--waf-bypass basic`)
+- Test: every mutation family has 2+ tests; total pytest 101 → ~180
+- **DoD:** Bludit test picks up EXECUTABLE via at least 3 different variants;
+  Juice Shop reflections rise from 4 to 6+.
+
+### 1.3 Workflow chaining / state-machine (3-4 gün)
+- New CLI: `--flow steps.yaml`
+- YAML syntax:
+  ```yaml
+  - name: register
+    method: POST
+    url: /api/auth/register
+    body: {email: "bob-{RND}@x.com", password: "P@ss1234"}
+    save: {token: "$.token"}
+  - name: submit-comment
+    method: POST
+    url: /api/comments
+    headers: {Authorization: "Bearer {token}"}
+    body: {text: "{CANARY}"}
+  - name: check
+    method: GET
+    url: /comments
+    verdict: yes
+  ```
+- Save/restore vars between steps (JSON path)
+- Test: mock 3-step server, canary lands after step 2, verdict fires on step 3
+- **DoD:** wallet-api register → deposit → transfer with canary works from
+  single YAML.
+
+### 1.4 CSRF token rotation (1-2 gün)
+- New `--csrf-refresh URL` — before each submit, GET this URL, extract token,
+  set header
+- `--csrf-header X-CSRF-Token` (some frameworks want header not form field)
+- Test: mock server with per-request rotating token, tool succeeds
+- **DoD:** modern Rails/Laravel demo target works without hand-plumbing tokens.
+
+### 1.5 Macro-based auth (2-3 gün)
+- New CLI: `--auth-flow flow.yaml` — mini-workflow for login (may include
+  captcha placeholder, OTP field)
+- Detect JWT vs cookie session automatically; use rest of run as authenticated
+- Test: hotel-platform, wallet-api, Bludit all logged in via single YAML file
+  per target
+- **DoD:** three own-projects login via one command each; no more `-b JAR` hackery.
+
+**Phase 1 writeup:** *"Growing recall without growing lies: concurrency + a
+serious payload library + workflow chains"*.
+
+---
+
+## Phase 2 — Browser layer, Playwright as opt-in dep (3 hafta)
+
+**Goal:** Close the DOM XSS + JS execution proof gap. This is the single
+biggest missing class.
+
+### 2.1 Playwright installation & harness (2-3 gün)
+- Add `pip install dxa[browser]` extra → installs playwright
+- Skip gracefully if not installed (feature-flag on import)
+- Headless Chromium session with page.goto + console listener
+- Test: verify install path + graceful skip + basic navigation
+- **DoD:** `dxadyn --dom` flag exists and either works or exits with clear message.
+
+### 2.2 DOM sink detection (5-7 gün)
+- Playwright hook: patch `Element.prototype.innerHTML` setter, `Range.createContextualFragment`,
+  `Document.write`, `Location.href` (assignment), `eval`, `Function()`, jQuery `.html()`
+- On call, capture stack trace + argument + timestamp → correlate with canary cid
+- Test: 5 dedicated DOM XSS fixtures (location.hash, postMessage, URLSearchParams,
+  document.referrer, hash router)
+- **DoD:** each fixture reproducibly detected; Juice Shop DOM XSS challenge
+  autonomously catches.
+
+### 2.3 JS execution proof (2-3 gün)
+- Playwright dialog handler: `page.on("dialog", d => alert_fired=True; d.accept())`
+- Payload runner: after crawling to target, evaluate the raw injected page,
+  wait for load, check `alert_fired` and captured console errors
+- Upgrade rule: `reflection=unencoded + alert_fired=True` → severity `proven-executable`
+  (new tier above `executable`)
+- Test: fixture that renders payload → alert fires → tool reports `proven-executable`
+- **DoD:** Bludit tag XSS with `<img src=x onerror=alert(1)>` variant scored
+  `proven-executable`, not just `executable`.
+
+### 2.4 SPA hash routing discovery (3-4 gün)
+- Playwright: after page.goto, capture all `history.pushState` / router transitions
+- Extract all string literals in loaded JS that look like paths (`/foo/:id`, `#/bar`)
+- Add to crawl queue
+- Test: React Router app fixture, tool discovers 5+ routes beyond direct anchor links
+- **DoD:** hotel-platform frontend crawl at depth=2 finds routes it missed before.
+
+### 2.5 CSRF-in-header auto-detection (1-2 gün)
+- Playwright captures all XHR/fetch requests during navigation → extract common
+  headers, especially `X-CSRF-Token`, `X-Requested-With`, `Authorization`
+- Auto-replay them in future submits
+- Test: SPA fixture with per-request CSRF header, tool succeeds without config
+- **DoD:** modern Angular/React app with anti-CSRF header works out of the box.
+
+**Phase 2 writeup:** *"Adding a browser without losing the discipline: DOM XSS,
+JS execution proof, and staying honest about what a headless browser proves"*.
+
+---
+
+## Phase 3 — Blind XSS (out-of-band callback) (1 hafta)
+
+**Goal:** Catch stored payloads that fire only in someone else's session
+(admin panels, moderator queues, back-office dashboards).
+
+### 3.1 Callback server (2-3 gün)
+- Minimal FastAPI (or stdlib http.server) daemon: `dxa-callback --port 9999`
+- Endpoint `/c/{cid}` — logs GET requests with cid, timestamp, user-agent, IP
+- Endpoint `/callback` — CORS+creds; used as image/script src target
+- Persist hits to `~/.dxa/callbacks.db` (SQLite)
+- Test: unit test posts to /c/deadbeef, tool queries and finds it
+- **DoD:** `dxa-callback` server runs, receives, logs.
+
+### 3.2 Callback payload integration (2 gün)
+- New payload variant family `blind`: replaces `<dXsS>` marker with an image
+  tag pointing at the callback: `<img src=http://callback/c/{cid}>`, plus
+  `<script src=http://callback/c/{cid}></script>`
+- Requires operator to run their own callback server (public IP or ngrok)
+- CLI: `--blind-callback http://your.tld:9999` — auto-substitutes into payloads
+- Test: fake-callback fixture, tool submits, callback receives cid, dxadyn
+  correlates
+- **DoD:** submit → callback hit → finding row scored `proven-blind`.
+
+### 3.3 Correlation and reporting (1 gün)
+- Extend `_finding` schema: `blind_callback_hit` boolean, `hit_at`, `hit_from`
+- HTML report gains a "blind hits" section
+- Test: unit + one integration
+- **DoD:** callback hits show in HTML report and JSON output.
+
+**Phase 3 writeup:** *"Payloads that fire hours later: blind XSS on callbacks"*.
+
+---
+
+## Phase 4 — Sound static analysis (tree-sitter AST) (4 hafta)
+
+**Goal:** Replace regex-based static analysis with real AST-level data flow.
+This is the heaviest phase and the one that separates OSS scanners from
+enterprise ones.
+
+### 4.1 Tree-sitter setup (3-4 gün)
+- Add `pip install dxa[ast]` extra → installs tree-sitter + language grammars
+  (js, ts, py, java, c-sharp, php)
+- Parse every source file into AST once; walk with visitor pattern
+- Cache: MD5 of file → serialized AST, so re-runs are fast
+- Test: parse each fixture, count expected node types
+- **DoD:** each language's AST parseable; caching works.
+
+### 4.2 Data-flow graph builder (7-10 gün)
+- Nodes: variables, function parameters, function returns, expressions
+- Edges: assignment, argument-pass, return, member access
+- Per-function control-flow: if/else/loop merging
+- Test: 10 canonical fixtures per language showing flow: `x = req.body → y = f(x) → sink(y)`
+- **DoD:** taint flows across function calls in every language.
+
+### 4.3 Cross-file / cross-module resolution (5-7 gün)
+- JS: resolve `import { foo } from './util'` → walk into util
+- TS: same + type resolution
+- Python: resolve `from utils import foo`
+- Java: package + classpath (simplified)
+- C#: using statements
+- PHP: require/include + namespace
+- Test: 3-file fixture per language showing cross-file taint
+- **DoD:** hotel-platform (Java Spring), health-blockchain (Py FastAPI),
+  wallet-api (C# .NET) each surface 1+ finding they missed at Phase 0.
+
+### 4.4 Real sanitizer semantics (3-4 gün)
+- Deprecate name-based `_SANITIZE_HINT`; replace with:
+  - Per-language whitelist of known-safe functions (`escapeHtml`, `htmlSpecialChars`,
+    `Sanitize.HTML`, `HtmlEncoder.Encode`, `bleach.clean`, `DOMPurify.sanitize`)
+  - AST match: exactly the pattern `sink(known_safe(x))` clears taint
+  - Anything else (custom `sanitize(x)` you can't verify): DOWNGRADES confidence,
+    doesn't kill the finding
+- Test: `sanitizeButKeepsHtml(x)` and other pathological cases stay flagged
+- **DoD:** Phase 0.3's fixture still passes; new whitelist-based path shown in output.
+
+### 4.5 Phase 4 lock-in tests (2-3 gün)
+- Add 30+ AST-level tests
+- Regression suite: every prior fixture still catches what it caught before
+- **DoD:** 101 → ~250+ pytest cases; hotel-platform HIGH count re-baselined
+  with AST (may increase or decrease — write it up).
+
+**Phase 4 writeup:** *"Retiring the regex: tree-sitter AST + data-flow +
+cross-file taint"*.
+
+---
+
+## Phase 5 — Recon (1-2 hafta)
+
+**Goal:** Discover surface before scanning it. Bug-bounty scanners without
+this are just directed testers.
+
+### 5.1 Subdomain enumeration (2-3 gün)
+- Query `crt.sh` for CT log subdomains
+- DNS bruteforce (small wordlist bundled: top-1k subdomains)
+- CLI: `dxa recon subs example.com`
+- Output: `subs.txt` (deduplicated, live-checked)
+- **DoD:** running against a target with known subs discovers them.
+
+### 5.2 Endpoint discovery from JS (3-4 gün)
+- Fetch every JS file linked from a page
+- Regex extract: URL patterns, API path strings, `fetch("/...")` calls
+- Feed into crawl queue
+- Test: React app fixture, tool finds 20+ endpoints from bundled JS
+- **DoD:** hotel-platform frontend surfaces 30+ endpoint candidates from bundle.
+
+### 5.3 Directory bruteforce (2 gün)
+- SecLists common wordlist bundled (or downloaded on demand)
+- CLI: `dxa recon dirs https://target.com` — HEAD probe each candidate
+- Output: found paths + status codes
+- **DoD:** vulnerable target with `/admin`, `/config`, `/backup` finds them.
+
+### 5.4 Wapiti-style form/parameter discovery (2-3 gün)
+- Passive: every crawled page's forms + query params logged as candidate targets
+- Active: submit dummy value, see if reflected → mark as XSS candidate
+- Auto-generate `--target` list for stored-mode second pass
+- **DoD:** running recon on Juice Shop discovers 50+ input candidates.
+
+**Phase 5 writeup:** *"Finding the surface before testing it"*.
+
+---
+
+## Phase 6 — Product polish (1-2 hafta)
+
+**Goal:** Make the tool usable by someone who isn't the author.
+
+### 6.1 SARIF output (2 gün)
+- New `--output sarif` — industry standard for GitHub/GitLab/Azure DevOps
+- Test: schema-validate against SARIF 2.1.0
+- **DoD:** GitHub Advanced Security consumes it.
+
+### 6.2 Config file (2 gün)
+- `.dxadyn.toml` — repeat CLI flags, target lists, custom sinks
+- Precedence: CLI > config > defaults
+- Test: fixture config + assertions
+- **DoD:** repeated runs on same target become `dxadyn` (no flags).
+
+### 6.3 Plugin API (3-4 gün)
+- Entry point: `dxa.plugins` (setuptools)
+- Plugin can register: new sinks, new sources, new payload variants,
+  new reporters
+- Example plugin: WordPress-specific sinks (out-of-repo, docs it)
+- **DoD:** external plugin loads and adds sinks without touching core.
+
+### 6.4 GitHub Action (1-2 gün)
+- `.github/workflows/dxa.yml` template — checkout, install, run, publish SARIF
+- Published as GitHub Marketplace action
+- **DoD:** action runs on the tool's own repo and reports its own findings.
+
+### 6.5 Rate limiting / respect (1 gün)
+- Auto-detect `Retry-After` header + honor
+- `--respect-robots` — skip disallowed paths
+- **DoD:** run against a rate-limited target doesn't get banned.
+
+**Phase 6 writeup:** *"From script to tool: what packaging adds"*.
+
+---
+
+## Phase 7 — CVE hunting campaign (ongoing, starts after Phase 2)
+
+**Goal:** Use the bot to land novel CVEs on real OSS — not just re-verify
+known-CVE shapes. This is the phase that turns "portfolio tool" into
+"tool that earned its own trophy wall".
+
+### Target selection (crowded-lane avoidance)
+Skip WordPress core / heavily-audited plugins. Prefer:
+- Prestashop modules (crowded auditor pool much smaller than WP)
+- OpenCart / nopCommerce extensions
+- Turkish/EU niche CMSes (Umbraco community modules, ProcessWire)
+- Self-hosted admin panels (Cockpit CMS, Directus older versions, Rundeck)
+- IoT / embedded web UIs (router firmwares, NAS admin panels)
+
+### Workflow per candidate
+1. `dxa recon` (post-Phase 5) → discover surface
+2. `dxa` static → shortlist HIGH candidates
+3. `dxadyn --dom --blind` (post-Phase 2/3) → verify
+4. Local Docker reproduction with `proven-executable` or `proven-blind` verdict
+5. Coordinated disclosure through Patchstack / MITRE / vendor
+6. After public disclosure: add to writeup index
+
+### Milestones
+- **First novel CVE credited to you** (not duplicate) — target: 2 within 3
+  months of Phase 2 completion
+- **Bot mentioned in a CVE advisory** as the detection tool — target: 1
+- **Bug-bounty payout using dxadyn** on an in-scope program — target: 1
+
+### Discipline
+- Every reported finding must have a local Docker reproduction; no
+  "static-only" CVE reports
+- Every disclosure follows the vendor's SLA (typically 90 days)
+- Zero disclosure of unpatched issues in this repo
+- If a report is duplicate: log it honestly in `research/` (as we already do)
+  — duplicates prove the method works even if the trophy went elsewhere
+
+**Phase 7 writeup:** one per landed CVE + one meta-writeup on the campaign.
+
+---
+
+## Community & visibility (parallel track)
+
+Product needs users, not just phases. Weave in throughout, not at the end:
+
+| When | Action | Goal |
+|---|---|---|
+| End of Phase 1 (v4.0) | Post to r/netsec, HN Show, Turkish infosec Discord/Twitter | First 20 external users |
+| End of Phase 2 (v5.0) | YouTube demo (10 min): DOM XSS catch on live target | Visual proof + shareable |
+| End of Phase 3 (v5.1) | Blog post cross-linked from bug-bounty forums | Blind XSS operators find you |
+| End of Phase 4 (v6.0) | Conference talk submission (OWASP local chapter, BSides) | Credibility |
+| Ongoing | GitHub Discussions on for feature requests + bug reports | Feedback loop |
+| Every phase | Twitter/Bluesky thread with the phase writeup | Discovery |
+
+**Metric to track:** GitHub stars, unique cloners, issues opened by
+non-authors, discussions started. First real user is worth more than
+the next 10 features.
+
+---
+
+## Milestones (portfolio-visible)
+
+- **v4.0** (end of Phase 1): 200+ payloads, concurrent, workflow chains, macro auth
+- **v5.0** (end of Phase 2): DOM XSS, JS execution proof, SPA support — **the
+  version where the tool becomes actually useful on real modern targets**
+- **v5.1** (end of Phase 3): blind XSS
+- **v6.0** (end of Phase 4): AST-sound static — **the version most other OSS
+  scanners never reach**
+- **v6.1** (end of Phase 5): recon
+- **v7.0** (end of Phase 6): plugin API + SARIF + GH Action — packaged
+
+---
+
+## Metrics we'll track
+
+Per phase, before merge:
+
+- **False positive rate** on the 4-target reference set (hotel + wallet +
+  mahrem + Bludit): must stay ≤10%
+- **True positive rate** on Juice Shop (all 8 XSS-related challenges): must
+  reach ≥6/8 by v5.0, ≥7/8 by v6.0
+- **Wall-clock** on the 25-shape hotel-platform stored round: must stay
+  <10s throughout
+- **pytest count** and green status: monotonic increase
+- **Payload library size**: 25 → 200 → 500+ by v6.0
+
+---
+
+## What this doesn't try to be
+
+Even at v7.0, the tool is honestly **not**:
+
+- A Burp Scanner replacement (missing: recon breadth for classes beyond XSS,
+  session handling maturity, extension marketplace, enterprise scaling)
+- A CodeQL/Semgrep replacement (missing: mature query language, community
+  ruleset, IDE integration)
+- A SAST platform (missing: findings management, triage workflow, SLA tracking)
+
+It **is**:
+
+- An OSS XSS scanner that competes with DalFox / XSStrike / dominator at
+  their level
+- A precision-first, honesty-first, well-documented tool
+- A portfolio piece for a security engineer who wants to demonstrate depth,
+  not breadth
+
+---
+
+## Progress tracking
+
+Each phase gets its own PR + writeup. Roadmap updates ship with each merge.
+`git log --grep="Phase N"` shows what landed when.
+
+### Phase-by-phase status (updated 2026-09-26)
+
+| Phase | Status | Commit | Note |
+|---|---|---|---|
+| 0.1 Sink suppression widening | ✅ **DONE** | `b9ae7eb` | 5 new pair rules, 107 pytest |
+| 0.2 False-negative discipline | ✅ **DONE** | `cd09ecb` | `--verbose` + `--waf-log` |
+| 0.3 Sanitize heuristic tightening | ✅ **DONE** | `3e2bd4e` | two-tier + leak detection |
+| 0.4 Cross-file basic taint | ✅ **DONE** | `0507576` | regex, same-package |
+| 0.5 Benchmark harness | ✅ **DONE (MVP)** | pending | 3 mock targets, DalFox/XSStrike opt-in, 15 pytest, CI-gated |
+| 1.1 Concurrency + rate limit + jitter | ✅ **DONE** | `a6851d2` | ThreadPool + token bucket |
+| 1.2 Payload library 25 → 200+ | ✅ **DONE** | merged | 50 variants × 19 (1+18 mutations) = **950 shapes**. Originally planned as m1-m5 across mutations to 20; m4 close-out merged what would have been m5 into a single milestone with a documented ceiling at 18 mutations. Adding 2 padding mutations was rejected on precision grounds; entity-encoded families need a canary-only API + browser detection (Phase 2, already shipped). Test explicitly asserts `len(_WAF_MUTATIONS) == 18` as a design guardrail. |
+| 1.3 Workflow chaining / state-machine | ✅ **DONE** | pending | JSON flow (zero-dep), JSONPath save/restore, {VAR}/{RND}/{CANARY} sub, verdict step, 26 tests |
+| 1.4 CSRF token rotation | ✅ **DONE** | pending | --csrf-refresh URL + --csrf-header NAME; 4-pattern extractor (Rails/Laravel/Django/generic); auto-inject in fetch(); 20 tests |
+| 1.5 Macro-based auth | ✅ **DONE** | pending | --auth-flow FILE; JWT via `auth:{header,value}` or cookie via jar; 8 tests |
+| 2.1 Playwright install + harness | ✅ **DONE** | pending | `dxadom.py` with is_available / find_chromium / BrowserSession; --dom CLI flag; 12 tests (5 unit + 7 real-browser); browser CI job |
+| 2.2 DOM sink detection | ✅ **DONE** | pending | init script wraps 8 sinks (innerHTML/outerHTML setters, document.write/writeln, Range.CCF, eval, Function, Location.href); sink_hits_for() correlation helper; 14 new tests (3 unit + 11 real-browser); live CLI catches 4 sink types per page |
+| 2.3 JS execution proof | ✅ **DONE** | pending | page.on('dialog') captures alert/confirm/prompt/beforeunload; auto-dismiss; PROVEN_EXECUTABLE constant; dialog_hits_for() correlation; new severity tier at top of chain; 13 new tests (4 unit + 9 real-browser); live E2E catches alert() from `<img onerror>` payload |
+| 2.4 SPA hash-route discovery | ✅ **DONE** | pending | init script intercepts pushState/replaceState/hashchange; static extractor scans <script> + attrs for React `<Route path>`, Angular `routerLink`, Vue hash literal, `navigate()` calls; 17 new tests (10 unit + 7 real-browser); live E2E catches 2 runtime + 4 static routes on mock SPA |
+| 2.5 CSRF-in-header auto-detect | ✅ **DONE** | pending | page.on('request') captures every XHR/fetch header, extract_auth_headers() pulls X-CSRF-Token / X-XSRF-TOKEN / X-CSRFToken / Authorization / X-API-Key / X-Requested-With families; 17 new tests (13 unit + 4 real-browser); live E2E auto-detects 3 headers from SPA fetch without any config |
+| 3.1 Blind XSS callback server | ✅ **DONE** | pending | `dxa_callback.py`, stdlib http.server + sqlite3, zero-dep; 6 endpoints (`/c/<cid>`, `/c/<cid>.js`, POST, `/callback`, `/hits`, `/hits/<cid>`, `/healthz`); CORS + XFF respect; 25 tests (unit + HTTP contract + concurrency); live E2E 3 payload shapes |
+| 3.2 Blind XSS payload family | ✅ **DONE** | pending | 5 blind variants (blind-img/blind-script/blind-fetch/blind-svg-onload/blind-iframe), `--blind-callback URL` flag, `{CALLBACK}`+`{CID}` substitution at emit-time, blind excluded from PAYLOAD_VARIANTS (opt-in), 16 tests; live E2E full chain: dxadyn POST -> guestbook stores -> Playwright victim -> callback hit recorded with cid+UA+referer |
+| 3.3 Correlation + reporting | ✅ **DONE** | pending | `check_blind_callback_hit()` polls callback with `--blind-wait N`; `upgrade_finding_with_blind_hit()` mutates schema; `correlate_blind_findings()` walks stored-mode findings; new severity tier `proven-blind`; `_finding` schema extended with hit_at/hit_from_{ua,ip,referer}; HTML report gains 'blind XSS - callback confirmed' section with UA/IP/Referer table; blind marker semantics fixed (suffix-after-cid); 18 new tests; live E2E full chain: dxadyn POST → guestbook stores → Playwright victim → callback hit → dxadyn correlates → PROVEN-BLIND in HTML report with victim UA/IP/Referer |
+| 4 Sound static (tree-sitter AST) | ⏳ queued | — | 4-6 hafta, heaviest |
+| 5 Recon | ⏳ queued | — | subs + endpoints + dirs |
+| 6 Product polish | ⏳ queued | — | SARIF + plugin + GHA |
+| 7.0 CVE hunting infrastructure | ✅ **DONE** | pending | Docker adapter in `bench/run.py` (up/down + HTTP readiness poll + graceful skip when daemon absent); 3 docker-compose targets (Bludit / DVWA / WebGoat); `research/2026-09-27-cve-hunt-sprint/` sprint plan with target-selection rationale + disclosure discipline; 10 new bench tests |
+| 7.1 Systematic scan pass | ⏳ **NEXT** | — | run bot against docker corpus, log TP/FP/FN, write results.md |
+| 7.2 Real target hunt | ⏳ queued | — | Prestashop/OpenCart/niche CMS structured audits |
+| 7.3 Disclosure + writeup 12 | ⏳ queued | — | Patchstack submissions, honest outcomes doc |
+
+**Foundation (Phase 0):** 4/4 ✅
+**Recall boost (Phase 1):** 1/5 (concurrency done, payloads next)
+**Class-level gaps closed:** 0/3 (DOM XSS + Blind + JS exec proof all pending)
+
+Current state (2026-09-27): Phase 0.5 + 1.2 milestone 3 done.
+- Payload variants: 5 -> 40 (milestone 1: +7 event-handler tags, +4 quote
+  and JS contexts; milestone 2: +13 SVG-nested-script/MathML/object/embed/
+  marquee/select/textarea/form-formaction/iframe-data-uri/js-double-string/
+  anchor-javascript/noscript/style-tag; milestone 3: +15 CSS-context
+  (style-value/css-comment/css-import), dialog onbeforetoggle/oncancel,
+  attribute-list injection (bare `"` + handler, stays in tag), base-href
+  and meta-refresh navigation hijack, svg-animate onbegin, audio-source,
+  xmp legacy pre-formatted breakout, js-regex/js-comment complements,
+  template shadowrootmode). All -breakout auto-upgrades via CT gate.
+- WAF mutations: 4 -> 18 (milestone 1: +4 tab/newline/slash-separator/
+  double-url-encode; milestone 2: +5 cr/form-feed/crlf/null-byte/backslash;
+  milestone 3: +5 space-tab-mix/triple-url-encode/percent-lowercase/
+  split-cmt-suffix/cr-space-mix).
+- Total shapes with --variants all --waf-bypass: 25 -> 760 (~30x).
+- pytest 107 -> 215 (16 bench + 16 m1 + 23 m2 + 23 m3).
+- Writeups 11. Zero third-party deps. Novel CVEs credited to author: 0.
+
+Phase 1.2 remaining for full DoD (~50 variants x ~20 mutations):
+- Grow variants 40 -> ~50 (need ~10 more; well-designed context-tuned
+  additions preferred over padding; entity-encoded families need Phase 2
+  browser to detect double-decode-in-attribute flows)
+- Grow mutations 18 -> ~20 (need 2 more genuinely novel ones; the space
+  of transform-both-compatible mutations is close to exhausted without
+  cross-context decoders)
+- Bludit fixture must catch executable via 3+ different variants
+- pytest 215 -> ~230

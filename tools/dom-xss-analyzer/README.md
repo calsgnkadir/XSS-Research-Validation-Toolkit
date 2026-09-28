@@ -1,3 +1,5 @@
+> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../../STATUS.md) and [current acceptance criteria](../../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+
 # dxa — source→sink XSS analyzer (full-stack)
 
 [![CI](https://github.com/calsgnkadir/xss-attack-defense-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/calsgnkadir/xss-attack-defense-lab/actions/workflows/ci.yml)

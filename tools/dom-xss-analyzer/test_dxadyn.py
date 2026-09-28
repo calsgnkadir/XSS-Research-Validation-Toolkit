@@ -2084,13 +2084,13 @@ def test_phase_3_2_all_five_blind_shapes_substitute_cleanly(_blind_callback_set)
         assert cid in canary
 
 
-def test_phase_3_2_blind_fetch_carries_cookie_exfil_shape(_blind_callback_set):
-    """blind-fetch is the cookie exfiltration variant: it must POST
-    document.cookie to the callback."""
-    _, _, canary, _ = list(dxadyn.make_canaries_for(["blind-fetch"]))[0]
+def test_phase_3_2_blind_fetch_sends_only_canary_id(_blind_callback_set):
+    """The beacon carries the test identifier, never session secrets."""
+    _, cid, canary, _ = list(dxadyn.make_canaries_for(["blind-fetch"]))[0]
     assert "fetch(" in canary
     assert "method:\"POST\"" in canary
-    assert "document.cookie" in canary
+    assert f'body:"{cid}"' in canary
+    assert "document.cookie" not in canary
 
 
 def test_phase_3_2_blind_script_uses_js_endpoint(_blind_callback_set):

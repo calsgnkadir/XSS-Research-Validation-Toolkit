@@ -1,3 +1,5 @@
+> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+
 # One shape was never enough: payload variants and WAF bypass
 
 > **TL;DR** — Up through v3.9 the bot sent exactly one canary shape:

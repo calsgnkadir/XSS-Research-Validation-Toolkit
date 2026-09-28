@@ -1,3 +1,5 @@
+> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+
 # SQL Injection: when your input becomes part of the query
 
 > **TL;DR** — A SQL query is usually built by *gluing your input into a string*.

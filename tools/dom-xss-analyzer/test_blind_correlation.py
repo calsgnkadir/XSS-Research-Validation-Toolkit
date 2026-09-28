@@ -11,6 +11,8 @@ import pathlib
 import sys
 import threading
 import time
+import urllib.request
+from copy import deepcopy
 
 import pytest
 
@@ -134,7 +136,7 @@ def test_upgrade_promotes_severity_and_fills_schema():
     h = _mk_hit()
     ok = dxadyn.upgrade_finding_with_blind_hit(f, h)
     assert ok is True
-    assert f["severity"] == dxadyn.PROVEN_BLIND == "proven-blind"
+    assert f["severity"] == dxadyn.RESOURCE_CALLBACK == "resource-callback"
     assert f["blind_callback_hit"] is True
     assert f["hit_at"] == 1234567890.5
     assert f["hit_from_ua"] == "AdminBrowser/1.0"
@@ -181,7 +183,7 @@ def test_correlate_upgrades_matching_blind_finding(callback_server):
     finding = _mk_finding(cid="dxaCAFE")
     n, out = dxadyn.correlate_blind_findings([finding], timeout=1.0)
     assert n == 1
-    assert out[0]["severity"] == "proven-blind"
+    assert out[0]["severity"] == "resource-callback"
     assert out[0]["hit_from_ip"] == "203.0.113.9"
 
 
@@ -204,7 +206,7 @@ def test_correlate_multiple_findings_only_matched_upgraded(callback_server):
     b = _mk_finding(cid="dxaTWO", variant="blind-img")
     n, out = dxadyn.correlate_blind_findings([a, b], timeout=0.5)
     assert n == 1
-    upgraded = [f for f in out if f["severity"] == "proven-blind"]
+    upgraded = [f for f in out if f["severity"] == "resource-callback"]
     assert len(upgraded) == 1
     assert upgraded[0]["canary_id"] == "dxaONE"
 
@@ -224,18 +226,18 @@ def test_correlate_handles_subvariant_names(callback_server):
 
 def test_render_html_shows_blind_section_when_hit_present():
     """A finding with blind_callback_hit=True must produce a dedicated
-    'blind XSS - callback confirmed' section carrying UA / IP / Referer."""
+    'Resource callbacks observed' section carrying UA / IP / Referer."""
     f = _mk_finding(cid="dxaHTML")
     f["blind_callback_hit"] = True
     f["hit_at"] = 1234567890.5
     f["hit_from_ua"] = "Mozilla/5.0 (Windows NT 10.0) AdminBrowser/2"
     f["hit_from_ip"] = "203.0.113.5"
     f["hit_from_referer"] = "https://admin.target.test/panel"
-    f["severity"] = "proven-blind"
+    f["severity"] = "resource-callback"
 
     html = dxadyn.render_html([f], target="target.test", mode="stored-auto")
-    assert "blind XSS" in html
-    assert "callback confirmed" in html
+    assert "Resource callbacks observed" in html
+    assert "does not establish JavaScript execution" in html
     assert "dxaHTML" in html
     assert "203.0.113.5" in html
     assert "admin.target.test" in html
@@ -247,15 +249,66 @@ def test_render_html_omits_blind_section_when_no_hits():
     """Reflected-only report should not carry the blind section shell."""
     f = _mk_finding(variant="body")
     html = dxadyn.render_html([f], target="target.test", mode="reflected")
-    assert "blind XSS" not in html
+    assert "Resource callbacks observed" not in html
     assert "callback confirmed" not in html
 
 
 def test_render_html_blind_stat_tile_present():
-    """The stat tiles row should include a `blind (proven)` tile when
+    """The stat tiles row should include a `resource callbacks` tile when
     any finding carries a blind hit."""
     f = _mk_finding()
     f["blind_callback_hit"] = True
-    f["severity"] = "proven-blind"
+    f["severity"] = "resource-callback"
     html = dxadyn.render_html([f], target="t", mode="stored")
-    assert "blind (proven)" in html
+    assert "resource callbacks" in html
+
+
+@pytest.mark.parametrize("finding_cid,hit_cid", [
+    (None, "dxaCAFE"), ("dxaCAFE", None), ("", ""), (" ", " "),
+    (None, None), (42, 42), ("dxaCAFE", "dxaOTHER"),
+])
+def test_callback_requires_exact_nonempty_string_ids(finding_cid, hit_cid):
+    finding = _mk_finding(cid=finding_cid)
+    before = deepcopy(finding)
+    assert not dxadyn.upgrade_finding_with_blind_hit(finding, _mk_hit(cid=hit_cid))
+    assert finding == before
+
+
+@pytest.mark.parametrize("variant", list(dxadyn.BLIND_VARIANTS))
+@pytest.mark.parametrize("method", ["GET", "POST"])
+def test_callback_method_and_payload_family_do_not_prove_execution(variant, method):
+    finding = _mk_finding(variant=variant)
+    hit = _mk_hit()
+    hit["method"] = method
+    hit["body_preview"] = "dxaCAFE"
+    assert dxadyn.upgrade_finding_with_blind_hit(finding, hit)
+    assert finding["severity"] == "resource-callback"
+    assert finding["evidence_level"] == "resource-callback"
+    html = dxadyn.render_html([finding], target="local", mode="stored")
+    assert "does not establish JavaScript execution" in html
+    assert "PROVEN-BLIND" not in html
+    assert "someone else's session" not in html
+
+
+def test_plain_http_client_callback_is_not_xss_proof(callback_server):
+    """No browser or JavaScript participates in this callback."""
+    with urllib.request.urlopen(dxadyn.BLIND_CALLBACK + "/c/dxaHTTP", timeout=3) as response:
+        assert response.status == 200
+    finding = _mk_finding(cid="dxaHTTP")
+    count, findings = dxadyn.correlate_blind_findings([finding], timeout=1)
+    assert count == 1
+    assert findings[0]["evidence_level"] == "resource-callback"
+    assert findings[0]["severity"] != "proven-blind"
+
+
+def test_callback_metadata_is_escaped_in_html():
+    finding = _mk_finding()
+    hit = _mk_hit()
+    hit["user_agent"] = '<script>alert("ua")</script>'
+    hit["referer"] = '<img src=x onerror=alert(1)>'
+    assert dxadyn.upgrade_finding_with_blind_hit(finding, hit)
+    html = dxadyn.render_html([finding], target="local", mode="stored")
+    assert hit["user_agent"] not in html
+    assert hit["referer"] not in html
+    assert "&lt;script&gt;" in html
+    assert "&lt;img" in html
