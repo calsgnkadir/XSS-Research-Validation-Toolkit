@@ -46,6 +46,7 @@ Usage
 """
 
 import argparse
+from dxa_attempts import AttemptJournal, candidate
 import concurrent.futures
 import datetime
 import html as htmllib
@@ -1140,7 +1141,7 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
             "hit_from_referer": None}
 
 
-def correlate_blind_findings(findings, timeout=None):
+def correlate_blind_findings(findings, timeout=None, attempt_journal=None):
     """Walk `findings`, poll the callback server for every blind-variant
     finding, record `resource-callback` on hit. Returns (matched_count,
     findings) - the list is mutated in place and also returned for
@@ -1162,6 +1163,8 @@ def correlate_blind_findings(findings, timeout=None):
         if not cid:
             continue
         hit = check_blind_callback_hit(cid, timeout=timeout)
+        if attempt_journal and not attempt_journal.observe(cid, hit):
+            continue
         if upgrade_finding_with_blind_hit(f, hit):
             upgraded += 1
     return upgraded, findings
@@ -1349,10 +1352,36 @@ def _do_submit(target_url, target_field, extra_fields, canary,
                         method=method, csrf_field=csrf_field)
 
 
+def _tracked_submit(vname, cid, target_url, target_field, extra_fields, canary,
+                    *, method, csrf_field, json_body, header_target, attempt_journal):
+    """Commit a blind attempt before sending, including invisible/failed submits."""
+    row = None
+    if vname.startswith("blind-"):
+        label = f"header:{header_target}" if header_target else (
+            "json" if json_body is not None else target_field)
+        row = candidate(cid, vname, target_url, label, method)
+        if attempt_journal:
+            attempt_journal.begin(row)
+    try:
+        status, landing = _do_submit(target_url, target_field, extra_fields, canary,
+                                    method=method, csrf_field=csrf_field,
+                                    json_body=json_body, header_target=header_target)
+    except Exception:
+        if row is not None and attempt_journal:
+            attempt_journal.submission(row, None, "error")
+        raise
+    if row is not None:
+        state = "response-received" if status is not None else "error"
+        row.update(sub_status=status, submission_state=state, submitted_at=time.time())
+        if attempt_journal:
+            attempt_journal.submission(row, status, state)
+    return status, landing, row
+
+
 def probe_stored(target_url, target_field, extra_fields, check_urls,
                  method="post", csrf_field="tokenCSRF",
                  json_body=None, header_target=None,
-                 variants=None, waf_bypass=False):
+                 variants=None, waf_bypass=False, attempt_journal=None):
     """Submit payloads, look for each on the check URL(s). Shape of the
     submission is form / json / header (see probe_stored_auto). `variants` is
     a list of payload-variant names to fan out through - each gets its own
@@ -1372,9 +1401,10 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
     def _one_variant(triple):
         vname, cid, canary, marker = triple
         rows = []
-        sub_status, _ = _do_submit(target_url, target_field, extra_fields, canary,
+        sub_status, _, attempt = _tracked_submit(vname, cid, target_url, target_field, extra_fields, canary,
                                    method=method, csrf_field=csrf_field,
-                                   json_body=json_body, header_target=header_target)
+                                   json_body=json_body, header_target=header_target,
+                                   attempt_journal=attempt_journal)
         # Phase 0.2: submit-layer skip observability
         sub_was_skip, sub_reason = _classify_response(sub_status, "")
         if sub_was_skip:
@@ -1395,6 +1425,15 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
             else:
                 _maybe_record_skip(v, cid, url, "GET",
                                    f"{vname}[check]", st, body, canary)
+        if attempt is not None:
+            if not rows:
+                rows.append(attempt)
+            else:
+                for row in rows:
+                    row.update({k: attempt[k] for k in
+                                ("attempt_id", "created_at", "submitted_at", "session_role",
+                                 "submission_state")})
+                    row["evidence_level"] = "reflection"
         return rows
 
     per_variant_rows = _parallel_map(_one_variant, canaries)
@@ -1520,7 +1559,7 @@ def _submit_header(target_url, header_name, canary, method="GET"):
 def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                       method="post", csrf_field="tokenCSRF", max_links=60,
                       json_body=None, header_target=None, variants=None,
-                      waf_bypass=False):
+                      waf_bypass=False, attempt_journal=None):
     """Submit payload(s) then autonomously hunt for the canary via 1-hop crawl.
     v3.10: `variants` fans out into per-variant submits; each variant produces
     its own findings (own cid + own marker). `waf_bypass` also fans each
@@ -1538,19 +1577,19 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
 
     def _one_submit(quad):
         vname, cid, canary, marker = quad
-        sub_status, this_landing = _do_submit(
-            target_url, target_field, extra_fields, canary,
+        sub_status, this_landing, attempt = _tracked_submit(
+            vname, cid, target_url, target_field, extra_fields, canary,
             method=method, csrf_field=csrf_field,
-            json_body=json_body, header_target=header_target)
+            json_body=json_body, header_target=header_target, attempt_journal=attempt_journal)
         sub_was_skip, sub_reason = _classify_response(sub_status, "")
         if sub_was_skip:
             _record_skip(cid, target_url, method, vname, sub_status,
                          f"submit:{sub_reason}", canary)
-        return (vname, cid, marker, sub_status, this_landing)
+        return (vname, cid, marker, sub_status, this_landing, attempt)
 
     _results = _parallel_map(_one_submit, canaries)
-    submits = [(v, c, m, s) for (v, c, m, s, _l) in _results]
-    landing = next((l for _v, _c, _m, _s, l in _results if l), "")
+    submits = [(v, c, m, s) for (v, c, m, s, _l, _a) in _results]
+    landing = next((l for _v, _c, _m, _s, l, _a in _results if l), "")
     first_cid = submits[0][1] if submits else ""
 
     # Phase 2: assemble crawl seeds. {CID} in user seeds is replaced with the
@@ -1616,6 +1655,17 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
     checked = len(candidates)
 
     findings = dedupe_findings(findings)
+    reflected_cids = {row["canary_id"] for row in findings}
+    for _v, cid, _m, _s, _l, attempt in _results:
+        if attempt is not None and cid not in reflected_cids:
+            findings.append(attempt)
+        elif attempt is not None:
+            for row in findings:
+                if row["canary_id"] == cid:
+                    row.update({k: attempt[k] for k in
+                                ("attempt_id", "created_at", "submitted_at", "session_role",
+                                 "submission_state")})
+                    row["evidence_level"] = "reflection"
     return findings, first_cid, {"submit_landing": landing, "checked_pages": checked,
                                  "candidates": len(candidates)}
 
@@ -2290,6 +2340,10 @@ def main():
                          "--pass for anything more complex than a single "
                          "HTML form POST.")
 
+    ap.add_argument("--blind-journal", default=".dxa/blind-attempts.sqlite3",
+                    help="persistent stored blind attempt journal (default: .dxa/blind-attempts.sqlite3)")
+    ap.add_argument("--session-role", default="unspecified",
+                    help="operator-supplied role label for stored blind journal; not verified auth")
     args = ap.parse_args()
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
@@ -2559,6 +2613,11 @@ def main():
         # total shapes = variants * (1 + 4 mutations if waf_bypass else 1)
         total_shapes = len(variants) * (5 if args.waf_bypass else 1)
 
+        attempt_journal = None
+        if any(v.startswith("blind-") for v in variants):
+            attempt_journal = AttemptJournal(args.blind_journal, BLIND_CALLBACK, args.session_role)
+            print(f"[dxadyn] blind journal: {args.blind_journal}; run_id={attempt_journal.run_id}")
+
         if args.auto_check:
             seeds = [u.strip() for u in args.auto_check_from.split(",") if u.strip()]
             print(f"[dxadyn] STORED-AUTO probe: {args.target} {shape_desc}{vlabel} "
@@ -2570,7 +2629,8 @@ def main():
                 max_links=args.auto_check_max,
                 json_body=args.json_body or None,
                 header_target=args.header_target or None,
-                variants=variants, waf_bypass=args.waf_bypass)
+                variants=variants, waf_bypass=args.waf_bypass,
+                attempt_journal=attempt_journal)
             print(f"[dxadyn] canary id = {cid}{' (of ' + str(total_shapes) + ' shapes)' if total_shapes > 1 else ''}")
             print(f"[dxadyn] submit landed at: {meta['submit_landing']}")
             print(f"[dxadyn] crawled {meta['checked_pages']}/{meta['candidates']} pages")
@@ -2585,7 +2645,8 @@ def main():
                                          json_body=args.json_body or None,
                                          header_target=args.header_target or None,
                                          variants=variants,
-                                         waf_bypass=args.waf_bypass)
+                                         waf_bypass=args.waf_bypass,
+                                         attempt_journal=attempt_journal)
             print(f"[dxadyn] canary id = {cid}{' (of ' + str(total_shapes) + ' shapes)' if total_shapes > 1 else ''}")
 
         # Phase 3.3: scan-time correlation of blind XSS findings. For any
@@ -2593,7 +2654,7 @@ def main():
         # to --blind-wait seconds; a hit records a resource callback
         # with UA / IP / Referer / ts, without claiming JS execution.
         if BLIND_CALLBACK and BLIND_WAIT_SECONDS > 0:
-            n_up, findings = correlate_blind_findings(findings)
+            n_up, findings = correlate_blind_findings(findings, attempt_journal=attempt_journal)
             if n_up:
                 print(f"[dxadyn] resource callbacks observed: {n_up} finding(s); "
                       f"JavaScript execution not established "
@@ -2615,7 +2676,8 @@ def main():
             sys.exit(0)
         for f in findings:
             tag = "UNENCODED (HTML injection)" if f["reflection"] == "unencoded" \
-                else "attribute-breakout quote"
+                else ("submission recorded; reflection not observed" if
+                      f["reflection"] == "not-observed" else "attribute-breakout quote")
             mode = " [auto]" if f.get("auto_discovered") else ""
             ctx = f.get("context", "?")
             sev = f.get("severity", "-")
@@ -2633,7 +2695,8 @@ def main():
               f"{breakout} need a follow-on breakout (title/attr/script context). "
               f"Confirm each in the browser.")
         _print_skip_summary()
-        sys.exit(1)
+        sys.exit(1 if any(f.get("reflection") != "not-observed" or
+                         f.get("evidence_level") == RESOURCE_CALLBACK for f in findings) else 0)
 
     # --- reflected (v1) path ---
     if not args.url:

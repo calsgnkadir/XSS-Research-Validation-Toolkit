@@ -8,10 +8,14 @@ Amaç, sonuçlarını kanıtla açıklayan ve başka bir araştırmacının da �
 Playwright ve blind callback parçaları deneysel. Otomatik sınıflandırmaların
 tamamı doğrulanmış XSS anlamına gelmez. Yeni CVE kredisi bu arşivden doğrulanmış değildir.
 
-**Doğrulama — 28 Eylül 2026:** 420 test geçti, 36 browser testi otomatik
+**Doğrulama — 29 Eylül 2026:** 438 test geçti, 36 browser testi otomatik
 Chrome keşfi nedeniyle atlandı. Bu sayı tüm XSS sınıflarının doğrulandığı
 anlamına gelmez. Normal dialog ve JavaScript kapalı callback karşı örnekleri
 mevcut Chrome ile ayrıca kontrol edildi. [Test sonuçları ve kanıtlar](VALIDATION.md).
+
+Stored/stored-auto blind denemeleri artık yansıma olmasa da kalıcı kaydedilir;
+tarama sonrası callback kontrolü ve JSON/HTML kayıt raporu vardır.
+[Kullanım ve kapsam](tools/dom-xss-analyzer/BLIND-JOURNAL.md). Callback, JS proof değildir.
 
 [Denetim raporu](audit/2026-09-28/DENETIM-RAPORU-TR.md) ve
 [dosya bazında inceleme](audit/2026-09-28/DOSYA-INCELEMESI-TR.md) depoda bulunur.

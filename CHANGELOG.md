@@ -1,6 +1,18 @@
 # Değişiklik kaydı
 
-## Unreleased — 2026-09-28
+## Unreleased — 2026-09-29
+
+### Kalıcı stored blind takip
+
+- Stored/stored-auto blind denemeleri gönderimden önce SQLite journal'a yazılır;
+  yansıma olmadığında CID kaybolmaz. HTTP kodu, hata, attempt/run kimliği ve zaman saklanır.
+- Ayrı `dxa_attempts.py` komutu hedefe tekrar göndermeden callback kontrolü yapar;
+  eşleşen kayıt `resource-callback` olur. No-hit ve sorgu hatası ayrı görünür.
+- JSON/HTML kontrol raporu, kullanım belgesi, 18 regresyon ve S01 çalışma kaydı eklendi.
+- Tam test sonucu 438 passed, 36 skipped; genel finding şeması, browser execution,
+  doğrulanmış oturum rolü ve diğer modların journal entegrasyonu açık kalır.
+
+## Önceki teslimler — 2026-09-28
 
 ### Düzeltildi
 

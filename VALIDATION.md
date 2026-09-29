@@ -1,6 +1,29 @@
-# Doğrulama kaydı — 2026-09-28
+# Doğrulama kaydı — 2026-09-29
 
-## R2 JSON gönderimi — güncel teslim
+## R1 kalıcı stored blind takip — güncel teslim
+
+- Tam paket: **438 passed, 36 skipped, 1 warning**, 76.57 saniye.
+- 18 yeni regresyon: stored/stored-auto yansımasız beş aile, gönderim hatası,
+  canlı ve süreç kapandıktan sonra callback, eşzamanlı kalıcı yazma, tekrar
+  kontrol, CID/zaman/endpoint/run ayrımı, yanlış yanıt, mahremiyet ve rapor escaping.
+- İki CLI süreci + localhost HTTP fixture: tarama kapanır, callback daha sonra gelir,
+  ayrı kontrol komutu aynı attempt kimliğine bağlar; hedef **yalnız bir POST** alır.
+- JSON ve HTML kontrol raporu aynı attempt listesinden oluşturulur.
+- Ara odaklı çalışma **220 passed**; son dört ek test ve canlı callback kalıcılığı
+  yukarıdaki tam pakette doğrulandı.
+- 36 browser testi mevcut otomatik Chrome keşfi sorunu nedeniyle atlandı.
+  Bu teslim yeni browser execution doğrulaması yapmadı. Tek uyarı benchmark'taki
+  `datetime.utcnow()` kullanımının deprecation uyarısıdır.
+- [Test logu](audit/2026-09-29/pytest-blind-journal.log),
+  [JUnit](audit/2026-09-29/pytest-blind-journal.xml),
+  [test kaynağı](tools/dom-xss-analyzer/test_blind_journal.py),
+  [tekrar üretim ve sınırlar](tools/dom-xss-analyzer/BLIND-JOURNAL.md).
+
+Sınır: journal yalnız stored/stored-auto blind gönderim/callback kaydıdır;
+bütün reflection/sink bulgularının ortak şeması değildir. Rol operatör etiketidir.
+Callback JavaScript execution veya açıklık kanıtı değildir. Genel R1 açık kalır.
+
+## R2 JSON gönderimi — önceki teslim
 
 - Tam paket: **420 passed, 36 skipped, 1 warning**, 69.03 saniye.
 - 36 browser testi otomatik Chrome keşfi nedeniyle atlandı; browser entegrasyonu tamamlandı sayılmıyor.

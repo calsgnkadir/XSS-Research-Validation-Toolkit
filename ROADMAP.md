@@ -1,6 +1,6 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-28 Eylül 2026. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
+29 Eylül 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.
 
@@ -9,7 +9,8 @@ STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.
 Kaynaklar: ZIP'teki 76 dosyanın denetimi, iki eski sohbet metni ve kullanıcının son öncelikleri.
 [Denetim raporu](audit/2026-09-28/DENETIM-RAPORU-TR.md) başlangıç bulgularını,
 [dosya–görev eşlemesi](DOSYA-KAPSAM.md) bütün orijinal dosyaların hangi işte takip edildiğini gösterir.
-Orijinal ZIP ve denetim kopyası korunur. Mevcut çalışma alanı `xss-bot-work`.
+Orijinal ZIP ve denetim kopyası korunur. Güncel Git çalışma alanı `xss-github`;
+önceki `xss-bot-work` kopyası geliştirme kaynağı değildir.
 ZIP dışındaki resmî staj PDF'leri önceki kapsam kararı uyarınca dahil değildir.
 
 Sıra, mevcut teknik kapasiteyi düzeltmeye öncelik verir. Her bot düzeltmesinin testi ve kısa
@@ -32,11 +33,15 @@ Eksik kanıt, geçmiş olayın yaşanmadığının kanıtı değildir. Toplam y�
 
 1. R1 normal dialog yanlış pozitifi — **tamam**, altı regresyon ve yerel Chrome kaydı var.
 2. R1 callback ≠ JS proof; cid eşleşmesi; gizli veri toplamayan beacon — **tamam**: HTTP ve JS kapalı Chrome negatif kontrolü; test kaydı VALIDATION.md.
-3. R1 ortak evidence şeması, yansımasız blind deneme kaydı ve sonradan ilişkilendirme — **açık**.
-4. R2 JSON/auth/rate ve R8 sanitizer karşı örnekleri — **açık**.
+3. R1 yansımasız blind deneme kaydı ve sonradan ilişkilendirme — **stored/stored-auto için tamam**; [kullanım ve sınırlar](tools/dom-xss-analyzer/BLIND-JOURNAL.md). Ortak evidence şeması **açık**.
+4. R2 JSON serializer ve istek başına Content-Type — **tamam**. Auth/rate/CSRF ve R8 sanitizer karşı örnekleri — **açık**.
 5. R3 uçtan uca browser + R4 güvenilir benchmark; ardından K01/R5 vaka paketi.
 
-İlk iki küçük düzeltme R1'in veya botun tamamlandığı anlamına gelmez.
+Bu alt teslimler R1'in veya botun tamamlandığı anlamına gelmez.
+Sıradaki bot işi: normal/flow/stored sınıflandırmalarını ortak kanıt nesnesine
+taşımak; JSON-only ve ham marker'ın execution diye raporlanmasını önlemek.
+Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
+A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 
 ## Bot: ayrıntılı görevler ve kabul koşulları
 
@@ -51,8 +56,8 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | İş | Durum | Bağımlılık | Teslimat |
 |---|---|---|---|
 | R0 Durumu ve tarihsel iddiaları düzelt | İlk teslim tamamlandı | — | Güncel README, STATUS, roadmap, geçmiş metin değerlendirmesi |
-| R1 Kanıt modelini düzelt | Başlandı: bare-visit dialog yanlış pozitifi giderildi | R0 | Ortak bulgu şeması, doğru etiketler, blind takip |
-| R2 İstek/oturum güvenilirliği | Açık | R0; R1 şemasıyla uyumlu | JSON, auth, rate, CSRF ve eşzamanlılık düzeltmeleri |
+| R1 Kanıt modelini düzelt | Devam: dialog/callback etiketleri ve stored blind journal tamam; ortak şema açık | R0 | Ortak bulgu şeması, doğru etiketler, blind takip |
+| R2 İstek/oturum güvenilirliği | Devam: JSON serializer ve Content-Type izolasyonu tamam | R0; R1 şemasıyla uyumlu | JSON, auth, rate, CSRF ve eşzamanlılık düzeltmeleri |
 | R3 Tarayıcı doğrulamasını bağla | Açık | R1 + R2 | Auth/stored/DOM tek işlem hattı |
 | R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
@@ -84,9 +89,13 @@ Kabul ölçütleri:
 - [ ] HTML içindeki ham marker, bağlamı gerçekten kırmadan executable'a yükseltilmez.
 - [ ] Aynı response normal, flow ve stored modlarında aynı sınıflandırmayı alır; JSON-only JS proof sayılmaz.
 - [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Tam iframe/role fixture kapsamı R3/R4'te açık.
-- [ ] Yansıma yokken bile gönderilmiş cid kaydı tutulur; sonradan gelen blind callback ilişkilendirilebilir.
-- [ ] Scan bittikten sonra callback uzlaştırma yolu ve süre/oturum bilgisi vardır.
+- [x] Stored/stored-auto: yansıma yokken bile cid gönderimden önce kalıcı tutulur; sonradan gelen blind callback ilişkilendirilebilir. Diğer modlarda kalıcı takip henüz yok.
+- [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Rol doğrulaması R2/R3'te açık.
 - [ ] HTML ve JSON aynı finding nesnesinden üretilir; hatalar ve atlamalar ayrı görünür.
+
+29 Eylül alt kanıtı: blind journal kontrol raporunda JSON/HTML aynı attempt listesini
+kullanır; no-hit ile sorgu hatası ayrıdır. Yukarıdaki genel finding ölçütü bütün
+modları kapsadığı için kapatılmadı. [Testler](VALIDATION.md), [staj kaydı](staj/2026-09-29-blind-takip.md).
 - [ ] Dedup aynı submit/parametre/sink/bağlam/rolün kopyalarını gruplar, ham kanıtları korur; farklı rol veya sink birleştirilmez.
 
 WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt ve erişim politikasıyla belirlenir. Admin'in tasarlanmış HTML editörü ayrı bir security boundary aşmıyorsa “confirmed vulnerability” olmaz.
