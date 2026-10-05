@@ -159,6 +159,8 @@ class _StoredApp(BaseHTTPRequestHandler):
                     '<input name="username"><input name="password">'
                     '<input type="submit"></form>')
             return self._send(200, body)
+        if p.path == "/dashboard":
+            return self._send(200, "dashboard") if self._authed() else self._send(403, "login required")
         if p.path == "/new":
             if not self._authed():
                 return self._send(403, "login required")

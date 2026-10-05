@@ -1283,10 +1283,10 @@ def _cookie_jar():
 def login(login_url, user, password, user_field="username", pass_field="password",
           csrf_field="tokenCSRF", extra=None):
     """Log in through a standard HTML form. Session cookies live in `OPENER`.
-    Success = the POST either landed us on a different URL (redirect out of
-    the login page) *or* set at least one new cookie we did not have before."""
+    Legacy session-establishment heuristic: successful HTTP responses and a
+    redirect or new cookie. This does not verify an account or role."""
     status, _, body, _ct = fetch(login_url)
-    if status is None:
+    if status is None or not 200 <= status < 300:
         return False
 
     jar = _cookie_jar()
@@ -1300,7 +1300,7 @@ def login(login_url, user, password, user_field="username", pass_field="password
         data.update(extra)
 
     st, final_url, _, _ct = fetch(login_url, data=data)
-    if st is None:
+    if st is None or not 200 <= st < 300:
         return False
     after = len(list(jar)) if jar is not None else 0
     return final_url != login_url or after > before
@@ -1976,7 +1976,7 @@ def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
     return status, text, ct, parsed
 
 
-def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
+def run_flow(flow, canary=None, cid=None, marker=None, timeout=10, *, auth_strict=False):
     """Execute a flow definition. Returns a summary dict:
       {
         'name': str, 'steps_run': int, 'vars': {...},
@@ -2026,7 +2026,11 @@ def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
         record_response_event("flow", url, status)
 
         if status == 0:
-            summary["error"] = f"{sname}: {text}"
+            summary["error"] = "auth request failed" if auth_strict else f"{sname}: {text}"
+            return summary
+
+        if auth_strict and not 200 <= status < 300:
+            summary["error"] = f"auth step {summary['steps_run']} returned HTTP {status}"
             return summary
 
         # Save extracted values into the running namespace.
@@ -2088,14 +2092,17 @@ def run_auth_flow(flow, timeout=10):
     """Execute an auth flow. Returns a summary dict identical in shape to
     `run_flow`'s, plus:
       - 'auth_header': (name, value) tuple actually installed, or None
-      - 'authenticated': True if the flow completed AND either an auth
-        header was installed OR at least one Set-Cookie landed in the jar.
+      - 'authenticated': legacy session-establishment flag: all steps returned
+        2xx AND a usable header was installed or a cookie changed. This does
+        not verify a target-specific authenticated state or account role.
 
     Side effect: installs the substituted auth header into EXTRA_HEADERS
     on success. The caller is responsible for undoing this if it wants
     multiple auth contexts in one process.
     """
-    summary = run_flow(flow, timeout=timeout)
+    jar = _cookie_jar()
+    before = {(c.domain, c.path, c.name): c.value for c in jar} if jar is not None else {}
+    summary = run_flow(flow, timeout=timeout, auth_strict=True)
     summary["auth_header"] = None
     summary["authenticated"] = False
 
@@ -2106,12 +2113,21 @@ def run_auth_flow(flow, timeout=10):
     auth = flow.get("auth")
     if isinstance(auth, dict) and auth.get("header") and auth.get("value"):
         header_name = auth["header"]
+        template = auth["value"]
+        if not isinstance(template, str) or any(
+            not isinstance(summary["vars"].get(key), (str, int, float))
+            or isinstance(summary["vars"].get(key), bool)
+            or not str(summary["vars"][key]).strip()
+            for key in _PLACEHOLDER_RE.findall(template)
+        ):
+            summary["error"] = "auth.value has unresolved placeholder or empty/invalid credential"
+            return summary
         header_value = _substitute(auth["value"], summary["vars"])
         # If a placeholder stayed literal ({unknown}) the token wasn't
         # captured and we should NOT install a broken header.
         if _PLACEHOLDER_RE.search(header_value):
             summary["error"] = (
-                f"auth.value still has unresolved placeholder: {header_value}"
+                "auth.value still has unresolved placeholder"
             )
             return summary
         EXTRA_HEADERS[header_name] = header_value
@@ -2119,13 +2135,19 @@ def run_auth_flow(flow, timeout=10):
         summary["authenticated"] = True
         return summary
 
-    # No explicit auth field: assume cookie session, look for anything
-    # in the cookie jar planted by the login steps.
+    if auth is not None:
+        summary["error"] = "invalid auth header configuration"
+        return summary
+    # A pre-existing cookie is not evidence that this login established a session.
     try:
         cj = _cookie_jar()
-        summary["authenticated"] = cj is not None and len(list(cj)) > 0
+        summary["authenticated"] = cj is not None and any(
+            before.get((c.domain, c.path, c.name)) != c.value for c in cj
+        )
     except Exception:
         summary["authenticated"] = False
+    if not summary["authenticated"]:
+        summary["error"] = "auth flow did not establish a new or changed session cookie"
     return summary
 
 
@@ -2526,18 +2548,18 @@ def main():
         if asummary["auth_header"]:
             hname, _ = asummary["auth_header"]
             print(f"[dxadyn] auth-flow '{asummary['name']}' installed "
-                  f"'{hname}' header + {asummary['steps_run']} step(s)")
+                  f"'{hname}' header + {asummary['steps_run']} step(s); role not verified")
         elif asummary["authenticated"]:
             print(f"[dxadyn] auth-flow '{asummary['name']}' set cookies "
-                  f"({asummary['steps_run']} step(s))")
+                  f"({asummary['steps_run']} step(s)); role not verified")
         else:
-            print(f"[dxadyn] auth-flow '{asummary['name']}' completed but "
-                  f"nothing stuck (no header, no cookie). Continuing "
-                  f"unauthenticated.", file=sys.stderr)
+            write_failure_reports(args, "auth-flow", "session was not established")
+            print("[dxadyn] auth-flow session was not established; scan stopped", file=sys.stderr)
+            sys.exit(2)
 
         # If the operator ONLY passed --auth-flow (no scan mode selected),
-        # exit clean after auth installation - useful for a two-step run
-        # where the caller composes multiple dxadyn invocations.
+        # exit after checking session establishment. Session state is in-memory;
+        # it does not survive a separate CLI invocation.
         if not (args.stored or args.flow or args.url):
             sys.exit(0)
 
@@ -2548,7 +2570,11 @@ def main():
         ok = login(args.login, args.user, args.password,
                    user_field=args.user_field, pass_field=args.pass_field,
                    csrf_field=args.csrf_field or None)
-        print(f"[dxadyn] login {args.login} -> {'OK' if ok else 'FAILED (continuing anyway)'}")
+        if not ok:
+            write_failure_reports(args, "login", "form login failed")
+            print("[dxadyn] form login failed; scan stopped", file=sys.stderr)
+            sys.exit(2)
+        print("[dxadyn] form login session established (role not verified)")
 
     # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
     # carries its own steps + verdict step(s); we just run it and print.

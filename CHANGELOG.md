@@ -2,6 +2,15 @@
 
 ## Unreleased — 2026-10-05
 
+### R2 auth guard ilk teslimi
+
+- Auth adımlarında 2xx dışı yanıtlar sonraki adımı/header kurulumunu durdurur;
+  eksik/null/boş ve yapısal token değerleri reddedilir.
+- Önceden mevcut cookie yeni login kanıtı sayılmaz. Başarısız form login
+  taramayı exit 2 ile durdurur ve istenen ortak hata raporunu yazar.
+- 15 regresyon eklendi; eski stored fixture'a eksik oturum kontrollü dashboard
+  eklendi. Hedefe özel oturum/rol, rate ve CSRF kabulü açık kalır.
+
 ### K01-min vaka paketi
 
 - Yerel stored yorum fixture'ı, savunmasız/düzeltilmiş renderer ve yalnız loopback

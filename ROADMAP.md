@@ -50,7 +50,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | İş | Son kabul kanıtı | Durum / sonraki kapı |
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
-| R2 | 2026-09-28, JSON regresyonları | Devam; 401/eksik token/fractional rate/CSRF karşı örnekleri |
+| R2 | 2026-10-05, [auth guard ve sınırları](tools/dom-xss-analyzer/AUTH-LIMITS.md) | Devam; HTTP hata/eksik token/eski cookie kontrolleri tamam; hedefe özel oturum, rate ve CSRF açık |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
 | R3–R4 | Yeni kapanış kanıtı yok; 2026-09-28 audit baseline | Açık; browser zinciri ve ölçüm doğruluğu |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
@@ -148,7 +148,7 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 ## R2 — Gönderim ve oturumu güvenilir yap
 
 - [x] Canary çözülmüş JSON nesnesine yerleştirilip JSON serializer ile gönderilir; mevcut 950 örnek seçilen geçerli şablonda parse edilir ve canary round-trip korunur. İç içe değerler ve kontrol karakterleri testli; geçersiz şablon gönderilmez.
-- [ ] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir.
+- [x] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir. [Test ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md); başarısız form login CLI'ı exit 2 ile durdurur. Hedefe özel auth/rol doğrulaması aşağıda açık.
 - [ ] Auth sonrası hedefe özel oturum kontrolü yapılabilir; oturum rolü kaydedilir.
 - [ ] 0.5/s gibi fractional rate ilerler; sıfır/negatif için açık doğrulama vardır; test gerçek uzun uyku gerektirmez.
 - [x] JSON gönderiminin Content-Type ayarı istek başına taşınır; iki eşzamanlı JSON isteği ortak EXTRA_HEADERS'ı değiştirmez. Genel oturum/CSRF paylaşımı aşağıdaki ayrı maddede açık kalır.

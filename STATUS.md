@@ -8,7 +8,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | Bileşen | Durum | Sınır |
 |---|---|---|
 | Statik regex analizi | Çalışan aday üretici | Sanitizer hard-clear FN ve dosya/kapsam eksikleri açık |
-| HTTP reflected/stored/flow/auth | Çalışan prototip | JSON serializer ve JSON Content-Type paylaşımı düzeltildi; auth, rate/CSRF ve genel oturum yarışları açık |
+| HTTP reflected/stored/flow/auth | Çalışan prototip | JSON ve auth hata/token guard'ları düzeltildi; hedefe özel oturum/rol, rate/CSRF ve genel oturum yarışları açık |
 | Payload üretimi | 50 varyant, 18 mutation | 950 üretim; cid normalize edilince 895 farklı dize; çalışan exploit sayısı değil |
 | DOM gözlemci | Deneysel | Bare visit; auth/stored proof entegrasyonu yok |
 | DOM dialog çıktısı | **Düzeltildi** | Normal dialog OBSERVED-DIALOG; proof üretmiyor |
@@ -30,9 +30,11 @@ Bu geliştirme tesliminin yeni test sonuçları [VALIDATION.md](VALIDATION.md) i
 R1 [madde bazında kapandı](audit/2026-10-05-r1/R1-KAPANIS.md).
 K01-min [tek yerel vaka paketi](cases/k01-stored-comment/README.md) tamamlandı:
 5/5 browser kontrolü, fix diff ve aynı payload ile retest. Bağımsız temiz ortam
-tekrarı henüz yok; tam R5 açık. Sırada R2 auth/rate/CSRF düzeltmeleri var.
+tekrarı henüz yok; tam R5 açık. R2'nin HTTP hata/eksik token/eski cookie
+guard'ları ve başarısız login sonrası durma tamamlandı; [sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md).
+Sırada hedefe özel oturum/rol kontrolü, fractional rate ve CSRF sıralaması var.
 R3 gerçek canary execution, doğrulanmış rol ve otomatik uçtan uca zincir açık.
-Son paket: **481 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
+Son paket: **496 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
 Yeni gerçek Chrome testi normal dialog/sink olaylarını ortak raporda kontrol etti;
 eski 36 browser testinin atlanma durumu değişmedi.
 S01 [R1 kapanış kaydı](staj/2026-10-05-r1-kapanis.md) eklendi.
@@ -43,7 +45,7 @@ Bot R0–R9; yazılar C01–C13; kanıt/savunma K01–K05; portfolyo P01–P04; 
 
 S01'e [29 Eylül blind takip kaydı](staj/2026-09-29-blind-takip.md) eklendi.
 Rapor/kanıt için kullanım, yerel süreçler arası test ve JSON/HTML çıktı altyapısı
-ilerledi. Üç vakalık portfolyo ve proof→fix→retest paketi tamamlanmış değildir;
+ilerledi. K01-min proof→fix→retest paketi tamam; üç vakalık portfolyo açık;
 yeni dış hedef taraması veya CVE başvurusu yapılmadı.
 
 ## Tarihsel veri

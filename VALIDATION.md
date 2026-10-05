@@ -1,6 +1,24 @@
 # Doğrulama kaydı — 2026-10-05
 
-## K01-min stored yorum vakası — güncel teslim
+## R2 auth guard — güncel teslim
+
+- Tam paket **496 passed, 36 skipped, 1 warning**, 89.38 saniye.
+  36 eski browser testi otomatik keşif nedeniyle atlandı; benchmark utcnow
+  uyarısı devam ediyor. Geçmiş sayılan testlere atlamalar dahil değil.
+- 15 yeni regresyon: 401/403/429/500, eksik/null/boş/geçersiz token,
+  eski cookie, form hata yanıtı ve CLI durma + ortak hata raporu.
+- Odaklı auth/flow koşusu **49 passed**. İlk tam koşuda eksik dashboard'lu
+  eski stored fixture başarısızdı; fixture tamamlandıktan sonra yukarıdaki
+  tam koşu geçti. Üretimdeki HTTP hata kontrolü gevşetilmedi.
+- [Test logu](audit/2026-10-05-r2-auth/pytest.log),
+  [JUnit](audit/2026-10-05-r2-auth/pytest.xml),
+  [davranış ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md),
+  [staj kaydı](staj/2026-10-05-r2-auth.md).
+
+R2 ilk auth guard kabulü tamam; hedefe özel oturum/rol doğrulaması,
+fractional rate ve CSRF sıralaması açık.
+
+## K01-min stored yorum vakası — önceki teslim
 
 - Yerel browser deneyi: **5/5 kontrol geçti**, Chrome 154.0.8037.93, Playwright
   1.63.0, Python 3.12.14. Savunmasız HTML'de ayrı okuyucu context'inde canary;

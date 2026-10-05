@@ -448,7 +448,7 @@ def test_auth_flow_carries_error_from_underlying_run_flow():
         "auth": {"header": "Authorization", "value": "Bearer {tok}"},
     }
     summary = dxadyn.run_auth_flow(flow)
-    assert summary["error"] and "boom" in summary["error"]
+    assert summary["error"] == "auth request failed"
     assert summary["auth_header"] is None
     assert summary["authenticated"] is False
 
