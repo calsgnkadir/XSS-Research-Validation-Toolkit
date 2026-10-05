@@ -2,6 +2,10 @@
 
 # Writeups
 
+Güncel, tekrar çalıştırılabilir vaka: [K01 stored yorum: proof → fix → retest](../cases/k01-stored-comment/README.md).
+Yerel fixture ve beş browser kontrolü içerir. Aşağıdaki tarihsel yazıların bütün
+iddialarını doğrulamaz veya onların yerine geçmez.
+
 Short, mechanism-first technical writeups on the vulnerability classes practised
 in this repository. The goal is to **explain how each bug works** — not to list
 payloads — using the hands-on findings here as concrete examples. Every writeup

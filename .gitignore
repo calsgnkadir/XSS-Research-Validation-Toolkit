@@ -1,5 +1,6 @@
 __pycache__/
 .dxa/
+.venv-k01/
 *.pyc
 .pytest_cache/
 bench/results-*.md

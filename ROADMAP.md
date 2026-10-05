@@ -51,7 +51,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
 | R2 | 2026-09-28, JSON regresyonları | Devam; 401/eksik token/fractional rate/CSRF karşı örnekleri |
-| K01-min | Henüz yok | Sonraki vaka paketi; tek fixture ve proof→fix→retest |
+| K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
 | R3–R4 | Yeni kapanış kanıtı yok; 2026-09-28 audit baseline | Açık; browser zinciri ve ölçüm doğruluğu |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
@@ -199,13 +199,19 @@ Kabul ölçütleri:
 
 ## R5 — Stajın devamı olan güçlü vaka
 
+**K01-min tamam:** [stored yorum vakası](cases/k01-stored-comment/README.md).
+Kaydetme→ayrı okuyucu context'i→canary, aynı payload ile encoding sonrası retest,
+JS kapalı/JSON/normal dialog negatif kontrolleri; request/response, fix diff,
+ortam sürümleri ve kaynak hash'leri mevcut. Yeni CVE/gerçek ürün bulgusu değildir.
+Tam R5'in bağımsız temiz ortam tekrarı henüz yapılmadı; aşağıdaki ilk madde açık.
+
 İlk vaka için mevcut yetkili laboratuvar veya minimal yerel fixture kullanılabilir. Teslimat: hedef sürümü, kaynak→sink izi, iki rol gerekiyorsa hesap A/B kontrolü, tam komut, maskeli request/response, cid ile proof, negatif kontrol, fix diff ve aynı testin fix sonrası sonucu.
 
 - [ ] Temiz ortamdan başka biri tekrar üretebilir.
-- [ ] Çalıştırılmayan kısım ve gözlenmeyen davranış açık yazılır.
-- [ ] Staj kaydı “amaç, yöntem, bulgu, hata, düzeltme, öğrenilen” akışını izler.
-- [ ] En az bir false-positive/false-negative karşı örneği ve çözümü belgelenir.
-- [ ] Önceki writeup'lara düzeltme/kanıt bağlantıları eklenir; eski rapor değiştirilmez.
+- [x] K01-min için çalıştırılmayan kısım ve gözlenmeyen davranış açık yazılır.
+- [x] K01-min staj kaydı amaç, yöntem, bulgu, hata, düzeltme, öğrenilen akışını izler.
+- [x] JSON ham marker ve normal dialog false-positive karşı örnekleri; R1 çözümü ve yeni browser negatif kontrolleri belgelenir.
+- [x] Writeup 01/10/11'e güncel vaka bağlantısı eklendi; eski rapor değiştirilmedi. Yazıların bütün C düzeltmeleri tamamlandı sayılmaz.
 
 ## R6 — Kullanılabilir ilk sürüm
 

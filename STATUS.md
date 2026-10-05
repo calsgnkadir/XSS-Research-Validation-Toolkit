@@ -28,9 +28,11 @@ Bu geliştirme tesliminin yeni test sonuçları [VALIDATION.md](VALIDATION.md) i
 ## Sıradaki küçük teslim
 
 R1 [madde bazında kapandı](audit/2026-10-05-r1/R1-KAPANIS.md).
-Sırada K01-min tek yerel vaka paketi ve R2 auth/rate/CSRF düzeltmeleri var.
+K01-min [tek yerel vaka paketi](cases/k01-stored-comment/README.md) tamamlandı:
+5/5 browser kontrolü, fix diff ve aynı payload ile retest. Bağımsız temiz ortam
+tekrarı henüz yok; tam R5 açık. Sırada R2 auth/rate/CSRF düzeltmeleri var.
 R3 gerçek canary execution, doğrulanmış rol ve otomatik uçtan uca zincir açık.
-Son paket: **479 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
+Son paket: **481 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
 Yeni gerçek Chrome testi normal dialog/sink olaylarını ortak raporda kontrol etti;
 eski 36 browser testinin atlanma durumu değişmedi.
 S01 [R1 kapanış kaydı](staj/2026-10-05-r1-kapanis.md) eklendi.

@@ -1,6 +1,26 @@
 # Doğrulama kaydı — 2026-10-05
 
-## R1 kabul kapsamı kapanışı — güncel teslim
+## K01-min stored yorum vakası — güncel teslim
+
+- Yerel browser deneyi: **5/5 kontrol geçti**, Chrome 154.0.8037.93, Playwright
+  1.63.0, Python 3.12.14. Savunmasız HTML'de ayrı okuyucu context'inde canary;
+  aynı payload için fix sonrası, JS kapalı, JSON-only ve normal dialog negatifleri.
+- Bot R1 raporu reflection/candidate seviyesinde kalır; vaka execution sonucu
+  ayrı kaydedilir. Bu çalışma genel R3 execution motorunu tamamlamaz.
+- İki HTTP fixture regresyonuyla tam paket: **481 passed, 36 skipped, 1 warning**,
+  80.33 saniye. Atlamalar eski browser otomatik keşfi, uyarı benchmark utcnow.
+- [Vaka ve tekrar üretim](cases/k01-stored-comment/README.md),
+  [browser sonuçları](cases/k01-stored-comment/evidence/2026-10-05-verified/result.json),
+  [fix diff](cases/k01-stored-comment/evidence/2026-10-05-verified/fix.diff),
+  [pytest logu](audit/2026-10-05-k01/pytest.log), [JUnit](audit/2026-10-05-k01/pytest.xml).
+- İlk browser denemesi route callback imza hatasıyla başarısız oldu; helper
+  düzeltildikten sonraki 5/5 kaydı yayımlandı. Önceki başarısız çıktı yerel audit
+  alanında korundu, başarılı deney sayısına katılmadı.
+
+K01-min tamam. Yeni venv kurulumu/bağımsız temiz ortam tekrarı henüz doğrulanmadı;
+tam R5'in bu kabul maddesi açık kaldı. Haricî ürün, oturum rolü veya CVE kanıtı yok.
+
+## R1 kabul kapsamı kapanışı — önceki teslim
 
 - Tam paket: **479 passed, 36 skipped, 1 warning**, 87.53 saniye.
 - Önceki teslimin üzerine 29 kabul/regresyon örneği: dokuz ayrıştırma sınırı,

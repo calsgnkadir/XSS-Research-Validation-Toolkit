@@ -2,6 +2,15 @@
 
 ## Unreleased — 2026-10-05
 
+### K01-min vaka paketi
+
+- Yerel stored yorum fixture'ı, savunmasız/düzeltilmiş renderer ve yalnız loopback
+  çalışan browser deney script'i eklendi. Aynı canary ile 5/5 kontrol geçti.
+- Request/response, ortam sürümleri, kaynak hash'leri, fix diff ve vaka/staj
+  belgeleri eklendi. Writeup 01/10/11 güncel vakaya bağlandı; tarihsel raporlar korunur.
+- İki HTTP regresyonuyla tam paket 481 passed, 36 skipped. Genel R3 execution
+  motoru ve tam R5 bağımsız temiz ortam kabulü tamamlandı sayılmaz.
+
 ### R1 kapanışı
 
 - Finding/ReportEvent dataclass sözleşmesi; statik, HTTP, static-guided, DOM ve
