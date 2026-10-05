@@ -1,6 +1,6 @@
 """Persistent stored blind attempts; callbacks are network evidence, never JS proof."""
 import argparse
-import html
+import dxa_evidence as evidence
 import json
 import math
 from pathlib import Path
@@ -167,18 +167,21 @@ class AttemptJournal:
 
 
 def render_report(records):
-    columns = ("attempt_id", "run_id", "canary_id", "target", "field", "variant",
-               "session_role", "submission_state", "sub_status", "evidence_level",
-               "callback_state", "created_at", "submitted_at", "hit_at", "last_checked_at")
-    rows = "".join("<tr>" + "".join("<td>" + html.escape(str(row.get(k, ""))) + "</td>"
-                                  for k in columns) + "</tr>" for row in records)
-    return ("<!doctype html><html lang='en'><meta charset='utf-8'>"
-            "<title>Blind attempt journal</title><h1>Blind attempt journal</h1>"
-            "<p>Resource callbacks establish a network request, not JavaScript execution "
-            "or a confirmed vulnerability. No-hit does not mean safe. Session role is an "
-            "operator label, not verified authentication. Times are Unix seconds.</p>"
-            "<table border='1'><tr>" + "".join("<th>" + k + "</th>" for k in columns)
-            + "</tr>" + rows + "</table></html>")
+    return evidence.render_report(journal_report(records))
+
+
+def journal_report(records):
+    events = []
+    for record in records:
+        state = record.get("callback_state", "not-queried")
+        events.append(evidence.ReportEvent("callback", "error" if state == "query-error" else "info",
+                                           state, canary_id=record["canary_id"]))
+        status = record.get("sub_status")
+        if record.get("submission_state") in ("error", "prepared") or (status and status >= 400):
+            events.append(evidence.ReportEvent("submission", "error" if not status or status >= 500 else "skip",
+                                               record["submission_state"], record.get("target", ""),
+                                               status, record["canary_id"]))
+    return evidence.report(records, "blind-reconcile", events)
 
 
 def main(argv=None):
@@ -196,10 +199,12 @@ def main(argv=None):
             raise ValueError("journal and report paths must be distinct")
         journal = AttemptJournal(args.journal, args.blind_callback, existing=True)
         records = journal.reconcile(args.run_id, args.timeout)
-        Path(args.json_out).write_text(json.dumps({"schema_version": 1, "attempts": records},
+        document = journal_report(records)
+        document["attempts"] = document["findings"]  # compatibility alias, same objects
+        Path(args.json_out).write_text(json.dumps(document,
                                                 indent=2), encoding="utf-8")
         if args.html:
-            Path(args.html).write_text(render_report(records), encoding="utf-8")
+            Path(args.html).write_text(evidence.render_report(document), encoding="utf-8")
     except (OSError, ValueError, sqlite3.Error) as exc:
         parser.error(str(exc))
     print(f"{len(records)} attempt(s); "

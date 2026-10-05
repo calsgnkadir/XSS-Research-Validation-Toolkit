@@ -35,11 +35,11 @@ Mevcut HTTP tarama komutuna şu seçenekler eklenebilir:
 ```
 
 Çıktı klasörünü önceden oluştur. JSON zarfı `schema_version`, `mode`, `findings`,
-`meta` ve `skipped_submits` sayacını içerir. İki çıktı aynı finding listesini
+`events`, `meta` ve `skipped_submits` sayacını içerir. İki çıktı aynı finding listesini
 kullanır; HTML'de finding/attempt kimliği gösterilir. Flow'un auth/vars sözlüğü
-JSON raporuna kopyalanmaz. Yine de hedef URL, marker veya hata metni hassas veri
-içerebilir; paylaşım kopyası ayrıca incelenmelidir. Bu HTTP raporları blind
-journal'ın URL maskeleme garantisini devralmaz.
+JSON raporuna kopyalanmaz. Ortak exporter bilinen header/cookie alanlarını ve
+URL kullanıcı/query/fragment değerlerini maskeler. Path/rol/operatör verisi yine
+hassas olabilir; paylaşım kopyası ayrıca incelenmelidir.
 
 ## Uyumluluk ve kalan iş
 
@@ -48,11 +48,9 @@ journal'ın URL maskeleme garantisini devralmaz.
 - Eski arşiv HTML'leri değiştirilmedi. Tarihsel etiketler güncel proof değildir.
 - `context_executes()` eski çağıranlar için kalan bağlam sezgisidir;
   artık sınıflandırmada kullanılmaz ve kanıt fonksiyonu değildir.
-- Blind yansımasız kayıtlar ayrı attempt şemasında, DOM gözlemleri ayrı modelde
-  kalır. Bütün motorların ortak şeması henüz tamamlanmadı.
-- Rol etiketi doğrulanmış kimlik değildir; farklı sink/rol dedup düzeltmesi açıktır.
-- JSON'daki skip sayacı tam hata/atlama olay listesi değildir. Ağ/auth hatalarının
-  bütün modlarda tek modelde sunulması R2'de açık kalır.
+- Statik/DOM/journal adapter'ları da [R1 sözleşmesini](EVIDENCE-CONTRACT.md) kullanır.
+- Rol etiketi doğrulanmış kimlik değildir; farklı veya bilinmeyen sink/rol birleştirilmez.
+- `events` hata/atlama/info kayıtlarını ayrı taşır. İstek ve auth davranışını düzeltmek R2'dir.
 - Flow CLI'nin 0 dönüş kodu açıklık kanıtlamaz; mevcut komut davranışı korundu.
 
 ## Tekrar doğrulama

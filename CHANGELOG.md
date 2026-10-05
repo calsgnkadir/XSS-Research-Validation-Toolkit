@@ -2,6 +2,20 @@
 
 ## Unreleased — 2026-10-05
 
+### R1 kapanışı
+
+- Finding/ReportEvent dataclass sözleşmesi; statik, HTTP, static-guided, DOM ve
+  journal adapter'ları. JSON/HTML aynı kimlikleri, gözlemleri ve olayları taşır.
+- Dedup gönderim/sink/bağlam/rol sınırlarını korur; bilinmeyen kimliği birleştirmez.
+  Yinelenen özgün gözlemler bellekte korunur; paylaşım kopyası maskelenir.
+- Ağ/flow/callback/browser/statik hata ve atlamaları ayrı olaylar olarak raporlanır.
+- Statik ortak rapor `--json-out`; eski `--json` liste API'si korunur. DOM JSON/HTML
+  desteği eklendi. Journal JSON `attempts`, ortak `findings` ile uyumlu alias oldu.
+- 29 yeni kabul testi, gerçek Chrome negatif kontrolü, kapanış matrisi ve staj kaydı.
+  Tam sonuç 479 passed, 36 skipped; R2/R3 ürün işleri açık.
+
+### Önceki HTTP alt teslimi
+
 - HTTP modları ortak finding üreticisine taşındı; schema_version, finding_id,
   evidence_level ve unreviewed triage alanları tutarlı hale getirildi.
 - Raw marker ve breakout varyant adı execution kanıtı sayılmaz. Flow JSON

@@ -1,6 +1,29 @@
 # Doğrulama kaydı — 2026-10-05
 
-## R1 HTTP kanıt modeli — güncel teslim
+## R1 kabul kapsamı kapanışı — güncel teslim
+
+- Tam paket: **479 passed, 36 skipped, 1 warning**, 87.53 saniye.
+- Önceki teslimin üzerine 29 kabul/regresyon örneği: dokuz ayrıştırma sınırı,
+  aynı gözlemi kaybetmeden gruplama, bilinmeyen sink/rol, geçersiz şema ve
+  kazanılmamış proof/rol iddiaları, maskeleme, ayrı hata/skip olayları, DOM/journal/
+  statik/bridge adaptörleri, flow/auth-flow girdi hatası.
+- **Gerçek yerel Chrome kontrolü geçti:** normal alert + innerHTML sink; yalnız
+  candidate/sink-observed; aynı bulgu kimliği JSON ve HTML'de. Chrome yolu testte
+  açık verildi. [JSON](audit/2026-10-05-r1/chrome.json), [HTML](audit/2026-10-05-r1/chrome.html).
+- Eski 36 browser testi otomatik binary keşfi nedeniyle atlandı; bunlar geçmiş
+  sayılmadı. Uyarı benchmark'taki `datetime.utcnow()` deprecation uyarısıdır.
+- Ara kontrol: 259 odaklı test geçti; ilk tam paket 476 geçti. Son üç kapanış
+  kontrolünden sonra 479 sonucu alındı. Arada otomatik onay incelemesi kullanım
+  limitine takıldığı için bir test komutu hiç çalışmadı; sonuç diye sayılmadı.
+- [Tam log](audit/2026-10-05-r1/pytest-r1.log), [JUnit](audit/2026-10-05-r1/pytest-r1.xml),
+  [kabul testleri](tools/dom-xss-analyzer/test_r1_contract.py),
+  [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md),
+  [resmî sözleşme](tools/dom-xss-analyzer/EVIDENCE-CONTRACT.md).
+
+Bu sonuç R1'in raporlama/kanıt kabul kapsamını kapatır. R2 auth/rate/CSRF,
+R3 execution/rol doğrulaması ve R4 benchmark doğruluğu tamamlandı sayılmaz.
+
+## R1 HTTP kanıt modeli — önceki teslim
 
 - Tam paket: **450 passed, 36 skipped, 1 warning**, 76.29 saniye.
 - 12 yeni regresyon: yedi Content-Type × beş HTTP yolunun ortak sınıflandırması;

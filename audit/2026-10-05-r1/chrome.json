@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "mode": "dom",
+  "findings": [
+    {
+      "finding_id": "360148aca908f6aab5b3c9c04e2f678c",
+      "url": "http://127.0.0.1:61916/",
+      "method": "GET",
+      "param": "bare-visit",
+      "context": "dom",
+      "sink_identity": "sink:Element.innerHTML:0",
+      "session_role": "unspecified",
+      "evidence_level": "sink-observed",
+      "severity": "sink-observed",
+      "observations": [
+        {
+          "kind": "sink",
+          "sha256": "1b84fc2977d6ab1750e7a6a8f05a46c4d40371339a2857251d22a2c507bc1229",
+          "content": "omitted: may contain credentials"
+        }
+      ],
+      "attempt_id": null,
+      "canary_id": null,
+      "source": {
+        "url": "http://127.0.0.1:61916/",
+        "method": "GET",
+        "parameter": "bare-visit"
+      },
+      "sink": {
+        "url": "http://127.0.0.1:61916/",
+        "identity": "sink:Element.innerHTML:0"
+      },
+      "content_type": "",
+      "triage": "unreviewed",
+      "role_verified": false,
+      "evidence_links": [],
+      "schema_version": 1
+    },
+    {
+      "finding_id": "f9d0fe4ca55165befe6fd16bc6a893b3",
+      "url": "http://127.0.0.1:61916/",
+      "method": "GET",
+      "param": "bare-visit",
+      "context": "dom",
+      "sink_identity": "dialog:alert:0",
+      "session_role": "unspecified",
+      "evidence_level": "candidate",
+      "severity": "observed-dialog",
+      "observations": [
+        {
+          "kind": "dialog",
+          "sha256": "da1afbcf460409ebccfd58ca15de27d19c074c261891a2b0b49b754138da57e4",
+          "content": "omitted: may contain credentials"
+        }
+      ],
+      "attempt_id": null,
+      "canary_id": null,
+      "source": {
+        "url": "http://127.0.0.1:61916/",
+        "method": "GET",
+        "parameter": "bare-visit"
+      },
+      "sink": {
+        "url": "http://127.0.0.1:61916/",
+        "identity": "dialog:alert:0"
+      },
+      "content_type": "",
+      "triage": "unreviewed",
+      "role_verified": false,
+      "evidence_links": [],
+      "schema_version": 1
+    }
+  ],
+  "events": [],
+  "meta": {},
+  "skipped_submits": 0
+}

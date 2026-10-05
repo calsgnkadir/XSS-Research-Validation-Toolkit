@@ -46,6 +46,7 @@ Usage
 """
 
 import argparse
+import dxa_evidence as evidence
 from dxa_attempts import AttemptJournal, candidate
 import concurrent.futures
 import datetime
@@ -519,8 +520,8 @@ def check_blind_callback_hit(cid, timeout=None, poll_interval=0.5):
                     # that actually fetched OUR canary rather than a later
                     # reload.
                     return hits[-1]
-        except Exception:                                # noqa: BLE001
-            pass
+        except Exception as exc:                         # noqa: BLE001
+            record_response_event("callback", url, None, type(exc).__name__)
         if time.monotonic() >= deadline:
             return None
         time.sleep(poll_interval)
@@ -685,6 +686,15 @@ def _parallel_map(func, items):
 SKIPPED_SUBMITS = []        # list of {canary_id, url, method, variant, status, reason}
 VERBOSE = False             # print each skip inline (set by main() from --verbose)
 WAF_LOG_FILE = None         # append rejected canaries to this file (set from --waf-log)
+REPORT_EVENTS = []
+SESSION_ROLE = "unspecified"
+
+
+def record_response_event(stage, url, status, reason=None):
+    if status in (None, 0) or (isinstance(status, int) and status >= 400):
+        REPORT_EVENTS.append(evidence.ReportEvent(stage, "error" if status in (None, 0) or status >= 500 else "skip",
+                                                  reason or ("transport-error" if not status else "http-rejected"),
+                                                  url, status))
 
 # Patterns that, on a 4xx/5xx response, suggest the layer that rejected the
 # request was a WAF / edge filter rather than the target app's own validation.
@@ -724,6 +734,7 @@ def _record_skip(cid, url, method, variant, status, reason, canary=None):
              "method": (method or "GET").upper(),
              "variant": variant, "status": status, "reason": reason}
     SKIPPED_SUBMITS.append(entry)
+    REPORT_EVENTS.append(evidence.ReportEvent("probe", "skip", reason, url, status, cid))
     if VERBOSE:
         print(f"[skip] {url}  [{entry['method']}]  variant={variant}  "
               f"reason={reason}  status={status}  cid={cid}",
@@ -812,12 +823,15 @@ def fetch(url, data=None, method=None, extra=None):
     try:
         with OPENER.open(req, timeout=15) as resp:
             ct = (resp.headers.get("Content-Type") or "").lower()
+            record_response_event("http", url, resp.status)
             return (resp.status, resp.geturl(),
                     resp.read().decode("utf-8", "ignore"), ct)
     except urllib.error.HTTPError as e:
+        record_response_event("http", url, e.code)
         ct = (e.headers.get("Content-Type") if e.headers else "") or ""
         return e.code, url, e.read().decode("utf-8", "ignore"), ct.lower()
     except Exception as e:                                    # noqa: BLE001
+        record_response_event("http", url, None, type(e).__name__)
         return None, url, f"__error__: {e}", ""
 
 
@@ -934,23 +948,8 @@ def _apply_ct_gate(reflection, context, content_type, variant="body"):
 
 
 def dedupe_findings(findings):
-    """Collapse findings that share the same (canary_id, reflection, context)
-    - a stored payload that surfaces on many admin/preview pages is the same
-    bug repeated (WonderCMS live-fire example: 58 near-identical rows). Keep
-    the first occurrence, tuck the rest of the URLs into a `duplicates` list
-    on it, and drop them from the primary list."""
-    seen, out = {}, []
-    for f in findings:
-        cid = f.get("canary_id") or f.get("canary") or id(f)
-        key = (cid, f.get("reflection"), f.get("context"))
-        if key in seen:
-            primary = seen[key]
-            primary.setdefault("duplicates", []).append(
-                f.get("check_url") or f.get("url"))
-        else:
-            seen[key] = f
-            out.append(f)
-    return out
+    """Group matching submission/sink/context/role observations without losing evidence."""
+    return evidence.deduplicate(findings)
 
 
 def verdict(cid, body, marker=MARKUP):
@@ -1104,7 +1103,8 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
             "canary_id": canary_id, "content_type": content_type,
             "variant": variant,
             "schema_version": 1, "finding_id": secrets.token_hex(16),
-            "triage": "unreviewed", "session_role": "unspecified",
+            "triage": "unreviewed", "session_role": SESSION_ROLE,
+            "attempt_id": canary_id, "evidence_links": [],
             "evidence_level": "reflection" if v in ("unencoded", "attr-only") else "candidate",
             # Phase 3.3 schema fields - populated by upgrade_finding_with_blind_hit
             "blind_callback_hit": False,
@@ -1195,13 +1195,7 @@ def crawl(base_url, depth, variants=None, waf_bypass=False):
                     queue.append((l.split("?")[0], d - 1))
     # de-dupe on (url, param, reflection, variant) - variant-aware so a
     # body + title-breakout reflection on the same param stays as 2 rows
-    uniq, keys = [], set()
-    for f in findings:
-        k = (f["url"], f["param"], f["reflection"], f.get("variant", "body"))
-        if k not in keys:
-            keys.add(k)
-            uniq.append(f)
-    return uniq
+    return dedupe_findings(findings)
 
 
 # --- v2: authenticated + stored XSS -----------------------------------------
@@ -1705,13 +1699,17 @@ def _render_blind_section(blind_hits, color_hex, esc):
     )
 
 
-def render_html(findings, target, mode, meta=None):
+def render_html(findings, target, mode, meta=None, events=None):
     """Self-contained HTML report - no external assets. Same visual language as
     dxa's report (dark GitHub-ish theme, severity/confidence badges) so the two
     tools' outputs feel like one product. `meta` is a dict of extra context
     lines to print in the sub-header (submit landing, pages crawled, ...)."""
     def esc(s):
         return htmllib.escape(str(s))
+
+    report = evidence.report(findings, mode, REPORT_EVENTS if events is None else events, meta)
+    findings, meta = report["findings"], report["meta"]
+    target = evidence.safe_url(target)
 
     color = {"high": "#f85149", "medium": "#d29922", "low": "#8b949e",
              "unencoded": "#f85149", "attr-only": "#d29922",
@@ -1742,7 +1740,7 @@ def render_html(findings, target, mode, meta=None):
         status = f"submit HTTP {sub_st}, check HTTP {chk_st}" if sub_st is not None \
             else f"HTTP {chk_st}"
         dups = f.get("duplicates") or []
-        dup_note = f" <span class='muted small'>(+{len(dups)} more same-bug URLs)</span>" if dups else ""
+        dup_note = f" <span class='muted small'>(+{len(dups)} repeated observations)</span>" if dups else ""
         rows.append(
             "<tr>"
             f"<td><span class='badge' style='background:{color.get(sev,'#8b949e')}'>"
@@ -1802,6 +1800,8 @@ def render_html(findings, target, mode, meta=None):
  <tr><th>classification</th><th>evidence</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
  {"".join(rows) if rows else "<tr><td colspan=9 class='muted'>No unencoded reflections found. (Inputs may be encoded, POST-guarded, or absent.)</td></tr>"}
 </table>
+{evidence.render_events(report['events'])}
+<details><summary>Observation records</summary><pre>{esc(json.dumps(findings, ensure_ascii=False, indent=2))}</pre></details>
 <footer>dxadyn - deterministic dynamic XSS verifier. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>
 """
 
@@ -1811,9 +1811,16 @@ def write_json_report(path, findings, mode, meta=None):
     if not path:
         return
     with open(path, "w", encoding="utf-8") as fh:
-        json.dump({"schema_version": 1, "mode": mode, "findings": findings,
-                   "meta": meta or {}, "skipped_submits": len(SKIPPED_SUBMITS)},
+        json.dump(evidence.report(findings, mode, REPORT_EVENTS, meta),
                   fh, ensure_ascii=False, indent=2)
+
+
+def write_failure_reports(args, mode, reason):
+    REPORT_EVENTS.append(evidence.ReportEvent(mode, "error", reason))
+    write_json_report(args.json_out, [], mode)
+    if args.html:
+        with open(args.html, "w", encoding="utf-8") as fh:
+            fh.write(render_html([], "", mode))
 
 
 def _parse_kv_list(text):
@@ -2016,6 +2023,7 @@ def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
             method, url, body, headers, content_type, timeout=timeout,
         )
         summary["steps_run"] += 1
+        record_response_event("flow", url, status)
 
         if status == 0:
             summary["error"] = f"{sname}: {text}"
@@ -2317,10 +2325,8 @@ def main():
     ap.add_argument("--session-role", default="unspecified",
                     help="operator-supplied role label for stored blind journal; not verified auth")
     ap.add_argument("--json-out", metavar="FILE", default="",
-                    help="versioned HTTP finding report; reflected, stored and flow modes")
+                    help="versioned HTTP/DOM findings and operational events")
     args = ap.parse_args()
-    if args.dom and args.json_out:
-        ap.error("--json-out currently supports HTTP modes only")
     if args.json_out and args.html:
         from pathlib import Path
         if Path(args.json_out).resolve() == Path(args.html).resolve():
@@ -2331,6 +2337,9 @@ def main():
     VERBOSE = bool(args.verbose)
     WAF_LOG_FILE = args.waf_log or None
     SKIPPED_SUBMITS.clear()
+    REPORT_EVENTS.clear()
+    global SESSION_ROLE
+    SESSION_ROLE = args.session_role
 
     # Phase 1.1: wire concurrency / rate / jitter into module state
     global PARALLEL_WORKERS, _RATE_LIMITER, JITTER_MS_MIN, JITTER_MS_MAX
@@ -2361,11 +2370,21 @@ def main():
         try:
             import dxadom
         except ImportError as e:
+            REPORT_EVENTS.append(evidence.ReportEvent("browser", "error", "harness import failed", args.url or ""))
+            write_json_report(args.json_out, [], "dom")
+            if args.html:
+                with open(args.html, "w", encoding="utf-8") as fh:
+                    fh.write(render_html([], args.url or "", "dom"))
             print(f"[dxadom] harness import failed: {e}", file=sys.stderr)
             sys.exit(2)
         print(dxadom.summarize_availability())
         ok, reason = dxadom.is_available()
         if not ok:
+            REPORT_EVENTS.append(evidence.ReportEvent("browser", "skip", "browser unavailable", args.url or ""))
+            write_json_report(args.json_out, [], "dom")
+            if args.html:
+                with open(args.html, "w", encoding="utf-8") as fh:
+                    fh.write(render_html([], args.url or "", "dom"))
             sys.exit(2)
         if not args.url:
             # No URL given: the operator just wanted the availability
@@ -2376,8 +2395,19 @@ def main():
                   "Composition with --stored/--flow/--auth-flow is Phase 2.2+.",
                   file=sys.stderr)
             sys.exit(2)
-        with dxadom.BrowserSession() as sess:
-            summary = sess.visit(args.url)
+        try:
+            with dxadom.BrowserSession() as sess:
+                summary = sess.visit(args.url)
+        except Exception as exc:
+            summary = {"url": args.url, "status": None, "title": "", "body_len": 0,
+                       "console": [], "errors": [type(exc).__name__]}
+        dom_findings, dom_events = evidence.dom_observations(summary, SESSION_ROLE)
+        REPORT_EVENTS.extend(dom_events)
+        record_response_event("browser-navigation", args.url, summary.get("status"))
+        write_json_report(args.json_out, dom_findings, "dom")
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as fh:
+                fh.write(render_html(dom_findings, args.url, "dom"))
         print(f"[dxadom] visited {summary['url']} status={summary['status']} "
               f"title={summary['title']!r} body_len={summary['body_len']}")
         # Phase 2.2: report DOM sink hits (executed sinks, not response
@@ -2419,8 +2449,7 @@ def main():
         if auth:
             print(f"[dxadom] auto-detected auth headers ({len(auth)}):")
             for name, value in list(auth.items())[:20]:
-                short = value if len(value) < 60 else value[:57] + "..."
-                print(f"    {name}: {short}")
+                print(f"    {name}: [redacted]")
         # Optional: report request count for context (useful when auth is
         # empty - tells the operator if the page even made any XHRs).
         reqs = summary.get("requests") or []
@@ -2485,10 +2514,12 @@ def main():
                   "--auth-flow wins, --login ignored", file=sys.stderr)
         aflow = _load_flow(args.auth_flow)
         if "__error__" in aflow:
+            write_failure_reports(args, "auth-flow", "auth flow could not be loaded")
             print(f"[dxadyn] {aflow['__error__']}", file=sys.stderr)
             sys.exit(2)
         asummary = run_auth_flow(aflow)
         if asummary["error"]:
+            write_failure_reports(args, "auth-flow", "auth flow failed")
             print(f"[dxadyn] auth-flow error: {asummary['error']}",
                   file=sys.stderr)
             sys.exit(2)
@@ -2524,10 +2555,11 @@ def main():
     if args.flow:
         flow = _load_flow(args.flow)
         if "__error__" in flow:
+            write_failure_reports(args, "flow", "flow could not be loaded")
             print(f"[dxadyn] {flow['__error__']}", file=sys.stderr)
             sys.exit(2)
         summary = run_flow(flow)
-        report_meta = {"steps_run": summary["steps_run"], "error": summary["error"]}
+        report_meta = {"steps_run": summary["steps_run"], "error": "flow failed" if summary["error"] else None}
         write_json_report(args.json_out, summary["verdicts"], "flow", report_meta)
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
@@ -2670,7 +2702,7 @@ def main():
             variant = f.get("variant", "body")
             vtag = f" variant={variant}" if variant != "body" else ""
             dup = len(f.get("duplicates", []))
-            dup_s = f"  (+{dup} more URLs, same bug)" if dup else ""
+            dup_s = f"  (+{dup} repeated observations)" if dup else ""
             print(f"{f['check_url']}  [{sev.upper()}] context={ctx}{vtag}{mode}  "
                   f"stored via {f['target']} field '{f['field']}'  -> {tag}  "
                   f"(submit HTTP {f['sub_status']}, check HTTP {f['check_status']}){dup_s}")

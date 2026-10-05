@@ -57,13 +57,14 @@ Callback sunucusunun kendi veritabanı ayrı, daha geniş bir ham kayıttır.
 
 Journal, gönderim/callback kaydıdır; bulunan bütün reflection/sink URL'lerini
 arşivlemez. Tarama sırasındaki başarılı `--blind-wait` eşleşmesi journal'a da
-yazılır. Eski canlı poller no-hit/hata ayrımını yapmadığından başarısız canlı
-sorgu journal'da `not-queried` kalabilir; ayrıntılı durum için yukarıdaki ayrı
-kontrol komutunu kullan. Bu sınırlama genel R2 hata modelinde açık tutulur.
+yazılır. Canlı poller sorgu hatasını ortak raporun events listesine yazar;
+journal'daki callback_state için ayrıntılı güncellemeyi yukarıdaki ayrı kontrol
+komutu yapar. Canlı başarısız sorguda journal `not-queried` kalabilir.
 
-JSON ve HTML kontrol raporu aynı attempt listesinden çıkar. Bu dar şema,
-reflected/flow/DOM dahil bütün bot için ortak finding şeması değildir.
-Browser execution, rol doğrulaması ve sink bazında dedup hâlâ R1–R3 işleridir.
+JSON ve HTML kontrol raporu aynı [R1 Finding/ReportEvent modelinden](EVIDENCE-CONTRACT.md)
+çıkar. JSON `attempts`, ortak `findings` listesinin uyumluluk alias'ıdır;
+SQLite journal depolama formatı korunmuştur. Browser execution ve doğrulanmış
+rol R2/R3 işleridir; ortak rapor ve konservatif dedup R1'de tamamlandı.
 Kayıt ekleme hatası gönderimi durdurur; journal yazılamıyorsa sessizce taramaya geçilmez.
 
 Regresyonları çalıştır:

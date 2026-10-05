@@ -90,14 +90,19 @@ def run_dxa(codebase_path):
             capture_output=True, text=True, timeout=60,
         )
     except Exception as e:                                    # noqa: BLE001
+        dxadyn.record_response_event("static-bridge", "", None, type(e).__name__)
         print(f"[dxa2dyn] dxa subprocess failed: {e}", file=sys.stderr)
         return []
     out = proc.stdout.strip()
+    if proc.returncode not in (0, 1):
+        dxadyn.record_response_event("static-bridge", "", None, "static scan failed")
     if not out:
+        dxadyn.record_response_event("static-bridge", "", None, "empty static output")
         return []
     try:
         return json.loads(out)
     except json.JSONDecodeError:
+        dxadyn.record_response_event("static-bridge", "", None, "invalid static output")
         return []
 
 
@@ -112,12 +117,10 @@ def probe_hints(target_url, hint_params):
         status, _, body, _ct = dxadyn.fetch(url)
         v = dxadyn.verdict(cid, body or "")
         if v in ("unencoded", "attr-only"):
-            out.append({
-                "url": target_url, "method": "GET", "param": name,
-                "reflection": v,
-                "confidence": "high" if v == "unencoded" else "medium",
-                "status": status, "origin": "dxa-guided",
-            })
+            row = dxadyn._finding(target_url, "GET", name, v, status,
+                                  dxadyn.find_context(cid, body or ""), cid, _ct)
+            row["origin"] = "dxa-guided"
+            out.append(row)
     return out
 
 
@@ -130,7 +133,13 @@ def main():
                     help="raw Cookie header attached to every dynamic request")
     ap.add_argument("--header", action="append", default=[],
                     help="extra header 'Name: value' (repeatable)")
+    ap.add_argument("--json-out", default="")
+    ap.add_argument("--html", default="")
     args = ap.parse_args()
+    dxadyn.REPORT_EVENTS.clear()
+    dxadyn.SKIPPED_SUBMITS.clear()
+    if args.json_out and args.html and os.path.abspath(args.json_out) == os.path.abspath(args.html):
+        ap.error("JSON and HTML outputs must have distinct paths")
 
     if args.cookie:
         dxadyn.apply_cookie(args.cookie)
@@ -153,6 +162,10 @@ def main():
         f["origin"] = "crawl-discovered"
     hint_findings = probe_hints(args.url, hints)
     all_findings = dyn_findings + hint_findings
+    dxadyn.write_json_report(args.json_out, all_findings, "static-guided")
+    if args.html:
+        with open(args.html, "w", encoding="utf-8") as fh:
+            fh.write(dxadyn.render_html(all_findings, args.url, "static-guided"))
 
     if not all_findings:
         print("No unencoded reflections. Static-side flags remain (below);")

@@ -1,0 +1,107 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dxadyn report - http://127.0.0.1:61916/</title>
+<style>
+ body{font-family:system-ui,Arial,sans-serif;background:#0d1117;color:#e6edf3;margin:0;padding:28px}
+ h1{font-size:20px;margin:0 0 4px} .sub{color:#8b949e;font-size:13px;margin-bottom:12px}
+ .stats{display:flex;gap:14px;margin:18px 0 12px;flex-wrap:wrap}
+ .stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 16px;min-width:110px}
+ .stat .n{font-size:22px;font-weight:700} .stat .l{color:#8b949e;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+ .meta{list-style:none;padding:10px 14px;margin:0 0 18px;background:#161b22;border:1px solid #30363d;border-radius:8px;font-size:13px}
+ .meta li{margin:2px 0} .meta b{color:#8b949e;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+ table{width:100%;border-collapse:collapse;font-size:13px}
+ th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #21262d;vertical-align:top}
+ th{color:#8b949e;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+ .badge{color:#0d1117;font-weight:700;font-size:11px;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+ .mono{font-family:ui-monospace,Consolas,monospace} .muted{color:#8b949e}
+ .small{font-size:11px} .url{word-break:break-all;color:#79c0ff}
+ .warn{background:#3d1d0a;border:1px solid #d29922;color:#e6edf3;padding:8px 12px;border-radius:6px;margin:14px 0;font-size:12px}
+ footer{color:#8b949e;font-size:12px;margin-top:22px}
+</style>
+<h1>dxadyn - dynamic XSS report</h1>
+<div class="sub">target: <span class="mono">http://127.0.0.1:61916/</span> &middot; mode: <span class="mono">dom</span> &middot; generated: 2026-10-05 16:49</div>
+
+<div class="stats">
+ <div class="stat"><div class="n">2</div><div class="l">unique candidates</div></div>
+ <div class="stat"><div class="n" style="color:#d29922">0</div><div class="l">HTML reflections</div></div>
+ <div class="stat"><div class="n" style="color:#8b949e">0</div><div class="l">JSON reflections</div></div>
+
+</div>
+
+<div class='warn'>Reflection records returned text and an estimated context. Raw markers, quotes and payload names do not establish JavaScript execution, context escape or a confirmed vulnerability. Browser validation and security-boundary triage are still required.</div>
+<table>
+ <tr><th>classification</th><th>evidence</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
+ <tr><td><span class='badge' style='background:#8b949e'>SINK-OBSERVED</span></td><td class='mono small'>sink-observed<br>360148aca908f6aab5b3c9c04e2f678c</td><td class='mono small'>dom</td><td><span class='badge' style='background:#8b949e'>-</span></td><td class='mono'>reflected</td><td class='mono'>GET</td><td class='mono'>bare-visit</td><td class='mono muted url'>http://127.0.0.1:61916/</td><td class='muted small'>HTTP None</td></tr><tr><td><span class='badge' style='background:#8b949e'>OBSERVED-DIALOG</span></td><td class='mono small'>candidate<br>f9d0fe4ca55165befe6fd16bc6a893b3</td><td class='mono small'>dom</td><td><span class='badge' style='background:#8b949e'>-</span></td><td class='mono'>reflected</td><td class='mono'>GET</td><td class='mono'>bare-visit</td><td class='mono muted url'>http://127.0.0.1:61916/</td><td class='muted small'>HTTP None</td></tr>
+</table>
+<h2>Operational events</h2><p>No observations does not mean safe.</p><table><tr><th>event_id</th><th>stage</th><th>kind</th><th>reason</th><th>url</th><th>status</th></tr></table>
+<details><summary>Observation records</summary><pre>[
+  {
+    &quot;finding_id&quot;: &quot;360148aca908f6aab5b3c9c04e2f678c&quot;,
+    &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+    &quot;method&quot;: &quot;GET&quot;,
+    &quot;param&quot;: &quot;bare-visit&quot;,
+    &quot;context&quot;: &quot;dom&quot;,
+    &quot;sink_identity&quot;: &quot;sink:Element.innerHTML:0&quot;,
+    &quot;session_role&quot;: &quot;unspecified&quot;,
+    &quot;evidence_level&quot;: &quot;sink-observed&quot;,
+    &quot;severity&quot;: &quot;sink-observed&quot;,
+    &quot;observations&quot;: [
+      {
+        &quot;kind&quot;: &quot;sink&quot;,
+        &quot;sha256&quot;: &quot;1b84fc2977d6ab1750e7a6a8f05a46c4d40371339a2857251d22a2c507bc1229&quot;,
+        &quot;content&quot;: &quot;omitted: may contain credentials&quot;
+      }
+    ],
+    &quot;attempt_id&quot;: null,
+    &quot;canary_id&quot;: null,
+    &quot;source&quot;: {
+      &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;parameter&quot;: &quot;bare-visit&quot;
+    },
+    &quot;sink&quot;: {
+      &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+      &quot;identity&quot;: &quot;sink:Element.innerHTML:0&quot;
+    },
+    &quot;content_type&quot;: &quot;&quot;,
+    &quot;triage&quot;: &quot;unreviewed&quot;,
+    &quot;role_verified&quot;: false,
+    &quot;evidence_links&quot;: [],
+    &quot;schema_version&quot;: 1
+  },
+  {
+    &quot;finding_id&quot;: &quot;f9d0fe4ca55165befe6fd16bc6a893b3&quot;,
+    &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+    &quot;method&quot;: &quot;GET&quot;,
+    &quot;param&quot;: &quot;bare-visit&quot;,
+    &quot;context&quot;: &quot;dom&quot;,
+    &quot;sink_identity&quot;: &quot;dialog:alert:0&quot;,
+    &quot;session_role&quot;: &quot;unspecified&quot;,
+    &quot;evidence_level&quot;: &quot;candidate&quot;,
+    &quot;severity&quot;: &quot;observed-dialog&quot;,
+    &quot;observations&quot;: [
+      {
+        &quot;kind&quot;: &quot;dialog&quot;,
+        &quot;sha256&quot;: &quot;da1afbcf460409ebccfd58ca15de27d19c074c261891a2b0b49b754138da57e4&quot;,
+        &quot;content&quot;: &quot;omitted: may contain credentials&quot;
+      }
+    ],
+    &quot;attempt_id&quot;: null,
+    &quot;canary_id&quot;: null,
+    &quot;source&quot;: {
+      &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;parameter&quot;: &quot;bare-visit&quot;
+    },
+    &quot;sink&quot;: {
+      &quot;url&quot;: &quot;http://127.0.0.1:61916/&quot;,
+      &quot;identity&quot;: &quot;dialog:alert:0&quot;
+    },
+    &quot;content_type&quot;: &quot;&quot;,
+    &quot;triage&quot;: &quot;unreviewed&quot;,
+    &quot;role_verified&quot;: false,
+    &quot;evidence_links&quot;: [],
+    &quot;schema_version&quot;: 1
+  }
+]</pre></details>
+<footer>dxadyn - deterministic dynamic XSS verifier. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>

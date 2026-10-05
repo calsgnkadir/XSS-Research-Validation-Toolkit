@@ -473,7 +473,7 @@ def test_severity_labels():
     assert dxadyn._severity("encoded", "body") == "-"
 
 
-def test_dedupe_collapses_same_bug_across_pages():
+def test_dedupe_preserves_distinct_pages_and_unknown_sinks():
     findings = [
         {"canary_id": "dxaXX", "reflection": "unencoded", "context": "body",
          "check_url": "http://x/a", "confidence": "high"},
@@ -485,17 +485,17 @@ def test_dedupe_collapses_same_bug_across_pages():
          "check_url": "http://x/other", "confidence": "medium"},
     ]
     out = dxadyn.dedupe_findings(findings)
-    assert len(out) == 2                          # 2 unique bugs
-    body_bug = next(f for f in out if f["canary_id"] == "dxaXX")
-    assert body_bug["check_url"] == "http://x/a"  # first kept
-    assert body_bug["duplicates"] == ["http://x/b", "http://x/c"]
+    assert len(out) == 4  # CID alone cannot identify a vulnerability or sink.
+    assert [f["check_url"] for f in out] == [f["check_url"] for f in findings]
+    assert all(len(f["observations"]) == 1 for f in out)
 
 
 def test_dedupe_leaves_singletons_alone():
     findings = [{"canary_id": "dxaXX", "reflection": "unencoded",
                  "context": "body", "check_url": "http://x/a"}]
     out = dxadyn.dedupe_findings(findings)
-    assert out == findings                        # unchanged
+    assert out[0]["observations"] == findings
+    assert "observations" not in findings[0]  # input untouched
 
 
 # --- v3.10: payload variants ------------------------------------------------

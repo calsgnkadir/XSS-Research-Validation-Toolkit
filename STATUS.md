@@ -12,7 +12,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | Payload üretimi | 50 varyant, 18 mutation | 950 üretim; cid normalize edilince 895 farklı dize; çalışan exploit sayısı değil |
 | DOM gözlemci | Deneysel | Bare visit; auth/stored proof entegrasyonu yok |
 | DOM dialog çıktısı | **Düzeltildi** | Normal dialog OBSERVED-DIALOG; proof üretmiyor |
-| HTTP kanıt modeli | **Ortak üretici ve JSON/HTML raporu eklendi** | Ham marker/variant adı JS proof değil; DOM/attempt birleştirme ve sink/rol dedup açık |
+| R1 kanıt modeli | **Kabul kapsamı tamamlandı** | Statik/HTTP/DOM/journal ortak Finding/ReportEvent; konservatif sink/rol dedup; execution ve doğrulanmış rol üretilmez |
 | Blind callback sınıflandırması | **Düzeltildi: resource-callback** | JS proof ve oturum kimliği kanıtı değildir |
 | Kalıcı blind takip | **Stored/stored-auto için eklendi** | Yansımasız CID kaydı, sonradan kontrol, zaman ve rol etiketi; reflected/flow/DOM journal entegrasyonu ve doğrulanmış rol açık |
 | Benchmark | 3 mock + 3 Docker tanımı | FN/error hesabı ve gerçek hedef adapter'ları eksik |
@@ -27,12 +27,13 @@ Bu geliştirme tesliminin yeni test sonuçları [VALIDATION.md](VALIDATION.md) i
 
 ## Sıradaki küçük teslim
 
-R1: sink/rol farklarını koruyan dedup ve ortak attempt/DOM modeli.
-HTTP normal/flow/stored/header sınıflandırması ortak üreticiye taşındı;
-ham marker ve JSON-only yanıt execution sayılmıyor. Kalıcı stored blind takip
-tamam; gerçek canary execution doğrulaması yok. R2 auth/rate/CSRF açık.
-Son paket: **450 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
-S01 [5 Ekim çalışma kaydı](staj/2026-10-05-http-kanit-modeli.md) eklendi.
+R1 [madde bazında kapandı](audit/2026-10-05-r1/R1-KAPANIS.md).
+Sırada K01-min tek yerel vaka paketi ve R2 auth/rate/CSRF düzeltmeleri var.
+R3 gerçek canary execution, doğrulanmış rol ve otomatik uçtan uca zincir açık.
+Son paket: **479 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
+Yeni gerçek Chrome testi normal dialog/sink olaylarını ortak raporda kontrol etti;
+eski 36 browser testinin atlanma durumu değişmedi.
+S01 [R1 kapanış kaydı](staj/2026-10-05-r1-kapanis.md) eklendi.
 
 ## Ana proje kapsamı
 

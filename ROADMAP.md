@@ -19,7 +19,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R4, R6, R8–R9 | R0 ilk teslim bitti; R1 devam ediyor | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
+| 1 | Bot R0–R4, R6, R8–R9 | R0 ilk teslim ve R1 kabul kapsamı tamam; R2 devam | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -33,18 +33,51 @@ Eksik kanıt, geçmiş olayın yaşanmadığının kanıtı değildir. Toplam y�
 
 1. R1 normal dialog yanlış pozitifi — **tamam**, altı regresyon ve yerel Chrome kaydı var.
 2. R1 callback ≠ JS proof; cid eşleşmesi; gizli veri toplamayan beacon — **tamam**: HTTP ve JS kapalı Chrome negatif kontrolü; test kaydı VALIDATION.md.
-3. R1 yansımasız blind deneme kaydı ve sonradan ilişkilendirme — **stored/stored-auto için tamam**; [kullanım ve sınırlar](tools/dom-xss-analyzer/BLIND-JOURNAL.md). Ortak evidence şeması **açık**.
+3. R1 yansımasız blind takip — **stored/stored-auto için tamam**; ortak şema, DOM/statik/HTTP/journal raporları ve konservatif dedup — **tamam**. [Kapanış kanıtı](audit/2026-10-05-r1/R1-KAPANIS.md).
 4. R2 JSON serializer ve istek başına Content-Type — **tamam**. Auth/rate/CSRF ve R8 sanitizer karşı örnekleri — **açık**.
-5. R3 uçtan uca browser + R4 güvenilir benchmark; ardından K01/R5 vaka paketi.
+5. R1 sonrası **K01-min**: tek yerel XSS vakası, manuel/browser canary kanıtı, negatif kontrol, fix ve retest. Tam R5/R6 kapanışı sayılmaz. R2→R3→R4 bot hattı devam eder.
 
-Bu alt teslimler R1'in veya botun tamamlandığı anlamına gelmez.
+R1'in aşağıdaki kabul kapsamı tamamlandı; botun tamamlandığı anlamına gelmez.
 HTTP normal/flow/stored/header bulguları ortak üreticiye taşındı; JSON-only ve
 ham marker'ın execution diye raporlanması giderildi. JSON/HTML aynı finding'leri
 kullanıyor. [5 Ekim model ve sınırları](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
-Sıradaki bot işi: sink/rol farklarını koruyan dedup ve ortak attempt/DOM modeli;
-ardından R2 auth/rate/CSRF ve R3 browser doğrulaması.
+Sıradaki bot işi R2 auth/rate/CSRF; R3 gerçek canary execution entegrasyonu açık.
 Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
 A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
+
+### Son kanıt ve teslim sırası
+
+| İş | Son kabul kanıtı | Durum / sonraki kapı |
+|---|---|---|
+| R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
+| R2 | 2026-09-28, JSON regresyonları | Devam; 401/eksik token/fractional rate/CSRF karşı örnekleri |
+| K01-min | Henüz yok | Sonraki vaka paketi; tek fixture ve proof→fix→retest |
+| R3–R4 | Yeni kapanış kanıtı yok; 2026-09-28 audit baseline | Açık; browser zinciri ve ölçüm doğruluğu |
+| C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
+| A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
+
+Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
+yalnız düzenleme yapıldığı için güncellenmiş sayılmaz. Her teslimde bu tabloya
+bakılır; iki teslim boyunca ilerlemeyen aktif iş küçültülür veya gerekçesi yazılır.
+
+İlk kaba efor varsayımı (taahhüt veya geçmiş çalışma saati değil): K01-min 1–2,
+R2 auth/token 1–2, rate/CSRF 2–3 odaklı oturum. Bir oturum için 2–3 saat varsayılır;
+ilk karşı örnekte tahmin yenilenir. R3/R4 ve kalan C/K işleri henüz parçalanmadığı
+için toplam bitiş tarihi verilmez. Kullanıcı kapasitesi bilinmeden takvim üretilmez.
+
+C önceliği: C01 XSS proof/fix, C11 araç doğruluğu, C05 iki hesaplı BOLA kanıtı.
+C10 yalnız K01'i destekleyen payload/kanıt bölümleriyle aynı pakete alınır.
+C02–C04 ve C06–C09 sonraki düzenleme sırasındadır; silinmez ve tamamlanmış sayılmaz.
+C12/C13 ilgili teslimin yöntem/indeks tutarlılığıyla birlikte güncellenir.
+
+Hedef yeniden üretici Python/Git bilen bağımsız teknik değerlendiricidir.
+Recruiter için kısa vaka özeti, mentor/teknik okuyucu için komut ve kanıt paketi
+aynı vakaya bağlanır. Operasyonel yetki kaynağı: yerel fixture için kullanıcının
+proje talebi; dış hedef için açık hedef/scope yetkisi ayrıca doğrulanır. Dış
+disclosure/mesaj/yayın için kullanıcının gönderim talimatı gerekir; bir agent
+yorumu veya eski hedef önerisi bunun yerine geçmez. Mevcut GitHub push yetkisi sürer.
+
+[Agent yorumunun ayrıntılı değerlendirmesi](audit/2026-10-05-r1/AGENT-YORUMU.md).
 
 ## Bot: ayrıntılı görevler ve kabul koşulları
 
@@ -59,7 +92,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | İş | Durum | Bağımlılık | Teslimat |
 |---|---|---|---|
 | R0 Durumu ve tarihsel iddiaları düzelt | İlk teslim tamamlandı | — | Güncel README, STATUS, roadmap, geçmiş metin değerlendirmesi |
-| R1 Kanıt modelini düzelt | Devam: HTTP ortak üretici ve sınıflandırma düzeldi; DOM/attempt entegrasyonu ve dedup açık | R0 | Ortak bulgu şeması, doğru etiketler, blind takip |
+| R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Devam: JSON serializer ve Content-Type izolasyonu tamam | R0; R1 şemasıyla uyumlu | JSON, auth, rate, CSRF ve eşzamanlılık düzeltmeleri |
 | R3 Tarayıcı doğrulamasını bağla | Açık | R1 + R2 | Auth/stored/DOM tek işlem hattı |
 | R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
@@ -84,7 +117,13 @@ Kabul ölçütleri:
 
 Önce şema tasarımı: `finding_id`, `attempt_id/cid`, kaynak/gönderim, hedef/sink, bağlam, response Content-Type, oturum rolü, evidence seviyesi, triage kararı ve kanıt bağlantıları. Hassas header/cookie değerleri raporlara taşınmaz.
 
-Önerilen evidence seviyeleri: `candidate`, `reflection`, `sink-observed`, `resource-callback`, `execution-confirmed`. Bunlar CVSS veya açıklık etkisi değildir. `execution-confirmed` için tarayıcı bağlamı ve o denemeye ait canary olayı gerekir; ayrıca self-XSS/by-design/yetki sınırı triage'ı yapılır. Marker dizesi veya dialog görülmesi tek başına yeterli değildir.
+Evidence kategorileri: `candidate`, `reflection`, `sink-observed`, `resource-callback`.
+Bunlar doğrusal merdiven, CVSS veya açıklık etkisi değildir. Gelecekteki
+`execution-confirmed` için tarayıcı bağlamı ve o denemeye ait doğrulanmış canary
+olayı gerekir; ayrıca self-XSS/by-design/yetki sınırı triage'ı yapılır. Mevcut v1
+modeli bu desteklenmeyen etiketi ve doğrulanmış rol iddiasını reddeder.
+Resmî [Finding/ReportEvent sözleşmesi](tools/dom-xss-analyzer/EVIDENCE-CONTRACT.md)
+Python dataclass olarak uygulanır; ortak rapor çıkışında doğrulanır.
 
 Kabul ölçütleri:
 
@@ -94,12 +133,15 @@ Kabul ölçütleri:
 - [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Tam iframe/role fixture kapsamı R3/R4'te açık.
 - [x] Stored/stored-auto: yansıma yokken bile cid gönderimden önce kalıcı tutulur; sonradan gelen blind callback ilişkilendirilebilir. Diğer modlarda kalıcı takip henüz yok.
 - [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Rol doğrulaması R2/R3'te açık.
-- [ ] Bütün motorlarda HTML/JSON ve hata/atlama modeli: HTTP için aynı finding nesnesiyle rapor üretimi tamam; DOM ve ayrıntılı hata/atlama olayları açık.
+- [x] Statik, HTTP, static-guided, DOM ve journal ortak raporları aynı Finding/ReportEvent modelini kullanır; hata ve atlamalar ayrı görünür. Eski statik `--json` ham API'si korunur; ortak çıktı `--json-out` seçeneğidir.
 
-29 Eylül alt kanıtı: blind journal kontrol raporunda JSON/HTML aynı attempt listesini
-kullanır; no-hit ile sorgu hatası ayrıdır. Yukarıdaki genel finding ölçütü bütün
-modları kapsadığı için kapatılmadı. [Testler](VALIDATION.md), [staj kaydı](staj/2026-09-29-blind-takip.md).
-- [ ] Dedup aynı submit/parametre/sink/bağlam/rolün kopyalarını gruplar, ham kanıtları korur; farklı rol veya sink birleştirilmez.
+- [x] Dedup aynı submit/parametre/sink/bağlam/rolün kopyalarını gruplar; özgün gözlemleri bellekte korur, girdileri değiştirmez. Farklı veya bilinmeyen rol/sink birleştirilmez. Paylaşım raporları hassas alanları maskeler.
+
+5 Ekim kapanışı: [madde–test matrisi](audit/2026-10-05-r1/R1-KAPANIS.md),
+[test sonuçları](VALIDATION.md), [staj kaydı](staj/2026-10-05-r1-kapanis.md).
+R1 tamam, kabul edilmiş stored/stored-auto kalıcı blind takip kapsamıyla birlikte
+kanıt modelinin tamamlanmasıdır. Reflected/header kalıcı blind journal genişlemesi,
+auth/rol doğrulaması ve browser canary execution R2/R3/R6 ürün işidir; gizlenmez.
 
 WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt ve erişim politikasıyla belirlenir. Admin'in tasarlanmış HTML editörü ayrı bir security boundary aşmıyorsa “confirmed vulnerability” olmaz.
 
@@ -166,6 +208,12 @@ Kabul ölçütleri:
 - [ ] Önceki writeup'lara düzeltme/kanıt bağlantıları eklenir; eski rapor değiştirilmez.
 
 ## R6 — Kullanılabilir ilk sürüm
+
+İlk doğrulanmış araştırma sürümünün yayın kapısı: **R1 + R2 + R3 yerel uçtan uca
+kanıtı + R4 zorunlu negatif/pozitif CI ölçümü + R5/K01 vaka paketi + aşağıdaki R6
+paketleme kontrolleri**. Bunlar olmadan sürüm etiketi açılmaz. R1 sonrası K01-min
+ve kanıt belgeleri paylaşılabilir araştırma çıktısıdır, kullanılabilir ürün
+sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 
 - [ ] Tek kurulum komutu ve opsiyonel browser extra gerçekten paketlenir; sürüm etiketi/CHANGELOG vardır.
 - [ ] Config önceliği CLI > config > varsayılan olarak testlidir.
