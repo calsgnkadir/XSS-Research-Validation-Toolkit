@@ -90,7 +90,7 @@ PAYLOAD_VARIANTS = {
     # attribute handler in a browser. The marker embeds the tag so the
     # verdict fires only if the tag itself survived raw, not just the
     # `<dXsS>` grep-marker after it. All names end in `-breakout` so
-    # _apply_ct_gate upgrades severity to executable when unencoded.
+    # Raw markers establish reflection only; variant names cannot prove execution.
     "svg-breakout":            ('"><svg onload=1><dXsS>',
                                 '<svg onload=1><dXsS>'),
     "img-breakout":            ('"><img src=x onerror=1><dXsS>',
@@ -891,26 +891,19 @@ def find_context(cid, body):
 
 
 def context_executes(context):
-    """True iff `context` renders the raw canary as executable JavaScript
-    WITHOUT any extra breakout step. The other contexts still flag a
-    reflection (the value survived unescaped) but need an additional payload
-    shape to execute - dxadyn reports both and lets the operator judge."""
+    """Legacy context heuristic, retained for callers; never execution evidence.
+
+    Classification no longer uses this helper to infer JavaScript execution.
+    """
     return context in ("body", "unknown")
 
 
 def _severity(reflection, context):
-    """Combine verdict + context into a single severity label:
-      executable    - HIGH + body/unknown context: <img onerror> works as-is
-      breakout-req  - HIGH + title/script/attr context: needs a follow-on payload
-      attr-breakout - verdict is 'attr-only' (a bare " survived)
-      json-only     - HIGH but response is JSON/text (not parsed as HTML)
-      -             - not a reportable case
-    v3.7 note: `json-only` is set by _apply_ct_gate() when Content-Type says
-    the browser will not render this response as HTML."""
+    """Legacy field name: labels describe observations, not vulnerability impact."""
     if reflection == "unencoded":
-        return "executable" if context_executes(context) else "breakout-req"
+        return "html-reflection"
     if reflection == "attr-only":
-        return "attr-breakout"
+        return "attribute-reflection"
     return "-"
 
 
@@ -922,44 +915,22 @@ _JSON_LIKE_CT = ("application/json", "application/ld+json", "text/json",
 
 
 def _is_html_response(content_type):
-    """True iff the browser will parse this response as HTML by default. Empty
-    or unknown CT is treated as HTML because sniffing is browser-default when
-    `X-Content-Type-Options: nosniff` is absent - we can't see that header
-    without a fuller response object, so lean toward reporting (fewer FNs)."""
-    if not content_type:
-        return True
-    ct = content_type.split(";", 1)[0].strip()
-    if ct in _HTML_LIKE_CT:
-        return True
-    # any text/* that isn't explicitly JSON/CSV/plain markup we treat as HTML
-    if ct.startswith("text/") and ct not in ("text/json", "text/plain",
-                                              "text/csv"):
-        return True
-    return False
+    """Recognize declared markup media types; do not infer MIME sniffing."""
+    return (content_type or "").split(";", 1)[0].strip().lower() in _HTML_LIKE_CT
 
 
 def _apply_ct_gate(reflection, context, content_type, variant="body"):
-    """v3.7 + v3.10: Content-Type gate + variant-aware severity.
-
-    HTML response:
-      - v3.10: if `variant` is a `-breakout` (title/attr/script) and the
-        reflection is `unencoded`, the breakout payload PROVED the escape:
-        the marker survived AFTER the closing token, so it's effectively in
-        body context now. Severity = executable regardless of `context`
-        (which reflects where the cid landed, not the marker).
-      - Otherwise, fall through to the plain (reflection, context) severity.
-    Non-HTML response (JSON/text): reflection is real cross-boundary but the
-    browser will not parse it as HTML - severity downgrades to `json-only`.
-    """
+    """Shared HTTP observation classification; payload names never prove escape."""
+    if reflection not in ("unencoded", "attr-only"):
+        return context, "-"
     if _is_html_response(content_type):
-        if reflection == "unencoded" and variant.endswith("-breakout"):
-            return context, "executable"
         return context, _severity(reflection, context)
-    if reflection == "unencoded":
+    ct = (content_type or "").split(";", 1)[0].strip().lower()
+    if ct in _JSON_LIKE_CT or ct.endswith("+json"):
         return "json-body", "json-only"
-    if reflection == "attr-only":
-        return "json-body", "-"
-    return context, "-"
+    if not ct:
+        return "unknown-response", "unknown-type-reflection"
+    return "response-body", "non-html-reflection"
 
 
 def dedupe_findings(findings):
@@ -1124,7 +1095,7 @@ def probe_link(link, variants=None, waf_bypass=False):
 
 def _finding(where, method, param, v, status, context="unknown", canary_id=None,
              content_type="", variant="body"):
-    conf = "high" if v == "unencoded" else "medium"
+    conf = "high" if v == "unencoded" else ("medium" if v == "attr-only" else "none")
     # v3.7 + v3.10: CT gate + variant-aware severity
     ctx, sev = _apply_ct_gate(v, context, content_type, variant)
     return {"url": where, "method": method.upper(), "param": param,
@@ -1132,7 +1103,9 @@ def _finding(where, method, param, v, status, context="unknown", canary_id=None,
             "context": ctx, "severity": sev,
             "canary_id": canary_id, "content_type": content_type,
             "variant": variant,
-            "evidence_level": "reflection",
+            "schema_version": 1, "finding_id": secrets.token_hex(16),
+            "triage": "unreviewed", "session_role": "unspecified",
+            "evidence_level": "reflection" if v in ("unencoded", "attr-only") else "candidate",
             # Phase 3.3 schema fields - populated by upgrade_finding_with_blind_hit
             "blind_callback_hit": False,
             "hit_at": None,
@@ -1416,12 +1389,10 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
             v = verdict(cid, body or "", marker)
             if v in ("unencoded", "attr-only"):
                 raw_ctx = find_context(cid, body or "")
-                ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-                rows.append({"target": target_url, "field": label, "check_url": url,
-                             "reflection": v, "confidence": "high" if v == "unencoded" else "medium",
-                             "sub_status": sub_status, "check_status": st, "canary_id": cid,
-                             "context": ctx, "severity": sev, "content_type": _ct,
-                             "variant": vname})
+                row = _finding(url, "GET", label, v, st, raw_ctx, cid, _ct, vname)
+                row.update(target=target_url, field=label, check_url=url,
+                           sub_status=sub_status, check_status=st, submission_method=method.upper())
+                rows.append(row)
             else:
                 _maybe_record_skip(v, cid, url, "GET",
                                    f"{vname}[check]", st, body, canary)
@@ -1640,14 +1611,11 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
             v = verdict(cid, body, marker)
             if v in ("unencoded", "attr-only"):
                 raw_ctx = find_context(cid, body or "")
-                ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-                rows.append({"target": target_url, "field": label,
-                             "check_url": cand_url, "reflection": v,
-                             "confidence": "high" if v == "unencoded" else "medium",
-                             "sub_status": sub_status, "check_status": st,
-                             "canary_id": cid, "auto_discovered": True,
-                             "context": ctx, "severity": sev, "content_type": _ct,
-                             "variant": vname})
+                row = _finding(cand_url, "GET", label, v, st, raw_ctx, cid, _ct, vname)
+                row.update(target=target_url, field=label, check_url=cand_url,
+                           sub_status=sub_status, check_status=st, auto_discovered=True,
+                           submission_method=method.upper())
+                rows.append(row)
         return rows
 
     per_cand = _parallel_map(_fetch_and_verdict, candidates)
@@ -1691,15 +1659,7 @@ def probe_headers(url, header_names, variants=None, waf_bypass=False):
         v = verdict(cid, body or "", marker)
         if v in ("unencoded", "attr-only"):
             raw_ctx = find_context(cid, body or "")
-            ctx, sev = _apply_ct_gate(v, raw_ctx, _ct, vname)
-            return {
-                "url": url, "method": "GET", "param": f"header:{name}",
-                "reflection": v,
-                "confidence": "high" if v == "unencoded" else "medium",
-                "status": status, "context": ctx,
-                "severity": sev, "canary_id": cid, "content_type": _ct,
-                "variant": vname,
-            }
+            return _finding(url, "GET", f"header:{name}", v, status, raw_ctx, cid, _ct, vname)
         _maybe_record_skip(v, cid, url, "GET",
                            f"{vname}[hdr:{name}]", status, body, canary)
         return None
@@ -1755,12 +1715,12 @@ def render_html(findings, target, mode, meta=None):
 
     color = {"high": "#f85149", "medium": "#d29922", "low": "#8b949e",
              "unencoded": "#f85149", "attr-only": "#d29922",
-             "executable": "#f85149", "breakout-req": "#d29922",
-             "attr-breakout": "#d29922",
+             "html-reflection": "#d29922", "json-only": "#8b949e",
+             "attribute-reflection": "#d29922",
              "resource-callback": "#58a6ff"}
     total = len(findings)
-    execs = sum(1 for f in findings if f.get("severity") == "executable")
-    breakout = sum(1 for f in findings if f.get("severity") == "breakout-req")
+    html_reflections = sum(1 for f in findings if f.get("severity") == "html-reflection")
+    json_reflections = sum(1 for f in findings if f.get("severity") == "json-only")
     blind_hits = [f for f in findings if f.get("blind_callback_hit")]
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -1787,6 +1747,8 @@ def render_html(findings, target, mode, meta=None):
             "<tr>"
             f"<td><span class='badge' style='background:{color.get(sev,'#8b949e')}'>"
             f"{esc(sev.upper())}</span></td>"
+            f"<td class='mono small'>{esc(f.get('evidence_level', 'unspecified'))}"
+            f"<br>{esc(f.get('finding_id') or f.get('attempt_id') or '-')}</td>"
             f"<td class='mono small'>{esc(ctx)}</td>"
             f"<td><span class='badge' style='background:{color.get(refl,'#8b949e')}'>"
             f"{esc(refl)}</span></td>"
@@ -1830,18 +1792,28 @@ def render_html(findings, target, mode, meta=None):
 {meta_html}
 <div class="stats">
  <div class="stat"><div class="n">{total}</div><div class="l">unique candidates</div></div>
- <div class="stat"><div class="n" style="color:{color['executable']}">{execs}</div><div class="l">executable</div></div>
- <div class="stat"><div class="n" style="color:{color['breakout-req']}">{breakout}</div><div class="l">needs breakout</div></div>
+ <div class="stat"><div class="n" style="color:{color['html-reflection']}">{html_reflections}</div><div class="l">HTML reflections</div></div>
+ <div class="stat"><div class="n" style="color:{color['json-only']}">{json_reflections}</div><div class="l">JSON reflections</div></div>
  {'<div class="stat"><div class="n" style="color:' + color['resource-callback'] + '">' + str(len(blind_hits)) + '</div><div class="l">resource callbacks</div></div>' if blind_hits else ''}
 </div>
 {_render_blind_section(blind_hits, color['resource-callback'], esc) if blind_hits else ''}
-{"<div class='warn'>EXECUTABLE = a raw &lt;img onerror&gt; payload runs as-is (body/free context). NEEDS-BREAKOUT = the value survives raw but is inside &lt;title&gt; / &lt;script&gt; / an attribute value, so a follow-on payload (e.g. &lt;/title&gt; or a &quot; breakout) is required for real execution.</div>" if findings else ""}
+{"<div class='warn'>Reflection records returned text and an estimated context. Raw markers, quotes and payload names do not establish JavaScript execution, context escape or a confirmed vulnerability. Browser validation and security-boundary triage are still required.</div>" if findings else ""}
 <table>
- <tr><th>severity</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
- {"".join(rows) if rows else "<tr><td colspan=8 class='muted'>No unencoded reflections found. (Inputs may be encoded, POST-guarded, or absent.)</td></tr>"}
+ <tr><th>classification</th><th>evidence</th><th>context</th><th>reflection</th><th>origin</th><th>method</th><th>param</th><th>url</th><th>status</th></tr>
+ {"".join(rows) if rows else "<tr><td colspan=9 class='muted'>No unencoded reflections found. (Inputs may be encoded, POST-guarded, or absent.)</td></tr>"}
 </table>
 <footer>dxadyn - deterministic dynamic XSS verifier. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>
 """
+
+
+def write_json_report(path, findings, mode, meta=None):
+    """Export the same HTTP findings supplied to HTML, excluding auth/flow vars."""
+    if not path:
+        return
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({"schema_version": 1, "mode": mode, "findings": findings,
+                   "meta": meta or {}, "skipped_submits": len(SKIPPED_SUBMITS)},
+                  fh, ensure_ascii=False, indent=2)
 
 
 def _parse_kv_list(text):
@@ -2059,10 +2031,10 @@ def run_flow(flow, canary=None, cid=None, marker=None, timeout=10):
 
         if step.get("verdict"):
             v = verdict(cid, text, marker)
-            summary["verdicts"].append({
-                "step": sname, "url": url, "status": status,
-                "reflection": v, "marker": marker,
-            })
+            finding = _finding(url, method, "flow", v, status, find_context(cid, text),
+                               cid, ct, "flow-canary")
+            finding.update(step=sname, marker=marker)
+            summary["verdicts"].append(finding)
 
     return summary
 
@@ -2210,7 +2182,7 @@ def main():
                          "--variants title-breakout,attr-breakout picks up "
                          "reflections that only execute after a </title> or "
                          "attribute-quote break, which the plain body payload "
-                         "would only score as 'breakout-req'.")
+                         "needs context-specific investigation. Raw reflection is not execution proof.")
     ap.add_argument("--waf-bypass", action="store_true",
                     help="stored mode: for each --variants entry, also probe "
                          "4 mutation shapes (case-swap, split-tag via HTML "
@@ -2344,7 +2316,15 @@ def main():
                     help="persistent stored blind attempt journal (default: .dxa/blind-attempts.sqlite3)")
     ap.add_argument("--session-role", default="unspecified",
                     help="operator-supplied role label for stored blind journal; not verified auth")
+    ap.add_argument("--json-out", metavar="FILE", default="",
+                    help="versioned HTTP finding report; reflected, stored and flow modes")
     args = ap.parse_args()
+    if args.dom and args.json_out:
+        ap.error("--json-out currently supports HTTP modes only")
+    if args.json_out and args.html:
+        from pathlib import Path
+        if Path(args.json_out).resolve() == Path(args.html).resolve():
+            ap.error("--json-out and --html must have distinct paths")
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
     global VERBOSE, WAF_LOG_FILE
@@ -2547,6 +2527,11 @@ def main():
             print(f"[dxadyn] {flow['__error__']}", file=sys.stderr)
             sys.exit(2)
         summary = run_flow(flow)
+        report_meta = {"steps_run": summary["steps_run"], "error": summary["error"]}
+        write_json_report(args.json_out, summary["verdicts"], "flow", report_meta)
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as fh:
+                fh.write(render_html(summary["verdicts"], summary["name"], "flow", report_meta))
         print(f"[dxadyn] flow '{summary['name']}' ran {summary['steps_run']} step(s)")
         if summary["error"]:
             print(f"[dxadyn] flow error: {summary['error']}", file=sys.stderr)
@@ -2554,8 +2539,8 @@ def main():
         hits = [v for v in summary["verdicts"] if v["reflection"] == "unencoded"]
         if hits:
             for v in hits:
-                print(f"  [EXECUTABLE] verdict at {v['step']}: {v['url']} "
-                      f"(HTTP {v['status']}, marker survived raw)")
+                print(f"  [{v['severity'].upper()}] verdict at {v['step']}: {v['url']} "
+                      f"(HTTP {v['status']}, evidence={v['evidence_level']}; JavaScript execution not established)")
             sys.exit(0)
         elif summary["verdicts"]:
             for v in summary["verdicts"]:
@@ -2660,6 +2645,7 @@ def main():
                       f"JavaScript execution not established "
                       f"(callback @ {BLIND_CALLBACK})")
 
+        write_json_report(args.json_out, findings, "stored-auto" if args.auto_check else "stored")
         if args.html:
             mode = "stored-auto" if args.auto_check else "stored"
             meta = {"target": args.target, "shape": shape_desc,
@@ -2688,12 +2674,8 @@ def main():
             print(f"{f['check_url']}  [{sev.upper()}] context={ctx}{vtag}{mode}  "
                   f"stored via {f['target']} field '{f['field']}'  -> {tag}  "
                   f"(submit HTTP {f['sub_status']}, check HTTP {f['check_status']}){dup_s}")
-        execs = sum(1 for f in findings if f.get("severity") == "executable")
-        breakout = sum(1 for f in findings if f.get("severity") == "breakout-req")
         print(f"\n{len(findings)} unique stored candidate(s) - "
-              f"{execs} EXECUTABLE (body/free context; runs as-is), "
-              f"{breakout} need a follow-on breakout (title/attr/script context). "
-              f"Confirm each in the browser.")
+              "JavaScript execution not established. Validate in the browser and triage the security boundary.")
         _print_skip_summary()
         sys.exit(1 if any(f.get("reflection") != "not-observed" or
                          f.get("evidence_level") == RESOURCE_CALLBACK for f in findings) else 0)
@@ -2734,6 +2716,7 @@ def main():
         findings += probe_headers(args.url, hdrs, variants=variants,
                                   waf_bypass=args.waf_bypass)
 
+    write_json_report(args.json_out, findings, "reflected")
     if args.html:
         meta = {"depth": str(args.depth)}
         if args.probe_headers:
@@ -2760,12 +2743,8 @@ def main():
         vtag = f" variant={variant}" if variant != "body" else ""
         print(f"{f['url']}  [{sev.upper()}] context={ctx}{vtag}  "
               f"{f['method']} param '{f['param']}'  -> {tag}  (HTTP {f['status']})")
-    execs = sum(1 for f in findings if f.get("severity") == "executable")
-    breakout = sum(1 for f in findings if f.get("severity") == "breakout-req")
     print(f"\n{len(findings)} reflected candidate(s) - "
-          f"{execs} EXECUTABLE (body/free context), "
-          f"{breakout} need a follow-on breakout. "
-          f"Confirm each in the browser.")
+          "JavaScript execution not established. Validate in the browser and triage the security boundary.")
     _print_skip_summary()
     sys.exit(1)
 

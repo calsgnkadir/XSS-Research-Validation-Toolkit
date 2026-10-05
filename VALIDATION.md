@@ -1,6 +1,26 @@
-# Doğrulama kaydı — 2026-09-29
+# Doğrulama kaydı — 2026-10-05
 
-## R1 kalıcı stored blind takip — güncel teslim
+## R1 HTTP kanıt modeli — güncel teslim
+
+- Tam paket: **450 passed, 36 skipped, 1 warning**, 76.29 saniye.
+- 12 yeni regresyon: yedi Content-Type × beş HTTP yolunun ortak sınıflandırması;
+  üç yanlış bağlamda raw marker; encoded flow; gerçek localhost JSON echo üzerinde
+  ayrı CLI sürecinin console/JSON/HTML çıktısı ve ortak finding kimliği.
+- İlk odaklı çalışmanın sandbox ortamı localhost ve geçici dosyaları engelledi;
+  aynı paket gerekli izinlerle **215 passed** verdi. Son JSON/HTML ekleri yukarıdaki
+  tam paketle doğrulandı. Test beklentileri execution iddiasını korumak yerine
+  reflection semantiğine güncellendi; negatif kontroller ayrıca eklendi.
+- 36 browser testi otomatik Chrome keşfi nedeniyle atlandı. Yeni browser proof
+  doğrulaması yapılmadı. Tek uyarı benchmark'ın `datetime.utcnow()` kullanımıdır.
+- [Log](audit/2026-10-05/pytest-http-evidence.log),
+  [JUnit](audit/2026-10-05/pytest-http-evidence.xml),
+  [regresyon kaynağı](tools/dom-xss-analyzer/test_http_evidence.py),
+  [model ve sınırlar](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
+
+Genel R1 kapanmadı: DOM/attempt şeması entegrasyonu, sink/rol dedup ve bütün
+hata/atlama olaylarının ortak raporu açık. HTTP reflection açıklık kanıtı değildir.
+
+## R1 kalıcı stored blind takip — önceki teslim
 
 - Tam paket: **438 passed, 36 skipped, 1 warning**, 76.57 saniye.
 - 18 yeni regresyon: stored/stored-auto yansımasız beş aile, gönderim hatası,

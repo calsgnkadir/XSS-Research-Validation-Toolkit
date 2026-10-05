@@ -1,6 +1,6 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-29 Eylül 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
+5 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.
 
@@ -38,8 +38,11 @@ Eksik kanıt, geçmiş olayın yaşanmadığının kanıtı değildir. Toplam y�
 5. R3 uçtan uca browser + R4 güvenilir benchmark; ardından K01/R5 vaka paketi.
 
 Bu alt teslimler R1'in veya botun tamamlandığı anlamına gelmez.
-Sıradaki bot işi: normal/flow/stored sınıflandırmalarını ortak kanıt nesnesine
-taşımak; JSON-only ve ham marker'ın execution diye raporlanmasını önlemek.
+HTTP normal/flow/stored/header bulguları ortak üreticiye taşındı; JSON-only ve
+ham marker'ın execution diye raporlanması giderildi. JSON/HTML aynı finding'leri
+kullanıyor. [5 Ekim model ve sınırları](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
+Sıradaki bot işi: sink/rol farklarını koruyan dedup ve ortak attempt/DOM modeli;
+ardından R2 auth/rate/CSRF ve R3 browser doğrulaması.
 Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
 A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 
@@ -56,7 +59,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | İş | Durum | Bağımlılık | Teslimat |
 |---|---|---|---|
 | R0 Durumu ve tarihsel iddiaları düzelt | İlk teslim tamamlandı | — | Güncel README, STATUS, roadmap, geçmiş metin değerlendirmesi |
-| R1 Kanıt modelini düzelt | Devam: dialog/callback etiketleri ve stored blind journal tamam; ortak şema açık | R0 | Ortak bulgu şeması, doğru etiketler, blind takip |
+| R1 Kanıt modelini düzelt | Devam: HTTP ortak üretici ve sınıflandırma düzeldi; DOM/attempt entegrasyonu ve dedup açık | R0 | Ortak bulgu şeması, doğru etiketler, blind takip |
 | R2 İstek/oturum güvenilirliği | Devam: JSON serializer ve Content-Type izolasyonu tamam | R0; R1 şemasıyla uyumlu | JSON, auth, rate, CSRF ve eşzamanlılık düzeltmeleri |
 | R3 Tarayıcı doğrulamasını bağla | Açık | R1 + R2 | Auth/stored/DOM tek işlem hattı |
 | R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
@@ -86,12 +89,12 @@ Kabul ölçütleri:
 Kabul ölçütleri:
 
 - [x] Bare `--dom` ziyaretindeki alert/confirm/prompt/beforeunload “proven” olmaz; içerik gözlem olarak korunur.
-- [ ] HTML içindeki ham marker, bağlamı gerçekten kırmadan executable'a yükseltilmez.
-- [ ] Aynı response normal, flow ve stored modlarında aynı sınıflandırmayı alır; JSON-only JS proof sayılmaz.
+- [x] HTML içindeki ham marker executable'a yükseltilmez; varyant adı execution veya bağlamdan çıkma kanıtı sayılmaz. Yanlış bağlamdaki üç raw marker regresyonu var.
+- [x] Aynı response normal, flow, stored, stored-auto ve header yollarında aynı sınıflandırmayı alır; JSON-only JS proof sayılmaz. Yedi Content-Type karşılaştırması var.
 - [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Tam iframe/role fixture kapsamı R3/R4'te açık.
 - [x] Stored/stored-auto: yansıma yokken bile cid gönderimden önce kalıcı tutulur; sonradan gelen blind callback ilişkilendirilebilir. Diğer modlarda kalıcı takip henüz yok.
 - [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Rol doğrulaması R2/R3'te açık.
-- [ ] HTML ve JSON aynı finding nesnesinden üretilir; hatalar ve atlamalar ayrı görünür.
+- [ ] Bütün motorlarda HTML/JSON ve hata/atlama modeli: HTTP için aynı finding nesnesiyle rapor üretimi tamam; DOM ve ayrıntılı hata/atlama olayları açık.
 
 29 Eylül alt kanıtı: blind journal kontrol raporunda JSON/HTML aynı attempt listesini
 kullanır; no-hit ile sorgu hatası ayrıdır. Yukarıdaki genel finding ölçütü bütün

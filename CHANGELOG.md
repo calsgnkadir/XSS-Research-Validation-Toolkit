@@ -1,6 +1,17 @@
 # Değişiklik kaydı
 
-## Unreleased — 2026-09-29
+## Unreleased — 2026-10-05
+
+- HTTP modları ortak finding üreticisine taşındı; schema_version, finding_id,
+  evidence_level ve unreviewed triage alanları tutarlı hale getirildi.
+- Raw marker ve breakout varyant adı execution kanıtı sayılmaz. Flow JSON
+  yanıtlarında hatalı EXECUTABLE çıktısı kaldırıldı. MIME türleri normalize edilir.
+- HTTP modlarına `--json-out`, flow'a HTML raporu eklendi; HTML/JSON aynı finding
+  kimliklerini taşır. Yeni sınıflar eski executable/breakout-req etiketlerini değiştirir.
+- 12 regresyon, model/kullanım belgesi ve S01 kaydı eklendi. Tam paket 450 passed,
+  36 skipped. DOM/attempt entegrasyonu, ayrıntılı hata modeli ve dedup açık.
+
+## Önceki teslim — 2026-09-29
 
 ### Kalıcı stored blind takip
 

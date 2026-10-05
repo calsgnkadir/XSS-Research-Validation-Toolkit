@@ -297,8 +297,8 @@ def test_is_html_response_defaults():
     assert dxadyn._is_html_response("text/html; charset=utf-8")
     assert dxadyn._is_html_response("application/xhtml+xml")
     assert dxadyn._is_html_response("image/svg+xml")
-    assert dxadyn._is_html_response("")                       # empty -> lean HTML
-    assert dxadyn._is_html_response("text/xml")               # text/* default HTML
+    assert not dxadyn._is_html_response("")                   # unknown is not HTML proof
+    assert not dxadyn._is_html_response("text/xml")
     # non-HTML
     assert not dxadyn._is_html_response("application/json")
     assert not dxadyn._is_html_response("application/json; charset=utf-8")
@@ -313,16 +313,16 @@ def test_ct_gate_downgrades_json_body_to_json_only():
     assert sev == "json-only"
 
 
-def test_ct_gate_leaves_html_body_as_executable():
+def test_ct_gate_leaves_html_body_as_reflection():
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html")
     assert ctx == "body"
-    assert sev == "executable"
+    assert sev == "html-reflection"
 
 
 def test_ct_gate_html_title_is_still_breakout_req():
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "title", "text/html")
     assert ctx == "title"
-    assert sev == "breakout-req"
+    assert sev == "html-reflection"
 
 
 class _JsonReflector(BaseHTTPRequestHandler):
@@ -466,10 +466,10 @@ def test_context_executes_only_body_and_unknown():
 
 
 def test_severity_labels():
-    assert dxadyn._severity("unencoded", "body") == "executable"
-    assert dxadyn._severity("unencoded", "title") == "breakout-req"
-    assert dxadyn._severity("unencoded", "attr:value") == "breakout-req"
-    assert dxadyn._severity("attr-only", "body") == "attr-breakout"
+    assert dxadyn._severity("unencoded", "body") == "html-reflection"
+    assert dxadyn._severity("unencoded", "title") == "html-reflection"
+    assert dxadyn._severity("unencoded", "attr:value") == "html-reflection"
+    assert dxadyn._severity("attr-only", "body") == "attribute-reflection"
     assert dxadyn._severity("encoded", "body") == "-"
 
 
@@ -556,16 +556,14 @@ def test_verdict_marker_absent_when_only_partial_survives():
     assert dxadyn.verdict("dxaAAAA", body, marker='</title><dXsS>') == "encoded"
 
 
-def test_ct_gate_breakout_variant_upgrades_to_executable():
-    """v3.10 semantic: a -breakout variant that survived raw in an HTML
-    response is treated as executable even if the CID landed inside title/
-    attr/script - the breakout marker escaped the surrounding context."""
+def test_ct_gate_breakout_variant_remains_reflection():
+    """A raw -breakout marker is reflection; its name cannot prove context escape."""
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "title", "text/html",
                                      variant="title-breakout")
-    assert ctx == "title" and sev == "executable"
+    assert ctx == "title" and sev == "html-reflection"
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "attr:value", "text/html",
                                      variant="attr-breakout")
-    assert sev == "executable"
+    assert sev == "html-reflection"
 
 
 def test_ct_gate_breakout_variant_does_not_bypass_json_downgrade():
@@ -579,8 +577,8 @@ def test_ct_gate_breakout_variant_does_not_bypass_json_downgrade():
 def test_ct_gate_plain_body_variant_unchanged():
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "title", "text/html",
                                      variant="body")
-    # body variant + title context = still breakout-req (no marker escape claim)
-    assert sev == "breakout-req"
+    # Keep the estimated context without inferring execution or context escape.
+    assert sev == "html-reflection"
 
 
 # --- v3.10 late: WAF-bypass mutations + reflected variants ------------------
@@ -712,16 +710,14 @@ def test_phase_1_2_html_comment_breakout_closes_comment():
     assert '-->' in canary
 
 
-def test_phase_1_2_all_new_variants_upgrade_to_executable_on_html():
-    """Every -breakout name (existing + new) must upgrade to executable
-    severity when reflected unencoded in an HTML response. This is the
-    invariant that ties naming to CT-gate behavior."""
+def test_phase_1_2_all_new_variants_remain_reflections_on_html():
+    """All variant names preserve reflection evidence without execution claims."""
     for vname in dxadyn.PAYLOAD_VARIANTS:
         if not vname.endswith("-breakout"):
             continue
         _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
                                         variant=vname)
-        assert sev == "executable", f"{vname} did not upgrade to executable"
+        assert sev == "html-reflection", f"{vname} did not preserve reflection classification"
 
 
 def test_phase_1_2_all_new_variants_still_downgrade_on_json():
@@ -916,9 +912,8 @@ def test_phase_1_2_m2_backslash_tag_present():
     assert '<dXsS\\>' in bs[1] and '<dXsS\\>' in bs[2]
 
 
-def test_phase_1_2_m2_all_new_variants_still_upgrade_to_executable():
-    """All 13 new variants use the -breakout naming convention and must
-    auto-upgrade to executable severity on HTML unencoded reflection."""
+def test_phase_1_2_m2_all_new_variants_still_remain_reflections():
+    """All 13 variant names remain observations when reflected as raw HTML."""
     new_names = {
         "svg-script-nested-breakout", "math-mtext-breakout",
         "object-data-breakout", "embed-src-breakout",
@@ -931,7 +926,7 @@ def test_phase_1_2_m2_all_new_variants_still_upgrade_to_executable():
     for vname in new_names:
         _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
                                         variant=vname)
-        assert sev == "executable", f"{vname} did not upgrade to executable"
+        assert sev == "html-reflection", f"{vname} did not preserve reflection classification"
 
 
 def test_phase_1_2_m2_shape_count_now_matches_full_matrix():
@@ -1090,12 +1085,12 @@ def test_phase_1_2_m3_template_shadow_carries_script():
     assert 'shadowrootmode' in canary and '<script>' in canary
 
 
-def test_phase_1_2_m3_all_new_variants_still_upgrade_to_executable():
-    """Every m3 -breakout must ride the CT gate to executable severity."""
+def test_phase_1_2_m3_all_new_variants_still_remain_reflections():
+    """Every m3 -breakout remains reflection evidence."""
     for vname in _M3_NEW_VARIANTS:
         _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
                                         variant=vname)
-        assert sev == "executable", f"{vname} did not upgrade to executable"
+        assert sev == "html-reflection", f"{vname} did not preserve reflection classification"
 
 
 def test_phase_1_2_m3_waf_mutation_library_reached_18():
@@ -1222,12 +1217,12 @@ def test_phase_1_2_m4_input_onfocusin_uses_autofocus():
     assert 'onfocusin=1' in canary and 'autofocus' in canary
 
 
-def test_phase_1_2_m4_all_new_variants_upgrade_to_executable():
-    """All m4 -breakout variants must ride the CT gate to executable."""
+def test_phase_1_2_m4_all_new_variants_remain_reflections():
+    """All m4 -breakout variants remain reflection evidence."""
     for vname in _M4_NEW_VARIANTS:
         _, sev = dxadyn._apply_ct_gate("unencoded", "body", "text/html",
                                         variant=vname)
-        assert sev == "executable", f"{vname} did not upgrade to executable"
+        assert sev == "html-reflection", f"{vname} did not preserve reflection classification"
 
 
 def test_phase_1_2_m4_shape_count_reached_full_dod():
@@ -1337,22 +1332,21 @@ def test_crawl_dedup_key_is_variant_aware():
 # --- _finding() picks up variant into severity via CT gate ------------------
 
 def test_finding_helper_variant_upgrades_severity_on_html():
-    """A title-breakout variant reflection on text/html gets severity=executable
-    via the CT gate variant-aware upgrade path."""
+    """The shared finding factory preserves reflection and the variant label."""
     f = dxadyn._finding("http://x/", "GET", "q", "unencoded", 200,
                         context="title", canary_id="dxaXX",
                         content_type="text/html", variant="title-breakout")
-    assert f["severity"] == "executable"
+    assert f["severity"] == "html-reflection"
     assert f["variant"] == "title-breakout"
 
 
 def test_finding_helper_default_variant_stays_body_breakout_req():
-    """No variant kwarg -> defaults to 'body'; title context stays breakout-req."""
+    """Default body variant and title context remain reflection observations."""
     f = dxadyn._finding("http://x/", "GET", "q", "unencoded", 200,
                         context="title", canary_id="dxaXX",
                         content_type="text/html")
     assert f["variant"] == "body"
-    assert f["severity"] == "breakout-req"
+    assert f["severity"] == "html-reflection"
 
 
 def test_probe_stored_multi_variant_produces_findings_per_variant():

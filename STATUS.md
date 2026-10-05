@@ -1,6 +1,6 @@
 # Doğrulanmış durum
 
-29 Eylül 2026. Güncel plan: [ROADMAP](ROADMAP.md). ZIP üzerinden başlayan düzeltmeler
+5 Ekim 2026. Güncel plan: [ROADMAP](ROADMAP.md). ZIP üzerinden başlayan düzeltmeler
 `2703d1a` ile GitHub main dalına aktarıldı. Canlı GitHub API'si güncel README'yi
 doğruladı; web arama sonuçları eski taranmış metni gösterebilir. Bu durum yeni
 CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
@@ -12,6 +12,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | Payload üretimi | 50 varyant, 18 mutation | 950 üretim; cid normalize edilince 895 farklı dize; çalışan exploit sayısı değil |
 | DOM gözlemci | Deneysel | Bare visit; auth/stored proof entegrasyonu yok |
 | DOM dialog çıktısı | **Düzeltildi** | Normal dialog OBSERVED-DIALOG; proof üretmiyor |
+| HTTP kanıt modeli | **Ortak üretici ve JSON/HTML raporu eklendi** | Ham marker/variant adı JS proof değil; DOM/attempt birleştirme ve sink/rol dedup açık |
 | Blind callback sınıflandırması | **Düzeltildi: resource-callback** | JS proof ve oturum kimliği kanıtı değildir |
 | Kalıcı blind takip | **Stored/stored-auto için eklendi** | Yansımasız CID kaydı, sonradan kontrol, zaman ve rol etiketi; reflected/flow/DOM journal entegrasyonu ve doğrulanmış rol açık |
 | Benchmark | 3 mock + 3 Docker tanımı | FN/error hesabı ve gerçek hedef adapter'ları eksik |
@@ -26,11 +27,12 @@ Bu geliştirme tesliminin yeni test sonuçları [VALIDATION.md](VALIDATION.md) i
 
 ## Sıradaki küçük teslim
 
-R1: bütün modlar için ortak evidence modeli ve normal/flow/stored sınıflandırma
-tutarlılığı. Ham marker ve JSON-only yanıt execution kanıtı sayılmamalı.
-Kalıcı stored blind takip alt teslimi tamamlandı; gerçek canary execution
-doğrulaması henüz yok. R2 JSON gönderimi tamam, auth/rate/CSRF açık.
-Son paket: **438 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
+R1: sink/rol farklarını koruyan dedup ve ortak attempt/DOM modeli.
+HTTP normal/flow/stored/header sınıflandırması ortak üreticiye taşındı;
+ham marker ve JSON-only yanıt execution sayılmıyor. Kalıcı stored blind takip
+tamam; gerçek canary execution doğrulaması yok. R2 auth/rate/CSRF açık.
+Son paket: **450 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
+S01 [5 Ekim çalışma kaydı](staj/2026-10-05-http-kanit-modeli.md) eklendi.
 
 ## Ana proje kapsamı
 
