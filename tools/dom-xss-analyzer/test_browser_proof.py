@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from urllib.parse import quote
 
 import pytest
 import dxaprove
@@ -89,17 +90,24 @@ def test_explicit_csrf_header_is_allowlisted_and_transferred(browser_path):
         assert "lab-csrf" not in json.dumps(result)
 
 
-def test_dxadom_direct_eval_keeps_lexical_scope(browser_path):
-    """The observer records window.eval calls while direct eval still resolves
-    a local binding in the page's own lexical scope."""
+def test_dxadom_direct_eval_keeps_function_lexical_scope(browser_path):
+    """A direct eval must retain the caller's function-local lexical scope.
+
+    The observer must not turn direct eval into indirect eval merely to
+    observe it. That would make ``localValue`` unavailable here.
+    """
+    html = (
+        "<!doctype html><title>before</title><script>"
+        "(() => { const localValue = 'function-local'; "
+        "document.title = eval('localValue'); })();"
+        "</script>"
+    )
     session = dxadom.BrowserSession(executable_path=browser_path)
     with session:
-        summary = session.visit(
-            "data:text/html,<body></body><script>let localValue=17;"
-            "document.body.textContent=eval(%22localValue%22)</script>"
-        )
+        summary = session.visit("data:text/html," + quote(html))
     assert summary["errors"] == []
-    assert any(item["sink"] == "eval" for item in summary["sinks"])
+    assert summary["title"] == "function-local"
+    assert "eval-not-instrumented-to-preserve-lexical-scope" in summary["limitations"]
 
 
 def test_bad_browser_is_error_before_submit():

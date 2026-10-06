@@ -3,7 +3,8 @@
 Phase 2.1: skeleton + graceful availability check + basic navigation.
 Phase 2.2: DOM sink detection via a pre-user-JS init script that wraps
            Element.innerHTML/outerHTML setters, document.write/writeln,
-           Range.createContextualFragment, eval, Function, Location.href.
+           Range.createContextualFragment, Function, Location.href.
+           Native eval is deliberately not wrapped (lexical scope preservation).
 Phase 2.3: JS execution proof - page.on('dialog') captures alert /
            confirm / prompt / beforeunload calls; when a captured
            dialog message contains an injected canary, severity is
@@ -72,7 +73,7 @@ _CHROMIUM_HINTS = [
 #   Element.prototype.outerHTML setter
 #   document.write / document.writeln
 #   Range.prototype.createContextualFragment
-#   window.eval (via reassignment)
+#   eval is intentionally not wrapped: reassignment breaks direct lexical eval.
 #   window.Function (via Proxy so both call + construct fire)
 #   Location.prototype.href setter (records; navigation still fires -
 #     see caveat in visit_with_sinks docstring)
@@ -150,13 +151,9 @@ _SINK_INIT_SCRIPT = r"""
     }
   } catch (_) {}
 
-  // eval - direct reassignment covers the window-scoped eval reference;
-  // direct eval-in-scope calls still hit the original spec eval but the
-  // window.eval wrapper catches the common `window.eval(x)` pattern.
-  try {
-    const origEval = window.eval;
-    window.eval = function(s) { record('eval', s); return origEval(s); };
-  } catch (_) {}
+  // Preserve native eval identity. A wrapper also intercepts direct eval and
+  // turns it into indirect eval, losing the caller's lexical environment.
+  // Eval calls are therefore outside the sink observer's coverage.
 
   // Function constructor - Proxy handles both call and construct.
   try {
@@ -511,7 +508,7 @@ class BrowserSession:
 
         The sink init script runs BEFORE any user JS, so every subsequent
         assignment to innerHTML/outerHTML, call to document.write /
-        eval / Function / Range.createContextualFragment, or setter on
+        Function / Range.createContextualFragment, or setter on
         Location.href gets recorded into window.__dxadom_sinks[]. After
         `load`, we snapshot that list into `summary['sinks']`.
 
@@ -529,6 +526,7 @@ class BrowserSession:
             "sinks": [], "dialogs": [],
             "routes": {"runtime": [], "static": []},
             "requests": [], "auth_headers": {},
+            "limitations": ["eval-not-instrumented-to-preserve-lexical-scope"],
         }
         with self._page_scope() as page:
             page.on("console", lambda msg: summary["console"].append(

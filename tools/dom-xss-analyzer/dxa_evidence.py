@@ -217,6 +217,9 @@ def dom_observations(summary, role="unspecified"):
                                            "content": "omitted: may contain credentials"}]})
     events = [ReportEvent("browser", "error", "browser reported an error; raw message omitted", summary["url"])
               for _ in summary.get("errors", [])]
+    limitation = "eval-not-instrumented-to-preserve-lexical-scope"
+    if limitation in summary.get("limitations", []):
+        events.append(ReportEvent("browser-instrumentation", "info", limitation, summary["url"]))
     return rows, events
 
 

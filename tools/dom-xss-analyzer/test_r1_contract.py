@@ -24,6 +24,23 @@ def observation():
             "reflection": "unencoded", "evidence_level": "reflection", "variant": "body"}
 
 
+def test_dom_limitation_survives_empty_json_and_html_report(tmp_path, monkeypatch):
+    limitation = "eval-not-instrumented-to-preserve-lexical-scope"
+    rows, events = evidence.dom_observations({
+        "url": "http://127.0.0.1/", "limitations": [limitation, "SECRET-RAW-MESSAGE"]})
+    assert rows == []
+    assert len(events) == 1
+    monkeypatch.setattr(dxadyn, "REPORT_EVENTS", events)
+    path = tmp_path / "report.json"
+    dxadyn.write_json_report(path, rows, "dom")
+    serialized = path.read_text(encoding="utf-8")
+    page = dxadyn.render_html(rows, "http://127.0.0.1/", "dom")
+    assert json.loads(serialized)["findings"] == []
+    for output in (serialized, page):
+        assert limitation in output
+        assert "SECRET-RAW-MESSAGE" not in output
+
+
 @pytest.mark.parametrize("field,value", [
     ("session_role", "admin"), ("sink_identity", "element:article-2:innerHTML"),
     ("check_url", "http://lab.test/other"), ("context", "title"), ("field", "title"),

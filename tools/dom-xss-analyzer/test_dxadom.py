@@ -347,13 +347,14 @@ def test_sink_document_writeln_captured(sink_server):
 
 
 @_skip
-def test_sink_eval_captured(sink_server):
+def test_eval_is_not_wrapped(sink_server):
     port = sink_server
     with dxadom.BrowserSession() as sess:
         summary = sess.visit(f"http://127.0.0.1:{port}/eval?p=dxaEVAL_marker")
     sinks = summary["sinks"]
-    assert any(s["sink"] == "eval"
-               and "dxaEVAL_marker" in s["arg"] for s in sinks)
+    assert summary["errors"] == []
+    assert not any(s["sink"] == "eval" for s in sinks)
+    assert "eval-not-instrumented-to-preserve-lexical-scope" in summary["limitations"]
 
 
 @_skip
