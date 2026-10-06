@@ -1905,38 +1905,43 @@ def test_probe_headers_parallel_still_produces_correct_findings():
     assert {f["param"] for f in par} == {"header:X-Forwarded-For"}
 
 
-def test_probe_form_parallel_wall_clock_faster_than_sequential():
-    """The concrete Phase 1.1 wall-clock win: 8-shape probe on a mock server
-    that sleeps 100 ms per request. Sequential ~ 0.8s; parallel-8 should
-    beat 0.35s (2x floor)."""
+def test_probe_form_shared_session_serializes_parallel_requests():
+    """R2: workers sharing one cookie jar preserve session transaction order."""
     _reset_concurrency_state()
+    activity = {"active": 0, "peak": 0}
+    lock = threading.Lock()
 
     class _SlowReflector(BaseHTTPRequestHandler):
         def log_message(self, *a):
             pass
         def do_GET(self):
-            _time.sleep(0.1)                          # slow endpoint
+            with lock:
+                activity["active"] += 1
+                activity["peak"] = max(activity["peak"], activity["active"])
+            _time.sleep(0.01)
             u = urlparse(self.path)
             q = parse_qs(u.query).get("q", [""])[0]
             body = f"<div>{q}</div>".encode()
             self.send_response(200); self.send_header("Content-Type", "text/html")
-            self.end_headers(); self.wfile.write(body)
+            self.end_headers()
+            with lock:
+                activity["active"] -= 1
+            self.wfile.write(body)
 
-    # ThreadingHTTPServer so the server can actually serve requests
-    # concurrently - the whole point of the parallel-speedup assertion.
+    # A concurrent server exposes overlapping requests if client locking regresses.
     srv = ThreadingHTTPServer(("127.0.0.1", 0), _SlowReflector)
     port = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     form = {"action": f"http://127.0.0.1:{port}/r", "method": "get",
             "fields": {"q": ""}}
     try:
-        # sequential baseline: 8 variants x 100 ms = ~0.8s
+        # Sequential baseline and the same worker-queued workload.
         dxadyn.PARALLEL_WORKERS = 1
         t0 = _time.monotonic()
         seq = dxadyn.probe_form(form, variants=["body", "attr-breakout"],
                                 waf_bypass=True)          # 2 * (1+4) = 10 tasks; but 1 field
         seq_t = _time.monotonic() - t0
-        # parallel-8: same 10 tasks concurrent -> should beat 0.35s
+        # Worker scheduling must not overlap requests on this shared session.
         dxadyn.PARALLEL_WORKERS = 8
         t0 = _time.monotonic()
         par = dxadyn.probe_form(form, variants=["body", "attr-breakout"],
@@ -1947,9 +1952,7 @@ def test_probe_form_parallel_wall_clock_faster_than_sequential():
         _reset_concurrency_state()
     # both runs saw the reflection on every shape
     assert len(seq) == len(par)
-    # parallel should be a lot faster than sequential
-    assert par_t < seq_t * 0.6, (
-        f"expected parallel much faster; seq={seq_t:.2f}s par={par_t:.2f}s")
+    assert activity["peak"] == 1
 
 
 def test_parallel_map_short_circuits_for_single_item():

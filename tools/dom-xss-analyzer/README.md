@@ -1,3 +1,11 @@
+# Güncel HTTP oturum davranışı
+
+6 Ekim 2026: `--auth-check`, fractional rate ve sıralı CSRF/stored işlemleri
+için [R2 sözleşmesini](SESSION-CONTRACT.md) okuyun. Tek cookie jar kullanan
+HTTP işlemleri artık sıralıdır; aşağıdaki tarihsel paralel hız anlatımları
+güncel performans garantisi değildir. CSRF'siz stored form açıkça
+`--csrf-field ""` ister.
+
 > **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../../STATUS.md) and [current acceptance criteria](../../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
 
 # dxa — source→sink XSS analyzer (full-stack)

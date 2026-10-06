@@ -46,6 +46,8 @@ Usage
 """
 
 import argparse
+import math
+import functools
 import dxa_evidence as evidence
 from dxa_attempts import AttemptJournal, candidate
 import concurrent.futures
@@ -622,12 +624,15 @@ JITTER_MS_MAX = 0             # inclusive upper bound (0/0 = no jitter)
 class _TokenBucket:
     """Thread-safe token bucket. `_rate_gate()` calls .take() which blocks
     until a token is available. Refills continuously (tokens += elapsed * rate)
-    up to `capacity`. Capacity = rate keeps bursts within a 1-second window.
+    up to `capacity`. Capacity = max(1, rate); fractional rates allow one initial
+    request, then refill at the specified sustained rate (not a rolling window).
     Tiny (~30 lines), no third-party dep."""
     def __init__(self, rate_per_sec):
         self.rate = float(rate_per_sec)
-        self.capacity = float(rate_per_sec)
-        self.tokens = float(rate_per_sec)
+        if not math.isfinite(self.rate) or self.rate <= 0:
+            raise ValueError("rate must be finite and positive")
+        self.capacity = max(1.0, self.rate)
+        self.tokens = self.capacity
         self.last = time.monotonic()
         self._lock = threading.Lock()
 
@@ -688,6 +693,17 @@ VERBOSE = False             # print each skip inline (set by main() from --verbo
 WAF_LOG_FILE = None         # append rejected canaries to this file (set from --waf-log)
 REPORT_EVENTS = []
 SESSION_ROLE = "unspecified"
+SESSION_CHECK = "not-requested"
+_SESSION_LOCK = threading.RLock()
+
+
+def _session_serial(func):
+    """One shared cookie jar: serialize transactions, including nested fetches."""
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        with _SESSION_LOCK:
+            return func(*args, **kwargs)
+    return wrapped
 
 
 def record_response_event(stage, url, status, reason=None):
@@ -777,6 +793,7 @@ def _print_skip_summary():
           + ("" if WAF_LOG_FILE is None else f"  Full log: {WAF_LOG_FILE}."))
 
 
+@_session_serial
 def fetch(url, data=None, method=None, extra=None):
     """GET (data=None) / POST (data=dict) / any HTTP method (method='PUT'|...).
     Returns (status, final_url, body, content_type). `content_type` comes from
@@ -814,8 +831,10 @@ def fetch(url, data=None, method=None, extra=None):
     if (CSRF_REFRESH_URL and CSRF_HEADER_NAME and not _in_csrf_refresh()
             and (body_bytes is not None or (method and method.upper() != "GET"))):
         tok = refresh_csrf_token()
-        if tok:
-            headers[CSRF_HEADER_NAME] = tok
+        if not tok:
+            record_response_event("csrf", url, None, "csrf-token-unavailable")
+            return None, url, "", ""
+        headers[CSRF_HEADER_NAME] = tok
     kwargs = {"data": body_bytes, "headers": headers}
     if method:
         kwargs["method"] = method.upper()
@@ -1263,7 +1282,7 @@ def refresh_csrf_token(url=""):
         status, _final, body, _ct = fetch(url)
     finally:
         _CSRF_REFRESH_GUARD.flag = False
-    if not body or (isinstance(body, str) and body.startswith("__error__")):
+    if status is None or not 200 <= status < 300 or not body or (isinstance(body, str) and body.startswith("__error__")):
         return ""
     for pattern in _CSRF_PATTERNS:
         m = re.search(pattern, body, re.IGNORECASE)
@@ -1280,6 +1299,7 @@ def _cookie_jar():
     return None
 
 
+@_session_serial
 def login(login_url, user, password, user_field="username", pass_field="password",
           csrf_field="tokenCSRF", extra=None):
     """Log in through a standard HTML form. Session cookies live in `OPENER`.
@@ -1365,6 +1385,7 @@ def probe_stored(target_url, target_field, extra_fields, check_urls,
     canaries = list(make_canaries_for(variants, waf_bypass))
     cids = [cid for _, cid, _, _ in canaries]
 
+    @_session_serial
     def _one_variant(triple):
         vname, cid, canary, marker = triple
         rows = []
@@ -1445,6 +1466,7 @@ def _all_links(base_url, body):
     return out
 
 
+@_session_serial
 def _submit_form(target_url, target_field, extra_fields, canary,
                  method="post", csrf_field="tokenCSRF"):
     """Fetch the target once (to grab CSRF), then submit with the canary in
@@ -1453,8 +1475,11 @@ def _submit_form(target_url, target_field, extra_fields, canary,
     tok = None
     if csrf_field:
         st, _, body, _ct = fetch(target_url)
-        if st is not None:
+        if st is not None and 200 <= st < 300:
             tok = _extract_csrf(body, csrf_field)
+        if not tok:
+            record_response_event("csrf", target_url, None, "csrf-token-unavailable")
+            return None, target_url
     data = dict(extra_fields or {})
     data[target_field] = canary
     if tok is not None and csrf_field:
@@ -1521,16 +1546,15 @@ def _submit_header(target_url, header_name, canary, method="GET"):
     return st, final
 
 
+@_session_serial
 def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                       method="post", csrf_field="tokenCSRF", max_links=60,
                       json_body=None, header_target=None, variants=None,
-                      waf_bypass=False, attempt_journal=None):
+                      waf_bypass=False, attempt_journal=None, _canaries=None):
     """Submit payload(s) then autonomously hunt for the canary via 1-hop crawl.
-    v3.10: `variants` fans out into per-variant submits; each variant produces
-    its own findings (own cid + own marker). `waf_bypass` also fans each
-    variant into 4 mutation shapes. Candidate URLs are crawled once and
-    every candidate is verdicted against every submitted cid - one HTTP
-    fetch per candidate, N verdicts, cheap."""
+    Each canary completes submit and crawl before the next canary replaces
+    stored state. Candidate counts are summed across these per-canary crawls.
+    The shared session lock includes refresh, submit and read."""
     variants = variants or ["body"]
     label = (f"header:{header_target}" if header_target else
              ("json" if json_body is not None else target_field))
@@ -1538,7 +1562,20 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
     # Phase 1: submit each variant. Phase 1.1: parallelised via _parallel_map;
     # each unit returns its (vname, cid, marker, sub_status, canary, landing)
     # tuple. The first landing URL (input order) becomes the crawl seed root.
-    canaries = list(make_canaries_for(variants, waf_bypass))
+    canaries = list(make_canaries_for(variants, waf_bypass)) if _canaries is None else _canaries
+    if len(canaries) > 1:
+        rows, first, totals = [], "", {"submit_landing": "", "checked_pages": 0, "candidates": 0}
+        for canary in canaries:
+            found, cid, details = probe_stored_auto(
+                target_url, target_field, extra_fields, seed_urls, method, csrf_field,
+                max_links, json_body, header_target, variants, waf_bypass,
+                attempt_journal, _canaries=[canary])
+            rows.extend(found)
+            if not first:
+                first, totals["submit_landing"] = cid, details["submit_landing"]
+            totals["checked_pages"] += details["checked_pages"]
+            totals["candidates"] += details["candidates"]
+        return dedupe_findings(rows), first, totals
 
     def _one_submit(quad):
         vname, cid, canary, marker = quad
@@ -1552,7 +1589,7 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                          f"submit:{sub_reason}", canary)
         return (vname, cid, marker, sub_status, this_landing, attempt)
 
-    _results = _parallel_map(_one_submit, canaries)
+    _results = [_one_submit(item) for item in canaries]
     submits = [(v, c, m, s) for (v, c, m, s, _l, _a) in _results]
     landing = next((l for _v, _c, _m, _s, l, _a in _results if l), "")
     first_cid = submits[0][1] if submits else ""
@@ -1612,7 +1649,7 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                 rows.append(row)
         return rows
 
-    per_cand = _parallel_map(_fetch_and_verdict, candidates)
+    per_cand = [_fetch_and_verdict(item) for item in candidates]
     findings = [row for group in per_cand for row in group]
     checked = len(candidates)
 
@@ -1707,6 +1744,7 @@ def render_html(findings, target, mode, meta=None, events=None):
     def esc(s):
         return htmllib.escape(str(s))
 
+    meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
     report = evidence.report(findings, mode, REPORT_EVENTS if events is None else events, meta)
     findings, meta = report["findings"], report["meta"]
     target = evidence.safe_url(target)
@@ -1810,6 +1848,7 @@ def write_json_report(path, findings, mode, meta=None):
     """Export the same HTTP findings supplied to HTML, excluding auth/flow vars."""
     if not path:
         return
+    meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(evidence.report(findings, mode, REPORT_EVENTS, meta),
                   fh, ensure_ascii=False, indent=2)
@@ -1931,6 +1970,7 @@ def _substitute(value, vars_):
     return value
 
 
+@_session_serial
 def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
     """Issue one HTTP request as part of a flow. Returns
     (status, body_text, content_type_header, parsed_json_or_None)."""
@@ -1953,6 +1993,12 @@ def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
         req.add_header(h, hv)
     for h, hv in EXTRA_HEADERS.items():
         req.add_header(h, hv)
+    if CSRF_REFRESH_URL and CSRF_HEADER_NAME and (data is not None or method != "GET"):
+        token = refresh_csrf_token()
+        if not token:
+            record_response_event("csrf", url, None, "csrf-token-unavailable")
+            return 0, "", "", None
+        req.add_header(CSRF_HEADER_NAME, token)
     _rate_gate()
     _jitter_gate()
     try:
@@ -1976,6 +2022,7 @@ def _fetch_flow_step(method, url, body, headers, content_type, timeout=10):
     return status, text, ct, parsed
 
 
+@_session_serial
 def run_flow(flow, canary=None, cid=None, marker=None, timeout=10, *, auth_strict=False):
     """Execute a flow definition. Returns a summary dict:
       {
@@ -2088,6 +2135,7 @@ def _load_flow(path):
 # JWT and the author chooses which one to reuse.
 
 
+@_session_serial
 def run_auth_flow(flow, timeout=10):
     """Execute an auth flow. Returns a summary dict identical in shape to
     `run_flow`'s, plus:
@@ -2149,6 +2197,35 @@ def run_auth_flow(flow, timeout=10):
     if not summary["authenticated"]:
         summary["error"] = "auth flow did not establish a new or changed session cookie"
     return summary
+
+
+@_session_serial
+def verify_session(spec):
+    """Check a target-specific JSON identity/role contract, without logging values."""
+    global SESSION_CHECK
+    SESSION_CHECK = "failed"
+    if (not isinstance(spec, dict) or not isinstance(spec.get("url"), str)
+            or not isinstance(spec.get("expect"), dict) or not spec["expect"]
+            or not all(isinstance(k, str) and k.startswith("$.") and v is not None
+                       for k, v in spec["expect"].items())):
+        record_response_event("auth-check", "", None, "invalid-session-check")
+        return False
+    parsed_url = urllib.parse.urlsplit(spec["url"])
+    if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+        record_response_event("auth-check", "", None, "invalid-session-check-url")
+        return False
+    status, _, body, ct = fetch(spec["url"])
+    try:
+        parsed = json.loads(body)
+        ok = status == 200 and "application/json" in ct and all(
+            _jsonpath_get(parsed, path) == value and type(_jsonpath_get(parsed, path)) is type(value)
+            for path, value in spec["expect"].items())
+    except (ValueError, TypeError):
+        ok = False
+    SESSION_CHECK = "passed" if ok else "failed"
+    if not ok:
+        record_response_event("auth-check", spec["url"], None, "session-contract-mismatch")
+    return ok
 
 
 def clear_auth_header(name):
@@ -2250,10 +2327,10 @@ def main():
                          "one round-trip's worth of wall-clock with N=10).")
     ap.add_argument("--rate", type=float, default=0, metavar="RPS",
                     help="token-bucket rate limit in requests per second across "
-                         "all workers. 0 = unlimited (default). Set with --parallel "
-                         "to cap the burst - e.g. --parallel 10 --rate 20 lets 10 "
-                         "workers share a 20/s budget so the target sees at most "
-                         "20 requests per wall-clock second.")
+                         "all workers. 0 = unlimited (default); negative/nonfinite "
+                         "values are errors. Capacity=max(1, rate), then sustained "
+                         "refill; this is not a rolling-window quota. Shared-session "
+                         "HTTP transactions are serialized even with --parallel.")
     ap.add_argument("--jitter", default="", metavar="MIN-MAX",
                     help="sleep a random duration in [MIN, MAX] milliseconds "
                          "before every request. Format: '100-500' (both int). "
@@ -2348,7 +2425,15 @@ def main():
                     help="operator-supplied role label for stored blind journal; not verified auth")
     ap.add_argument("--json-out", metavar="FILE", default="",
                     help="versioned HTTP/DOM findings and operational events")
+    ap.add_argument("--auth-check", metavar="JSON", help="Target-specific session check file: url and expect JSONPath/value map; mismatch stops scanning")
     args = ap.parse_args()
+    if args.dom and args.auth_check:
+        ap.error("--auth-check checks the HTTP session; --dom session transfer is not supported")
+    if (args.stored and not args.json_body and not args.header_target
+            and args.csrf_field and args.csrf_header):
+        ap.error("choose form CSRF or header CSRF for stored submission; use --csrf-field '' for header mode")
+    if not math.isfinite(args.rate) or args.rate < 0:
+        ap.error("--rate must be finite and >= 0; 0 means unlimited")
     if args.json_out and args.html:
         from pathlib import Path
         if Path(args.json_out).resolve() == Path(args.html).resolve():
@@ -2360,8 +2445,9 @@ def main():
     WAF_LOG_FILE = args.waf_log or None
     SKIPPED_SUBMITS.clear()
     REPORT_EVENTS.clear()
-    global SESSION_ROLE
+    global SESSION_ROLE, SESSION_CHECK
     SESSION_ROLE = args.session_role
+    SESSION_CHECK = "not-requested"
 
     # Phase 1.1: wire concurrency / rate / jitter into module state
     global PARALLEL_WORKERS, _RATE_LIMITER, JITTER_MS_MIN, JITTER_MS_MAX
@@ -2560,7 +2646,7 @@ def main():
         # If the operator ONLY passed --auth-flow (no scan mode selected),
         # exit after checking session establishment. Session state is in-memory;
         # it does not survive a separate CLI invocation.
-        if not (args.stored or args.flow or args.url):
+        if not (args.stored or args.flow or args.url or args.auth_check):
             sys.exit(0)
 
     elif args.login:
@@ -2575,6 +2661,20 @@ def main():
             print("[dxadyn] form login failed; scan stopped", file=sys.stderr)
             sys.exit(2)
         print("[dxadyn] form login session established (role not verified)")
+
+    if args.auth_check:
+        spec = _load_flow(args.auth_check)
+        if not verify_session(spec):
+            write_failure_reports(args, "auth-check", "session check failed; scan stopped")
+            print("[dxadyn] session check failed; scan stopped", file=sys.stderr)
+            sys.exit(2)
+        print("[dxadyn] target session contract passed; role label remains operator supplied")
+        if not (args.stored or args.flow or args.url):
+            write_json_report(args.json_out, [], "auth-check")
+            if args.html:
+                with open(args.html, "w", encoding="utf-8") as fh:
+                    fh.write(render_html([], "", "auth-check"))
+            return
 
     # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
     # carries its own steps + verdict step(s); we just run it and print.

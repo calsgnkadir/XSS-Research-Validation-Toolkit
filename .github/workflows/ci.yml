@@ -22,6 +22,10 @@ jobs:
         working-directory: tools/dom-xss-analyzer
         run: pytest -q
 
+      - name: Required R1 and R2 negative controls
+        working-directory: tools/dom-xss-analyzer
+        run: pytest test_http_evidence.py test_blind_correlation.py test_auth_guards.py test_r2_contract.py -q
+
       - name: Self-scan the example corpus
         working-directory: tools/dom-xss-analyzer
         run: |

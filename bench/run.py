@@ -163,6 +163,7 @@ def run_dxadyn(target: Dict[str, Any], base_url: str, budget: int) -> Dict[str, 
             "--auto-check",
             "--auto-check-from", url,
             "--auto-check-max", "5",
+            "--csrf-field", target.get("csrf_field", "tokenCSRF"),
         ]
     else:
         # reflected mode: url as positional

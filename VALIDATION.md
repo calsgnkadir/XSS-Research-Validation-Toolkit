@@ -1,6 +1,19 @@
-# Doğrulama kaydı — 2026-10-05
+# Doğrulama kaydı — 2026-10-06
 
-## R2 auth guard — güncel teslim
+## R2 HTTP kabul kapanışı — güncel teslim
+
+- **526 passed, 36 skipped, 1 warning**, 112.13 saniye. 30 yeni R2 kabul
+  testi: hedefe özel oturum sözleşmesi, rol kaydı, CLI hata duruşu, fractional
+  rate, tek kullanımlık CSRF ve stored sırası, hata olayları ve desteklenmeyen birleşimler.
+- 36 eski browser testi otomatik binary keşfi nedeniyle atlandı; geçmiş sayılmadı.
+  Uyarı benchmark datetime.utcnow kullanımıdır. GitHub CI sonucu henüz doğrulanmadı.
+- [Kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md),
+  [log](audit/2026-10-06-r2/pytest.log), [JUnit](audit/2026-10-06-r2/pytest.xml).
+- İlk tam koşudaki CSRF'siz guestbook konfigürasyon eksiği hedefe özel
+  csrf_field ayarıyla düzeltildi. Paylaşılan HTTP oturumunda sıralama davranışı
+  belgelenmiştir; eski paralel hız iddiası güncel kabul değildir.
+
+## R2 auth guard — önceki teslim
 
 - Tam paket **496 passed, 36 skipped, 1 warning**, 89.38 saniye.
   36 eski browser testi otomatik keşif nedeniyle atlandı; benchmark utcnow

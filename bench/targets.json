@@ -82,6 +82,7 @@
       "id": "mock-stored-guestbook",
       "kind": "mock",
       "handler": "stored_guestbook",
+      "csrf_field": "",
       "url": "http://127.0.0.1:{port}/guestbook",
       "params": ["msg"],
       "expect": {

@@ -1,5 +1,14 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-06
+
+- R2 HTTP kabulü tamam: hedefe özel JSON kimlik/rol kontrolü ve rapor meta'sı,
+  fractional rate, geçersiz rate reddi, sıralı CSRF/stored işlemleri ve hata olayları.
+- Tek cookie jar'da HTTP işlemleri sıralıdır; stored-auto her canary sonrasında
+  okur. CSRF'siz stored form açık konfigürasyon ister; benchmark adapter'ı güncellendi.
+- 30 yeni kabul testi, zorunlu R1/R2 CI adımı ve kapanış/staj belgeleri eklendi.
+  Tam paket 526 passed, 36 skipped, 1 warning. Browser aktarımı R3'te açıktır.
+
 ## Unreleased — 2026-10-05
 
 ### R2 auth guard ilk teslimi

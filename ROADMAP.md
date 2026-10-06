@@ -1,6 +1,6 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-5 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
+6 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.
 
@@ -19,7 +19,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R4, R6, R8–R9 | R0 ilk teslim ve R1 kabul kapsamı tamam; R2 devam | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
+| 1 | Bot R0–R4, R6, R8–R9 | R0 ilk teslim, R1 ve R2 kabul kapsamı tamam; sırada R3 | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -34,14 +34,14 @@ Eksik kanıt, geçmiş olayın yaşanmadığının kanıtı değildir. Toplam y�
 1. R1 normal dialog yanlış pozitifi — **tamam**, altı regresyon ve yerel Chrome kaydı var.
 2. R1 callback ≠ JS proof; cid eşleşmesi; gizli veri toplamayan beacon — **tamam**: HTTP ve JS kapalı Chrome negatif kontrolü; test kaydı VALIDATION.md.
 3. R1 yansımasız blind takip — **stored/stored-auto için tamam**; ortak şema, DOM/statik/HTTP/journal raporları ve konservatif dedup — **tamam**. [Kapanış kanıtı](audit/2026-10-05-r1/R1-KAPANIS.md).
-4. R2 JSON serializer ve istek başına Content-Type — **tamam**. Auth/rate/CSRF ve R8 sanitizer karşı örnekleri — **açık**.
+4. R2 JSON/auth/rate/CSRF HTTP kabulü — **tamam**. R8 sanitizer karşı örnekleri — **açık**.
 5. R1 sonrası **K01-min**: tek yerel XSS vakası, manuel/browser canary kanıtı, negatif kontrol, fix ve retest. Tam R5/R6 kapanışı sayılmaz. R2→R3→R4 bot hattı devam eder.
 
 R1'in aşağıdaki kabul kapsamı tamamlandı; botun tamamlandığı anlamına gelmez.
 HTTP normal/flow/stored/header bulguları ortak üreticiye taşındı; JSON-only ve
 ham marker'ın execution diye raporlanması giderildi. JSON/HTML aynı finding'leri
 kullanıyor. [5 Ekim model ve sınırları](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
-Sıradaki bot işi R2 auth/rate/CSRF; R3 gerçek canary execution entegrasyonu açık.
+Sıradaki bot işi R3 gerçek canary execution ve browser oturum entegrasyonu.
 Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
 A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 
@@ -50,7 +50,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | İş | Son kabul kanıtı | Durum / sonraki kapı |
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
-| R2 | 2026-10-05, [auth guard ve sınırları](tools/dom-xss-analyzer/AUTH-LIMITS.md) | Devam; HTTP hata/eksik token/eski cookie kontrolleri tamam; hedefe özel oturum, rate ve CSRF açık |
+| R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
 | R3–R4 | Yeni kapanış kanıtı yok; 2026-09-28 audit baseline | Açık; browser zinciri ve ölçüm doğruluğu |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
@@ -93,7 +93,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 |---|---|---|---|
 | R0 Durumu ve tarihsel iddiaları düzelt | İlk teslim tamamlandı | — | Güncel README, STATUS, roadmap, geçmiş metin değerlendirmesi |
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
-| R2 İstek/oturum güvenilirliği | Devam: JSON serializer ve Content-Type izolasyonu tamam | R0; R1 şemasıyla uyumlu | JSON, auth, rate, CSRF ve eşzamanlılık düzeltmeleri |
+| R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
 | R3 Tarayıcı doğrulamasını bağla | Açık | R1 + R2 | Auth/stored/DOM tek işlem hattı |
 | R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
@@ -132,7 +132,7 @@ Kabul ölçütleri:
 - [x] Aynı response normal, flow, stored, stored-auto ve header yollarında aynı sınıflandırmayı alır; JSON-only JS proof sayılmaz. Yedi Content-Type karşılaştırması var.
 - [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Tam iframe/role fixture kapsamı R3/R4'te açık.
 - [x] Stored/stored-auto: yansıma yokken bile cid gönderimden önce kalıcı tutulur; sonradan gelen blind callback ilişkilendirilebilir. Diğer modlarda kalıcı takip henüz yok.
-- [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Rol doğrulaması R2/R3'te açık.
+- [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Hedefe özel HTTP kontrolü R2 tamam; browser rol/oturum aktarımı R3 açık.
 - [x] Statik, HTTP, static-guided, DOM ve journal ortak raporları aynı Finding/ReportEvent modelini kullanır; hata ve atlamalar ayrı görünür. Eski statik `--json` ham API'si korunur; ortak çıktı `--json-out` seçeneğidir.
 
 - [x] Dedup aynı submit/parametre/sink/bağlam/rolün kopyalarını gruplar; özgün gözlemleri bellekte korur, girdileri değiştirmez. Farklı veya bilinmeyen rol/sink birleştirilmez. Paylaşım raporları hassas alanları maskeler.
@@ -141,20 +141,23 @@ Kabul ölçütleri:
 [test sonuçları](VALIDATION.md), [staj kaydı](staj/2026-10-05-r1-kapanis.md).
 R1 tamam, kabul edilmiş stored/stored-auto kalıcı blind takip kapsamıyla birlikte
 kanıt modelinin tamamlanmasıdır. Reflected/header kalıcı blind journal genişlemesi,
-auth/rol doğrulaması ve browser canary execution R2/R3/R6 ürün işidir; gizlenmez.
+HTTP oturum kontrolü R2 tamam; browser canary execution ve aktarım R3/R6 işidir.
 
 WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt ve erişim politikasıyla belirlenir. Admin'in tasarlanmış HTML editörü ayrı bir security boundary aşmıyorsa “confirmed vulnerability” olmaz.
 
 ## R2 — Gönderim ve oturumu güvenilir yap
 
 - [x] Canary çözülmüş JSON nesnesine yerleştirilip JSON serializer ile gönderilir; mevcut 950 örnek seçilen geçerli şablonda parse edilir ve canary round-trip korunur. İç içe değerler ve kontrol karakterleri testli; geçersiz şablon gönderilmez.
-- [x] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir. [Test ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md); başarısız form login CLI'ı exit 2 ile durdurur. Hedefe özel auth/rol doğrulaması aşağıda açık.
-- [ ] Auth sonrası hedefe özel oturum kontrolü yapılabilir; oturum rolü kaydedilir.
-- [ ] 0.5/s gibi fractional rate ilerler; sıfır/negatif için açık doğrulama vardır; test gerçek uzun uyku gerektirmez.
-- [x] JSON gönderiminin Content-Type ayarı istek başına taşınır; iki eşzamanlı JSON isteği ortak EXTRA_HEADERS'ı değiştirmez. Genel oturum/CSRF paylaşımı aşağıdaki ayrı maddede açık kalır.
-- [ ] Tek kullanımlık CSRF için refresh+submit ve gerekli stored submit+read işlemleri uygun şekilde sıralanır.
-- [ ] Hata, timeout, rate-limit ve engelleme; “bulgu yok” durumundan ayrılır.
-- [ ] R1/R2 negatif örnekleri bir sonraki sürümde zorunlu regresyondur.
+- [x] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir. [Test ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md); başarısız form login CLI'ı exit 2 ile durdurur. Hedefe özel HTTP sözleşme kontrolü aşağıda tamam; browser aktarımı R3 açık.
+- [x] Auth sonrası hedefe özel oturum kontrolü yapılabilir; JSON kimlik/rol sözleşmesi eşleştirilir, kontrol sonucu ve operatör rol etiketi kaydedilir. Genel role_verified iddiası üretilmez.
+- [x] 0.5/s gibi fractional rate ilerler; CLI 0=sınırsız, negatif/sonlu olmayan değer hata; fake-clock testi gerçek uzun uyku gerektirmez.
+- [x] JSON gönderiminin Content-Type ayarı istek başına taşınır; iki eşzamanlı JSON isteği ortak EXTRA_HEADERS'ı değiştirmez. Paylaşılan oturumun sıralaması aşağıdaki maddede tamamlandı.
+- [x] Tek kullanımlık CSRF refresh+submit ve stored submit+read ortak oturum kilidiyle sıralanır; stored-auto her canary sonrasında okur. Tek oturumda paralel hız artışı yoktur.
+- [x] Hata, timeout, rate-limit ve engelleme ortak error/skip olaylarıyla “bulgu yok” durumundan ayrılır.
+- [x] R1/R2 negatif örnekleri ana pytest paketinde ve ayrıca zorunlu CI adımındadır. Uzak CI sonucu yerel test başarısı sayılmaz.
+
+6 Ekim [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md),
+[kullanım ve sınırlar](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
 
 ## R3 — Tarayıcı ile gerçek doğrulama
 

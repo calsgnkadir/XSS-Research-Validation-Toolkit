@@ -1,5 +1,8 @@
 # R2 auth guard teslimi — 5 Ekim 2026
 
+Bu belge ilk guard tesliminin tarihsel kapsamıdır. 6 Ekim hedefe özel kontrol,
+rate ve CSRF kapanışı için güncel [HTTP oturum sözleşmesi](SESSION-CONTRACT.md).
+
 Auth-flow adımlarının son HTTP yanıtı 2xx olmalıdır. 401/403, 429, sunucu
 hatası veya bağlantı hatası akışı durdurur; sonraki adım ve header kurulumu
 çalışmaz. Normal araştırma `--flow` davranışı bu katı auth kontrolünden ayrıdır.
