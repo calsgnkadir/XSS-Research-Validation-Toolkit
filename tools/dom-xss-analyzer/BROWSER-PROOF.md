@@ -1,7 +1,8 @@
-# R3 ilk teslim — oturumlu yerel browser kanıtı
+# R3 — oturumlu yerel browser kanıtı
 
 6 Ekim 2026. `dxaprove.py` HTTP auth→kimlik/rol kontrolü→browser aktarımı→stored
-submit→browser read→CID gözlemi→JSON/HTML zinciridir. Tam R3 kapanışı değildir.
+submit→browser read→CID gözlemi→JSON/HTML zinciridir. Loopback R3 kabulü tamamdır;
+R4/R9'a taşınan ağ ve CI işleri bu komutun kapsamı değildir.
 R1 Finding v1 sözleşmesini değiştirmez: ayrı `dxa-browser-proof/1` kayıtlarında
 `execution-observed`, `inconclusive` veya `error` üretir. Execution gözlemi
 tek başına confirmed vulnerability, yetki aşımı veya yeni CVE demek değildir.
@@ -69,7 +70,7 @@ içerebilir; otomatik raporlanmaz. Raporlarda ham cookie/token/body yoktur.
   srcdoc ve cross-origin frame kanıt kapsamı dışıdır. Pencere 100–10000 ms;
   zamanında canary yoksa sonuç inconclusive, güvenli olduğu hükmü değildir.
 - Bu yol eval/Function/sink hook kurmaz; doğrudan eval'in lexical scope testi
-  geçer. Eski `dxadom` observer'ının eval wrapper düzeltmesi hâlâ R3 işidir.
+  geçer. Observer/eval düzeltmesi R3 kabul paketinde testlidir.
 - Browser HTTP istekleri ve HTTP redirect'ler tek origin ile sınırlanır;
   service worker kapalıdır. WebSocket ve diğer browser dışı ağ kanalları
   filtrelenmez. Komutu yalnız disposable loopback lab'da çalıştır; bu bir ağ
@@ -77,7 +78,7 @@ içerebilir; otomatik raporlanmaz. Raporlarda ham cookie/token/body yoktur.
 - Tek hesap aynı rolle HTTP ve browser'da kullanılır. İki hesap/rol arasında
   privilege boundary testi yoktur; triage daima unreviewed kalır.
 - SPA rota kuyruğu ve allowlist header aktarımı kabul edildi. Browser'dan
-  otomatik header harvest ve Linux CI sonuç doğrulaması ayrı operasyon işidir.
-  WebSocket ve genel ağ sandboxı bu komutun scope'u değildir.
+  otomatik header harvest ve Linux CI sonuç doğrulaması R4 işidir; WebSocket ve
+  genel ağ sandboxı R9 operasyon kapsamındadır.
 
 [Test ve demo kanıtı](../../audit/2026-10-06-r3-final/README.md).

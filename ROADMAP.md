@@ -171,11 +171,19 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 - [x] Browser'a yalnız allowlist edilmiş auth/CSRF header'ları aktarılır; ham değerler rapora yazılmaz. Browser trafiğinden otomatik header harvest bu komutta yapılmaz; `dxadom.extract_auth_headers` ayrı gözlem çıktısıdır.
 - [x] Browser yolu açık seçilebilir; Windows Chrome ile doğrulandı, sabit Playwright Chromium Linux CI işi eklendi. Uzak CI sonucu bu teslimde alınmış sayılmaz.
 
+R3 dışında kalan işler R4'e (Linux CI ve header gözlemi) ve R9'a (WebSocket/genel ağ sandboxı)
+taşındı; R3 loopback kabulü bunları tamamlanmış saymaz.
+
 Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kaydedilir. Unrelated application dialog, konsol çıktısı veya random cid benzeri metin proof olamaz.
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm
 
 Önce aşağıdaki sentetik fixture matrisi, ardından tek gerçek uygulama adapter'ı. 20 yarım hedef yerine kurulumdan rapora çalışan küçük corpus.
+
+R3'ten devreden doğrulama işleri:
+
+- [ ] Uzak Linux CI işi çalıştırılır ve artifact sonucu yerel Windows başarısından ayrı kaydedilir.
+- [ ] Browser trafiğinden allowlist edilmiş auth/CSRF header harvest'i ayrı gözlem çıktısı olarak doğrulanır; ham değer rapora girmez.
 
 | Kontrol | Beklenti |
 |---|---|
@@ -266,6 +274,8 @@ Dosyalar: callback servisi, CLI, bench compose dosyaları, README/CI.
 
 - [ ] Callback kayıt erişimi, CORS, istek boyutu, limit doğrulaması, proxy başlığı güveni ve SQLite hata görünürlüğü için yerel/dışa açık çalışma sınırı tanımlanır ve test edilir.
 - [ ] Auth/CSRF/cookie/API key konsol ve raporda maskelenir; callback kanıtı gizli veri toplamadan çalışır.
+- [ ] WebSocket ve diğer browser dışı ağ kanalları için kapsam kararı, açıkça izin verilen loopback sınırı ve başarısız denemenin rapor biçimi belirlenir; Playwright kapanışını kilitleyen filtre kabul testi sayılmaz.
+- [ ] HTTP dışı ağ sandboxı gerekiyorsa ayrı izole adapter ile doğrulanır; genel ağ filtresi loopback kanıtının yerine geçirilmez.
 - [ ] Aynı-origin/kapsam ve redirect sınırı belirtilir; desteklenmeyen CLI birleşimleri URL yokken de doğru hata verir.
 - [ ] Variant adıyla context kararı, ilk cid/çoklu reflection, yorum/textarea/style bağlamı ve marker kesilmesi için testler vardır.
 - [ ] Mutation tekrarları/no-op dönüşümleri raporlanır; URL/entity decode zinciri browser fixture'ıyla ölçülür, sayı doyum kanıtı sayılmaz.
