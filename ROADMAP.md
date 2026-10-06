@@ -19,7 +19,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R4, R6, R8–R9 | R0 ilk teslim, R1 ve R2 kabul kapsamı tamam; sırada R3 | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
+| 1 | Bot R0–R4, R6, R8–R9 | R0/R1/R2 tamam; R3 yerel zincir ilk dilimi | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -41,7 +41,8 @@ R1'in aşağıdaki kabul kapsamı tamamlandı; botun tamamlandığı anlamına g
 HTTP normal/flow/stored/header bulguları ortak üreticiye taşındı; JSON-only ve
 ham marker'ın execution diye raporlanması giderildi. JSON/HTML aynı finding'leri
 kullanıyor. [5 Ekim model ve sınırları](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
-Sıradaki bot işi R3 gerçek canary execution ve browser oturum entegrasyonu.
+R3 browser proof komutu loopback demo için çalışıyor; tam R3 ve eski observer
+düzeltmesi açık.
 Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
 A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 
@@ -51,8 +52,9 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
+| R3 ilk dilim | 2026-10-06, [browser kanıtı](audit/2026-10-06-r3-final/README.md) | 3/7 kabul alanı: yerel oturum aktarımı, demo zinciri, href/iframe/gecikme; tam R3 açık |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R3–R4 | Yeni kapanış kanıtı yok; 2026-09-28 audit baseline | Açık; browser zinciri ve ölçüm doğruluğu |
+| Tam R3 / R4 | R3'ün ilk dilimi eklendi; R4 için yeni kapanış kanıtı yok; audit baseline 2026-09-28 | R3 kalan 4 alan / R4 açık; browser zinciri, observer, CI ve ölçüm doğruluğu |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -159,12 +161,12 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 6 Ekim [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md),
 [kullanım ve sınırlar](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
 
-## R3 — Tarayıcı ile gerçek doğrulama
+## R3 — Tarayıcı ile gerçek doğrulama (devam)
 
-- [ ] HTTP auth/flow sonucu tarayıcıya açık ve kontrollü biçimde aktarılır; doğru rol doğrulanır.
-- [ ] Tek komutla local fixture'da submit→read→canary execution→rapor çalışır.
+- [x] Loopback tek-origin demo için HTTP auth ve operatörce tanımlı kimlik/rol sözleşmesi browser'a aktarılır ve browser'da tekrar kontrol edilir. Aynı hesap/rol; ayrı iki hesaplı yetki testi değildir; R1 role_verified false kalır. [Kanıt](tools/dom-xss-analyzer/BROWSER-PROOF.md).
+- [x] Tek komutla loopback fixture'da submit→read→CID canary execution gözlemi→JSON/HTML raporu çalışır; finding/confirmed iddiası üretmez.
 - [ ] Observer direct eval gibi hedef JavaScript semantiğini değiştirmez; desteklenmeyen hook için kapsam bilgisi verir.
-- [ ] Gerçek href davranışı, iframe ve sınırlandırılmış gecikmeli olaylar test edilir; süre aşımı inconclusive olarak görünür.
+- [x] Gerçek href tıklaması, same-origin iframe ve sınırlandırılmış gecikme test edilir; gözlem penceresi aşımı inconclusive olur. about:blank/srcdoc kapsam dışı.
 - [ ] SPA rota adayları kapsam filtresinden geçerek kuyruğa eklenir; duplicate/loop bütçesi vardır.
 - [ ] Yakalanan auth/CSRF header'ları gerektiğinde doğru origin/oturumla kullanılır, ham gizli değerler loglanmaz.
 - [ ] Browser yolu açık seçilebilir; Windows/Linux kurulum ve başarısızlık açıklaması doğrulanır.

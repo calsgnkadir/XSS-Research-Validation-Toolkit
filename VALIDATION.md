@@ -1,5 +1,25 @@
 # Doğrulama kaydı — 2026-10-06
 
+## R3 ilk browser zinciri — güncel teslim
+
+- Tam paket **544 passed, 36 skipped, 1 warning**, 141.50 saniye.
+  18 yeni browser acceptance testi Chrome ile atlamasız geçti.
+- Loopback demo: HTTP/browser kullanıcı+rol kontrolü, stored submit 201, read
+  200 ve eşleşen CID; Chrome 154.0.8037.98, Playwright 1.63.0.
+- Negatifler: fixed/JSON/dialog/JS disabled, yanlış rol, cross-origin request,
+  gecikme penceresi, eksik browser ve geçersiz scope. href, iframe, delayed,
+  eval lexical-scope, cookie/bearer ve CSRF olumlu kontroller de var.
+- [R3 test logu](audit/2026-10-06-r3-final/pytest.log),
+  [JUnit](audit/2026-10-06-r3-final/pytest.xml),
+  [demo JSON](audit/2026-10-06-r3-final/demo/result.json),
+  [HTML](audit/2026-10-06-r3-final/demo/result.html),
+  [kapsam/sınırlamalar](tools/dom-xss-analyzer/BROWSER-PROOF.md).
+- WebSocket filtreleme denemesi takıldı ve kaldırıldı. Yeni browser komutu
+  HTTP/redirect'i same-origin kısıtlar; WebSocket/ağ sandbox desteği yok.
+  R3 bütünü tamam değil, uzak Linux CI henüz çalıştırılıp doğrulanmadı.
+- 36 eski dxadom browser testi mevcut binary keşfinde atlandı; R3 yeni testleri
+  DXA_REQUIRE_BROWSER=1 ile skip edemez. Uyarı benchmark utcnow kullanımı.
+
 ## R2 HTTP kabul kapanışı — güncel teslim
 
 - **526 passed, 36 skipped, 1 warning**, 112.13 saniye. 30 yeni R2 kabul

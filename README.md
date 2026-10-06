@@ -8,7 +8,7 @@ Amaç, sonuçlarını kanıtla açıklayan ve başka bir araştırmacının da �
 Playwright ve blind callback parçaları deneysel. Otomatik sınıflandırmaların
 tamamı doğrulanmış XSS anlamına gelmez. Yeni CVE kredisi bu arşivden doğrulanmış değildir.
 
-**Doğrulama — 6 Ekim 2026:** 526 test geçti, 36 browser testi otomatik
+**Doğrulama — 6 Ekim 2026:** 544 test geçti, 36 browser testi otomatik
 Chrome keşfi nedeniyle atlandı. Bu sayı tüm XSS sınıflarının doğrulandığı
 anlamına gelmez. Normal dialog ve JavaScript kapalı callback karşı örnekleri
 mevcut Chrome ile ayrıca kontrol edildi. [Test sonuçları ve kanıtlar](VALIDATION.md).
@@ -25,7 +25,8 @@ sayılmaz. `--json-out` ve `--html` aynı finding'leri raporlar.
 ortak raporları, hata/atlama olayları ve rol/sink ayrımını koruyan dedup.
 [Madde bazında kapanış](audit/2026-10-05-r1/R1-KAPANIS.md).
 R2 HTTP kabulü tamam: [oturum kontrolü, rate ve CSRF sözleşmesi](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
-Gerçek canary execution ve browser oturum aktarımı hâlâ R3 işidir.
+R3 loopback demo'sunda browser canary zinciri çalışıyor; genel browser yolu ve observer hâlâ deneysel.
+[R3 demo ve kapsam](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 
 **İlk güncel vaka:** [K01 stored yorum — execution → fix → retest](cases/k01-stored-comment/README.md).
 Yerel fixture'da ayrı okuyucu tarayıcısıyla 5/5 kontrol geçti; aynı payload output

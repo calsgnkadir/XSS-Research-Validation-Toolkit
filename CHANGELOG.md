@@ -2,6 +2,16 @@
 
 ## Unreleased — 2026-10-06
 
+- R3: ayrı `dxaprove` loopback komutu HTTP cookie/bearer auth ve JSON kimlik/rol
+  kontrolünü browser'a aktarır, browser'da tekrar sınar; stored submit→read→CID
+  execution gözlemini JSON/HTML olarak kaydeder. 18 gerçek Chrome kontrolü.
+- Gözlem penceresi sonucu execution-observed/inconclusive/error; R1 Finding v1,
+  triage ve role_verified iddiaları genişletilmedi. HTTP origin dışı istekler kapalı.
+- R3 kapsamı henüz tam değil: WebSocket ve genel ağ sandbox'ı desteklenmiyor;
+  eski observer/eval, SPA, yakalanan CSRF header'ı ve Linux CI doğrulaması açık.
+- R3 tam paket 544 passed, 36 skipped, 1 warning.
+- R3 demo fixture'ı, `dxaprove` CLI'ı, sabit Playwright'lı zorunlu browser CI işi,
+  audit kanıtı ve staj kaydı eklendi.
 - R2 HTTP kabulü tamam: hedefe özel JSON kimlik/rol kontrolü ve rapor meta'sı,
   fractional rate, geçersiz rate reddi, sıralı CSRF/stored işlemleri ve hata olayları.
 - Tek cookie jar'da HTTP işlemleri sıralıdır; stored-auto her canary sonrasında

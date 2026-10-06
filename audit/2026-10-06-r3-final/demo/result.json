@@ -1,0 +1,36 @@
+{
+  "schema": "dxa-browser-proof/1",
+  "status": "execution-observed",
+  "triage": "unreviewed",
+  "execution_observed": true,
+  "http_session_checked": true,
+  "browser_session_checked": true,
+  "events": [],
+  "proofs": [
+    {
+      "canary_id": "dxa80f49a91d0fa77c6c323e6be48dfd77e",
+      "frame_url": "http://127.0.0.1:50445/comments",
+      "event": "matching-browser-canary"
+    }
+  ],
+  "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+  "source_sha256": "d49c3e93480834e131f757280d1931f1bdff9561440af20a21332a2c42bba7f3",
+  "python": "3.12.14",
+  "platform": "Windows",
+  "created_at": "2026-10-06T08:21:33.118676+00:00",
+  "observe_ms": 400,
+  "read_url": "http://127.0.0.1:50445/comments",
+  "session_role": "reader",
+  "source": {
+    "url": "http://127.0.0.1:50445/comments",
+    "parameter": "comment",
+    "method": "POST"
+  },
+  "playwright": "1.63.0",
+  "browser_version": "154.0.8037.98",
+  "canary_id": "dxa80f49a91d0fa77c6c323e6be48dfd77e",
+  "variant": "image",
+  "payload_sha256": "6133b00f2fffa0fda1b3cc3f45eed69299bba649e151cf277a97a31c13393e73",
+  "submit_status": 201,
+  "read_status": 200
+}
