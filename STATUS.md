@@ -32,7 +32,9 @@ K01-min [tek yerel vaka paketi](cases/k01-stored-comment/README.md) tamamlandı:
 5/5 browser kontrolü, fix diff ve aynı payload ile retest. Bağımsız temiz ortam
 tekrarı henüz yok; tam R5 açık. R2 [HTTP kabul kapsamıyla kapandı](audit/2026-10-06-r2/R2-KAPANIS.md).
 R3 [loopback proof zinciriyle kapandı](audit/2026-10-06-r3-final/README.md);
-WebSocket/genel ağ sandboxı bu scope'ta yok. Sırada R4 benchmark/CI ölçüm doğruluğu var.
+WebSocket/genel ağ sandboxı R9'da. R4 ölçüm düzeltmeleri başladı: eksik FN,
+timeout/error/skip ayrımı ve strict gate düzeltildi; execution adapter entegrasyonu
+ve geniş corpus açık. [R4 ilk teslim](audit/2026-10-06-r4/README.md).
 Son paket: **544 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
 Yeni gerçek Chrome testi normal dialog/sink olaylarını ortak raporda kontrol etti;
 eski 36 browser testinin atlanma durumu değişmedi.

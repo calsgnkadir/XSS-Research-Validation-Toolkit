@@ -38,7 +38,15 @@ jobs:
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:
           BENCH_STRICT: "1"
-        run: python bench/run.py --out bench/results-ci.md
+        run: python bench/run.py --targets mock-reflected-easy,mock-reflected-escaped,mock-stored-guestbook --out bench/results-ci.md
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: |
+            bench/results-ci.md
+            bench/results-ci.json
 
   r3-proof:
     name: Required local authenticated browser proof

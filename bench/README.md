@@ -2,6 +2,14 @@
 
 # Benchmark harness (Phase 0.5)
 
+**6 Ekim 2026 güncellemesi:** Aşağıdaki eski karşılaştırma anlatısı tarihsel kayıttır.
+Güncel CLI ölçümü aday sayılarıdır; doğrulanmış XSS başarısı değildir. Eksik FN
+hesabı düzeltildi. Strict gate artık FP/FN, error, timeout, skip ve boş koşuda
+başarısız olur. Seçilen ve tamamlanan hedefler ayrı raporlanır. Markdown yanında
+JSON, kaynak hash'leri ve ortam bilgisi yazılır. CI yalnız üç mock hedefi seçer.
+Kimlik bazlı execution scorer eklendi; CLI adapter entegrasyonu henüz açık.
+[R4 kanıtı ve kalanlar](../audit/2026-10-06-r4/README.md).
+
 Compares `dxadyn` against optional external scanners (DalFox, XSStrike) on a
 reproducible corpus. Every future roadmap phase lands with a delta against
 this baseline — no more "feels faster / catches more" claims.

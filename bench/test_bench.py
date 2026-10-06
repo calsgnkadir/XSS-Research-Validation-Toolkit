@@ -48,6 +48,66 @@ def test_score_true_positive():
     assert s == {"tp": 1, "fp": 0, "fn": 0}
 
 
+def test_partial_detection_keeps_missing_findings():
+    assert bench_run.score({"reflected": 3}, {"reflected": 1}) == {"tp": 1, "fp": 0, "fn": 2}
+
+
+@pytest.mark.parametrize("status", ["error", "timeout", "skipped"])
+def test_incomplete_observation_is_not_scored(status):
+    assert bench_run.score({"reflected": 3}, {"status": status, "reflected": 3}) == {"tp": 0, "fp": 0, "fn": 0}
+    assert bench_run.strict_failed({"totals": {"dxadyn": {"completed": 1, status: 1}}})
+
+
+def test_identity_matching_rejects_wrong_sink_and_deduplicates():
+    observations = [{"finding_id": value, "evidence": "execution-observed", "canary_matched": True}
+                    for value in ("a", "a", "wrong-sink")]
+    assert bench_run.score_findings(["a", "b", "c"], observations) == {
+        "tp": 1, "fp": 1, "fn": 2, "evaluated": True}
+
+
+@pytest.mark.parametrize("evidence", ["candidate", "reflection", "resource-callback", "sink-observed"])
+def test_non_execution_evidence_never_scores_as_execution(evidence):
+    result = bench_run.score_findings(["a"], [{"finding_id": "a", "evidence": evidence, "canary_matched": True}])
+    assert result["tp"] == 0 and result["fn"] == 1
+
+
+def test_strict_gate_rejects_fp_and_empty_runs():
+    assert bench_run.strict_failed({"totals": {"dxadyn": {"completed": 1, "fp": 1}}})
+    assert bench_run.strict_failed({"totals": {"dxadyn": {"completed": 0}}})
+
+
+@pytest.mark.parametrize("failure", ["timeout", "crash"])
+def test_adapter_process_failures(monkeypatch, failure):
+    def fake_run(*args, **kwargs):
+        if failure == "timeout":
+            raise bench_run.subprocess.TimeoutExpired("scanner", 1)
+        return bench_run.subprocess.CompletedProcess([], 2, "", "failed")
+    monkeypatch.setattr(bench_run.subprocess, "run", fake_run)
+    target = {"url": "http://127.0.0.1:{port}/echo", "expect": {"stored": 0}}
+    result = bench_run.run_dxadyn(target, "http://127.0.0.1:12345", 1)
+    assert result["ok"] is False
+    assert result["status"] == ("timeout" if failure == "timeout" else "error")
+
+
+def test_unrecognized_output_is_error():
+    assert bench_run._parse_dxadyn("unexpected output", 0)["status"] == "error"
+
+
+def test_unknown_target_is_rejected():
+    with pytest.raises(ValueError, match="Unknown target"):
+        bench_run.run_all({"targets": []}, ["dxadyn"], ["typo"])
+
+
+def test_coverage_keeps_skips_and_errors_visible(monkeypatch):
+    monkeypatch.setattr(bench_run, "run_one", lambda target, scanners: {
+        "id": target["id"], "results": {} if target["id"] == "skip" else {
+            "dxadyn": {"observed": {"status": "timeout"}, "score": {"tp": 0, "fp": 0, "fn": 0}}}})
+    report = bench_run.run_all({"targets": [{"id": "skip"}, {"id": "timeout"}]}, ["dxadyn"], None)
+    totals = report["totals"]["dxadyn"]
+    assert totals["selected"] == 2 and totals["skipped"] == 1 and totals["timeout"] == 1
+    assert totals["completed"] == 0 and bench_run.strict_failed(report)
+
+
 def test_score_false_positive_on_safe_target():
     s = bench_run.score({"reflected": 0, "stored": 0, "dom": 0},
                         {"reflected": 2, "stored": 0, "dom": 0})

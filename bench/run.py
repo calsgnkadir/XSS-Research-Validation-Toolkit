@@ -16,6 +16,8 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import hashlib
+import platform
 import os
 import pathlib
 import shutil
@@ -174,7 +176,12 @@ def run_dxadyn(target: Dict[str, Any], base_url: str, budget: int) -> Dict[str, 
         )
         out = (proc.stdout or "") + (proc.stderr or "")
     except subprocess.TimeoutExpired:
-        out = "<timeout>"
+        return {"status": "timeout", "ok": False, "wall": time.time() - started}
+    except OSError as exc:
+        return {"status": "error", "ok": False, "reason": str(exc)}
+    if proc.returncode not in (0, 1) or "Traceback (most recent call last)" in out:
+        return {"status": "error", "ok": False, "returncode": proc.returncode,
+                "wall": time.time() - started, "raw_tail": out[-400:]}
     return _parse_dxadyn(out, time.time() - started)
 
 
@@ -200,7 +207,9 @@ def _parse_dxadyn(out: str, wall: float) -> Dict[str, Any]:
         "stored": stored,
         "dom": 0,  # Phase 2
         "wall": round(wall, 2),
-        "ok": True,
+        "ok": bool(re.search(r"candidate|No unencoded reflections|No stored", out)),
+        "status": "completed" if re.search(r"candidate|No unencoded reflections|No stored", out) else "error",
+        "measurement": "candidate-counts-not-confirmed-xss",
         "raw_tail": out[-400:],
     }
 
@@ -217,7 +226,11 @@ def run_dalfox(target: Dict[str, Any], base_url: str, budget: int) -> Dict[str, 
         )
         out = (proc.stdout or "") + (proc.stderr or "")
     except subprocess.TimeoutExpired:
-        out = "<timeout>"
+        return {"status": "timeout", "ok": False, "wall": time.time() - started}
+    except OSError as exc:
+        return {"status": "error", "ok": False, "reason": str(exc)}
+    if proc.returncode != 0:
+        return {"status": "error", "ok": False, "returncode": proc.returncode}
     lo = out.lower()
     return {
         "reflected": lo.count("[poc]") + lo.count("vuln"),
@@ -241,7 +254,11 @@ def run_xsstrike(target: Dict[str, Any], base_url: str, budget: int) -> Dict[str
         )
         out = (proc.stdout or "") + (proc.stderr or "")
     except subprocess.TimeoutExpired:
-        out = "<timeout>"
+        return {"status": "timeout", "ok": False, "wall": time.time() - started}
+    except OSError as exc:
+        return {"status": "error", "ok": False, "reason": str(exc)}
+    if proc.returncode != 0:
+        return {"status": "error", "ok": False, "returncode": proc.returncode}
     lo = out.lower()
     return {
         "reflected": lo.count("payload:") + lo.count("vulnerable"),
@@ -263,7 +280,7 @@ SCANNERS: Dict[str, Callable] = {
 # ---------- scoring ----------
 
 def score(expected: Dict[str, int], observed: Dict[str, Any]) -> Dict[str, int]:
-    if "skipped" in observed:
+    if observation_status(observed) != "completed":
         return {"tp": 0, "fp": 0, "fn": 0}
     tp = fp = fn = 0
     for cls in ("reflected", "stored", "dom"):
@@ -271,6 +288,7 @@ def score(expected: Dict[str, int], observed: Dict[str, Any]) -> Dict[str, int]:
         got = int(observed.get(cls, 0))
         if want > 0 and got > 0:
             tp += min(want, got)
+            fn += max(want - got, 0)
             if got > want:
                 fp += got - want
         elif want == 0 and got > 0:
@@ -278,6 +296,33 @@ def score(expected: Dict[str, int], observed: Dict[str, Any]) -> Dict[str, int]:
         elif want > 0 and got == 0:
             fn += want
     return {"tp": tp, "fp": fp, "fn": fn}
+
+
+def observation_status(observed: Dict[str, Any]) -> str:
+    if "skipped" in observed:
+        return "skipped"
+    return observed.get("status", "error" if observed.get("ok") is False else "completed")
+
+
+def score_findings(expected_ids, findings, *, status="completed"):
+    """Match stable corpus IDs, only for correlated browser execution evidence.
+
+    IDs identify labelled source/sink/role cases, never random attempt canaries.
+    Candidate/reflection/callback observations cannot count as execution TP.
+    """
+    if status != "completed":
+        return {"tp": 0, "fp": 0, "fn": 0, "evaluated": False}
+    expected = set(expected_ids)
+    observed = {f["finding_id"] for f in findings
+                if f.get("evidence") == "execution-observed" and f.get("canary_matched") is True}
+    return {"tp": len(expected & observed), "fp": len(observed - expected),
+            "fn": len(expected - observed), "evaluated": True}
+
+
+def strict_failed(report):
+    totals = report["totals"].get("dxadyn", {})
+    return not totals.get("completed") or any(totals.get(k, 0) for k in
+        ("fp", "fn", "error", "timeout", "skipped"))
 
 
 # ---------- runner ----------
@@ -312,6 +357,9 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
                           ready_timeout=target.get("ready_timeout", 90)) as dt:
             if not dt.up_ok:
                 row["results"]["_note"] = f"docker setup: {dt._up_msg}"
+                for name in scanners:
+                    row["results"][name] = {"observed": {"status": "error", "ok": False},
+                                            "score": {"tp": 0, "fp": 0, "fn": 0}}
                 return row
             # base_url is the target URL directly; the scanner adapters
             # split off the port from it just as they do for mock targets.
@@ -330,22 +378,34 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
 
 
 def run_all(corpus: Dict[str, Any], scanners: List[str], only: List[str] | None) -> Dict[str, Any]:
+    unknown = set(only or []) - {t['id'] for t in corpus['targets']}
+    if unknown:
+        raise ValueError(f"Unknown target IDs: {sorted(unknown)}")
     rows = []
     for tgt in corpus["targets"]:
         if only and tgt["id"] not in only:
             continue
         rows.append(run_one(tgt, scanners))
-    totals: Dict[str, Dict[str, int]] = {s: {"tp": 0, "fp": 0, "fn": 0, "wall": 0.0} for s in scanners}
+    totals = {s: dict(tp=0, fp=0, fn=0, wall=0.0, selected=len(rows),
+                      completed=0, skipped=0, error=0, timeout=0) for s in scanners}
     for row in rows:
         for s in scanners:
             r = row["results"].get(s)
-            if not r or "_note" in row["results"]:
+            if not r:
+                totals[s]["skipped"] += 1
                 continue
+            status = observation_status(r["observed"])
+            totals[s][status if status in ("completed", "skipped", "timeout") else "error"] += 1
             for k in ("tp", "fp", "fn"):
                 totals[s][k] += r["score"][k]
             totals[s]["wall"] += float(r["observed"].get("wall", 0))
     return {
-        "run_at": _dt.datetime.utcnow().isoformat() + "Z",
+        "run_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+        "measurement": "legacy-candidate-counts; not confirmed XSS accuracy",
+        "environment": {"python": platform.python_version(), "platform": platform.platform(),
+                        "runner_sha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+                        "scanner_sha256": hashlib.sha256(DXADYN.read_bytes()).hexdigest(),
+                        "corpus_sha256": hashlib.sha256(json.dumps(corpus, sort_keys=True).encode()).hexdigest()},
         "corpus_version": corpus.get("corpus_version", "?"),
         "scanners": scanners,
         "rows": rows,
@@ -361,6 +421,10 @@ def render_md(report: Dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"- corpus: `{report['corpus_version']}`")
     lines.append(f"- scanners: {', '.join(report['scanners'])}")
+    lines.append(f"- measurement: {report.get('measurement', 'unspecified')}")
+    for name, total in report['totals'].items():
+        lines.append(f"- {name} coverage: " + ', '.join(f"{key}={total.get(key, 0)}" for key in
+                     ('selected', 'completed', 'skipped', 'error', 'timeout')))
     lines.append("")
     lines.append("## Totals")
     lines.append("")
@@ -381,8 +445,8 @@ def render_md(report: Dict[str, Any]) -> str:
                 continue
             obs = r.get("observed", {})
             sc = r.get("score", {})
-            if "skipped" in obs:
-                lines.append(f"- **{s}**: skipped ({obs['skipped']})")
+            if observation_status(obs) != "completed":
+                lines.append(f"- **{s}**: {observation_status(obs)} (not evaluated)")
             else:
                 lines.append(
                     f"- **{s}**: reflected={obs.get('reflected', 0)} "
@@ -419,10 +483,12 @@ def main() -> int:
 
     corpus = load_corpus(pathlib.Path(args.corpus))
     report = run_all(corpus, scanners, only)
+    report["command"] = sys.argv
 
     out_path = pathlib.Path(args.out) if args.out else (HERE / f"results-{_dt.date.today().isoformat()}.md")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(render_md(report))
+    out_path.write_text(render_md(report), encoding="utf-8")
+    out_path.with_suffix(".json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     append_history(report, HERE / "history.jsonl")
 
     totals = report["totals"]
@@ -431,8 +497,7 @@ def main() -> int:
         print(f"  {s}: TP={t['tp']} FP={t['fp']} FN={t['fn']} wall={round(t['wall'], 2)}s")
 
     # regression gate: fail if dxadyn has any FN on the mock corpus
-    dxadyn_fn = totals.get("dxadyn", {}).get("fn", 0)
-    return 1 if dxadyn_fn > 0 and os.environ.get("BENCH_STRICT") == "1" else 0
+    return 1 if strict_failed(report) and os.environ.get("BENCH_STRICT") == "1" else 0
 
 
 if __name__ == "__main__":

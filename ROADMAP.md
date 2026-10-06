@@ -97,7 +97,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
-| R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
+| R4 Doğru benchmark ve CI | Devam — sayaç ve süreç durumları düzeltildi | Kimlik scorer'ını adapter'a bağla; corpus'u genişlet | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
 | R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
@@ -176,7 +176,13 @@ taşındı; R3 loopback kabulü bunları tamamlanmış saymaz.
 
 Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kaydedilir. Unrelated application dialog, konsol çıktısı veya random cid benzeri metin proof olamaz.
 
-## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm
+## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
+
+6 Ekim ilk teslim: eksik FN hesabı, süreç timeout/error ayrımı, seçilen/tamamlanan/
+atlanan hedef sayıları, FP ve eksik koşuda strict gate, JSON/Markdown artifact
+düzeltildi. Kimlik bazlı execution eşleme fonksiyonu regresyon testlidir; mevcut
+CLI adapter'ı hâlâ aday sayar, bu nedenle gerçek XSS TP/FP/FN kabulü kapanmadı.
+[Teslim ve kalanlar](audit/2026-10-06-r4/README.md).
 
 Önce aşağıdaki sentetik fixture matrisi, ardından tek gerçek uygulama adapter'ı. 20 yarım hedef yerine kurulumdan rapora çalışan küçük corpus.
 
