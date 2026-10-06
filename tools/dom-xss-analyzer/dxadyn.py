@@ -602,9 +602,46 @@ def make_canaries_for(variants, waf_bypass=False):
                    mut_canary.replace(cid, mut_cid, 1), mut_marker)
 
 
-def _opener():
-    cj = http.cookiejar.CookieJar()
-    return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+def _origin(url):
+    """Return an HTTP(S) origin tuple, or None for a non-web URL."""
+    try:
+        parts = urllib.parse.urlsplit(url)
+        if parts.scheme.lower() not in ("http", "https") or not parts.hostname:
+            return None
+        port = parts.port or (443 if parts.scheme.lower() == "https" else 80)
+    except ValueError:
+        return None
+    return (parts.scheme.lower(), parts.hostname.lower(), port)
+
+
+def _in_origin(url, origin):
+    """Whether URL belongs to the exact scheme/host/port crawl origin."""
+    return origin is not None and _origin(url) == origin
+
+
+class _ScopeRedirectError(urllib.error.URLError):
+    """A redirect rejected before contacting its destination."""
+
+
+class _SameOriginRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Follow redirects only while they remain inside a crawl's origin."""
+    def __init__(self, origin):
+        super().__init__()
+        self.origin = origin
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not _in_origin(newurl, self.origin):
+            fp.close()
+            raise _ScopeRedirectError("out-of-scope-redirect")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _opener(cookie_jar=None, redirect_origin=None):
+    cj = cookie_jar if cookie_jar is not None else http.cookiejar.CookieJar()
+    handlers = [urllib.request.HTTPCookieProcessor(cj)]
+    if redirect_origin is not None:
+        handlers.append(_SameOriginRedirectHandler(redirect_origin))
+    return urllib.request.build_opener(*handlers)
 
 
 OPENER = _opener()
@@ -794,7 +831,7 @@ def _print_skip_summary():
 
 
 @_session_serial
-def fetch(url, data=None, method=None, extra=None):
+def fetch(url, data=None, method=None, extra=None, scope_origin=None):
     """GET (data=None) / POST (data=dict) / any HTTP method (method='PUT'|...).
     Returns (status, final_url, body, content_type). `content_type` comes from
     the response Content-Type header (lowercased, empty string if missing) and
@@ -809,6 +846,10 @@ def fetch(url, data=None, method=None, extra=None):
 
     Also honours RATE_LIMITER (Phase 1.1 token bucket) and JITTER_MS_MIN/MAX
     (pre-request sleep) so bursts across threads don't stampede the target."""
+    if scope_origin is not None and not _in_origin(url, scope_origin):
+        record_response_event("scope", url, None, "out-of-scope-url")
+        return None, url, "__error__: out-of-scope URL", ""
+
     _rate_gate()
     _jitter_gate()
     if isinstance(data, (bytes, bytearray)):
@@ -830,7 +871,8 @@ def fetch(url, data=None, method=None, extra=None):
     # refresh GET calls back into fetch().
     if (CSRF_REFRESH_URL and CSRF_HEADER_NAME and not _in_csrf_refresh()
             and (body_bytes is not None or (method and method.upper() != "GET"))):
-        tok = refresh_csrf_token()
+        tok = (refresh_csrf_token(scope_origin=scope_origin)
+               if scope_origin is not None else refresh_csrf_token())
         if not tok:
             record_response_event("csrf", url, None, "csrf-token-unavailable")
             return None, url, "", ""
@@ -839,12 +881,20 @@ def fetch(url, data=None, method=None, extra=None):
     if method:
         kwargs["method"] = method.upper()
     req = urllib.request.Request(url, **kwargs)
+    opener = OPENER
+    if scope_origin is not None:
+        jar = next((h.cookiejar for h in OPENER.handlers
+                    if isinstance(h, urllib.request.HTTPCookieProcessor)), None)
+        opener = _opener(jar, redirect_origin=scope_origin)
     try:
-        with OPENER.open(req, timeout=15) as resp:
+        with opener.open(req, timeout=15) as resp:
             ct = (resp.headers.get("Content-Type") or "").lower()
             record_response_event("http", url, resp.status)
             return (resp.status, resp.geturl(),
                     resp.read().decode("utf-8", "ignore"), ct)
+    except _ScopeRedirectError:
+        record_response_event("scope", url, None, "out-of-scope-redirect")
+        return None, url, "__error__: out-of-scope redirect", ""
     except urllib.error.HTTPError as e:
         record_response_event("http", url, e.code)
         ct = (e.headers.get("Content-Type") if e.headers else "") or ""
@@ -1033,7 +1083,8 @@ class FormParser(HTMLParser):
             self._cur = None
 
 
-def discover(base_url, body):
+def discover(base_url, body, scope_origin=None):
+    """Discover probeable inputs, retaining only the optional crawl origin."""
     p = FormParser()
     try:
         p.feed(body)
@@ -1042,17 +1093,23 @@ def discover(base_url, body):
     forms = [{**f, "action": urllib.parse.urljoin(base_url, f["action"] or base_url)}
              for f in p.forms]
     links = [urllib.parse.urljoin(base_url, h) for h in p.links]
+    if scope_origin is not None:
+        forms = [f for f in forms if _in_origin(f["action"], scope_origin)]
+        links = [link for link in links if _in_origin(link, scope_origin)]
     return forms, links
 
 
-def probe_form(form, variants=None, waf_bypass=False):
+def probe_form(form, variants=None, waf_bypass=False, scope_origin=None):
     """Inject a canary into each field in turn; report unencoded reflections.
     v3.10: fan-out through `variants` (+ optional --waf-bypass mutations).
     Phase 1.1: (field × variant) tasks are flattened into one work list and
     run via _parallel_map, so --parallel N submits them in parallel while
     preserving input order in the result."""
+    if scope_origin is not None and not _in_origin(form.get("action", ""), scope_origin):
+        return []
     variants = variants or ["body"]
     fields = list(form["fields"]) or []
+    scope_kwargs = {"scope_origin": scope_origin} if scope_origin is not None else {}
     tasks = []
     for target in fields:
         for vname, cid, canary, marker in make_canaries_for(variants, waf_bypass):
@@ -1063,11 +1120,12 @@ def probe_form(form, variants=None, waf_bypass=False):
         data = {k: (canary if k == target else (form["fields"][k] or "dxa"))
                 for k in fields}
         if form["method"] == "post":
-            status, _, body, _ct = fetch(form["action"], data=data)
+            status, _, body, _ct = fetch(form["action"], data=data,
+                                         **scope_kwargs)
         else:
             url = form["action"] + ("&" if "?" in form["action"] else "?") + \
                 urllib.parse.urlencode(data)
-            status, _, body, _ct = fetch(url)
+            status, _, body, _ct = fetch(url, **scope_kwargs)
         v = verdict(cid, body, marker)
         if v in ("unencoded", "attr-only"):
             ctx = find_context(cid, body or "")
@@ -1081,10 +1139,13 @@ def probe_form(form, variants=None, waf_bypass=False):
     return [f for f in _parallel_map(_probe_one, tasks) if f is not None]
 
 
-def probe_link(link, variants=None, waf_bypass=False):
+def probe_link(link, variants=None, waf_bypass=False, scope_origin=None):
     """Inject a canary into each existing GET param in turn; v3.10: fan-out.
     Phase 1.1: parallelised same way as probe_form."""
+    if scope_origin is not None and not _in_origin(link, scope_origin):
+        return []
     variants = variants or ["body"]
+    scope_kwargs = {"scope_origin": scope_origin} if scope_origin is not None else {}
     parts = urllib.parse.urlsplit(link)
     params = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
     tasks = []
@@ -1096,7 +1157,7 @@ def probe_link(link, variants=None, waf_bypass=False):
         i, name, vname, cid, canary, marker = task
         newq = [(n, canary if j == i else v) for j, (n, v) in enumerate(params)]
         url = urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(newq)))
-        status, _, body, _ct = fetch(url)
+        status, _, body, _ct = fetch(url, **scope_kwargs)
         v = verdict(cid, body, marker)
         if v in ("unencoded", "attr-only"):
             ctx = find_context(cid, body or "")
@@ -1193,24 +1254,28 @@ def crawl(base_url, depth, variants=None, waf_bypass=False):
     script-breakout / url-scheme (+ optional 4 WAF mutations each) on
     every form field and GET param it discovers."""
     variants = variants or ["body"]
+    scope_origin = _origin(base_url)
+    if scope_origin is None:
+        return []
     seen_pages, findings, queue = set(), [], [(base_url, depth)]
-    host = urllib.parse.urlsplit(base_url).netloc
     while queue:
         url, d = queue.pop(0)
         if url in seen_pages:
             continue
         seen_pages.add(url)
-        status, final, body, _ct = fetch(url)
+        status, final, body, _ct = fetch(url, scope_origin=scope_origin)
         if not body or body.startswith("__error__"):
             continue
-        forms, links = discover(final, body)
+        forms, links = discover(final, body, scope_origin=scope_origin)
         for f in forms:
-            findings += probe_form(f, variants=variants, waf_bypass=waf_bypass)
+            findings += probe_form(f, variants=variants, waf_bypass=waf_bypass,
+                                   scope_origin=scope_origin)
         for l in links:
-            findings += probe_link(l, variants=variants, waf_bypass=waf_bypass)
+            findings += probe_link(l, variants=variants, waf_bypass=waf_bypass,
+                                   scope_origin=scope_origin)
         if d > 0:
             for l in links:
-                if urllib.parse.urlsplit(l).netloc == host and l not in seen_pages:
+                if _in_origin(l, scope_origin) and l not in seen_pages:
                     queue.append((l.split("?")[0], d - 1))
     # de-dupe on (url, param, reflection, variant) - variant-aware so a
     # body + title-breakout reflection on the same param stays as 2 rows
@@ -1265,7 +1330,7 @@ def _in_csrf_refresh():
     return getattr(_CSRF_REFRESH_GUARD, "flag", False)
 
 
-def refresh_csrf_token(url=""):
+def refresh_csrf_token(url="", scope_origin=None):
     """GET the given URL (or the module-level CSRF_REFRESH_URL) and return
     the first CSRF token that matches any of the four documented patterns.
     Returns "" on unreachable target, empty body, or no pattern match.
@@ -1279,7 +1344,8 @@ def refresh_csrf_token(url=""):
         return ""
     _CSRF_REFRESH_GUARD.flag = True
     try:
-        status, _final, body, _ct = fetch(url)
+        scope_kwargs = {"scope_origin": scope_origin} if scope_origin is not None else {}
+        status, _final, body, _ct = fetch(url, **scope_kwargs)
     finally:
         _CSRF_REFRESH_GUARD.flag = False
     if status is None or not 200 <= status < 300 or not body or (isinstance(body, str) and body.startswith("__error__")):
