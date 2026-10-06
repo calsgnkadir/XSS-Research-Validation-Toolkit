@@ -64,10 +64,11 @@ python -m venv .venv-k01
 ```
 
 Linux/macOS'ta `.venv-k01/bin/python` kullanılır. Alternatif olarak kurulu Chrome
-yolunu ver; depodaki kanıt bu seçenekle üretildi:
+yolunu ver; `<chrome-yolu>` yerine Chrome çalıştırılabilir dosyanızın yolunu
+yazın. Depodaki kanıt bu seçenekle üretildi:
 
 ```powershell
-python cases/k01-stored-comment/prove.py --browser "C:\Program Files\Google\Chrome\Application\chrome.exe" --output .dxa/k01-chrome-run
+python cases/k01-stored-comment/prove.py --browser "<chrome-yolu>" --output .dxa/k01-chrome-run
 ```
 
 Normal Python çalıştırmasını kullan; `-O` ile assertion kontrollerini devre dışı

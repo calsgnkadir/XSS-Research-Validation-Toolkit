@@ -2,6 +2,14 @@
 
 ## Unreleased — 2026-10-06
 
+- Reflected crawler form/link/redirect/CSRF trafiği başlangıç origin'ine
+  sınırlandı; boş cookie jar korunuyor. Genel ağ sandbox'ı değildir.
+- Direct eval fonksiyon kapsamını bozan hook kaldırıldı; destek sınırı
+  ortak JSON/HTML operasyonel olayında gösteriliyor.
+- R4 ayrı loopback proof-suite gerçek browser adapter'ını kimlik scorer'ına
+  bağlar. Tamamlanmış pozitif miss FN sayılır; hata/eksik kanıt negatif sayılmaz.
+  Son birleşik paket 339 passed; dört Chrome vakası TP=1 FP=0 FN=0.
+
 - R3: ayrı `dxaprove` loopback komutu HTTP cookie/bearer auth ve JSON kimlik/rol
   kontrolünü browser'a aktarır, browser'da tekrar sınar; stored submit→read→CID
   execution gözlemini JSON/HTML olarak kaydeder. 21 gerçek Chrome kontrolü.

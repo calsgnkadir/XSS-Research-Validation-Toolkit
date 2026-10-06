@@ -54,7 +54,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-06, [browser kanıtı](audit/2026-10-06-r3-final/README.md) | Tamam; loopback auth/role, submit→read→canary, observer/eval, SPA route budget, header aktarımı ve browser kurulum kapısı |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | R3 kapanış kanıtı tamam; R4 için yeni kapanış kanıtı yok; audit baseline 2026-09-28 | Açık; benchmark/CI ölçüm doğruluğu ve kurulabilirlik |
+| R4 | [6 Ekim yerel adapter turu](audit/2026-10-06-multi-agent-round1/README.md) | Devam; dört loopback fixture kimlik scorer'ına bağlı; geniş corpus ve CI açık |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -165,7 +165,7 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 
 - [x] Loopback tek-origin demo için HTTP auth ve operatörce tanımlı kimlik/rol sözleşmesi browser'a aktarılır ve browser'da tekrar kontrol edilir. Aynı hesap/rol; ayrı iki hesaplı yetki testi değildir; R1 role_verified false kalır. [Kanıt](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 - [x] Tek komutla loopback fixture'da submit→read→CID canary execution gözlemi→JSON/HTML raporu çalışır; finding/confirmed iddiası üretmez.
-- [x] Observer direct eval gibi hedef JavaScript semantiğini değiştirmez; direct lexical eval ve window.eval gözlemi testli. Desteklenmeyen hook sonucu kapsam bilgisiyle kalır.
+- [x] Fonksiyon içindeki direct eval karşı örneği doğrulandı ve eval hook kaldırıldı; native lexical scope korunur. Eval gözlemi desteklenmez ve JSON/HTML operasyonel olayında açıkça belirtilir. Önceki global-scope test yeterli değildi; 6 Ekim agent turu bu kabul kanıtını düzeltir.
 - [x] Gerçek href tıklaması, same-origin iframe ve sınırlandırılmış gecikme test edilir; gözlem penceresi aşımı inconclusive olur. about:blank/srcdoc kapsam dışı.
 - [x] SPA rota adayları same-origin filtresinden geçerek kuyruğa eklenir; duplicate ve route budget vardır.
 - [x] Browser'a yalnız allowlist edilmiş auth/CSRF header'ları aktarılır; ham değerler rapora yazılmaz. Browser trafiğinden otomatik header harvest bu komutta yapılmaz; `dxadom.extract_auth_headers` ayrı gözlem çıktısıdır.
@@ -183,6 +183,13 @@ atlanan hedef sayıları, FP ve eksik koşuda strict gate, JSON/Markdown artifac
 düzeltildi. Kimlik bazlı execution eşleme fonksiyonu regresyon testlidir; mevcut
 CLI adapter'ı hâlâ aday sayar, bu nedenle gerçek XSS TP/FP/FN kabulü kapanmadı.
 [Teslim ve kalanlar](audit/2026-10-06-r4/README.md).
+
+6 Ekim ikinci teslim: ayrı `--proof-suite` raw/fixed/JSON/dialog loopback
+fixture'larını gerçek `dxaprove.run` üzerinden kimlik scorer'ına bağlar.
+CID/frame/source/rol doğrulaması, tamamlanmış pozitif miss için FN ve
+error/invalid ayrımı testlidir. Legacy aday sayaçları ayrı kalır. Bu dört
+fixture tam corpus, gerçek ürün adapter'ı veya uzak CI kapanışı değildir.
+[Çalışma ve kanıt](audit/2026-10-06-multi-agent-round1/README.md).
 
 Önce aşağıdaki sentetik fixture matrisi, ardından tek gerçek uygulama adapter'ı. 20 yarım hedef yerine kurulumdan rapora çalışan küçük corpus.
 
@@ -277,6 +284,11 @@ Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
 ## R9 — Operasyon, kapsam ve tekrar üretim (bot; açık)
 
 Dosyalar: callback servisi, CLI, bench compose dosyaları, README/CI.
+
+6 Ekim dar teslim: reflected crawler form/link/redirect/CSRF isteklerinde
+scheme/host/port sınırı iki loopback origin ile doğrulandı. Cookie jar korunur.
+Genel auth/flow/stored/browser/callback, DNS/proxy ve WebSocket kapsamı bu
+teslimle kapanmaz; aşağıdaki birleşik kabul maddeleri açık kalır.
 
 - [ ] Callback kayıt erişimi, CORS, istek boyutu, limit doğrulaması, proxy başlığı güveni ve SQLite hata görünürlüğü için yerel/dışa açık çalışma sınırı tanımlanır ve test edilir.
 - [ ] Auth/CSRF/cookie/API key konsol ve raporda maskelenir; callback kanıtı gizli veri toplamadan çalışır.

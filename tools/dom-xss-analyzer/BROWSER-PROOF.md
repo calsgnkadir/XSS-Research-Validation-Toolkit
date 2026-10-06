@@ -16,10 +16,11 @@ python -m playwright install chromium
 python tools/dom-xss-analyzer/dxaprove.py --demo --output .dxa/r3-demo
 ```
 
-Windows'ta kurulu Chrome açıkça seçilebilir:
+Windows'ta kurulu Chrome açıkça seçilebilir; `<chrome-yolu>` yerine Chrome
+çalıştırılabilir dosyanızın yolunu yazın:
 
 ```powershell
-python tools/dom-xss-analyzer/dxaprove.py --demo --browser "C:\Program Files\Google\Chrome\Application\chrome.exe" --output .dxa/r3-chrome
+python tools/dom-xss-analyzer/dxaprove.py --demo --browser "<chrome-yolu>" --output .dxa/r3-chrome
 ```
 
 Demo yeni loopback portunda fixture açar ve sonunda kapatır; yorum yalnız
@@ -70,7 +71,9 @@ içerebilir; otomatik raporlanmaz. Raporlarda ham cookie/token/body yoktur.
   srcdoc ve cross-origin frame kanıt kapsamı dışıdır. Pencere 100–10000 ms;
   zamanında canary yoksa sonuç inconclusive, güvenli olduğu hükmü değildir.
 - Bu yol eval/Function/sink hook kurmaz; doğrudan eval'in lexical scope testi
-  geçer. Observer/eval düzeltmesi R3 kabul paketinde testlidir.
+  geçer. `dxadom` eval hook'u 6 Ekim fonksiyon-local karşı örneğinden sonra
+  kaldırıldı: eval sink gözlemi desteklenmez. Bu sınır ortak JSON/HTML
+  raporunda `eval-not-instrumented-to-preserve-lexical-scope` olayıyla gösterilir.
 - Browser HTTP istekleri ve HTTP redirect'ler tek origin ile sınırlanır;
   service worker kapalıdır. WebSocket ve diğer browser dışı ağ kanalları
   filtrelenmez. Komutu yalnız disposable loopback lab'da çalıştır; bu bir ağ

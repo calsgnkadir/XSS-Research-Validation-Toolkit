@@ -1,5 +1,44 @@
 # Doğrulama kaydı — 2026-10-06
 
+## Push öncesi belge temizliği doğrulaması
+
+Her dosya ayrı olarak bir kez `python -m pytest <dosya> -q -p no:cacheprovider
+--tb=short` ile çalıştırıldı. Sayılar birleştirilmez. Yerel loglar
+`.dxa/prepush/` altındadır; depoda yoktur, aynı komutla yeniden üretilebilir.
+
+| Dosya | Sonuç |
+|---|---|
+| tools/dom-xss-analyzer/test_crawl_scope.py | 11 passed |
+| tools/dom-xss-analyzer/test_dxadyn.py | 169 passed |
+| tools/dom-xss-analyzer/test_r2_contract.py | 30 passed |
+| tools/dom-xss-analyzer/test_auth_guards.py | 15 passed |
+| tools/dom-xss-analyzer/test_browser_proof.py | 21 passed |
+| tools/dom-xss-analyzer/test_dxadom.py | 37 passed, 36 skipped |
+| tools/dom-xss-analyzer/test_r1_contract.py | 30 passed |
+| tools/dom-xss-analyzer/test_dom_cli_evidence.py | 6 passed |
+| bench/test_bench.py | 43 passed |
+| bench/test_proof_adapter.py | 14 passed |
+
+11 belgenin yerel bağlantı hedefleri kontrol edildi; eksik hedef yok.
+`git diff --check` temiz. Testlerde standart Chrome yolları değiştirilmedi:
+`test_browser_proof.py` DXA_BROWSER destekler; `test_r1_contract.py` içindeki
+Chrome testi desteklemez. İkincisine aynı ortam değişkeninin eklenmesi öneridir,
+bu teslimde uygulanmadı. Eski browser discovery skip'leri kapanmış sayılmaz.
+
+## Sınırlı multi-agent geliştirme turu — en son koşu
+
+- Birleşik scope/HTTP/auth/browser/rapor/benchmark paketi: **339 passed,
+  86.51 saniye**. Log/JUnit yerel çıktıdır, depoda yoktur;
+  [yeniden üretim komutu](audit/2026-10-06-multi-agent-round1/README.md#önce-hata-sonra-düzeltme).
+- Chrome proof-suite: dört seçilen/dört tamamlanan, TP=1 FP=0 FN=0,
+  strict exit 0. JSON/Markdown yerel çıktıdır, depoda yoktur;
+  [yeniden üretim komutu](audit/2026-10-06-multi-agent-round1/README.md#r4-ölçüm-kanıtı).
+- Eval global-scope testi yeterli değildi: fonksiyon-local karşı örnek önce
+  başarısız oldu; hook kaldırılınca 21 browser testi geçti. Ortak JSON/HTML
+  raporunda eval gözleminin desteklenmediği artık açıkça kayıtlıdır.
+- Bu tur tam depo veya uzak CI koşusu değildir. Önceki 36 browser skip'in
+  tamamının çözüldüğü iddia edilmez. [Kapsam ve katkılar](audit/2026-10-06-multi-agent-round1/README.md).
+
 ## R3 ilk browser zinciri — güncel teslim
 
 - Önceki tam paket **544 passed, 36 skipped, 1 warning**, 141.50 saniye.

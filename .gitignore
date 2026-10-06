@@ -5,3 +5,7 @@ __pycache__/
 .pytest_cache/
 bench/results-*.md
 bench/history.jsonl
+**/pytest.log
+**/pytest.xml
+**/proof-results.json
+**/proof-results.md
