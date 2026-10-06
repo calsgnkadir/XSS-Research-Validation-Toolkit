@@ -277,6 +277,72 @@ SCANNERS: Dict[str, Callable] = {
 }
 
 
+def proof_corpus(browser_path=None):
+    """Small versioned execution corpus, entirely in disposable loopback labs."""
+    targets = []
+    for mode in ("raw", "fixed", "json", "dialog"):
+        identity = f"proof-v1:{mode}:POST:/comments:comment:/comments:reader"
+        targets.append({"id": "proof-" + mode, "kind": "proof-lab", "mode": mode,
+                        "case_id": identity, "expected_ids": [identity] if mode == "raw" else [],
+                        "expect": {}, "browser_path": browser_path, "budget_seconds": 30})
+    return {"corpus_version": "loopback-proof/1", "targets": targets}
+
+
+def adapt_proof(target, proof, base_url):
+    """Validate producer evidence before assigning the stable fixture identity.
+
+    Negative completion means only no matching canary in this labelled fixture's
+    observation window. It is never a safe-target or vulnerability verdict.
+    A completed window is scored independently of the expected label; a missed
+    positive is FN. Producer inconclusive is retained in the nested proof.
+    """
+    observed = {"status": "invalid", "ok": False, "findings": [], "proof": proof,
+                "measurement": "correlated-browser-execution-not-vulnerability"}
+    if proof.get("status") == "error":
+        observed["status"] = "error"
+        return observed
+    expected_url = base_url + "/comments"
+    common = (proof.get("schema") == "dxa-browser-proof/1"
+              and proof.get("http_session_checked") is True
+              and proof.get("browser_session_checked") is True
+              and proof.get("session_role") == "reader"
+              and proof.get("source") == {"url": expected_url, "parameter": "comment", "method": "POST"}
+              and proof.get("read_url") == expected_url
+              and proof.get("read_status") == 200 and proof.get("submit_status") == 201
+              and isinstance(proof.get("canary_id"), str) and bool(proof["canary_id"])
+              and not any(e.get("kind") in ("error", "skip") for e in proof.get("events", [])))
+    if not common:
+        return observed
+    if proof.get("status") == "execution-observed" and proof.get("execution_observed") is True:
+        proofs = proof.get("proofs", [])
+        if not proofs or any(p.get("canary_id") != proof["canary_id"]
+                             or p.get("frame_url") != expected_url
+                             or p.get("event") != "matching-browser-canary" for p in proofs):
+            return observed
+        observed.update(status="completed", ok=True, findings=[{
+            "finding_id": target["case_id"], "evidence": "execution-observed",
+            "canary_matched": True, "triage": "unreviewed"}])
+    elif (proof.get("status") == "inconclusive" and proof.get("execution_observed") is False
+          and not proof.get("proofs") and proof.get("observe_ms") == 400
+          and any(e.get("stage") == "observe" and e.get("reason") == "no-canary-within-window"
+                  for e in proof.get("events", []))):
+        observed["status"] = "completed"
+        observed["ok"] = True
+        observed["negative_window_completed"] = True
+    return observed
+
+
+def run_dxaprove(target):
+    sys.path.insert(0, str(DXADYN.parent))
+    import dxaprove
+    from dxa_proof_lab import lab
+    started = time.monotonic()
+    with lab(target["mode"]) as (spec, _):
+        result = adapt_proof(target, dxaprove.run(spec, target.get("browser_path")), spec["origin"])
+    result["wall"] = round(time.monotonic() - started, 2)
+    return result
+
+
 # ---------- scoring ----------
 
 def score(expected: Dict[str, int], observed: Dict[str, Any]) -> Dict[str, int]:
@@ -320,9 +386,9 @@ def score_findings(expected_ids, findings, *, status="completed"):
 
 
 def strict_failed(report):
-    totals = report["totals"].get("dxadyn", {})
+    totals = report["totals"].get("dxaprove", report["totals"].get("dxadyn", {}))
     return not totals.get("completed") or any(totals.get(k, 0) for k in
-        ("fp", "fn", "error", "timeout", "skipped"))
+        ("fp", "fn", "error", "timeout", "skipped", "invalid", "inconclusive"))
 
 
 # ---------- runner ----------
@@ -330,6 +396,15 @@ def strict_failed(report):
 def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
     row: Dict[str, Any] = {"id": target["id"], "expect": target["expect"], "results": {}}
     budget = int(target.get("budget_seconds", 60))
+
+    if target["kind"] == "proof-lab":
+        if scanners != ["dxaprove"]:
+            raise ValueError("cannot mix execution and candidate measurements")
+        observed = run_dxaprove(target)
+        row["expected_ids"] = target["expected_ids"]
+        row["results"]["dxaprove"] = {"observed": observed, "score": score_findings(
+            target["expected_ids"], observed["findings"], status=observed["status"])}
+        return row
 
     if target["kind"] == "mock":
         with start_mock(target["handler"]) as srv:
@@ -378,6 +453,9 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
 
 
 def run_all(corpus: Dict[str, Any], scanners: List[str], only: List[str] | None) -> Dict[str, Any]:
+    proof_mode = "dxaprove" in scanners
+    if proof_mode and (scanners != ["dxaprove"] or any(t.get("kind") != "proof-lab" for t in corpus["targets"])):
+        raise ValueError("cannot mix execution and candidate measurements")
     unknown = set(only or []) - {t['id'] for t in corpus['targets']}
     if unknown:
         raise ValueError(f"Unknown target IDs: {sorted(unknown)}")
@@ -387,7 +465,7 @@ def run_all(corpus: Dict[str, Any], scanners: List[str], only: List[str] | None)
             continue
         rows.append(run_one(tgt, scanners))
     totals = {s: dict(tp=0, fp=0, fn=0, wall=0.0, selected=len(rows),
-                      completed=0, skipped=0, error=0, timeout=0) for s in scanners}
+                      completed=0, skipped=0, error=0, timeout=0, invalid=0, inconclusive=0) for s in scanners}
     for row in rows:
         for s in scanners:
             r = row["results"].get(s)
@@ -395,16 +473,18 @@ def run_all(corpus: Dict[str, Any], scanners: List[str], only: List[str] | None)
                 totals[s]["skipped"] += 1
                 continue
             status = observation_status(r["observed"])
-            totals[s][status if status in ("completed", "skipped", "timeout") else "error"] += 1
+            totals[s][status if status in ("completed", "skipped", "timeout", "invalid", "inconclusive") else "error"] += 1
             for k in ("tp", "fp", "fn"):
                 totals[s][k] += r["score"][k]
             totals[s]["wall"] += float(r["observed"].get("wall", 0))
     return {
         "run_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
-        "measurement": "legacy-candidate-counts; not confirmed XSS accuracy",
+        "measurement": ("correlated-browser-execution; not confirmed vulnerability accuracy" if proof_mode
+                        else "legacy-candidate-counts; not confirmed XSS accuracy"),
         "environment": {"python": platform.python_version(), "platform": platform.platform(),
                         "runner_sha256": hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
-                        "scanner_sha256": hashlib.sha256(DXADYN.read_bytes()).hexdigest(),
+                        "scanner_sha256": hashlib.sha256((DXADYN.with_name("dxaprove.py") if proof_mode else DXADYN).read_bytes()).hexdigest(),
+                        "fixture_sha256": hashlib.sha256((DXADYN.with_name("dxa_proof_lab.py") if proof_mode else HERE / "mock_target.py").read_bytes()).hexdigest(),
                         "corpus_sha256": hashlib.sha256(json.dumps(corpus, sort_keys=True).encode()).hexdigest()},
         "corpus_version": corpus.get("corpus_version", "?"),
         "scanners": scanners,
@@ -424,7 +504,7 @@ def render_md(report: Dict[str, Any]) -> str:
     lines.append(f"- measurement: {report.get('measurement', 'unspecified')}")
     for name, total in report['totals'].items():
         lines.append(f"- {name} coverage: " + ', '.join(f"{key}={total.get(key, 0)}" for key in
-                     ('selected', 'completed', 'skipped', 'error', 'timeout')))
+                     ('selected', 'completed', 'skipped', 'error', 'timeout', 'invalid', 'inconclusive')))
     lines.append("")
     lines.append("## Totals")
     lines.append("")
@@ -438,7 +518,10 @@ def render_md(report: Dict[str, Any]) -> str:
     for row in report["rows"]:
         lines.append(f"### {row['id']}")
         exp = row["expect"]
-        lines.append(f"- expected: reflected={exp.get('reflected', 0)} stored={exp.get('stored', 0)} dom={exp.get('dom', 0)}")
+        if "expected_ids" in row:
+            lines.append(f"- expected execution case IDs: {row['expected_ids']}")
+        else:
+            lines.append(f"- expected: reflected={exp.get('reflected', 0)} stored={exp.get('stored', 0)} dom={exp.get('dom', 0)}")
         for s, r in row["results"].items():
             if s.startswith("_"):
                 lines.append(f"- {s}: {r}")
@@ -447,6 +530,9 @@ def render_md(report: Dict[str, Any]) -> str:
             sc = r.get("score", {})
             if observation_status(obs) != "completed":
                 lines.append(f"- **{s}**: {observation_status(obs)} (not evaluated)")
+            elif "findings" in obs:
+                lines.append(f"- **{s}**: execution TP={sc['tp']} FP={sc['fp']} FN={sc['fn']}; "
+                             f"negative window completed={obs.get('negative_window_completed', False)} ({obs.get('wall', 0)}s)")
             else:
                 lines.append(
                     f"- **{s}**: reflected={obs.get('reflected', 0)} "
@@ -476,12 +562,19 @@ def main() -> int:
     ap.add_argument("--with", dest="with_", default="", help="extra scanners, comma-separated: dalfox,xsstrike")
     ap.add_argument("--targets", default="", help="comma-separated target ids; empty = all")
     ap.add_argument("--out", default="")
+    ap.add_argument("--proof-suite", action="store_true", help="isolated loopback execution corpus; no legacy candidate totals")
+    ap.add_argument("--browser", help="Chrome/Chromium executable for --proof-suite")
+    ap.add_argument("--no-history", action="store_true", help="do not append shared benchmark history")
     args = ap.parse_args()
 
     scanners = ["dxadyn"] + [s.strip() for s in args.with_.split(",") if s.strip()]
     only = [t.strip() for t in args.targets.split(",") if t.strip()] or None
 
-    corpus = load_corpus(pathlib.Path(args.corpus))
+    if args.proof_suite and args.with_:
+        ap.error("--proof-suite cannot mix extra candidate scanners")
+    if args.proof_suite:
+        scanners = ["dxaprove"]
+    corpus = proof_corpus(args.browser) if args.proof_suite else load_corpus(pathlib.Path(args.corpus))
     report = run_all(corpus, scanners, only)
     report["command"] = sys.argv
 
@@ -489,7 +582,8 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(render_md(report), encoding="utf-8")
     out_path.with_suffix(".json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    append_history(report, HERE / "history.jsonl")
+    if not args.no_history:
+        append_history(report, HERE / "history.jsonl")
 
     totals = report["totals"]
     print(f"[bench] wrote {out_path}")
