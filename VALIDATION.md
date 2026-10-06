@@ -2,8 +2,9 @@
 
 ## R3 ilk browser zinciri — güncel teslim
 
-- Tam paket **544 passed, 36 skipped, 1 warning**, 141.50 saniye.
-  18 yeni browser acceptance testi Chrome ile atlamasız geçti.
+- Önceki tam paket **544 passed, 36 skipped, 1 warning**, 141.50 saniye.
+  R3 değişikliklerinden sonra odaklı browser paketi **21/21 geçti**;
+  route budget, header allowlist ve direct eval kontrolleri dahil.
 - Loopback demo: HTTP/browser kullanıcı+rol kontrolü, stored submit 201, read
   200 ve eşleşen CID; Chrome 154.0.8037.98, Playwright 1.63.0.
 - Negatifler: fixed/JSON/dialog/JS disabled, yanlış rol, cross-origin request,
@@ -16,7 +17,7 @@
   [kapsam/sınırlamalar](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 - WebSocket filtreleme denemesi takıldı ve kaldırıldı. Yeni browser komutu
   HTTP/redirect'i same-origin kısıtlar; WebSocket/ağ sandbox desteği yok.
-  R3 bütünü tamam değil, uzak Linux CI henüz çalıştırılıp doğrulanmadı.
+  R3 kabul scope'u tamam; uzak Linux CI henüz çalıştırılıp doğrulanmadı.
 - 36 eski dxadom browser testi mevcut binary keşfinde atlandı; R3 yeni testleri
   DXA_REQUIRE_BROWSER=1 ile skip edemez. Uyarı benchmark utcnow kullanımı.
 

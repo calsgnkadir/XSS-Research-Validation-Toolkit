@@ -10,7 +10,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | Statik regex analizi | Çalışan aday üretici | Sanitizer hard-clear FN ve dosya/kapsam eksikleri açık |
 | HTTP reflected/stored/flow/auth | R2 HTTP kabulü tamam | JSON, hedefe özel auth-check, fractional rate, sıralı CSRF/stored ve error/skip kayıtları testli; browser aktarımı R3, origin sınırı R9 |
 | Payload üretimi | 50 varyant, 18 mutation | 950 üretim; cid normalize edilince 895 farklı dize; çalışan exploit sayısı değil |
-| Browser proof / DOM gözlemci | Deneysel; R3 loopback ilk dilim eklendi | Yeni `dxaprove` auth→submit→read→CID zinciri; eski `dxadom` bare visit ve observer direct-eval sorunu, SPA/CSRF aktarımı, tam entegrasyon açık |
+| Browser proof / DOM gözlemci | R3 loopback kabulü tamam | `dxaprove` auth→role→submit→read→CID, `dxadom` observer/eval, SPA route bütçesi ve allowlist header aktarımı testli; WebSocket/ağ sandbox kapsam dışı |
 | DOM dialog çıktısı | **Düzeltildi** | Normal dialog OBSERVED-DIALOG; proof üretmiyor |
 | R1 kanıt modeli | **Kabul kapsamı tamamlandı** | Statik/HTTP/DOM/journal ortak Finding/ReportEvent; konservatif sink/rol dedup; execution ve doğrulanmış rol üretilmez |
 | Blind callback sınıflandırması | **Düzeltildi: resource-callback** | JS proof ve oturum kimliği kanıtı değildir |
@@ -31,8 +31,8 @@ R1 [madde bazında kapandı](audit/2026-10-05-r1/R1-KAPANIS.md).
 K01-min [tek yerel vaka paketi](cases/k01-stored-comment/README.md) tamamlandı:
 5/5 browser kontrolü, fix diff ve aynı payload ile retest. Bağımsız temiz ortam
 tekrarı henüz yok; tam R5 açık. R2 [HTTP kabul kapsamıyla kapandı](audit/2026-10-06-r2/R2-KAPANIS.md).
-R3 [ilk loopback proof zinciri](tools/dom-xss-analyzer/BROWSER-PROOF.md) var;
-tam R3, eski observer düzeltmesi ve SPA/CSRF bütünleşmesi açık.
+R3 [loopback proof zinciriyle kapandı](audit/2026-10-06-r3-final/README.md);
+WebSocket/genel ağ sandboxı bu scope'ta yok. Sırada R4 benchmark/CI ölçüm doğruluğu var.
 Son paket: **544 passed, 36 skipped, 1 warning**; [kanıt](VALIDATION.md).
 Yeni gerçek Chrome testi normal dialog/sink olaylarını ortak raporda kontrol etti;
 eski 36 browser testinin atlanma durumu değişmedi.

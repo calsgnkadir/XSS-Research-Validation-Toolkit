@@ -15,6 +15,21 @@ import urllib.request
 import dxadyn
 import dxa_evidence as evidence
 
+ROUTE_INIT = r"""
+(() => {
+  window.__dxaRoutes = [];
+  const add = (kind, value) => {
+    try { const u = new URL(String(value || ''), location.href); if (u.origin === location.origin)
+      window.__dxaRoutes.push({kind, url: u.href}); } catch (_) {}
+  };
+  for (const name of ['pushState', 'replaceState']) {
+    const original = history[name];
+    history[name] = function(state, title, url) { add(name, url); return original.apply(this, arguments); };
+  }
+  addEventListener('hashchange', () => add('hashchange', location.href));
+})();
+"""
+
 
 def origin(url):
     p = urllib.parse.urlsplit(url)
@@ -108,7 +123,16 @@ def run(spec, browser_path=None):
                 # Only explicitly configured credentials are transferred; never harvest
                 # page traffic or copy arbitrary captured headers to another origin.
                 headers = dict(dxadyn.EXTRA_HEADERS)
+                explicit_headers = spec.get("browser_headers", {})
+                if not isinstance(explicit_headers, dict):
+                    raise ValueError("browser_headers must be an object")
+                allowed_header_names = {"authorization", "x-csrf-token", "csrf-token", "x-xsrf-token"}
+                if any(str(k).lower() not in allowed_header_names or not isinstance(v, str) or not v for k, v in explicit_headers.items()):
+                    raise ValueError("browser_headers contains unsupported or empty header")
+                headers.update(explicit_headers)
+                result["browser_header_names"] = sorted(k.lower() for k in headers)
                 context = browser.new_context(service_workers="block", java_script_enabled=spec.get("javascript", True))
+                context.add_init_script(ROUTE_INIT)
 
                 def route_request(route):
                     try:
@@ -176,6 +200,19 @@ def run(spec, browser_path=None):
                 if response is None or response.status != 200:
                     raise ValueError("reader unavailable")
                 result["read_status"] = response.status
+                try:
+                    routes = page.evaluate("() => window.__dxaRoutes || []")
+                    unique = []
+                    seen = set()
+                    budget = int(spec.get("route_budget", 32))
+                    for item in routes:
+                        key = (item.get("kind"), item.get("url"))
+                        if key not in seen and len(unique) < budget:
+                            seen.add(key)
+                            unique.append(item)
+                    result["routes"] = {"runtime": unique, "budget": budget}
+                except Exception:
+                    result["routes"] = {"runtime": [], "budget": int(spec.get("route_budget", 32))}
                 if result["variant"] == "href":
                     link = page.locator("a#" + cid)
                     if link.count() == 1:

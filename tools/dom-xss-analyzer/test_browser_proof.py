@@ -6,6 +6,7 @@ import sys
 
 import pytest
 import dxaprove
+import dxadom
 from dxa_proof_lab import lab
 
 
@@ -68,6 +69,37 @@ def test_scope_filter_blocks_other_origin(browser_path):
         result = dxaprove.run(spec, browser_path)
         assert result["execution_observed"]
         assert any(e["reason"] == "request-blocked" for e in result["events"])
+
+
+def test_spa_routes_are_recorded_with_duplicate_budget(browser_path):
+    with lab("spa") as (spec, _):
+        spec["route_budget"] = 1
+        result = dxaprove.run(spec, browser_path)
+        assert result["execution_observed"]
+        assert len(result["routes"]["runtime"]) == 1
+        assert result["routes"]["budget"] == 1
+
+
+def test_explicit_csrf_header_is_allowlisted_and_transferred(browser_path):
+    with lab("raw") as (spec, _):
+        spec["browser_headers"] = {"X-CSRF-Token": "lab-csrf"}
+        result = dxaprove.run(spec, browser_path)
+        assert result["execution_observed"]
+        assert "x-csrf-token" in result["browser_header_names"]
+        assert "lab-csrf" not in json.dumps(result)
+
+
+def test_dxadom_direct_eval_keeps_lexical_scope(browser_path):
+    """The observer records window.eval calls while direct eval still resolves
+    a local binding in the page's own lexical scope."""
+    session = dxadom.BrowserSession(executable_path=browser_path)
+    with session:
+        summary = session.visit(
+            "data:text/html,<body></body><script>let localValue=17;"
+            "document.body.textContent=eval(%22localValue%22)</script>"
+        )
+    assert summary["errors"] == []
+    assert any(item["sink"] == "eval" for item in summary["sinks"])
 
 
 def test_bad_browser_is_error_before_submit():

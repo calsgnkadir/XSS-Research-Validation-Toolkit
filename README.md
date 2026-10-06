@@ -25,7 +25,7 @@ sayılmaz. `--json-out` ve `--html` aynı finding'leri raporlar.
 ortak raporları, hata/atlama olayları ve rol/sink ayrımını koruyan dedup.
 [Madde bazında kapanış](audit/2026-10-05-r1/R1-KAPANIS.md).
 R2 HTTP kabulü tamam: [oturum kontrolü, rate ve CSRF sözleşmesi](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
-R3 loopback demo'sunda browser canary zinciri çalışıyor; genel browser yolu ve observer hâlâ deneysel.
+R3 loopback browser proof, observer direct eval, SPA route bütçesi ve allowlist header aktarımı kabul edildi; WebSocket/genel ağ sandboxı kapsam dışı.
 [R3 demo ve kapsam](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 
 **İlk güncel vaka:** [K01 stored yorum — execution → fix → retest](cases/k01-stored-comment/README.md).

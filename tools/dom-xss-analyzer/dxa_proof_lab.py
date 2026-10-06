@@ -73,6 +73,8 @@ def lab(mode="raw"):
             elif mode == "eval":
                 # A wrapper converting direct eval to indirect eval breaks this fixture.
                 body = '<script>function render(){let local=17;if(eval("local")===17)document.body.innerHTML=' + json.dumps(value) + ';}setTimeout(render,0)</script>'
+            elif mode == "spa":
+                body = '<script>history.pushState({},"","/spa/one");history.pushState({},"","/spa/two");</script>' + value
             else:
                 body = value
             if state["outside"]:

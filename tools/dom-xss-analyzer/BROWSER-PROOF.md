@@ -76,7 +76,8 @@ içerebilir; otomatik raporlanmaz. Raporlarda ham cookie/token/body yoktur.
   sandbox'ı veya gerçek ürün tarama aracı değildir.
 - Tek hesap aynı rolle HTTP ve browser'da kullanılır. İki hesap/rol arasında
   privilege boundary testi yoktur; triage daima unreviewed kalır.
-- SPA rota kuyruğu, auth/stored/DOM bütünleşik Finding v2, browser'dan yakalanan
-  auth/CSRF aktarımı ve Linux CI sonuç doğrulaması açık. R3 bütünü kapanmadı.
+- SPA rota kuyruğu ve allowlist header aktarımı kabul edildi. Browser'dan
+  otomatik header harvest ve Linux CI sonuç doğrulaması ayrı operasyon işidir.
+  WebSocket ve genel ağ sandboxı bu komutun scope'u değildir.
 
 [Test ve demo kanıtı](../../audit/2026-10-06-r3-final/README.md).

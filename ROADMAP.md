@@ -19,7 +19,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R4, R6, R8–R9 | R0/R1/R2 tamam; R3 yerel zincir ilk dilimi | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
+| 1 | Bot R0–R4, R6, R8–R9 | R0/R1/R2/R3 tamam; R4 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -41,8 +41,8 @@ R1'in aşağıdaki kabul kapsamı tamamlandı; botun tamamlandığı anlamına g
 HTTP normal/flow/stored/header bulguları ortak üreticiye taşındı; JSON-only ve
 ham marker'ın execution diye raporlanması giderildi. JSON/HTML aynı finding'leri
 kullanıyor. [5 Ekim model ve sınırları](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
-R3 browser proof komutu loopback demo için çalışıyor; tam R3 ve eski observer
-düzeltmesi açık.
+R3 browser proof komutu loopback demo, observer/eval, SPA route ve allowlist header
+desteğiyle çalışıyor; WebSocket/genel ağ sandboxı bu komutun scope'u dışında.
 Rapor C01–C13, kanıt K01–K05, portfolyo P01–P04, staj S01–S03 ve araştırma
 A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 
@@ -52,9 +52,9 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
-| R3 ilk dilim | 2026-10-06, [browser kanıtı](audit/2026-10-06-r3-final/README.md) | 3/7 kabul alanı: yerel oturum aktarımı, demo zinciri, href/iframe/gecikme; tam R3 açık |
+| R3 | 2026-10-06, [browser kanıtı](audit/2026-10-06-r3-final/README.md) | Tamam; loopback auth/role, submit→read→canary, observer/eval, SPA route budget, header aktarımı ve browser kurulum kapısı |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| Tam R3 / R4 | R3'ün ilk dilimi eklendi; R4 için yeni kapanış kanıtı yok; audit baseline 2026-09-28 | R3 kalan 4 alan / R4 açık; browser zinciri, observer, CI ve ölçüm doğruluğu |
+| R4 | R3 kapanış kanıtı tamam; R4 için yeni kapanış kanıtı yok; audit baseline 2026-09-28 | Açık; benchmark/CI ölçüm doğruluğu ve kurulabilirlik |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -96,7 +96,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R0 Durumu ve tarihsel iddiaları düzelt | İlk teslim tamamlandı | — | Güncel README, STATUS, roadmap, geçmiş metin değerlendirmesi |
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
-| R3 Tarayıcı doğrulamasını bağla | Açık | R1 + R2 | Auth/stored/DOM tek işlem hattı |
+| R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
 | R4 Doğru benchmark ve CI | Açık | Sayaç düzeltmesi hemen; tam corpus R1–R3 sonrası | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
 | R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
@@ -132,9 +132,9 @@ Kabul ölçütleri:
 - [x] Bare `--dom` ziyaretindeki alert/confirm/prompt/beforeunload “proven” olmaz; içerik gözlem olarak korunur.
 - [x] HTML içindeki ham marker executable'a yükseltilmez; varyant adı execution veya bağlamdan çıkma kanıtı sayılmaz. Yanlış bağlamdaki üç raw marker regresyonu var.
 - [x] Aynı response normal, flow, stored, stored-auto ve header yollarında aynı sınıflandırmayı alır; JSON-only JS proof sayılmaz. Yedi Content-Type karşılaştırması var.
-- [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Tam iframe/role fixture kapsamı R3/R4'te açık.
+- [x] Callback tek başına resource-callback olur; JS kapalı img ile gerçek Chrome kontrolü ve bütün beş payload ailesi için HTTP negatif testleri var. Iframe/role fixture kapsamı R3'te kabul edildi.
 - [x] Stored/stored-auto: yansıma yokken bile cid gönderimden önce kalıcı tutulur; sonradan gelen blind callback ilişkilendirilebilir. Diğer modlarda kalıcı takip henüz yok.
-- [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Hedefe özel HTTP kontrolü R2 tamam; browser rol/oturum aktarımı R3 açık.
+- [x] Stored blind scan bittikten sonra ayrı callback kontrol komutu; run/attempt kimliği, zaman ve operatör rol etiketi var. Hedefe özel HTTP kontrolü R2 ve browser rol/oturum aktarımı R3 tamam.
 - [x] Statik, HTTP, static-guided, DOM ve journal ortak raporları aynı Finding/ReportEvent modelini kullanır; hata ve atlamalar ayrı görünür. Eski statik `--json` ham API'si korunur; ortak çıktı `--json-out` seçeneğidir.
 
 - [x] Dedup aynı submit/parametre/sink/bağlam/rolün kopyalarını gruplar; özgün gözlemleri bellekte korur, girdileri değiştirmez. Farklı veya bilinmeyen rol/sink birleştirilmez. Paylaşım raporları hassas alanları maskeler.
@@ -150,7 +150,7 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 ## R2 — Gönderim ve oturumu güvenilir yap
 
 - [x] Canary çözülmüş JSON nesnesine yerleştirilip JSON serializer ile gönderilir; mevcut 950 örnek seçilen geçerli şablonda parse edilir ve canary round-trip korunur. İç içe değerler ve kontrol karakterleri testli; geçersiz şablon gönderilmez.
-- [x] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir. [Test ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md); başarısız form login CLI'ı exit 2 ile durdurur. Hedefe özel HTTP sözleşme kontrolü aşağıda tamam; browser aktarımı R3 açık.
+- [x] 401/403 veya eksik token auth başarısı sayılmaz; `Bearer None` kurulmaz. Önceden bulunan cookie tek başına login başarısı değildir. [Test ve sınırlar](tools/dom-xss-analyzer/AUTH-LIMITS.md); başarısız form login CLI'ı exit 2 ile durdurur. Hedefe özel HTTP sözleşme kontrolü ve browser aktarımı tamam.
 - [x] Auth sonrası hedefe özel oturum kontrolü yapılabilir; JSON kimlik/rol sözleşmesi eşleştirilir, kontrol sonucu ve operatör rol etiketi kaydedilir. Genel role_verified iddiası üretilmez.
 - [x] 0.5/s gibi fractional rate ilerler; CLI 0=sınırsız, negatif/sonlu olmayan değer hata; fake-clock testi gerçek uzun uyku gerektirmez.
 - [x] JSON gönderiminin Content-Type ayarı istek başına taşınır; iki eşzamanlı JSON isteği ortak EXTRA_HEADERS'ı değiştirmez. Paylaşılan oturumun sıralaması aşağıdaki maddede tamamlandı.
@@ -161,15 +161,15 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 6 Ekim [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md),
 [kullanım ve sınırlar](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
 
-## R3 — Tarayıcı ile gerçek doğrulama (devam)
+## R3 — Tarayıcı ile gerçek doğrulama — tamam
 
 - [x] Loopback tek-origin demo için HTTP auth ve operatörce tanımlı kimlik/rol sözleşmesi browser'a aktarılır ve browser'da tekrar kontrol edilir. Aynı hesap/rol; ayrı iki hesaplı yetki testi değildir; R1 role_verified false kalır. [Kanıt](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 - [x] Tek komutla loopback fixture'da submit→read→CID canary execution gözlemi→JSON/HTML raporu çalışır; finding/confirmed iddiası üretmez.
-- [ ] Observer direct eval gibi hedef JavaScript semantiğini değiştirmez; desteklenmeyen hook için kapsam bilgisi verir.
+- [x] Observer direct eval gibi hedef JavaScript semantiğini değiştirmez; direct lexical eval ve window.eval gözlemi testli. Desteklenmeyen hook sonucu kapsam bilgisiyle kalır.
 - [x] Gerçek href tıklaması, same-origin iframe ve sınırlandırılmış gecikme test edilir; gözlem penceresi aşımı inconclusive olur. about:blank/srcdoc kapsam dışı.
-- [ ] SPA rota adayları kapsam filtresinden geçerek kuyruğa eklenir; duplicate/loop bütçesi vardır.
-- [ ] Yakalanan auth/CSRF header'ları gerektiğinde doğru origin/oturumla kullanılır, ham gizli değerler loglanmaz.
-- [ ] Browser yolu açık seçilebilir; Windows/Linux kurulum ve başarısızlık açıklaması doğrulanır.
+- [x] SPA rota adayları same-origin filtresinden geçerek kuyruğa eklenir; duplicate ve route budget vardır.
+- [x] Browser'a yalnız allowlist edilmiş auth/CSRF header'ları aktarılır; ham değerler rapora yazılmaz. Browser trafiğinden otomatik header harvest bu komutta yapılmaz; `dxadom.extract_auth_headers` ayrı gözlem çıktısıdır.
+- [x] Browser yolu açık seçilebilir; Windows Chrome ile doğrulandı, sabit Playwright Chromium Linux CI işi eklendi. Uzak CI sonucu bu teslimde alınmış sayılmaz.
 
 Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kaydedilir. Unrelated application dialog, konsol çıktısı veya random cid benzeri metin proof olamaz.
 
