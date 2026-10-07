@@ -1,5 +1,26 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-07
+
+- R3/R4 yeniden doğrulaması: 681 passed, sıfır skip; gerçek Chrome strict
+  corpus 9/9, TP=3 FP=0 FN=0. Önceki R3/R4 commitleri de yeniden incelendi.
+- Cleanup exception sonrasında browser kapanışı ve HTTP oturum durumunun
+  restorasyonu nested finally ile korunur; iki yeni gerçek browser regresyonu.
+  JSON/HTML demo testi tam kanıt nesnesi eşitliğini doğrular.
+- Ayrı CLI'da gerçek lab vaka hatası kalan vakayı/raporu kesmez; strict exit 1
+  ve listener temizliği doğrulandı. Genel R4 ve uzak Linux CI kabulü açık.
+- R4 proof vaka istisnası artık kalan vakaları ve JSON/Markdown yazımını kesmez;
+  error/timeout skorlanmaz, strict kapısı başarısız döner. Ham exception mesajı
+  dışarı aktarılmaz; süreç kesme sinyalleri korunur. Yeni kabul 146 passed ve
+  gerçek Chrome CLI 9/9; hard timeout ve uzak CI kabulü açık.
+- R4 loopback corpus 9 vakaya genişletildi; bağımsız oracle, eşleşen gerçek
+  resource callback, title/textarea negatifleri, delayed/eval pozitifleri eklendi.
+- Malformed/çelişkili proof reddedilir; canary okuma hatası tamamlanmış negatif
+  sayılmaz. Yeni birleşik kabul 136 passed; strict CLI TP=3 FP=0 FN=0.
+- Zorunlu browser CI işi corpus testlerini ve strict benchmark artifact'larını
+  içerir; uzak CI sonucu henüz yok. Native çağrılar kaydedildi; Engine/QA
+  proje yazma yapılandırması güncellendi, diğer roller salt okunur kaldı.
+
 ## Unreleased — 2026-10-06
 
 - Reflected crawler form/link/redirect/CSRF trafiği başlangıç origin'ine

@@ -3,13 +3,16 @@ from contextlib import contextmanager
 import html
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import re
 import threading
 import urllib.parse
 
 
 @contextmanager
 def lab(mode="raw"):
-    state = {"value": "", "posts": 0, "checks": 0, "outside": ""}
+    state = {"value": "", "posts": 0, "checks": 0, "outside": "",
+             "resource_callback_hits": {}}
+    callback_lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -50,6 +53,15 @@ def lab(mode="raw"):
         def do_GET(self):
             if not self.authed():
                 return self.send(401, "denied")
+            if mode == "resource-callback" and self.path.startswith("/resource-callback?"):
+                cid = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query).get("cid", [""])[0]
+                submitted_cid = state["value"].split("<", 1)[0]
+                if cid != submitted_cid or not re.fullmatch(r"dxa[0-9a-f]{32}", cid):
+                    return self.send(400, "invalid callback identity")
+                with callback_lock:
+                    hits = state["resource_callback_hits"]
+                    hits[cid] = hits.get(cid, 0) + 1
+                return self.send(200, "resource observed", "text/plain")
             if self.path == "/me":
                 state["checks"] += 1
                 role = "wrong" if mode == "wrong-browser-role" and state["checks"] >= 2 else "reader"
@@ -61,6 +73,14 @@ def lab(mode="raw"):
             value = state["value"]
             if mode == "fixed":
                 body = html.escape(value)
+            elif mode in ("title", "textarea"):
+                # The image payload has no closing title/textarea tag: it is inert RCDATA.
+                body = '<' + mode + '>' + value + '</' + mode + '>'
+            elif mode == "resource-callback":
+                # Preserve submitted text inertly; a separate handler-free image makes
+                # a CID-correlated HTTP request, never a JavaScript canary assignment.
+                cid = value.split("<", 1)[0]
+                body = html.escape(value) + '<img src="/resource-callback?cid=' + urllib.parse.quote(cid, safe="") + '">'
             elif mode == "json":
                 return self.send(200, json.dumps({"comment": value}), "application/json")
             elif mode == "dialog":

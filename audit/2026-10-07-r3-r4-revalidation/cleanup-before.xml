@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="4.480" timestamp="2026-10-07T22:29:24.836792+03:00" hostname="local-windows"><testcase classname="tools.dom-xss-analyzer.test_proof_cleanup" name="test_cleanup_error_restores_session_and_allows_next_case[context]" time="2.205"><failure message="AssertionError: assert ['context'] == ['context', 'browser']&#10;  &#10;  Right contains one more item: 'browser'&#10;  Use -v to get more diff">tools\dom-xss-analyzer\test_proof_cleanup.py:44: in test_cleanup_error_restores_session_and_allows_next_case
+    assert closed == ["context", "browser"]
+E   AssertionError: assert ['context'] == ['context', 'browser']
+E
+E     Right contains one more item: 'browser'
+E     Use -v to get more diff</failure></testcase><testcase classname="tools.dom-xss-analyzer.test_proof_cleanup" name="test_cleanup_error_restores_session_and_allows_next_case[browser]" time="2.053"><failure message="assert False&#10; +  where False = all(&lt;generator object test_cleanup_error_restores_session_and_allows_next_case.&lt;locals&gt;.&lt;genexpr&gt; at 0x000001F902363680&gt;)">tools\dom-xss-analyzer\test_proof_cleanup.py:45: in test_cleanup_error_restores_session_and_allows_next_case
+    assert all(getattr(dxadyn, name) is value for name, value in previous.items())
+E   assert False
+E    +  where False = all(&lt;generator object test_cleanup_error_restores_session_and_allows_next_case.&lt;locals&gt;.&lt;genexpr&gt; at &lt;runtime-address&gt;&gt;)</failure></testcase></testsuite></testsuites>

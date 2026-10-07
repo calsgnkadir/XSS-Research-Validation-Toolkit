@@ -219,6 +219,8 @@ def run(spec, browser_path=None):
                         link.click(timeout=1000, no_wait_after=True)
                 stage = "observe"
                 deadline = time.monotonic() + result["observe_ms"] / 1000
+                successful_reads = 0
+                failed_reads = 0
                 while time.monotonic() < deadline:
                     for frame in page.frames:
                         if frame.url == "about:blank":
@@ -228,25 +230,37 @@ def run(spec, browser_path=None):
                                 continue
                             # Read an existing value; never evaluate the injected payload.
                             observed = frame.evaluate("() => window.__dxaProof || null")
+                            successful_reads += 1
                             if observed == cid:
                                 result["proofs"].append({"canary_id": cid, "frame_url": evidence.safe_url(frame.url),
                                                         "event": "matching-browser-canary"})
                         except Exception:
+                            failed_reads += 1
                             continue  # navigation/detachment is not execution evidence
                     if result["proofs"]:
                         break
                     page.wait_for_timeout(25)
                 result["execution_observed"] = bool(result["proofs"])
                 result["status"] = "execution-observed" if result["proofs"] else "inconclusive"
-                if not result["proofs"]:
+                if not result["proofs"] and (failed_reads or not successful_reads):
+                    result["status"] = "error"
+                    result["events"].append({"stage": "observe", "kind": "error", "reason": "canary-observation-failed"})
+                elif not result["proofs"]:
                     result["events"].append({"stage": "observe", "kind": "info", "reason": "no-canary-within-window"})
             finally:
-                if context:
-                    context.close()
-                if browser:
-                    browser.close()
-                for name, value in previous.items():
-                    setattr(dxadyn, name, value)
+                try:
+                    try:
+                        if context:
+                            context.close()
+                    finally:
+                        if browser:
+                            browser.close()
+                except Exception:
+                    stage = "cleanup"
+                    raise
+                finally:
+                    for name, value in previous.items():
+                        setattr(dxadyn, name, value)
     except Exception as exc:
         result["status"] = "error"
         result["events"].append({"stage": stage, "kind": "error",

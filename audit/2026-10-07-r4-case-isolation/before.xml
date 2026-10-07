@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="10" time="1.673" timestamp="2026-10-07T17:33:48.067669+03:00" hostname="local-windows"><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_preserves_remaining_cases[runtime-error]" time="0.004"><failure message="RuntimeError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   RuntimeError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_preserves_remaining_cases[os-error]" time="0.001"><failure message="OSError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   OSError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_preserves_remaining_cases[timeout-error]" time="0.002"><failure message="TimeoutError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   TimeoutError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_preserves_remaining_cases[subprocess-timeout]" time="0.001"><failure message="subprocess.TimeoutExpired: Command '['SENTINEL_PRIVATE_EXCEPTION_BODY_9274']' timed out after 1 seconds">bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   subprocess.TimeoutExpired: Command '['SENTINEL_PRIVATE_EXCEPTION_BODY_9274']' timed out after 1 seconds</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_cli_writes_artifacts_and_fails_strict[runtime-error]" time="0.043"><failure message="RuntimeError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:203: in test_proof_case_exception_cli_writes_artifacts_and_fails_strict
+    assert runner.main() == 1
+bench\run.py:619: in main
+    report = run_all(corpus, scanners, only)
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+&lt;local-python-install&gt;
+    result: TResult | None = func()
+&lt;local-python-install&gt;
+    lambda: runtest_hook(item=item, **kwds),
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    yield
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    item.runtest()
+&lt;local-python-install&gt;
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    result = testfunction(**testargs)
+bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   RuntimeError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_cli_writes_artifacts_and_fails_strict[os-error]" time="0.008"><failure message="OSError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:203: in test_proof_case_exception_cli_writes_artifacts_and_fails_strict
+    assert runner.main() == 1
+bench\run.py:619: in main
+    report = run_all(corpus, scanners, only)
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+&lt;local-python-install&gt;
+    result: TResult | None = func()
+&lt;local-python-install&gt;
+    lambda: runtest_hook(item=item, **kwds),
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    yield
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    item.runtest()
+&lt;local-python-install&gt;
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    result = testfunction(**testargs)
+bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   OSError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_cli_writes_artifacts_and_fails_strict[timeout-error]" time="0.006"><failure message="TimeoutError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274">bench\test_proof_adapter.py:203: in test_proof_case_exception_cli_writes_artifacts_and_fails_strict
+    assert runner.main() == 1
+bench\run.py:619: in main
+    report = run_all(corpus, scanners, only)
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+&lt;local-python-install&gt;
+    result: TResult | None = func()
+&lt;local-python-install&gt;
+    lambda: runtest_hook(item=item, **kwds),
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    yield
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    item.runtest()
+&lt;local-python-install&gt;
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    result = testfunction(**testargs)
+bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   TimeoutError: SENTINEL_PRIVATE_EXCEPTION_BODY_9274</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_exception_cli_writes_artifacts_and_fails_strict[subprocess-timeout]" time="0.007"><failure message="subprocess.TimeoutExpired: Command '['SENTINEL_PRIVATE_EXCEPTION_BODY_9274']' timed out after 1 seconds">bench\test_proof_adapter.py:203: in test_proof_case_exception_cli_writes_artifacts_and_fails_strict
+    assert runner.main() == 1
+bench\run.py:619: in main
+    report = run_all(corpus, scanners, only)
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+&lt;local-python-install&gt;
+    result: TResult | None = func()
+&lt;local-python-install&gt;
+    lambda: runtest_hook(item=item, **kwds),
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    yield
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    return (yield)
+&lt;local-python-install&gt;
+    item.runtest()
+&lt;local-python-install&gt;
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+&lt;local-python-install&gt;
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+&lt;local-python-install&gt;
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+&lt;local-python-install&gt;
+    result = testfunction(**testargs)
+bench\test_proof_adapter.py:190: in test_proof_case_exception_preserves_remaining_cases
+    report = runner.run_all(runner.proof_corpus(), ["dxaprove"], ["proof-raw", "proof-fixed"])
+bench\run.py:502: in run_all
+    rows.append(run_one(tgt, scanners))
+bench\run.py:436: in run_one
+    observed = run_dxaprove(target)
+bench\test_proof_adapter.py:159: in observe
+    raise failure
+E   subprocess.TimeoutExpired: Command '['SENTINEL_PRIVATE_EXCEPTION_BODY_9274']' timed out after 1 seconds</failure></testcase><testcase classname="bench.test_proof_adapter" name="test_proof_case_process_control_exception_propagates[keyboard-interrupt]" time="0.003" /><testcase classname="bench.test_proof_adapter" name="test_proof_case_process_control_exception_propagates[system-exit]" time="0.002" /></testsuite></testsuites>

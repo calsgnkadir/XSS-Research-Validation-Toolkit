@@ -7,6 +7,19 @@ Kapasite her oturumda değişebilir. Otomatik açılış veya zamanlanmış iş 
 
 ## Kalıcı tanım ile çalışan agent ayrımı
 
+**7 Ekim 2026 güncellemesi:** Bu sohbetin beş native `agent_type` çağrısı
+başarılıdır; [çağrı ve kapsam kaydı](../audit/2026-10-07-r4-native/README.md).
+Aşağıdaki doğrulanamadı kayıtları önceki ortamın tarihsel durumudur.
+Yeni geliştirme görevlerinde native rol kullanılır. Engine ve QA tanımları
+proje kapsamında `workspace-write` olarak güncellendi; diğer üç rol read-only.
+Eski çalışanlara yeni ayar uygulandığı varsayılmaz; görev sınırı ve gerçek
+araç sonucu ayrıca kaydedilir. Genel sistem/ağ yetkisi genişletilmez.
+
+### Tarihsel durum — 6 Ekim ortamı
+
+Aşağıdaki rol seçici yokluğu ve geçici talimat aktarımı, 6 Ekim ortamına aittir;
+7 Ekim'de doğrulanan native çağrıların güncel durumu değildir.
+
 `.codex/agents/` altında beş mevcut TOML tanımı korunur: `xss_security_researcher`,
 `scanner_engine_specialist`, `storage_docker_specialist`, `report_frontend_specialist`,
 `qa_security_lab_specialist`. Dosya varlığı native invocation kanıtı değildir.

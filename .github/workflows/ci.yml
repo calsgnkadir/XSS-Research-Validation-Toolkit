@@ -33,7 +33,7 @@ jobs:
           python dxa.py examples/ --min-confidence high && exit 1 || echo "findings reported as expected"
 
       - name: Benchmark harness tests
-        run: pytest bench/test_bench.py -q
+        run: pytest bench/test_bench.py bench/test_proof_adapter.py -q
 
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:
@@ -61,15 +61,22 @@ jobs:
       - run: python -m pip install pytest playwright==1.63.0
       - run: python -m playwright install --with-deps chromium
       - name: Run R3 acceptance tests
-        working-directory: tools/dom-xss-analyzer
-        run: pytest test_browser_proof.py -q
+        run: pytest tools/dom-xss-analyzer/test_browser_proof.py tools/dom-xss-analyzer/test_proof_cleanup.py bench/test_proof_adapter.py bench/test_proof_corpus.py -q --junitxml=r3-r4-pytest.xml
+      - name: Run R4 execution corpus (strict, no history)
+        env:
+          BENCH_STRICT: "1"
+        run: python bench/run.py --proof-suite --no-history --out r4-proof.md
       - name: Run one-command proof demo
         run: python tools/dom-xss-analyzer/dxaprove.py --demo --output r3-proof
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: r3-browser-proof
-          path: r3-proof/
+          path: |
+            r3-proof/
+            r3-r4-pytest.xml
+            r4-proof.json
+            r4-proof.md
 
   browser-tests:
     name: dxadom browser harness (Playwright opt-in)

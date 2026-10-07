@@ -1,6 +1,6 @@
 # Doğrulanmış durum
 
-6 Ekim 2026. Güncel plan: [ROADMAP](ROADMAP.md). ZIP üzerinden başlayan düzeltmeler
+7 Ekim 2026. Güncel plan: [ROADMAP](ROADMAP.md). Tarihsel Git teslimi: ZIP üzerinden başlayan düzeltmeler
 `2703d1a` ile GitHub main dalına aktarıldı. Canlı GitHub API'si güncel README'yi
 doğruladı; web arama sonuçları eski taranmış metni gösterebilir. Bu durum yeni
 CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
@@ -15,7 +15,7 @@ CVE veya tüm roadmap'in tamamlanması anlamına gelmez.
 | R1 kanıt modeli | **Kabul kapsamı tamamlandı** | Statik/HTTP/DOM/journal ortak Finding/ReportEvent; konservatif sink/rol dedup; execution ve doğrulanmış rol üretilmez |
 | Blind callback sınıflandırması | **Düzeltildi: resource-callback** | JS proof ve oturum kimliği kanıtı değildir |
 | Kalıcı blind takip | **Stored/stored-auto için eklendi** | Yansımasız CID kaydı, sonradan kontrol, zaman ve rol etiketi; reflected/flow/DOM journal entegrasyonu ve doğrulanmış rol açık |
-| Benchmark | Legacy aday corpus'u + 4 yerel execution fixture'ı | FN/error düzeltildi; ayrı proof adapter kimlik scorer'ına bağlı. Geniş corpus, gerçek ürün adapter'ı ve uzak CI açık |
+| Benchmark | Legacy aday corpus'u + 9 yerel execution fixture'ı | Proof adapter kimlik scorer'ına bağlı; vaka istisnası error/timeout olarak ayrılır. Hard timeout, geniş corpus, gerçek ürün adapter'ı ve uzak CI açık |
 | Yeni CVE kredisi | ZIP'te doğrulanmış kanıt yok | Duplicate ve bilinen açık çalışmaları tarihsel yazar beyanı |
 | AST / recon genişletme / ürün paketi | Plan | R1–R6 doğruluk ve kullanılabilirlik işleri önce |
 
@@ -26,6 +26,38 @@ Orijinal arşiv denetimi: 388 passed + 36 browser skipped; mevcut Chrome yolu te
 Bu geliştirme tesliminin yeni test sonuçları [VALIDATION.md](VALIDATION.md) içinde tutulur. Önceki denetim raporu değişmez tarihsel baseline'dır; buradaki düzeltmeler onun sonrasına aittir.
 
 ## Sıradaki küçük teslim
+
+7 Ekim son yeniden doğrulama: **681 passed, 0 failure/error/skip**; Windows
+Chrome ile `test_dxadom` 73 test dahil bütün analyzer/bench paketi yeniden koştu.
+R3 cleanup/state restorasyonunda bulunan hata iki red regresyondan sonra
+düzeltildi. R3 loopback ve R4 yerel runner/adapter kapsamı **PASS**.
+Yeni strict corpus **9/9, TP=3 FP=0 FN=0**; gerçek vaka hatası ve eksik browser
+CLI kontrolleri rapor yazıp exit 1 verdi. [Yeni audit](audit/2026-10-07-r3-r4-revalidation/README.md).
+Genel R4, hard timeout, gerçek ürün adapter'ı ve uzak CI kabulü açık kalır.
+Aşağıdaki 7 Ekim turları tarihsel sonuçlardır; yeni koşu yerine kullanılmaz.
+
+7 Ekim ikinci tur: önceki kabul dosyaları ve üç kaynak hash'i karşılaştırıldı;
+önceki dar teslim destekleniyor. Yeni R4 vaka istisnası düzeltmesi öncesi
+8 regresyon başarısız oldu; düzeltme sonrası **146 passed**, skip yok.
+Yeni gerçek Chrome CLI **9/9, TP=3 FP=0 FN=0**. Engine/QA atanan ayrı dosyaları
+yazdı; koordinatör testleri çalıştırdı ve kayıtları güncelledi. Commit/push yok.
+[Kabul, sahiplik değerlendirmesi ve açık işler](audit/2026-10-07-r4-case-isolation/README.md).
+Sıradaki dar runner işi sert süre sınırı ve süreç temizliği kabulüdür; uzak CI,
+sabit gerçek uygulama adapter'ı ve geniş corpus da açık kalır.
+
+Aşağıdaki sayılar önceki 7 Ekim turunun sonuçlarıdır.
+
+7 Ekim güncellemesi: önceki scope/R3/R4 kabulü yeni koşuda **89 passed**.
+R4 corpus 9 vakaya genişletildi; son paket **136 passed**, skip yok;
+gerçek Chrome strict runner **TP=3 FP=0 FN=0**, 9/9 tamamlandı.
+Zorunlu browser CI yoluna corpus/adapter ve artifact adımları eklendi;
+**uzak CI çalıştırılmadı**, R4 genel kapanışı açık.
+Beş native çağrı bu sohbette doğrulandı; yeni geliştirmede Engine/QA yazdı,
+Security salt okunur inceledi. [Güncel kanıt](audit/2026-10-07-r4-native/README.md).
+Sonraki kapı uzak CI kanıtı ve sabit gerçek uygulama adapter'ıdır;
+sanitizer/rol/iframe corpus kapsamı da açıktır.
+
+Aşağıdaki 6 Ekim turu ve native doğrulanamadı açıklaması tarihsel kayıttır.
 
 Son sınırlı tur: reflected crawler scope kontrolü, fonksiyon-local eval
 karşı örneği ve R4 loopback adapter tamamlandı. **339 passed**, dört gerçek

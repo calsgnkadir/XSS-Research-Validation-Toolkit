@@ -18,7 +18,7 @@
 
 - Bu sohbetin ana agent'ı koordinatördür. Specialist'ler roadmap görevine bağlı, sınırları belirli işler alır. Aktif araç gerçekten destekliyorsa gerçek sub-agent çağır; yalnız belge yazıp çalışan agent kuruldu deme.
 - `.codex/agents/` tanımlarını koru. Kalıcı configuration varlığı, geçici sub-agent'ın talimat dosyasını okuması ve native custom-agent invocation ayrı kanıtlardır. Invocation doğrulanmadığında bunu açıkça belirt; ayrıntılı durum `docs/AGENT-WORKFLOW.md` içindedir.
-- Bu oturumda native custom-agent rol seçimi yoktur. Görevlendirmeden önce koordinatör ilgili `.codex/agents/<rol>.toml` dosyasını okur ve rol talimatı, somut görev, dosya sınırı, yetki ve kabul ölçütünü geçici çalışana açıkça aktarır. Bu, native TOML yüklemesi değildir; kullanılan araç ve yetkiler çalışanın gerçek araç şemasıyla sınırlıdır.
+- 7 Ekim 2026 oturumunda beş rol `agent_type` ile native çağrıldı; kayıt `audit/2026-10-07-r4-native/README.md` içindedir. Görevlendirmede native rol seçilir; başarısız çağrı sessizce generic çalışanla değiştirilmez. Dosya sahipliği ve gerçek runtime izinleri ayrıca kontrol edilir; yapılandırma değişikliği mevcut çalışana otomatik uygulanmış sayılmaz.
 - Analiz varsayılanı salt okumadır. Geliştirme onayı sonrası koordinatör dosya sahipliğini belirler; iki agent aynı dosyayı eşzamanlı düzenlemez. Ortak şema, roadmap, birleştirme ve Git teslimi koordinatöre aittir.
 - Bulgular dosya:satır, kanıt türü, beklenen/gözlenen davranış ve roadmap kimliği içerir. Kod incelemesi, yeniden üretilmiş hata ve doğrulanmamış şüphe ayrı belirtilir.
 - Reflection, sink gözlemi, callback, browser execution ve güvenlik açığı triage'ı birbirine yükseltilmez. Test/payload sayısı ürün başarısı değildir.

@@ -52,9 +52,9 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 |---|---|---|
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
-| R3 | 2026-10-06, [browser kanıtı](audit/2026-10-06-r3-final/README.md) | Tamam; loopback auth/role, submit→read→canary, observer/eval, SPA route budget, header aktarımı ve browser kurulum kapısı |
+| R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [6 Ekim yerel adapter turu](audit/2026-10-06-multi-agent-round1/README.md) | Devam; dört loopback fixture kimlik scorer'ına bağlı; geniş corpus ve CI açık |
+| R4 | [7 Ekim yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Yerel kabul PASS; dokuz fixture ve gerçek CLI hata izolasyonu doğrulandı; hard timeout, gerçek ürün ve uzak CI açık |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -163,6 +163,11 @@ WonderCMS'teki 58→1 bir sayısal hedef değildir. Gerçek grup sayısı kanıt
 
 ## R3 — Tarayıcı ile gerçek doğrulama — tamam
 
+7 Ekim yeniden doğrulaması: tüm analyzer/bench paketi 681 passed, sıfır skip;
+cleanup hatası sonrası browser kapanışı ve oturum durumunun geri yüklenmesi
+iki karşı örnekle düzeltildi. JSON/HTML tam nesne eşitliği sınandı.
+[Yeni kabul paketi](audit/2026-10-07-r3-r4-revalidation/README.md).
+
 - [x] Loopback tek-origin demo için HTTP auth ve operatörce tanımlı kimlik/rol sözleşmesi browser'a aktarılır ve browser'da tekrar kontrol edilir. Aynı hesap/rol; ayrı iki hesaplı yetki testi değildir; R1 role_verified false kalır. [Kanıt](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 - [x] Tek komutla loopback fixture'da submit→read→CID canary execution gözlemi→JSON/HTML raporu çalışır; finding/confirmed iddiası üretmez.
 - [x] Fonksiyon içindeki direct eval karşı örneği doğrulandı ve eval hook kaldırıldı; native lexical scope korunur. Eval gözlemi desteklenmez ve JSON/HTML operasyonel olayında açıkça belirtilir. Önceki global-scope test yeterli değildi; 6 Ekim agent turu bu kabul kanıtını düzeltir.
@@ -177,6 +182,25 @@ taşındı; R3 loopback kabulü bunları tamamlanmış saymaz.
 Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kaydedilir. Unrelated application dialog, konsol çıktısı veya random cid benzeri metin proof olamaz.
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
+
+7 Ekim son doğrulama: yeni tam paket 681 passed, sıfır skip. Ayrı Chrome CLI
+9/9, TP=3 FP=0 FN=0; eksik browser ve gerçek lab içinde enjekte edilen vaka
+hatası rapor üreterek strict exit 1 verdi. R4 yerel kapsam PASS; genel roadmap
+kapanışı değil. [Yeni sonuçlar](audit/2026-10-07-r3-r4-revalidation/README.md).
+
+7 Ekim ikinci dar teslim: proof vaka istisnası tüm raporu kesmez; error/timeout
+skorlanmadan kaydedilir, kalan vakalar sürer ve strict kapısı başarısız olur.
+Yeni birleşik kabul 146 passed, skip yok; gerçek Chrome CLI 9/9, TP=3 FP=0 FN=0.
+Sert süre sınırı ve süreç sonlandırma bu teslimde uygulanmadı; genel R4 kabul
+kutuları açık kalır. [Kabul ve sahiplik kaydı](audit/2026-10-07-r4-case-isolation/README.md).
+
+7 Ekim ilerlemesi: `loopback-proof/2` dokuz yerel vaka (3 pozitif, 6 negatif),
+bağımsız etiket/fixture kontrolleri ve JS-kapalı gerçek callback negatifi eklendi.
+Yeni birleşik kabul 136 passed; strict CLI 9/9, TP=3 FP=0 FN=0.
+Zorunlu browser CI yoluna test/strict benchmark/artifact adımları bağlandı;
+uzak CI çalıştırılmadığından aşağıdaki CI kabul kutuları açık tutulur.
+Gerçek ürün adapter'ı ve geniş sanitizer/rol kapsamı tamamlanmadı.
+[Kanıt ve sınırlar](audit/2026-10-07-r4-native/README.md).
 
 6 Ekim ilk teslim: eksik FN hesabı, süreç timeout/error ayrımı, seçilen/tamamlanan/
 atlanan hedef sayıları, FP ve eksik koşuda strict gate, JSON/Markdown artifact

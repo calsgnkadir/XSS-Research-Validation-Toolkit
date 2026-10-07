@@ -280,15 +280,29 @@ SCANNERS: Dict[str, Callable] = {
 def proof_corpus(browser_path=None):
     """Small versioned execution corpus, entirely in disposable loopback labs."""
     targets = []
-    for mode in ("raw", "fixed", "json", "dialog"):
-        identity = f"proof-v1:{mode}:POST:/comments:comment:/comments:reader"
+    cases = (
+        ("raw", True, "Raw HTML image onerror assigns the submitted canary."),
+        ("fixed", False, "HTML encoding leaves the submitted image payload as text."),
+        ("json", False, "An application/json response does not execute the submitted image markup."),
+        ("dialog", False, "An ordinary application dialog never assigns the submitted canary."),
+        ("delayed", True, "After 150 ms the submitted image enters innerHTML within the 400 ms window."),
+        ("eval", True, "Native direct eval reads a function-local binding before inserting the submitted image."),
+        ("title", False, "The image payload remains inert title RCDATA without a closing title tag."),
+        ("textarea", False, "The image payload remains inert textarea RCDATA without a closing textarea tag."),
+        ("resource-callback", False, "Escaped payload plus a handler-free image requests its CID URL; HTTP callback is not execution."),
+    )
+    for mode, executes, rationale in cases:
+        identity = f"proof-v2:{mode}:POST:/comments:comment:/comments:reader"
         targets.append({"id": "proof-" + mode, "kind": "proof-lab", "mode": mode,
-                        "case_id": identity, "expected_ids": [identity] if mode == "raw" else [],
+                        "case_id": identity, "expected_ids": [identity] if executes else [],
+                        "expected_identity": {"method": "POST", "source_path": "/comments",
+                                              "parameter": "comment", "read_path": "/comments", "role": "reader"},
+                        "oracle_rationale": rationale, "observe_ms": 400,
                         "expect": {}, "browser_path": browser_path, "budget_seconds": 30})
-    return {"corpus_version": "loopback-proof/1", "targets": targets}
+    return {"corpus_version": "loopback-proof/2", "targets": targets}
 
 
-def adapt_proof(target, proof, base_url):
+def adapt_proof(target, proof, base_url, fixture_observation=None):
     """Validate producer evidence before assigning the stable fixture identity.
 
     Negative completion means only no matching canary in this labelled fixture's
@@ -298,9 +312,17 @@ def adapt_proof(target, proof, base_url):
     """
     observed = {"status": "invalid", "ok": False, "findings": [], "proof": proof,
                 "measurement": "correlated-browser-execution-not-vulnerability"}
+    if not isinstance(proof, dict):
+        return observed
     if proof.get("status") == "error":
         observed["status"] = "error"
         return observed
+    events, proofs = proof.get("events"), proof.get("proofs")
+    if (not isinstance(events, list) or not all(isinstance(e, dict) for e in events)
+            or not isinstance(proofs, list) or not all(isinstance(p, dict) for p in proofs)):
+        return observed
+    no_canary = any(e.get("stage") == "observe" and e.get("reason") == "no-canary-within-window"
+                    and e.get("kind") == "info" for e in events)
     expected_url = base_url + "/comments"
     common = (proof.get("schema") == "dxa-browser-proof/1"
               and proof.get("http_session_checked") is True
@@ -309,13 +331,19 @@ def adapt_proof(target, proof, base_url):
               and proof.get("source") == {"url": expected_url, "parameter": "comment", "method": "POST"}
               and proof.get("read_url") == expected_url
               and proof.get("read_status") == 200 and proof.get("submit_status") == 201
+              and type(proof.get("observe_ms")) is int
+              and proof["observe_ms"] == target.get("observe_ms", 400)
               and isinstance(proof.get("canary_id"), str) and bool(proof["canary_id"])
-              and not any(e.get("kind") in ("error", "skip") for e in proof.get("events", [])))
+              and all(e.get("kind") == "info" for e in events))
     if not common:
         return observed
+    if target.get("mode") == "resource-callback":
+        hits = fixture_observation.get("resource_callback_hits", {}) if isinstance(fixture_observation, dict) else {}
+        count = hits.get(proof["canary_id"], 0) if isinstance(hits, dict) else 0
+        observed["callback_count"] = count if type(count) is int and count >= 0 else 0
+        observed["callback_observed"] = observed["callback_count"] > 0
     if proof.get("status") == "execution-observed" and proof.get("execution_observed") is True:
-        proofs = proof.get("proofs", [])
-        if not proofs or any(p.get("canary_id") != proof["canary_id"]
+        if no_canary or not proofs or any(p.get("canary_id") != proof["canary_id"]
                              or p.get("frame_url") != expected_url
                              or p.get("event") != "matching-browser-canary" for p in proofs):
             return observed
@@ -323,9 +351,10 @@ def adapt_proof(target, proof, base_url):
             "finding_id": target["case_id"], "evidence": "execution-observed",
             "canary_matched": True, "triage": "unreviewed"}])
     elif (proof.get("status") == "inconclusive" and proof.get("execution_observed") is False
-          and not proof.get("proofs") and proof.get("observe_ms") == 400
-          and any(e.get("stage") == "observe" and e.get("reason") == "no-canary-within-window"
-                  for e in proof.get("events", []))):
+          and not proofs and no_canary):
+        if target.get("mode") == "resource-callback" and not observed["callback_observed"]:
+            observed["reason"] = "resource-callback-not-observed"
+            return observed
         observed["status"] = "completed"
         observed["ok"] = True
         observed["negative_window_completed"] = True
@@ -337,8 +366,12 @@ def run_dxaprove(target):
     import dxaprove
     from dxa_proof_lab import lab
     started = time.monotonic()
-    with lab(target["mode"]) as (spec, _):
-        result = adapt_proof(target, dxaprove.run(spec, target.get("browser_path")), spec["origin"])
+    with lab(target["mode"]) as (spec, state):
+        spec["observe_ms"] = target["observe_ms"]
+        proof = dxaprove.run(spec, target.get("browser_path"))
+        fixture_observation = {"resource_callback_hits": dict(state["resource_callback_hits"])}
+        result = adapt_proof(target, proof, spec["origin"], fixture_observation)
+        result["fixture_observation"] = fixture_observation
     result["wall"] = round(time.monotonic() - started, 2)
     return result
 
@@ -400,8 +433,21 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
     if target["kind"] == "proof-lab":
         if scanners != ["dxaprove"]:
             raise ValueError("cannot mix execution and candidate measurements")
-        observed = run_dxaprove(target)
         row["expected_ids"] = target["expected_ids"]
+        row["expected_identity"] = target["expected_identity"]
+        row["oracle_rationale"] = target["oracle_rationale"]
+        row["observe_ms"] = target["observe_ms"]
+        if "mode" not in target:
+            raise KeyError("mode")
+        started = time.monotonic()
+        try:
+            observed = run_dxaprove(target)
+        except Exception as exc:
+            # Preserve case coverage without exporting exception contents.
+            status = "timeout" if isinstance(exc, (TimeoutError, subprocess.TimeoutExpired)) else "error"
+            observed = {"status": status, "ok": False, "findings": [],
+                        "reason": "proof-runner-" + status,
+                        "wall": round(time.monotonic() - started, 2)}
         row["results"]["dxaprove"] = {"observed": observed, "score": score_findings(
             target["expected_ids"], observed["findings"], status=observed["status"])}
         return row
@@ -520,6 +566,9 @@ def render_md(report: Dict[str, Any]) -> str:
         exp = row["expect"]
         if "expected_ids" in row:
             lines.append(f"- expected execution case IDs: {row['expected_ids']}")
+            lines.append(f"- expected identity: {json.dumps(row['expected_identity'], sort_keys=True)}")
+            lines.append(f"- oracle: {row['oracle_rationale']}")
+            lines.append(f"- observation window: {row['observe_ms']} ms")
         else:
             lines.append(f"- expected: reflected={exp.get('reflected', 0)} stored={exp.get('stored', 0)} dom={exp.get('dom', 0)}")
         for s, r in row["results"].items():
@@ -528,6 +577,8 @@ def render_md(report: Dict[str, Any]) -> str:
                 continue
             obs = r.get("observed", {})
             sc = r.get("score", {})
+            if "callback_count" in obs:
+                lines.append(f"- matching resource callback count: {obs['callback_count']} (not JavaScript proof)")
             if observation_status(obs) != "completed":
                 lines.append(f"- **{s}**: {observation_status(obs)} (not evaluated)")
             elif "findings" in obs:

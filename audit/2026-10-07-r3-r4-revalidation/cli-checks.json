@@ -1,0 +1,62 @@
+[
+  {
+    "name": "strict-corpus",
+    "command": [
+      "bench/run.py",
+      "--proof-suite",
+      "--browser",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "--no-history",
+      "--out",
+      "audit\\2026-10-07-r3-r4-revalidation\\corpus-results.md"
+    ],
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "stdout": "[bench] wrote audit\\2026-10-07-r3-r4-revalidation\\corpus-results.md\n  dxaprove: TP=3 FP=0 FN=0 wall=16.32s\n",
+    "stderr": ""
+  },
+  {
+    "name": "missing-browser",
+    "command": [
+      "bench/run.py",
+      "--proof-suite",
+      "--browser",
+      "missing-browser-executable",
+      "--no-history",
+      "--out",
+      "audit\\2026-10-07-r3-r4-revalidation\\missing-browser.md"
+    ],
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "stdout": "[bench] wrote audit\\2026-10-07-r3-r4-revalidation\\missing-browser.md\n  dxaprove: TP=0 FP=0 FN=0 wall=5.13s\n",
+    "stderr": ""
+  },
+  {
+    "name": "real-lab-exception",
+    "command": [
+      "-c",
+      "\nimport sys\nfrom pathlib import Path\nroot = Path.cwd()\nsys.path.insert(0, str(root / \"bench\"))\nsys.path.insert(0, str(root / \"tools/dom-xss-analyzer\"))\nimport run as runner\nimport dxaprove\noriginal = dxaprove.run\ncalls = []\ndef fail_once(spec, browser_path=None):\n    calls.append(spec[\"origin\"])\n    if len(calls) == 1:\n        raise RuntimeError(\"SYNTHETIC_PRIVATE_FAILURE\")\n    return original(spec, browser_path)\ndxaprove.run = fail_once\nsys.argv = [\"bench/run.py\", \"--proof-suite\", \"--targets\", \"proof-raw,proof-fixed\",\n            \"--browser\", sys.argv[1], \"--no-history\", \"--out\", sys.argv[2]]\ncode = runner.main()\nassert len(calls) == 2\n# run_dxaprove's real lab context must release both listeners, including the\n# one whose producer raised before browser launch.\nimport socket\nfrom urllib.parse import urlsplit\nfor origin in calls:\n    with socket.socket() as probe:\n        probe.settimeout(1)\n        assert probe.connect_ex((\"127.0.0.1\", urlsplit(origin).port)) != 0\nraise SystemExit(code)\n",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "audit\\2026-10-07-r3-r4-revalidation\\injected-failure.md"
+    ],
+    "exit_code": 1,
+    "expected_exit_code": 1,
+    "stdout": "[bench] wrote audit\\2026-10-07-r3-r4-revalidation\\injected-failure.md\n  dxaprove: TP=0 FP=0 FN=0 wall=2.76s\n",
+    "stderr": ""
+  },
+  {
+    "name": "r3-demo",
+    "command": [
+      "tools/dom-xss-analyzer/dxaprove.py",
+      "--demo",
+      "--browser",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "--output",
+      "audit\\2026-10-07-r3-r4-revalidation\\demo"
+    ],
+    "exit_code": 0,
+    "expected_exit_code": 0,
+    "stdout": "[dxaprove] execution-observed\n",
+    "stderr": ""
+  }
+]

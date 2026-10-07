@@ -1,4 +1,5 @@
 import json
+import html
 import os
 from pathlib import Path
 import subprocess
@@ -117,6 +118,25 @@ def test_bad_browser_is_error_before_submit():
         assert result["events"][-1]["stage"] == "browser-start"
 
 
+def test_failed_canary_reads_are_not_completed_negative(browser_path, monkeypatch):
+    from playwright.sync_api import Frame
+
+    original = Frame.evaluate
+
+    def fail_canary_read(frame, expression, *args, **kwargs):
+        if expression == "() => window.__dxaProof || null":
+            raise RuntimeError("simulated observation failure")
+        return original(frame, expression, *args, **kwargs)
+
+    monkeypatch.setattr(Frame, "evaluate", fail_canary_read)
+    with lab("fixed") as (spec, _):
+        result = dxaprove.run(spec, browser_path)
+    assert result["status"] == "error"
+    assert not result["execution_observed"]
+    assert any(e["reason"] == "canary-observation-failed" for e in result["events"])
+    assert not any(e["reason"] == "no-canary-within-window" for e in result["events"])
+
+
 def test_cross_origin_config_is_rejected_without_requests():
     with lab() as (spec, state):
         spec["read_url"] = "http://127.0.0.1:1/"
@@ -133,4 +153,6 @@ def test_one_command_demo_outputs_same_json_html(browser_path, tmp_path):
     assert completed.returncode == 0, completed.stderr
     result = json.loads((out / "result.json").read_text())
     assert result["execution_observed"] and result["triage"] == "unreviewed"
-    assert result["canary_id"] in (out / "result.html").read_text()
+    rendered = (out / "result.html").read_text(encoding="utf-8")
+    embedded = rendered.split("<pre>", 1)[1].split("</pre>", 1)[0]
+    assert json.loads(html.unescape(embedded)) == result

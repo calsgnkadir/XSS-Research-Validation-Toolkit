@@ -5,10 +5,10 @@ Phase 2.2: DOM sink detection via a pre-user-JS init script that wraps
            Element.innerHTML/outerHTML setters, document.write/writeln,
            Range.createContextualFragment, Function, Location.href.
            Native eval is deliberately not wrapped (lexical scope preservation).
-Phase 2.3: JS execution proof - page.on('dialog') captures alert /
-           confirm / prompt / beforeunload calls; when a captured
-           dialog message contains an injected canary, severity is
-           bumped from `executable` to `proven-executable`.
+Phase 2.3: page.on('dialog') captures alert / confirm / prompt /
+           beforeunload observations. Legacy correlation helpers remain;
+           bare visits and dialogs do not establish XSS execution evidence.
+           The separate dxaprove pipeline records correlated canary execution.
 Phase 2.4: SPA route discovery - init script intercepts
            history.pushState / replaceState / hashchange to capture
            runtime navigations; static pass scans <script> text and
@@ -236,18 +236,10 @@ def sink_hits_for(sinks: List[dict], needle: str) -> List[dict]:
     return [s for s in (sinks or []) if needle in (s.get("arg") or "")]
 
 
-# Phase 2.3: JS-execution proof. The alert/confirm/prompt/beforeunload
-# handlers on window are the classical XSS demo primitives. When our
-# injected payload reaches a DOM sink and the surrounding context lets
-# JS execute, the dialog fires. Playwright surfaces it via page.on
-# ('dialog') - we record + dismiss. A dialog whose text contains our
-# canary cid is a "proven-executable" hit, the highest severity tier.
-#
-# Severity chain grown by 2.3:
-#   attr-only  ->  breakout-req  ->  executable  ->  proven-executable
-# Existing chain (dxadyn._apply_ct_gate) tops out at `executable`.
-# Phase 2.3's promotion runs in the DOM path: post-visit, if any
-# dialog carries the canary marker, we bump the finding.
+# Legacy dialog-correlation API. These helpers and their historical label
+# remain for compatibility; the current bare DOM CLI and shared evidence
+# adapter report dialogs as observations. A dialog or marker-looking string
+# alone is not correlated browser execution or a vulnerability verdict.
 
 PROVEN_EXECUTABLE = "proven-executable"
 
@@ -434,13 +426,9 @@ class BrowserSession:
     per-visit lists so callers can grade a visit without wiring event
     listeners themselves.
 
-    Later phases will extend this with:
-      - init scripts that patch DOM sinks before user JS runs (2.2)
-      - alert-dialog capture that promotes reflection -> proven-executable
-        (2.3)
-      - history.pushState listener for SPA route discovery (2.4)
-    For 2.1 we ship only the basic visit + body+console capture so the
-    scaffolding, install path, and error surface are settled first.
+    Init scripts observe supported DOM sinks and SPA routes; dialog capture
+    records observations without promoting them to execution proof. Native
+    eval is preserved and its instrumentation limit is included in summaries.
     """
 
     def __init__(self, headless: bool = True,

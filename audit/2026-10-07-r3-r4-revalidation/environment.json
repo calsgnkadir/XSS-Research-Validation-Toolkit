@@ -1,0 +1,11 @@
+{
+  "python": "3.10.11",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "playwright": "1.63.0",
+  "pytest": "9.1.1",
+  "chrome_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "chrome_version": "155.0.8059.39",
+  "browser_required": true,
+  "docker_enabled": false,
+  "dxadom_discovery": "explicit browser prepended to hints before collection"
+}

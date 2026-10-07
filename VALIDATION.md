@@ -1,4 +1,53 @@
-# Doğrulama kaydı — 2026-10-06
+# Doğrulama kaydı — 2026-10-07
+
+## 7 Ekim 2026 — R3/R4 baştan sona yeniden doğrulama
+
+- Yeni ilk tam koşu: 679 passed, 213.46 s; sonradan eklenen cleanup regresyonları
+  bu koşuda yoktu. Yeni cleanup karşı örneği: **2 failed**, 4.48 s, exit 1.
+- Düzeltme sonrası yeni tam analyzer/bench paketi: **681 passed, 223.96 s**,
+  exit 0; failure/error/skip sıfır. `test_dxadom` 73, browser proof 22,
+  cleanup 2, scope 11, benchmark 43, adapter 49, corpus 21 dahil.
+  [JUnit](audit/2026-10-07-r3-r4-revalidation/acceptance-final.xml),
+  [bütün modül sayımları](audit/2026-10-07-r3-r4-revalidation/test-summary.json).
+- Gerçek Chrome 155.0.8059.39, Playwright 1.63.0, Python 3.10.11 kullanıldı;
+  audit bootstrap açık Windows Chrome yolunu test sürecinde dxadom'a verdi.
+- Yeni ayrı strict CLI: **9/9, TP=3 FP=0 FN=0**, exit 0, wall 16.32 s.
+  Eksik browser: 9 error/0 completed/exit 1. Gerçek lab exception: 2 selected,
+  1 completed/1 error/exit 1; iki listener kapandı ve JSON/MD üretildi.
+  R3 demo exit 0 ve JSON/HTML nesne eşitliği doğrulandı.
+- R3 mevcut loopback kapsamı PASS; R4 7 Ekim yerel kapsamı PASS. Genel R4,
+  hard timeout ve uzak Linux CI açık; sonuçlar örtüşür, sayılar toplanmaz.
+  [Komutlar, kaynak incelemesi ve sınırlar](audit/2026-10-07-r3-r4-revalidation/README.md).
+
+## 7 Ekim 2026 — R4 vaka istisnası izolasyonu
+
+- Önceki kabul paketindeki 136 test ve 9/9 sonucu dosyalardan incelendi;
+  runner/scanner/fixture hash'leri başlangıç kaynaklarıyla eşleşti.
+- Yeni regresyonların düzeltme öncesi koşusu: **8 failed, 2 passed,
+  39 deselected, 1.72 s**, exit 1. [JUnit](audit/2026-10-07-r4-case-isolation/before.xml).
+- Yeni birleşik yerel kabul: **146 passed, 78.86 s**, exit 0, skip yok.
+  [JUnit](audit/2026-10-07-r4-case-isolation/acceptance.xml).
+- Yeni strict Chrome CLI: **9/9 completed, TP=3 FP=0 FN=0**, diğer durum
+  sayaçları sıfır, exit 0, wall 17.23 s.
+  [JSON](audit/2026-10-07-r4-case-isolation/corpus-results.json).
+- İstisna enjeksiyonları aynı süreçte gerçek main/scorer/renderer akışını
+  doğrular; hard timeout veya OS crash/kill testi değildir. Uzak CI yapılmadı.
+  Koşular örtüşür; sayılar toplanmaz. [Komutlar ve sınırlar](audit/2026-10-07-r4-case-isolation/README.md).
+
+## 7 Ekim 2026 — native R4 corpus/CI turu
+
+- Değişiklik öncesi scope/R3/benchmark/adapter: **89 passed, 51.61 s**, skip yok.
+- Frame canary okuma hatası karşı örneği düzeltmeden önce **1 failed,
+  21 deselected**: error yerine inconclusive üretiliyordu.
+- Son birleşik kabul: **136 passed, 80.88 s**, skip yok, exit 0.
+  [JUnit](audit/2026-10-07-r4-native/acceptance.xml).
+- Strict gerçek Chrome CLI: **9/9 completed, TP=3 FP=0 FN=0**, error/skip yok,
+  exit 0. [JSON](audit/2026-10-07-r4-native/corpus-results.json).
+- Bağımsız oracle, JS-kapalı gerçek callback ve malformed/incomplete kontrolleri
+  dahil. Koşular örtüşür; sayılar toplanmaz. Uzak CI çalıştırılmadı.
+- [Komutlar, roller ve sınırlar](audit/2026-10-07-r4-native/README.md).
+
+Aşağıdaki kayıtlar önceki teslimlerin sonuçlarıdır.
 
 ## Push öncesi belge temizliği doğrulaması
 

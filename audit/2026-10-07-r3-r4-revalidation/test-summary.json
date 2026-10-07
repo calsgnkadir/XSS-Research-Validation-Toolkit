@@ -1,0 +1,170 @@
+{
+  "suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "681",
+    "time": "223.952",
+    "timestamp": "2026-10-07T22:30:57.595760+03:00",
+    "hostname": "local-windows"
+  },
+  "modules": {
+    "tools.dom-xss-analyzer.test_auth_guards": {
+      "tests": 15,
+      "passed": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_blind_correlation": {
+      "tests": 37,
+      "passed": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_blind_journal": {
+      "tests": 18,
+      "passed": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_browser_proof": {
+      "tests": 22,
+      "passed": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_crawl_scope": {
+      "tests": 11,
+      "passed": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_csrf": {
+      "tests": 20,
+      "passed": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dom_cli_evidence": {
+      "tests": 6,
+      "passed": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dxa": {
+      "tests": 52,
+      "passed": 52,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dxa2dyn": {
+      "tests": 5,
+      "passed": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dxa_callback": {
+      "tests": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dxadom": {
+      "tests": 73,
+      "passed": 73,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_dxadyn": {
+      "tests": 169,
+      "passed": 169,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_flow": {
+      "tests": 34,
+      "passed": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_http_evidence": {
+      "tests": 12,
+      "passed": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_json_transport": {
+      "tests": 7,
+      "passed": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_proof_cleanup": {
+      "tests": 2,
+      "passed": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_r1_contract": {
+      "tests": 30,
+      "passed": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tools.dom-xss-analyzer.test_r2_contract": {
+      "tests": 30,
+      "passed": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_bench": {
+      "tests": 43,
+      "passed": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_proof_adapter": {
+      "tests": 49,
+      "passed": 49,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_proof_corpus": {
+      "tests": 21,
+      "passed": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "redacted_xml": [
+    "audit/2026-10-07-r4-native/acceptance.xml",
+    "audit/2026-10-07-r4-case-isolation/acceptance.xml",
+    "audit/2026-10-07-r4-case-isolation/before.xml",
+    "audit/2026-10-07-r3-r4-revalidation/acceptance-final.xml",
+    "audit/2026-10-07-r3-r4-revalidation/acceptance.xml",
+    "audit/2026-10-07-r3-r4-revalidation/cleanup-before.xml"
+  ],
+  "redaction": "Hostnames, user-specific stack paths and runtime memory addresses only; original files kept in ignored local storage; outcomes/times unchanged."
+}
