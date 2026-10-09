@@ -1,0 +1,754 @@
+{
+  "run_at": "2026-10-09T09:06:00.857960+00:00",
+  "measurement": "correlated-browser-execution; not confirmed vulnerability accuracy",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "runner_sha256": "f1887b1db2cc4473e954d3f70d22e05c32e2077249d36a4dc109d6820d7d664c",
+    "scanner_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "fixture_sha256": "ed7e7d9ac780c23de2891042f14c0e5b4aa9a90b77b7ab79ec66aad63428ef1e",
+    "corpus_sha256": "dda4b14bc04b01152a97717d80524a131c585875c9c2693c4f9a3593dddfd118"
+  },
+  "corpus_version": "loopback-proof/2",
+  "scanners": [
+    "dxaprove"
+  ],
+  "rows": [
+    {
+      "id": "proof-raw",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [
+              {
+                "finding_id": "proof-v2:raw:POST:/comments:comment:/comments:reader",
+                "evidence": "execution-observed",
+                "canary_matched": true,
+                "triage": "unreviewed"
+              }
+            ],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "execution-observed",
+              "triage": "unreviewed",
+              "execution_observed": true,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [],
+              "proofs": [
+                {
+                  "canary_id": "dxaf7115d8e4e7517f37363204e8cbbd973",
+                  "frame_url": "http://127.0.0.1:61657/comments",
+                  "event": "matching-browser-canary"
+                }
+              ],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:19.408470+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:61657/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:61657/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxaf7115d8e4e7517f37363204e8cbbd973",
+              "variant": "image",
+              "payload_sha256": "c0b4e16fe7e9924ca274714fc83a88378f955879bf6374150de1e6a2d33d08f5",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 5.42
+          },
+          "score": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [
+        "proof-v2:raw:POST:/comments:comment:/comments:reader"
+      ],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "Raw HTML image onerror assigns the submitted canary.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-fixed",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:24.560165+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:57159/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:57159/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa87c12960d27f6b97ddcbdb99449fe262",
+              "variant": "image",
+              "payload_sha256": "67e5882767750e0b44d85469c7afdef4c7c30b962835c2aa307dd4dd3ceb4060",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 3.58
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "HTML encoding leaves the submitted image payload as text.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-json",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:28.083281+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:64379/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:64379/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa728fd0f4d609d3cd23a1d7fa47b506a8",
+              "variant": "image",
+              "payload_sha256": "7c12f10eb2182a7a0ad771ef62da67660c4af8860f6fbe2d854e8a60acf354c6",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 3.19
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "An application/json response does not execute the submitted image markup.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-dialog",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:31.302801+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:52481/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:52481/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa62b41aa7c50bac84b8d8bbf45059a59d",
+              "variant": "image",
+              "payload_sha256": "b71360960a29fa271addc0c65975aac5a237f9dee05c6ba63e4cad6e3bb57372",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 3.58
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "An ordinary application dialog never assigns the submitted canary.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-delayed",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [
+              {
+                "finding_id": "proof-v2:delayed:POST:/comments:comment:/comments:reader",
+                "evidence": "execution-observed",
+                "canary_matched": true,
+                "triage": "unreviewed"
+              }
+            ],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "execution-observed",
+              "triage": "unreviewed",
+              "execution_observed": true,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [],
+              "proofs": [
+                {
+                  "canary_id": "dxa44112d2c34c757c2c4e8242c2dbe6ecb",
+                  "frame_url": "http://127.0.0.1:49689/comments",
+                  "event": "matching-browser-canary"
+                }
+              ],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:34.977592+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:49689/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:49689/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa44112d2c34c757c2c4e8242c2dbe6ecb",
+              "variant": "image",
+              "payload_sha256": "fdfd1a3b88c975d8d0333c1ff4861a7d3a82b0305ec2070f3760f715e8254c63",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 4.05
+          },
+          "score": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [
+        "proof-v2:delayed:POST:/comments:comment:/comments:reader"
+      ],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "After 150 ms the submitted image enters innerHTML within the 400 ms window.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-eval",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [
+              {
+                "finding_id": "proof-v2:eval:POST:/comments:comment:/comments:reader",
+                "evidence": "execution-observed",
+                "canary_matched": true,
+                "triage": "unreviewed"
+              }
+            ],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "execution-observed",
+              "triage": "unreviewed",
+              "execution_observed": true,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [],
+              "proofs": [
+                {
+                  "canary_id": "dxae468a58a681a4c48073e37d46c3ea500",
+                  "frame_url": "http://127.0.0.1:52104/comments",
+                  "event": "matching-browser-canary"
+                }
+              ],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:39.152535+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:52104/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:52104/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxae468a58a681a4c48073e37d46c3ea500",
+              "variant": "image",
+              "payload_sha256": "27c595028a51d0ec8a9ba180be793b6ca76d3cc7c0b1424084f373a245c2ecd9",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 3.78
+          },
+          "score": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [
+        "proof-v2:eval:POST:/comments:comment:/comments:reader"
+      ],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "Native direct eval reads a function-local binding before inserting the submitted image.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-title",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:42.988541+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:51806/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:51806/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa1f3033c1d82be42a6a9cb19fa6d7e968",
+              "variant": "image",
+              "payload_sha256": "83abf4d265c5fcf785d79b7819e22b086e19ef27c5ce9be787f3107e31708626",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 4.75
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "The image payload remains inert title RCDATA without a closing title tag.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-textarea",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:47.969933+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:60574/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:60574/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxae52d5c1d148faf3195730b935340b32a",
+              "variant": "image",
+              "payload_sha256": "d1e6747d411b191b9dfdf58e53c3da83b9484b7c41fc16508bf9c1ffce2d42c9",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {}
+            },
+            "wall": 8.0
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "The image payload remains inert textarea RCDATA without a closing textarea tag.",
+      "observe_ms": 400
+    },
+    {
+      "id": "proof-resource-callback",
+      "expect": {},
+      "results": {
+        "dxaprove": {
+          "observed": {
+            "status": "completed",
+            "ok": true,
+            "findings": [],
+            "proof": {
+              "schema": "dxa-browser-proof/1",
+              "status": "inconclusive",
+              "triage": "unreviewed",
+              "execution_observed": false,
+              "http_session_checked": true,
+              "browser_session_checked": true,
+              "events": [
+                {
+                  "stage": "observe",
+                  "kind": "info",
+                  "reason": "no-canary-within-window"
+                }
+              ],
+              "proofs": [],
+              "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+              "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+              "python": "3.10.11",
+              "platform": "Windows",
+              "created_at": "2026-10-09T09:05:55.887024+00:00",
+              "observe_ms": 400,
+              "read_url": "http://127.0.0.1:57656/comments",
+              "session_role": "reader",
+              "source": {
+                "url": "http://127.0.0.1:57656/comments",
+                "parameter": "comment",
+                "method": "POST"
+              },
+              "playwright": "1.63.0",
+              "browser_version": "155.0.8059.39",
+              "browser_header_names": [],
+              "canary_id": "dxa2c07b616ab0511537858bd9f5103b9df",
+              "variant": "image",
+              "payload_sha256": "c6827afa654fcdba9bdf1867d8167fa5e2ca6364fe9d3dac6409abde05462489",
+              "submit_status": 201,
+              "read_status": 200,
+              "routes": {
+                "runtime": [],
+                "budget": 32
+              }
+            },
+            "measurement": "correlated-browser-execution-not-vulnerability",
+            "callback_count": 1,
+            "callback_observed": true,
+            "negative_window_completed": true,
+            "fixture_observation": {
+              "resource_callback_hits": {
+                "dxa2c07b616ab0511537858bd9f5103b9df": 1
+              }
+            },
+            "wall": 5.8
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "evaluated": true
+          }
+        }
+      },
+      "expected_ids": [],
+      "expected_identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/comments",
+        "role": "reader"
+      },
+      "oracle_rationale": "Escaped payload plus a handler-free image requests its CID URL; HTTP callback is not execution.",
+      "observe_ms": 400
+    }
+  ],
+  "totals": {
+    "dxaprove": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "wall": 42.15,
+      "selected": 9,
+      "completed": 9,
+      "skipped": 0,
+      "error": 0,
+      "timeout": 0,
+      "invalid": 0,
+      "inconclusive": 0
+    }
+  },
+  "command": [
+    "bench/run.py",
+    "--proof-suite",
+    "--browser",
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "--no-history",
+    "--out",
+    "audit/2026-10-09-resume/proof-retest.md"
+  ]
+}

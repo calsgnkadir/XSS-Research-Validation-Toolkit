@@ -89,8 +89,8 @@ def test_taint_propagates_across_assignments():
 
 # --- v3.8: cross-method sanitizer awareness ---------------------------------
 
-def test_taint_broken_by_local_sanitize_call_java():
-    # sanitize(...) in RHS -> cid does NOT inherit taint from inbound
+def test_raw_provenance_preserved_by_local_sanitize_call_java():
+    # A local helper name cannot establish sanitizer semantics.
     lines = [
         'String inbound = request.getParameter("q");',
         'String cid = sanitize(inbound);',
@@ -98,28 +98,28 @@ def test_taint_broken_by_local_sanitize_call_java():
     ]
     tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, False, dxa.JAVA_ASSIGN)
     assert "inbound" in tainted, "the source assign is still tainted"
-    assert "cid" not in tainted, "sanitize(...) must break the chain"
+    assert "cid" in tainted, "sanitize(...) cannot break the chain by name"
 
 
-def test_taint_broken_by_local_clean_call_java():
+def test_raw_provenance_preserved_by_local_clean_call_java():
     lines = [
         'String raw = request.getHeader("X");',
         'String safe = cleanInput(raw);',
     ]
     tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, False, dxa.JAVA_ASSIGN)
     assert "raw" in tainted
-    assert "safe" not in tainted
+    assert "safe" in tainted
 
 
-def test_taint_broken_by_owasp_encoder_java():
-    # Existing OWASP escape families should also cut the taint at assign-time
+def test_raw_provenance_preserved_by_owasp_encoder_java():
+    # HTML escaping retains provenance for non-HTML sinks.
     lines = [
         'String q = request.getParameter("q");',
         'String out = Encode.forHtml(q);',
     ]
     tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, False, dxa.JAVA_ASSIGN)
     assert "q" in tainted
-    assert "out" not in tainted
+    assert "out" in tainted
 
 
 def test_taint_still_flows_without_sanitize_java():
@@ -132,7 +132,7 @@ def test_taint_still_flows_without_sanitize_java():
     assert "q" in tainted and "out" in tainted
 
 
-def test_ternary_with_sanitize_in_one_branch_breaks_taint():
+def test_ternary_with_unknown_sanitizer_keeps_taint():
     # The CorrelationIdFilter hotel-platform shape: ternary with sanitize
     lines = [
         'String inbound = request.getHeader("X-Correlation-Id");',
@@ -140,7 +140,7 @@ def test_ternary_with_sanitize_in_one_branch_breaks_taint():
     ]
     tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, False, dxa.JAVA_ASSIGN)
     assert "inbound" in tainted
-    assert "cid" not in tainted, "ternary with sanitize() branch must break taint"
+    assert "cid" in tainted, "ternary with sanitize() branch cannot break taint by name"
 
 
 def test_sanitize_hint_python_variant():
@@ -151,7 +151,7 @@ def test_sanitize_hint_python_variant():
     ]
     tainted = dxa.compute_taint(lines, dxa.PY_SOURCES, False, dxa.PYTHON_ASSIGN)
     assert "q" in tainted
-    assert "safe" not in tainted
+    assert "safe" in tainted
     assert "raw" in tainted
 
 
@@ -298,8 +298,8 @@ def test_sanitize_covers_when_only_call_in_ternary_hotel_platform_shape():
     tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, msg_active=True,
                                 assign_re=dxa.JAVA_ASSIGN)
     assert "inbound" in tainted
-    assert "cid" not in tainted, (
-        f"sanitize() in ternary must clear taint; got tainted={tainted}")
+    assert "cid" in tainted, (
+        f"sanitize() in ternary must retain taint; got tainted={tainted}")
 
 
 def test_sanitize_does_NOT_cover_when_concat_leaks_tainted_var():
@@ -333,51 +333,18 @@ def test_sanitize_does_NOT_cover_when_source_appears_after():
         f"residual has request.getParameter, must leak; tainted={tainted}")
 
 
-def test_known_safe_funcs_hard_clear_even_if_residual_looks_tainted():
-    """Tier 1 whitelist: even a construct like
-        String out = StringEscapeUtils.escapeHtml4(a) + notSuspicious;
-    (where `notSuspicious` is NOT tainted) does not propagate. This just
-    confirms hard-clear works. The FN case with `+ b` where b IS tainted
-    is a different story - not tested here because the tier-1 whitelist
-    intentionally trusts library escapers to sanitize their INPUT; the
-    subsequent concat with other data is out of scope for the escaper."""
+def test_html_encoder_preserves_raw_but_mitigates_html_view():
     lines = ['String a = request.getParameter("a");',
-             'String out = StringEscapeUtils.escapeHtml4(a);',
-             'response.getWriter().print(out);']
-    tainted = dxa.compute_taint(lines, dxa.JAVA_SOURCES, msg_active=True,
-                                assign_re=dxa.JAVA_ASSIGN)
-    assert "a" in tainted
-    assert "out" not in tainted
+             'String out = StringEscapeUtils.escapeHtml4(a);']
+    assert "out" in dxa.compute_taint(lines, dxa.JAVA_SOURCES, False, dxa.JAVA_ASSIGN)
+    assert "out" not in dxa.compute_taint(lines, dxa.JAVA_SOURCES, False,
+                                          dxa.JAVA_ASSIGN, html_context=True)
 
 
-def test_known_safe_funcs_pattern_matches_the_key_escapers():
-    """The whitelist regex is the tier-1 gate; if a canonical escaper's
-    spelling drops off it, we silently switch to tier-2 (soft-clear) for
-    that call, which is a regression. Lock the essential ones."""
-    for expr in [
-        "html.escape(x)",
-        "htmlspecialchars($x, ENT_QUOTES)",
-        "StringEscapeUtils.escapeHtml4(x)",
-        "HttpUtility.HtmlEncode(x)",
-        "DOMPurify.sanitize(x)",
-        "bleach.clean(x)",
-        "Encode.forHtml(x)",
-        "WebUtility.HtmlEncode(x)",
-    ]:
-        assert dxa._KNOWN_SAFE_FUNCS.search(expr), (
-            f"tier-1 whitelist lost {expr!r}")
-
-
-def test_sanitize_covers_rhs_paren_tracking_loss_is_conservative():
-    """If _sanitize_covers_rhs can't cleanly track parens (RHS malformed
-    or truncated by preprocessing), it should return False so taint stays.
-    Fewer FN is safer than fewer FP for this edge."""
-    # unclosed sanitize call - depth never returns to 0
-    rhs = "sanitize(request.body"
-    assert dxa._sanitize_covers_rhs(
-        rhs, dxa.PY_SOURCES, msg_active=True, tainted=set()
-    ) is False
-
+def test_unclosed_encoder_preserves_taint():
+    lines = ['q = request.args["q"]', 'out = html.escape(q']
+    assert "out" in dxa.compute_taint(lines, dxa.PY_SOURCES, False,
+                                      dxa.PYTHON_ASSIGN, html_context=True)
 
 # --- Phase 0.4: cross-file basic taint (2026-09-26) -------------------------
 #

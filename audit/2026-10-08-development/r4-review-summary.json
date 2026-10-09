@@ -1,0 +1,42 @@
+{
+  "exit_code": 0,
+  "python": "3.10.11",
+  "browser_required": true,
+  "docker_enabled": false,
+  "paths": [
+    "bench/test_runner_isolation.py",
+    "bench/test_proof_adapter.py",
+    "bench/test_bench.py",
+    "bench/test_proof_corpus.py"
+  ],
+  "modules": {
+    "bench.test_runner_isolation": {
+      "tests": 17,
+      "passed": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_proof_adapter": {
+      "tests": 49,
+      "passed": 49,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_bench": {
+      "tests": 43,
+      "passed": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "bench.test_proof_corpus": {
+      "tests": 21,
+      "passed": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

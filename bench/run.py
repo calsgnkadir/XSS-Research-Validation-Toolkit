@@ -17,13 +17,16 @@ import argparse
 import datetime as _dt
 import json
 import hashlib
+import math
 import platform
+import re
 import os
 import pathlib
 import shutil
 import subprocess
 import sys
 import time
+import uuid
 from typing import Any, Callable, Dict, List
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -76,13 +79,13 @@ def _docker_available() -> bool:
     return shutil.which("docker") is not None
 
 
-def _docker_compose_up(compose_file: str, timeout: int = 120) -> tuple[bool, str]:
+def _docker_compose_up(compose_file: str, timeout: int = 120, *, project: str) -> tuple[bool, str]:
     """Bring the stack up in detached mode. Returns (ok, msg)."""
     if not pathlib.Path(compose_file).is_file():
         return False, f"compose file not found: {compose_file}"
     try:
         proc = subprocess.run(
-            ["docker", "compose", "-f", compose_file, "up", "-d"],
+            ["docker", "compose", "-p", project, "-f", compose_file, "up", "-d"],
             capture_output=True, text=True, timeout=timeout, check=False,
         )
         if proc.returncode != 0:
@@ -94,45 +97,125 @@ def _docker_compose_up(compose_file: str, timeout: int = 120) -> tuple[bool, str
     return True, "up"
 
 
-def _docker_compose_down(compose_file: str, timeout: int = 60) -> None:
+def _docker_compose_down(compose_file: str, timeout: int = 60, *, project: str) -> bool:
     """Best-effort teardown. A stuck container is the operator's problem;
     the runner never blocks longer than `timeout` on cleanup."""
     try:
-        subprocess.run(
-            ["docker", "compose", "-f", compose_file, "down", "-v"],
+        proc = subprocess.run(
+            ["docker", "compose", "-p", project, "-f", compose_file, "down"],
             capture_output=True, text=True, timeout=timeout, check=False,
         )
+        return proc.returncode == 0
     except Exception:                                    # noqa: BLE001
-        pass
+        return False
 
 
 def _wait_for_http(url: str, deadline_s: float = 60) -> bool:
-    """Poll the target URL until 2xx/3xx or the deadline expires."""
+    """Poll only the supplied endpoint; never follow redirects or proxies."""
     import urllib.request
-    end = time.time() + deadline_s
-    while time.time() < end:
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    end = time.monotonic() + deadline_s
+    while time.monotonic() < end:
         try:
             req = urllib.request.Request(url, method="GET")
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                if 200 <= resp.status < 400:
+            with opener.open(req, timeout=min(3, max(.001, end - time.monotonic()))) as resp:
+                if 200 <= resp.status < 300:
                     return True
+        except urllib.error.HTTPError as exc:
+            if 300 <= exc.code < 400:
+                return True  # reachability only; redirect destination was not contacted
         except Exception:                                # noqa: BLE001
             pass
-        time.sleep(2)
+        time.sleep(min(2, max(0, end - time.monotonic())))
     return False
 
 
 class DockerTarget:
-    """Context manager wrapping docker-compose up/down around a scan."""
+    """Own a unique disposable Compose project, never an existing stack.
+
+    Persistent volumes are retained. Shared resources and host mounts are
+    refused before startup; Compose files are trusted local lab definitions.
+    """
 
     def __init__(self, compose_file: str, ready_url: str, ready_timeout: int = 90):
         self.compose_file = compose_file
         self.ready_url = ready_url
         self.ready_timeout = ready_timeout
         self.up_ok = False
+        self.project = "dxa-bench-" + uuid.uuid4().hex
+        self._owns_project = False
+        self.cleanup_failed = False
+
+    def _preflight(self):
+        from urllib.parse import urlsplit
+        endpoint = urlsplit(self.ready_url)
+        if (endpoint.scheme not in ("http", "https") or endpoint.hostname not in ("127.0.0.1", "::1")
+                or endpoint.username is not None or endpoint.password is not None):
+            raise ValueError("readiness endpoint must be explicit loopback")
+        ready_port = endpoint.port or (443 if endpoint.scheme == "https" else 80)
+        proc = subprocess.run(
+            ["docker", "compose", "-p", self.project, "-f", self.compose_file,
+             "config", "--format", "json"],
+            capture_output=True, text=True, timeout=30, check=False)
+        if proc.returncode:
+            raise ValueError("compose configuration unavailable")
+        config = json.loads(proc.stdout)
+        services = config.get("services", {})
+        if not services:
+            raise ValueError("compose services missing")
+        ready_published = False
+        for service in services.values():
+            image = service.get("image", "")
+            if (not re.fullmatch(r"(?:sha256:|[^\s@]+@sha256:)[0-9a-f]{64}", image)
+                    or service.get("pull_policy") != "never" or "build" in service):
+                raise ValueError("reviewed local immutable image required")
+            if any(service.get(key) for key in ("container_name", "external_links", "volumes_from")):
+                raise ValueError("shared container resources refused")
+            if any(service.get(key) for key in ("network_mode", "pid", "ipc", "privileged", "devices")):
+                raise ValueError("shared host resources refused")
+            if any(mount.get("type") != "volume" for mount in service.get("volumes", [])):
+                raise ValueError("host mounts refused")
+            for port in service.get("ports", []):
+                if port.get("host_ip") not in ("127.0.0.1", "::1"):
+                    raise ValueError("non-loopback published port refused")
+                if (port.get("host_ip") == endpoint.hostname
+                        and str(port.get("published")) == str(ready_port)
+                        and port.get("protocol", "tcp") == "tcp"):
+                    ready_published = True
+        if not ready_published:
+            raise ValueError("readiness endpoint is not published by this project")
+        for kind in ("volumes", "networks", "secrets", "configs"):
+            for name, resource in config.get(kind, {}).items():
+                if resource.get("external") or resource.get("driver_opts"):
+                    raise ValueError("shared compose resources refused")
+                if resource.get("driver", "local" if kind == "volumes" else "bridge") != (
+                        "local" if kind == "volumes" else "bridge"):
+                    raise ValueError("nondefault resource driver refused")
+                if resource.get("name", self.project + "_" + name) != self.project + "_" + name:
+                    raise ValueError("unowned compose resource name")
+                if kind in ("secrets", "configs"):
+                    raise ValueError("host configuration resources refused")
+        for kind, field in (("container", "ID"), ("volume", "Name"), ("network", "ID")):
+            inventory = subprocess.run(
+                ["docker", kind, "ls"] + (["--all"] if kind == "container" else []) +
+                ["--filter", "label=com.docker.compose.project=" + self.project,
+                 "--format", "{{." + field + "}}"],
+                capture_output=True, text=True, timeout=30, check=False)
+            if inventory.returncode or inventory.stdout.strip():
+                raise ValueError("project ownership collision or unavailable inventory")
 
     def __enter__(self):
-        ok, msg = _docker_compose_up(self.compose_file)
+        try:
+            self._preflight()
+        except Exception:
+            self._up_msg = "compose ownership preflight failed"
+            return self
+        # Ownership is established before up so a partial startup is cleaned.
+        self._owns_project = True
+        ok, msg = _docker_compose_up(self.compose_file, project=self.project)
         self.up_ok = ok
         if not ok:
             self._up_msg = msg
@@ -142,11 +225,12 @@ class DockerTarget:
             self._up_msg = "container up but URL never became reachable"
             self.up_ok = False
         else:
-            self._up_msg = "ready"
+            self._up_msg = "HTTP reachable; application setup and scan oracle not verified"
         return self
 
     def __exit__(self, *exc):
-        _docker_compose_down(self.compose_file)
+        if self._owns_project:
+            self.cleanup_failed = not _docker_compose_down(self.compose_file, project=self.project)
 
 
 # ---------- scanner adapters ----------
@@ -361,7 +445,7 @@ def adapt_proof(target, proof, base_url, fixture_observation=None):
     return observed
 
 
-def run_dxaprove(target):
+def _run_dxaprove_local(target):
     sys.path.insert(0, str(DXADYN.parent))
     import dxaprove
     from dxa_proof_lab import lab
@@ -374,6 +458,58 @@ def run_dxaprove(target):
         result["fixture_observation"] = fixture_observation
     result["wall"] = round(time.monotonic() - started, 2)
     return result
+
+
+def run_dxaprove(target):
+    """Run a disposable proof lab under a parent-enforced wall-clock budget."""
+    sys.path.insert(0, str(HERE))
+    from process_control import OwnedProcess
+    budget = float(target.get("budget_seconds", 30))
+    if not math.isfinite(budget) or budget <= 0:
+        raise ValueError("invalid proof budget")
+    started = time.monotonic()
+    worker = OwnedProcess([sys.executable, str(HERE / "proof_worker.py")])
+    try:
+        output = worker.communicate(json.dumps(target, allow_nan=False),
+                                    max(0.001, budget - (time.monotonic() - started)))
+        if worker.proc.returncode:
+            raise RuntimeError("proof worker failed")
+        result = json.loads(output)
+    finally:
+        worker.close()
+    if isinstance(result, dict):
+        result["wall"] = round(time.monotonic() - started, 2)
+    return result
+
+
+def validate_proof_result(observed):
+    """Reject malformed adapter output before it reaches scoring or totals."""
+    if not isinstance(observed, dict):
+        raise ValueError("invalid adapter object")
+    status = observed.get("status")
+    if status not in ("completed", "error", "timeout", "invalid", "inconclusive", "skipped"):
+        raise ValueError("invalid adapter status")
+    findings = observed.get("findings")
+    if not isinstance(findings, list) or any(not isinstance(f, dict) for f in findings):
+        raise ValueError("invalid adapter findings")
+    for finding in findings:
+        if (not isinstance(finding.get("finding_id"), str) or not finding["finding_id"]
+                or finding.get("evidence") != "execution-observed"
+                or finding.get("canary_matched") is not True):
+            raise ValueError("invalid adapter finding")
+    wall = observed.get("wall", 0)
+    if type(wall) not in (int, float) or not math.isfinite(wall) or wall < 0:
+        raise ValueError("invalid adapter wall time")
+    if observed.get("ok") is not (status == "completed"):
+        raise ValueError("contradictory adapter completion")
+    if status == "completed" and not findings and observed.get("negative_window_completed") is not True:
+        raise ValueError("missing completed observation window")
+    if findings and observed.get("negative_window_completed"):
+        raise ValueError("contradictory positive and negative observation")
+    if status != "completed" and findings:
+        raise ValueError("incomplete adapter findings")
+    json.dumps(observed, allow_nan=False)
+    return observed
 
 
 # ---------- scoring ----------
@@ -428,7 +564,6 @@ def strict_failed(report):
 
 def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
     row: Dict[str, Any] = {"id": target["id"], "expect": target["expect"], "results": {}}
-    budget = int(target.get("budget_seconds", 60))
 
     if target["kind"] == "proof-lab":
         if scanners != ["dxaprove"]:
@@ -441,7 +576,7 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
             raise KeyError("mode")
         started = time.monotonic()
         try:
-            observed = run_dxaprove(target)
+            observed = validate_proof_result(run_dxaprove(target))
         except Exception as exc:
             # Preserve case coverage without exporting exception contents.
             status = "timeout" if isinstance(exc, (TimeoutError, subprocess.TimeoutExpired)) else "error"
@@ -452,6 +587,7 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
             target["expected_ids"], observed["findings"], status=observed["status"])}
         return row
 
+    budget = int(target.get("budget_seconds", 60))
     if target["kind"] == "mock":
         with start_mock(target["handler"]) as srv:
             base_url = f"http://127.0.0.1:{srv.port}"
@@ -476,22 +612,27 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
         ready_url = target.get("url") or ""
         with DockerTarget(compose_file, ready_url,
                           ready_timeout=target.get("ready_timeout", 90)) as dt:
+            row["docker_project"] = dt.project
             if not dt.up_ok:
                 row["results"]["_note"] = f"docker setup: {dt._up_msg}"
                 for name in scanners:
                     row["results"][name] = {"observed": {"status": "error", "ok": False},
                                             "score": {"tp": 0, "fp": 0, "fn": 0}}
-                return row
-            # base_url is the target URL directly; the scanner adapters
-            # split off the port from it just as they do for mock targets.
-            base_url = ready_url.rstrip("/")
+            else:
+                base_url = ready_url.rstrip("/")
+                for name in scanners:
+                    fn = SCANNERS[name]
+                    observed = fn(target, base_url, budget)
+                    row["results"][name] = {
+                        "observed": observed,
+                        "score": score(target["expect"], observed),
+                    }
+        if dt.cleanup_failed:
+            row["results"]["_note"] = "docker cleanup failed; owned project retained for operator retry"
             for name in scanners:
-                fn = SCANNERS[name]
-                observed = fn(target, base_url, budget)
                 row["results"][name] = {
-                    "observed": observed,
-                    "score": score(target["expect"], observed),
-                }
+                    "observed": {"status": "error", "ok": False, "reason": "docker-cleanup-failed"},
+                    "score": {"tp": 0, "fp": 0, "fn": 0}}
         return row
 
     row["results"]["_note"] = f"kind={target['kind']} not runnable in this session"
@@ -563,6 +704,8 @@ def render_md(report: Dict[str, Any]) -> str:
     lines.append("")
     for row in report["rows"]:
         lines.append(f"### {row['id']}")
+        if "docker_project" in row:
+            lines.append(f"- owned Docker project: `{row['docker_project']}` (volumes retained)")
         exp = row["expect"]
         if "expected_ids" in row:
             lines.append(f"- expected execution case IDs: {row['expected_ids']}")

@@ -1,5 +1,12 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+9 Ekim ilerleme kaydı: R4 hard timeout/süreç temizliği, R8 statik context ve
+R9 callback/Docker guard değişiklikleri tam yerel tekrarda **824 passed**;
+ayrı K01 HTTP fixture **2 passed**, Chrome proof **9/9, TP=3 FP=0 FN=0**.
+[Kabul ve kapsam](audit/2026-10-09-resume/README.md). Bu dar teslim genel
+R4/R8/R9 kutularını kapatmaz; gerçek ürün bootstrap/port-discovery adapter'ı ve
+uzak Linux CI açık kalır. Aşağıdaki 6–7 Ekim test sayıları tarihsel kanıttır.
+
 6 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.

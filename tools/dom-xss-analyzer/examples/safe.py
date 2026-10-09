@@ -1,6 +1,7 @@
-# Escaped/safe equivalents. dxa's escape-family gate should keep these
-# findings at MEDIUM (or below) via the proximity check.
-from flask import Flask, request, Markup, render_template_string
+# HTML-body escaping and template-parameter examples. The linter keeps these
+# candidates below HIGH; this is neither runtime proof nor sanitizer validation.
+from flask import Flask, request, render_template_string
+from markupsafe import Markup
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 import html
@@ -11,11 +12,11 @@ app = Flask(__name__)
 fapi = FastAPI()
 
 
-# html.escape wraps the tainted value on the same line
+# User input is a template parameter, never template source (SSTI boundary).
 @app.get("/search")
 def search():
     q = request.args.get("q", "")
-    return render_template_string("<h1>Results for " + html.escape(q) + "</h1>")
+    return render_template_string("<h1>Results for {{ q }}</h1>", q=q)
 
 
 # markupsafe.escape same-line

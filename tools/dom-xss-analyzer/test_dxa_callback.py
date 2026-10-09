@@ -194,8 +194,8 @@ def test_get_c_cid_returns_1x1_gif_and_records(server):
     assert server.db.count() == 1
     row = server.db.list_all()[0]
     assert row["cid"] == "dxaHIT01"
-    assert row["user_agent"] == "TestUA"
-    assert row["referer"] == "https://victim.test/"
+    assert row["user_agent"] is None
+    assert row["referer"] is None
     assert row["method"] == "GET"
 
 
@@ -208,7 +208,7 @@ def test_get_c_cid_js_returns_javascript(server):
     assert server.db.list_for_cid("dxaJS01")[0]["cid"] == "dxaJS01"
 
 
-def test_post_c_cid_stores_body_preview(server):
+def test_post_c_cid_discards_body(server):
     payload = b'{"stolen": "cookie=abc; token=xyz"}'
     status, hdrs, body = _post(
         server.port, "/c/dxaPOST", body=payload,
@@ -217,17 +217,15 @@ def test_post_c_cid_stores_body_preview(server):
     parsed = json.loads(body)
     assert parsed == {"ok": True}
     row = server.db.list_for_cid("dxaPOST")[0]
-    assert row["body_preview"] == payload.decode()
+    assert row["body_preview"] is None
 
 
-def test_post_body_truncated_at_preview_limit(server):
-    """Large POSTs are truncated to 2 KiB; the tail must be dropped so
-    the DB doesn't grow unbounded per hit."""
+def test_post_body_over_limit_rejected(server):
+    """Oversize requests cannot drain unlimited bytes or create a hit."""
     payload = b"A" * 8000
     status, _, _ = _post(server.port, "/c/dxaBIG", body=payload)
-    assert status == 200
-    row = server.db.list_for_cid("dxaBIG")[0]
-    assert len(row["body_preview"]) <= dxa_callback._BODY_PREVIEW_MAX
+    assert status == 413
+    assert server.db.list_for_cid("dxaBIG") == []
 
 
 def test_get_callback_generic_no_cid(server):
@@ -293,12 +291,12 @@ def test_unknown_path_returns_404(server):
     assert b"not found" in body
 
 
-def test_x_forwarded_for_respected(server):
-    """When behind a reverse proxy, XFF header is the real client IP."""
+def test_x_forwarded_for_ignored(server):
+    """Untrusted clients cannot spoof peer addresses."""
     _get(server.port, "/c/dxaXFF",
          headers={"X-Forwarded-For": "203.0.113.5, 10.0.0.1"})
     row = server.db.list_for_cid("dxaXFF")[0]
-    assert row["remote_ip"] == "203.0.113.5"
+    assert row["remote_ip"] == "127.0.0.1"
 
 
 def test_concurrent_hits_all_recorded(server):

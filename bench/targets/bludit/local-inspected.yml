@@ -1,0 +1,18 @@
+# Fresh local lab, no persistent or host data mounts. See ../README.md.
+services:
+  bludit:
+    image: sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8
+    pull_policy: never
+    restart: "no"
+    ports:
+      - "127.0.0.1::80"
+    networks:
+      - isolated
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+networks:
+  isolated:
+    internal: true

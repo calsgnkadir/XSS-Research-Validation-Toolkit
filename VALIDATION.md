@@ -1,4 +1,16 @@
-# Doğrulama kaydı — 2026-10-07
+# Doğrulama kaydı — 2026-10-09
+
+## 9 Ekim 2026 — 8–9 Ekim değişikliklerinin tam tekrarı
+
+- Analyzer ve bench: **824 passed, 309.10 s**, exit 0; failure/error/skip yok.
+- Ayrı K01 HTTP fixture: **2 passed, 1.20 s**, exit 0.
+- Gerçek Chrome strict proof corpus: **9/9 completed, TP=3 FP=0 FN=0**, exit 0.
+- Python 3.10.11, pytest 9.1.1, Playwright 1.63.0, Chrome 155.0.8059.39.
+  Kaynak hash'leri koşu boyunca sabit; browser zorunlu, Docker lab kapalı.
+- R4 süreç izolasyonu, R8 statik context ve R9 callback/Docker guard testleri
+  dahil. Docker guard testleri gerçek kurulum/login kabulü değildir; uzak CI
+  bu yerel sonuçla doğrulanmaz. Eski hedefli koşular bu sayılara eklenmez.
+- [Komutlar, JUnit, kaynak hash'leri ve sınırlar](audit/2026-10-09-resume/README.md).
 
 ## 7 Ekim 2026 — R3/R4 baştan sona yeniden doğrulama
 

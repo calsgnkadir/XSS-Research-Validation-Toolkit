@@ -246,7 +246,7 @@ def test_docker_available_recognises_truthy_env_values(monkeypatch):
 
 def test_docker_compose_up_reports_missing_file(tmp_path):
     """A compose file that doesn't exist is a clean error, not a crash."""
-    ok, msg = bench_run._docker_compose_up(str(tmp_path / "nope.yml"))
+    ok, msg = bench_run._docker_compose_up(str(tmp_path / "nope.yml"), project="dxa-test-missing")
     assert ok is False
     assert "not found" in msg
 
@@ -266,6 +266,36 @@ def test_wait_for_http_returns_true_when_reachable():
         result = bench_run._wait_for_http(
             f"http://127.0.0.1:{srv.port}/echo?q=hi", deadline_s=5)
         assert result is True
+
+
+def test_readiness_redirect_never_contacts_other_endpoint():
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    hits = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            hits.append(self.path)
+            if self.path == "/redirect":
+                self.send_response(302)
+                self.send_header("Location", "/outside-ready-scope")
+            else:
+                self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever)
+    thread.start()
+    try:
+        assert bench_run._wait_for_http(f"http://127.0.0.1:{server.server_port}/redirect", 2)
+        assert hits == ["/redirect"]
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(3)
 
 
 def test_run_one_docker_target_skipped_by_default(monkeypatch):

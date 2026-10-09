@@ -1,0 +1,18 @@
+{
+  "exit_code": 1,
+  "python": "3.10.11",
+  "browser_required": false,
+  "docker_enabled": false,
+  "paths": [
+    "tools/dom-xss-analyzer/test_static_context.py"
+  ],
+  "modules": {
+    "tools.dom-xss-analyzer.test_static_context": {
+      "tests": 16,
+      "passed": 3,
+      "failures": 13,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

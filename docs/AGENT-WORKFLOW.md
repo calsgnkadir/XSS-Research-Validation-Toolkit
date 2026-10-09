@@ -1,5 +1,34 @@
 # Roadmap'e bağlı uzman çalışma düzeni
 
+9 Ekim teslim istisnası: kullanıcı 8–9 Ekim çalışmalarının yeniden testinden sonra
+koordinatöre commit ve GitHub push yetkisi verdi. Aşağıdaki önceki Git yasağı bu
+teslime uygulanmaz; uzmanlar bağımsız Git teslimi yapmaz.
+
+## 8 Ekim 2026 — geçerli geliştirme yetkisi
+
+Kullanıcı ROADMAP'in uygulanabilir açık işlerini bağımlılık sırasıyla geliştirmeyi
+onayladı. Aşağıdaki 6/7 Ekim yetki açıklamaları tarihsel kayıttır. Beş native
+rolün kalıcı TOML sandbox değeri `workspace-write`; görevleri uygulama kodu ve
+anlamlı regresyon yazmayı kapsar. Bu değer gerçek runtime yetkisi kanıtı değildir;
+yazma ve test sonuçları görev kaydında ayrıca tutulur. Yeni ayarlar önceden
+çalışan agent'a uygulanmış sayılmaz.
+
+Koordinatör en fazla iki uzmanı eşzamanlı çalıştırır. Her atama roadmap kimliği,
+özel dosya sahipliği, kabul koşulu ve yerel test sınırı içerir. Uzmanların bütün
+diff'leri koordinatörce incelenir; hatalı/eksik teslim aynı uzmana geri gönderilir.
+Bağımsız QA oracle'ı ve birleşik testler kabulün parçasıdır. Sırf beş rolü meşgul
+etmek için iş yaratılmaz; uygun uygulama işi koordinatörde tutulmaz.
+
+Security: güvenlik/context/confidence ve kod/test; Engine: scanner/scope/request/
+runner/adapter; Storage: mevcut SQLite/callback/Docker ve test; Report: mevcut
+HTML/JSON, güvenli çıktı ve kullanılabilirlik; QA: bağımsız oracle/fixture,
+regresyon ve lab entegrasyonu. Ortak sözleşme ve ana roadmap koordinatördedir.
+
+Commit, push, dış yayın, veri silme ve arka plan otomasyonu yapılmaz. Yalnız
+izinli yerel/disposable lab test edilir. Madde başına tekrar onay istenmez.
+Engeller ve kesinti öncesi ilerleme audit'e kaydedilir; duran görev aktif diye
+sunulmaz. Ana plan ROADMAP'tir; audit görev kuyruğu ikinci roadmap değildir.
+
 Bu belge agent çalıştıran bir yapılandırma değildir. Kalıcı proje talimatıdır;
 gerçek sub-agent'lar mevcut oturumun collaboration araçlarıyla çağrılır.
 Başlangıçta toplam dört eşzamanlı slot vardı: koordinatör + üç uzman.

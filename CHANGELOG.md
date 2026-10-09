@@ -1,5 +1,21 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-09
+
+- R4 browser proof worker'ları parent deadline ve sahip olunan süreç ağacıyla
+  izole edilir; timeout/crash/malformed çıktı sonraki vakayı kesmez. Cleanup
+  hatası başarı sayılmaz; Docker teardown yalnız benzersiz projeye uygulanır,
+  volume silmez ve hata durumunu raporlar.
+- R8 sanitizer adı taint'i silmez; ham provenance ve HTML mitigation ayrıdır.
+  Dosya/import ve Python scope sınırları, template uzantıları ve güvenli Python
+  örneği düzeltildi; regex ve C# sınırları STATIC-LIMITS.md içinde belgeli.
+- R9 callback read/body/limit/CORS sınırları, görünür SQLite hataları ve minimal
+  HTTP kayıtları eklendi. Eski SQLite verisi korunur. Compose loopback, immutable
+  local image ve benzersiz proje önkoşullarına geçirildi.
+- Yeni tekrar: 824 analyzer/bench + 2 K01 HTTP testi geçti; Chrome strict corpus
+  9/9, TP=3 FP=0 FN=0. Gerçek Docker ürün adapter'ı ve uzak CI kabulü açık.
+  [Kanıt](audit/2026-10-09-resume/README.md).
+
 ## Unreleased — 2026-10-07
 
 - R3/R4 yeniden doğrulaması: 681 passed, sıfır skip; gerçek Chrome strict

@@ -218,32 +218,18 @@ JAVA_ASSIGN = re.compile(
 PYTHON_ASSIGN = re.compile(
     r'^\s*([A-Za-z_]\w*)\s*(?::\s*[\w\[\], .]+?\s*)?=\s*(.+?)\s*$'
 )
-# Escape-family calls that, if present on the same line as a source+sink,
-# strongly suggest the value was sanitised before hitting the sink. We can't
-# prove it (no AST), but we can DOWNGRADE HIGH -> MEDIUM to avoid the obvious
-# false positive. Keys are per-language; JS/C# have their own list.
-PHP_ESCAPES = re.compile(
-    r'\b(?:htmlspecialchars|htmlentities|esc_html|esc_attr|esc_url|esc_js|'
-    r'strip_tags|filter_var)\s*\(')
-JS_ESCAPES = re.compile(
-    r'\b(?:DOMPurify\.sanitize|sanitizeHtml|encodeURIComponent|encodeURI|'
-    r'escapeHtml|textContent\s*=)')
-CS_ESCAPES = re.compile(
-    r'\b(?:HtmlEncoder\.(?:Default\.)?Encode|Html\.Encode|HttpUtility\.'
-    r'HtmlEncode|WebUtility\.HtmlEncode|@\s*Html\.Encode)\s*\(')
-JAVA_ESCAPES = re.compile(
-    r'\b(?:StringEscapeUtils\.(?:escapeHtml|escapeHtml3|escapeHtml4|escapeXml)|'
-    r'HtmlUtils\.htmlEscape|Encode\.forHtml(?:Attribute|Content)?|'
-    r'ESAPI\.encoder\(\)\.encodeForHTML|SafeString|escapeHtml)\s*\(')
-PY_ESCAPES = re.compile(
-    r'\b(?:html\.escape|markupsafe\.escape|escape|bleach\.clean|'
-    r'django\.utils\.html\.escape|escape_html|nh3\.clean|xml\.sax\.saxutils\.escape)\s*\(')
 CONF_RANK = {"low": 0, "medium": 1, "high": 2}
 JS_EXT = (".js", ".ts", ".jsx", ".tsx", ".mjs")
 CS_EXT = (".cs", ".cshtml", ".razor")
 PHP_EXT = (".php", ".phtml", ".php3", ".php4", ".php5", ".phps", ".inc")
 JAVA_EXT = (".java", ".jsp", ".jspx", ".tag")
 PY_EXT   = (".py", ".pyw")
+TEMPLATE_EXT = (".html", ".htm", ".twig", ".jinja", ".jinja2", ".vue")
+TEMPLATE_SINKS = [s for s in JAVA_SINKS if s[0] in ("th-utext", "th-inline-unesc")]
+TEMPLATE_SINKS += [s for s in PHP_SINKS if s[0] == "twig-raw"]
+TEMPLATE_SINKS += [s for s in PY_SINKS if s[0] == "jinja-safe-filter"]
+TEMPLATE_SINKS += [("vue-html", re.compile(r'\bv-html\s*='), "high",
+                    "Vue v-html renders raw HTML; template data flow is not resolved")]
 
 
 def source_hits(text, sources, msg_active):
@@ -261,119 +247,6 @@ def source_hits(text, sources, msg_active):
         hits.append("postMessage.data")
     return hits
 
-
-# v3.8 cross-method sanitizer awareness. If a RHS contains a call to any
-# name that "looks like" a sanitizer / escape / validate helper (either an
-# OWASP-standard one or a local `sanitize(...)` / `cleanInput(...)` /
-# `validateXxx(...)` helper), we treat that assignment as breaking the taint
-# chain. This is a heuristic (no AST, no follow-into) - matches the exact
-# hotel-platform case where CorrelationIdFilter does
-#   String cid = ... ? sanitize(inbound) : shortUuid();
-# and the older gate had no way to see `sanitize()`. Aggressive: any such
-# call in the RHS kills the propagation for THAT line. Conservative: if the
-# name doesn't match the hint pattern, taint still flows.
-_SANITIZE_HINT = re.compile(
-    r'\b\w*(?:sanitiz|clean|validat|escape|escap|htmlspecial|'
-    r'strip|filter|encode|purif|Markup|SafeString|bleach|nh3|'
-    r'StringEscapeUtils|HtmlUtils|Encode\.forHtml|markupsafe\.escape|'
-    r'html\.escape|HtmlEncoder|WebUtility\.HtmlEncode|HttpUtility\.HtmlEncode)'
-    r'\w*\s*\(',
-    re.IGNORECASE,
-)
-
-# Phase 0.3 (2026-09-26). A NARROW whitelist of functions we are confident
-# actually escape HTML - not name-shape guesses, but library functions whose
-# semantics we know. Anything here hard-clears taint on its line even if the
-# residual RHS looks tainted (unusual, but conservative for real escapers).
-# The broader `_SANITIZE_HINT` above still catches app-local sanitize helpers,
-# but now only SOFT-clears (see `_sanitize_covers_rhs` below).
-_KNOWN_SAFE_FUNCS = re.compile(
-    r'\b('
-    # Python
-    r'html\.escape|markupsafe\.escape|bleach\.clean|nh3\.clean|'
-    # PHP
-    r'htmlspecialchars|htmlentities|'
-    # Java
-    r'StringEscapeUtils\.escapeHtml[34]?|HtmlUtils\.htmlEscape|'
-    r'Encode\.forHtml(?:Attribute|Content)?|ESAPI\.encoder\(\)\.encodeForHTML|'
-    # C# / .NET
-    r'HttpUtility\.HtmlEncode|WebUtility\.HtmlEncode|'
-    r'HtmlEncoder\.(?:Default|Create)|AntiXssEncoder\.HtmlEncode|'
-    # JS (browser + libraries)
-    r'DOMPurify\.sanitize|he\.encode|_\.escape|escape-html'
-    r')\s*\(',
-    # NB: intentionally case-sensitive - `htmlspecialchars` is PHP-specific
-    # spelling; we don't want to squelch a hypothetical `HTMLspecialCHARS`
-    # user helper by accident.
-)
-
-
-def _sanitize_covers_rhs(rhs, sources, msg_active, tainted):
-    """Phase 0.3. When `_SANITIZE_HINT` matched but the function isn't in the
-    known-safe whitelist, verify the sanitizer plausibly covers ALL the taint
-    on this line. Strategy: strip every `sanitizerName(...)` span from the
-    RHS, then look for POSITIVE leak patterns in the residual:
-      - `+ tainted`, `tainted +`      concat
-      - `, tainted`, `tainted ,`      function argument
-      - `= tainted`                    reassignment / kwarg
-      - source-access shapes (`request.args[...]`, etc.) still present
-    A `tainted != null` or `tainted.isEmpty()` in a ternary condition is
-    NOT a leak (the value doesn't reach the LHS), so those guard-clause
-    shapes still let the sanitizer cover the flow. This is what preserves
-    the hotel-platform ternary
-        String cid = (inbound != null && !inbound.trim().isEmpty()) ?
-                      sanitize(inbound) : shortUuid();
-    which we already documented in writeup 09.
-
-    Returns True (sanitizer covers everything, break the chain) or
-    False (residual leak, propagate). Conservative on paren-tracking loss:
-    treat as NOT covered - safer default (more findings, fewer FN)."""
-    residual = []
-    i = 0
-    n = len(rhs)
-    while i < n:
-        m = _SANITIZE_HINT.match(rhs, i)
-        if m:
-            # jump past the matched `sanitizerName(` (m.end() is after `(`)
-            i = m.end()
-            depth = 1
-            while i < n and depth > 0:
-                c = rhs[i]
-                if c == '(':
-                    depth += 1
-                elif c == ')':
-                    depth -= 1
-                i += 1
-            # if we ran off the end without closing, be conservative:
-            # treat as "not covered" (more taint, more findings)
-            if depth > 0:
-                return False
-        else:
-            residual.append(rhs[i])
-            i += 1
-    residual_str = ''.join(residual)
-    # Strip string literals so a canary-shaped string in a "..." doesn't fool us.
-    residual_str = re.sub(r'"[^"]*"', '', residual_str)
-    residual_str = re.sub(r"'[^']*'", '', residual_str)
-    # A raw source access outside the sanitize span IS a value leak.
-    if source_hits(residual_str, sources, msg_active):
-        return False
-    # A tainted var name outside the sanitize span is only a LEAK when it
-    # appears in a value-producing position (concat / function arg / assign),
-    # not in a boolean guard clause like `!= null` or `.isEmpty()`.
-    for v in tainted:
-        pat = re.compile(
-            # +tainted / tainted+ / -tainted (concat, arithmetic-as-concat in JS)
-            r'(?:\+\s*|-\s*)' + re.escape(v) + r'\b' + r'|'
-            r'\b' + re.escape(v) + r'\s*(?:\+|-)' + r'|'
-            # (tainted , (tainted , tainted) - function argument position
-            r'[,\(]\s*' + re.escape(v) + r'\s*[,\)]' + r'|'
-            # = tainted (rhs of nested assignment inside residual)
-            r'=\s*' + re.escape(v) + r'\b'
-        )
-        if pat.search(residual_str):
-            return False
-    return True
 
 # v3.9 finding dedup. When the same line matches multiple sink patterns that
 # overlap semantically (a specific one is a subset of a general one), report
@@ -468,7 +341,7 @@ _RETURN_TAINTED_RE = {
 }
 
 
-def build_cross_file_taint_map(paths):
+def _raw_return_names(paths):
     """Return `set()` of function names whose body includes `return <source>`.
     Function-body tracking is language-shaped:
       - Python: indent-based (body ends when indent <= def's own indent).
@@ -535,39 +408,231 @@ def build_cross_file_taint_map(paths):
     return tainted_funcs
 
 
+def _closing_paren(text, opening):
+    """Small lexical helper, not a language parser. Fail closed on truncation."""
+    depth, quote, escaped = 0, None, False
+    for i in range(opening, len(text)):
+        char = text[i]
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in ('"', "'", '`'):
+            quote = char
+        elif char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+            if depth == 0:
+                return i
+    return None
+
+
+# HTML-body mitigation hints only. A matching spelling is not a guarantee that
+# the library has not been rebound/configured insecurely. Never trust local
+# sanitize/clean/validate names, Markup or SafeString as encoders.
+_HTML_ENCODER_CALL = re.compile(
+    r'(?<![\w.])(?:html\.escape|markupsafe\.escape|bleach\.clean|nh3\.clean|'
+    r'htmlspecialchars|htmlentities|StringEscapeUtils\.escapeHtml[34]?|'
+    r'HtmlUtils\.htmlEscape|Encode\.forHtml(?:Content)?|'
+    r'ESAPI\.encoder\(\)\.encodeForHTML|HttpUtility\.HtmlEncode|'
+    r'WebUtility\.HtmlEncode|HtmlEncoder\.(?:Default\.)?Encode|Html\.Encode|'
+    r'DOMPurify\.sanitize|he\.encode|_\.escape)\s*\(')
+
+
+def _ambiguous_html_context(text):
+    return bool(re.search(r'<\s*(?:script|style)\b|\b[\w:-]+\s*=\s*[\'"]', text, re.I))
+
+
+def _html_residual(text):
+    """Remove just recognized HTML encoder calls, retaining every other term."""
+    # Embedded script/style, URL and attribute contexts require other encoders.
+    # This deliberately declines mitigation for ambiguous string constructions.
+    if _ambiguous_html_context(text):
+        return text
+    out, pos = [], 0
+    for match in _HTML_ENCODER_CALL.finditer(text):
+        if match.start() < pos:
+            continue
+        end = _closing_paren(text, match.end() - 1)
+        if end is None:
+            return text
+        out.append(text[pos:match.start()])
+        out.append('0')
+        pos = end + 1
+    out.append(text[pos:])
+    return ''.join(out)
+
+
+def _sink_expression(line, match, sid):
+    """Isolate common single-line sink arguments; unknown shapes stay broad."""
+    if sid in ('innerHTML', 'InnerHtml', 'navigation', 'src-href', 'Literal.Text') and '=' in match.group():
+        expr = line[match.end():]
+        depth, quote, escaped = 0, None, False
+        for i, char in enumerate(expr):
+            if quote:
+                if escaped:
+                    escaped = False
+                elif char == '\\':
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            elif char in ('"', "'", '`'):
+                quote = char
+            elif char in '([{':
+                depth += 1
+            elif char in ')]}':
+                depth -= 1
+            elif char == ';' and depth == 0:
+                return expr[:i]
+        return expr
+    if match.group().endswith('('):
+        start = match.end()
+        end = _closing_paren(line, start - 1)
+        if end is not None:
+            expr = line[start:end]
+            if sid == 'render-template-str' and not re.search(r'\|\s*safe\b', expr):
+                # Only the template source (first argument) is an SSTI sink.
+                # Keyword values rendered by autoescape are not template source.
+                depth, quote, escaped = 0, None, False
+                for i, char in enumerate(expr):
+                    if quote:
+                        if escaped:
+                            escaped = False
+                        elif char == '\\':
+                            escaped = True
+                        elif char == quote:
+                            quote = None
+                    elif char in ('"', "'", '`'):
+                        quote = char
+                    elif char in '([{':
+                        depth += 1
+                    elif char in ')]}':
+                        depth -= 1
+                    elif char == ',' and depth == 0:
+                        expr = expr[:i]
+                        break
+                if re.fullmatch(r'\s*([\'"])(?:\\.|(?!\1).)*\1\s*', expr):
+                    return '0'
+            return expr
+    return line
+
+
+_HTML_BODY_SINKS = {'innerHTML', 'insertAdjacentHTML', 'document.write',
+                    'jquery-html', 'fastapi-html', 'flask-response-html',
+                    'markupsafe-markup', 'django-mark-safe', 'echo', 'print',
+                    'short-echo', 'servlet-writer', 'response-write', 'Html.Raw',
+                    'Response.Write', 'HtmlString', 'MarkupString', 'InnerHtml'}
+
+
+def _scope_lines(lines, index, lang):
+    """Isolate ordinary Python function locals. Complex scopes remain limited.
+
+    Nested closures/classes are deliberately not inferred across boundaries.
+    The returned prefix also avoids a later source assignment tainting an
+    earlier sink. Brace languages retain file-local conservative scope.
+    """
+    if lang != 'py':
+        return lines[:index + 1]
+    scopes = []
+    active = []
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            continue
+        indent = len(line) - len(line.lstrip())
+        while active and indent <= active[-1][1]:
+            start, _ = active.pop()
+            scopes.append((start, i))
+        if re.match(r'\s*(?:async\s+)?def\s+\w+\s*\(', line):
+            active.append((i, indent))
+    scopes.extend((start, len(lines)) for start, _ in active)
+    containing = [(start, end) for start, end in scopes if start <= index < end]
+    if containing:
+        start, end = max(containing)
+        return [line for i, line in enumerate(lines[start:index + 1], start)
+                if not any(start < child <= i < stop for child, stop in scopes)]
+    return [line for i, line in enumerate(lines[:index + 1])
+            if not any(start <= i < end for start, end in scopes)]
+
+
+class ScopedTaintMap(set):
+    """Set-compatible inventory; scan_file uses only explicitly bound file names."""
+    def __init__(self, by_file):
+        super().__init__(name for names in by_file.values() for name in names)
+        self.by_file = by_file
+
+    def for_path(self, path):
+        return self.by_file.get(os.path.normcase(os.path.abspath(path)), set())
+
+
+def build_cross_file_taint_map(paths):
+    """Resolve only simple, explicit sibling imports/includes. No global names.
+
+    Unsupported dynamic/module/class resolution stays a candidate. This is not
+    an interprocedural proof; see STATIC-LIMITS.md.
+    """
+    paths = [os.path.normcase(os.path.abspath(p)) for p in paths]
+    providers = {p: _raw_return_names([p]) for p in paths}
+    result = {}
+    for path in paths:
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as fh:
+                code = fh.read()
+        except OSError:
+            continue
+        lang = _lang_for(path)[0]
+        bound = set(providers[path])
+        directory = os.path.dirname(path)
+        imports = []
+        if lang == "py":
+            for module, names in re.findall(r'^from\s+([\w.]+)\s+import\s+([^\n#]+)', code, re.M):
+                # Only a single sibling module is deliberately supported.
+                if '.' not in module:
+                    imports.append((module + '.py', names))
+        elif lang == "js":
+            for names, module in re.findall(r'(?:const|let|var)\s*\{([^}]+)\}\s*=\s*require\([\'"](\./[^\'"]+)[\'"]\)', code):
+                imports.append((module if os.path.splitext(module)[1] else module + '.js', names))
+            for names, module in re.findall(r'import\s*\{([^}]+)\}\s*from\s*[\'"](\./[^\'"]+)[\'"]', code):
+                imports.append((module if os.path.splitext(module)[1] else module + '.js', names))
+        elif lang == "php":
+            for module in re.findall(r'\b(?:require|include)(?:_once)?\s*[\'"]([^\'"]+)[\'"]', code):
+                imports.append((module, None))
+        for module, names in imports:
+            provider = os.path.normcase(os.path.abspath(os.path.join(directory, module)))
+            available = providers.get(provider, set())
+            if names is None:
+                bound.update(available)
+            else:
+                for name in names.split(','):
+                    parts = re.split(r'\s+as\s+|\s*:\s*', name.strip())
+                    if parts[0] in available and all(re.fullmatch(r'\w+', p) for p in parts):
+                        bound.add(parts[-1])
+        # A local declaration can shadow an import. Do not claim that binding.
+        def_re = _FUNC_DEF_RE.get(lang)
+        if def_re:
+            declarations = [m.group(1) for line in code.splitlines() if (m := def_re.match(line))]
+            for name in declarations:
+                if name not in providers[path] or declarations.count(name) > 1:
+                    bound.discard(name)
+        result[path] = bound
+    return ScopedTaintMap(result)
+
+
 def compute_taint(lines, sources, msg_active, assign_re=ASSIGN,
-                  cross_file_funcs=None):
-    """A var is tainted if assigned from a source or another tainted var.
-    Bounded fix-point - a cheap approximation of straight-line data flow.
-    Runs on JS, PHP, Java, Python (each with its own assign regex).
+                  cross_file_funcs=None, html_context=False):
+    """Bounded regex provenance; HTML mitigation is a separate sink-specific view.
 
-    v3.8: if the RHS contains a sanitize-family call (`sanitize(...)`,
-    `clean(...)`, `StringEscapeUtils.escapeHtml4(...)`, `html.escape(...)`,
-    local `validateXxx(...)`, ...), the assignment BREAKS the taint chain.
-    This kills the cross-method-helper false positive that pure same-line
-    regex analysis can't otherwise see.
-
-    Phase 0.3 (2026-09-26): the v3.8 break was UNCONDITIONAL - any sanitize-
-    shaped name in the RHS would clear taint even when the sanitize call
-    only covered part of the expression (`sanitize(x) + tainted` was
-    silently squelched, an ugly FN). The new logic is two-tier:
-      1. `_KNOWN_SAFE_FUNCS` (narrow, library-confirmed escapers) hard-
-         clears the taint chain as before.
-      2. `_SANITIZE_HINT` (broad name-shape) now only soft-clears - and
-         only when `_sanitize_covers_rhs` confirms the residual RHS
-         (RHS minus every sanitize(...) span) has no unmitigated source
-         or tainted variable. Otherwise taint propagates.
-    Conservative on paren-tracking loss = more findings, fewer FN.
-
-    Phase 0.4: `cross_file_funcs` = set of function names known to return a
-    raw source (built by build_cross_file_taint_map from the whole project
-    before any file is scanned). When set, a call to any of those names on
-    the RHS taints the LHS - the same-file `source_hits` check gains a
-    cross-file cousin. Import resolution is not modelled (regex, no AST):
-    if the function name is unique enough in the project, the shape works;
-    if two projects reuse the same name for different behaviour, this is
-    the false-positive risk we accept in Phase 0.4."""
+    Encoder spelling never erases raw provenance needed for JS/template sinks.
+    html_context removes only recognized HTML call spans, never adjacent values.
+    """
     tainted = set()
+    raw_tainted = (compute_taint(lines, sources, msg_active, assign_re, cross_file_funcs)
+                   if html_context else set())
     xfuncs = cross_file_funcs or set()
     # Precompile a single alternation regex for the cross-file call check -
     # much cheaper than N separate re.search() calls per RHS in the fix-point.
@@ -583,20 +648,14 @@ def compute_taint(lines, sources, msg_active, assign_re=ASSIGN,
             if not m:
                 continue
             lhs, rhs = m.group(1), m.group(2)
-            # Tier 1: confirmed-safe library escaper -> hard-clear taint chain
-            if _KNOWN_SAFE_FUNCS.search(rhs):
-                continue
-            # Tier 2: sanitize-hint name match -> soft-clear only if the
-            # residual RHS (after stripping every sanitize(...) span) has
-            # no unmitigated source or tainted variable. Otherwise the
-            # sanitizer only covered part of the expression - taint flows.
-            if _SANITIZE_HINT.search(rhs):
-                if _sanitize_covers_rhs(rhs, sources, msg_active, tainted):
-                    continue
-                # else: fall through - propagate taint
+            # Raw provenance always survives encoders. Only the separate HTML
+            # view removes recognized call spans; concatenated raw data remains.
+            context_tainted = raw_tainted if html_context and _ambiguous_html_context(rhs) else tainted
+            if html_context:
+                rhs = _html_residual(rhs)
             if (source_hits(rhs, sources, msg_active)
                 or any(re.search(r'(?<!\w)' + re.escape(v) + r'\b', rhs)
-                       for v in tainted)
+                       for v in context_tainted)
                 or (xfunc_call_re is not None and xfunc_call_re.search(rhs))):
                 if lhs not in tainted:
                     tainted.add(lhs)
@@ -619,6 +678,8 @@ def _lang_for(path):
         return "java", JAVA_SINKS, JAVA_SOURCES, JAVA_ASSIGN, True
     if ext in PY_EXT:
         return "py", PY_SINKS, PY_SOURCES, PYTHON_ASSIGN, True
+    if ext in TEMPLATE_EXT:
+        return "template", TEMPLATE_SINKS + JS_SINKS, JS_SOURCES, ASSIGN, True
     return "cs", CS_SINKS, CS_SOURCES, ASSIGN, False
 
 
@@ -628,6 +689,8 @@ def scan_file(path, cross_file_funcs=None):
     upgrade sink-line confidence when the sink argument is a call to a
     known tainted-returning function from another file in the project."""
     lang, sinks, sources, assign_re, wants_taint = _lang_for(path)
+    if isinstance(cross_file_funcs, ScopedTaintMap):
+        cross_file_funcs = cross_file_funcs.for_path(path)
 
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as fh:
@@ -641,9 +704,6 @@ def scan_file(path, cross_file_funcs=None):
     # generic types); join by `;` before taint so multi-line sanitize()
     # wraps are visible. JS/PHP/Python usually single-line - default OK.
     taint_view = _joined_for_taint(lines) if lang in ("java", "cs") else lines
-    tainted = (compute_taint(taint_view, sources, msg_active, assign_re,
-                             cross_file_funcs=cross_file_funcs)
-               if wants_taint else set())
     dynamic = re.compile(r'[A-Za-z_$@][\w$]*')
 
     # Phase 0.4: precompiled sink-line xfunc detector (empty regex if map empty).
@@ -655,20 +715,31 @@ def scan_file(path, cross_file_funcs=None):
     findings = []
     for lineno, line in enumerate(lines, 1):
         matched_here = {sid for sid, rx, *_ in sinks if rx.search(line)}
+        if not matched_here:
+            continue
+        scope = _scope_lines(taint_view, lineno - 1, lang)
+        tainted = (compute_taint(scope, sources, msg_active, assign_re,
+                                 cross_file_funcs=cross_file_funcs) if wants_taint else set())
+        html_tainted = (compute_taint(scope, sources, msg_active, assign_re,
+                                      cross_file_funcs=cross_file_funcs, html_context=True)
+                        if wants_taint else set())
         # v3.9 dedup: drop specific sinks when the general one already matched
         suppressed = {specific for specific, general in SINK_SUPPRESSIONS
                       if specific in matched_here and general in matched_here}
         for sid, rx, severity, desc in sinks:
             if sid not in matched_here or sid in suppressed:
                 continue
-            srcs = source_hits(line, sources, msg_active)
-            tvars = [v for v in tainted
-                     if re.search(r'(?<!\w)' + re.escape(v) + r'\b', line)]
+            expr = _sink_expression(line, rx.search(line), sid)
+            html_body = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(expr)
+            evaluated = _html_residual(expr) if html_body else expr
+            srcs = source_hits(evaluated, sources, msg_active)
+            tvars = sorted(v for v in (html_tainted if html_body else tainted)
+                           if re.search(r'(?<!\w)' + re.escape(v) + r'\b', evaluated))
             # Phase 0.4: cross-file call directly on the sink line - upgrade
             # confidence too. E.g. `res.send(getUserInput())` where
             # getUserInput lives in util.js and returns req.query raw.
             xfunc_hits = ([fname for fname in xfuncs
-                          if re.search(r'(?<!\w)' + re.escape(fname) + r'\s*\(', line)]
+                          if re.search(r'(?<!\w)' + re.escape(fname) + r'\s*\(', evaluated)]
                           if xfunc_call_re and xfunc_call_re.search(line) else [])
             if srcs or tvars or xfunc_hits:
                 confidence = "high"
@@ -676,23 +747,6 @@ def scan_file(path, cross_file_funcs=None):
                 confidence = "medium"
             else:
                 confidence = "low"
-            # False-positive squelch: if an escape-family call appears on the
-            # same line as the sink AND close to it (within ~200 chars, i.e.
-            # plausibly wrapping the sink's value), downgrade HIGH -> MEDIUM.
-            # Proximity matters - on a minified single-line blob a stray
-            # `encodeURIComponent` far away from the sink says nothing about
-            # THIS sink's value. Long lines (> 500 chars, i.e. minified) skip
-            # the squelch entirely: they need eyes-on review anyway.
-            if confidence == "high" and len(line) <= 500:
-                esc_re = (PHP_ESCAPES if lang == "php"
-                          else JAVA_ESCAPES if lang == "java"
-                          else PY_ESCAPES if lang == "py"
-                          else JS_ESCAPES if lang == "js" else CS_ESCAPES)
-                sink_pos = rx.search(line).start()
-                for em in esc_re.finditer(line):
-                    if abs(em.start() - sink_pos) <= 200:
-                        confidence = "medium"
-                        break
             findings.append({
                 "file": path, "line": lineno, "sink": sid, "lang": lang,
                 "severity": severity, "confidence": confidence, "description": desc,
@@ -713,7 +767,7 @@ def iter_files(target):
             REPORT_EVENTS.append(evidence.ReportEvent("static-discovery", "skip", "excluded directory", root))
             continue
         for name in files:
-            if name.endswith(JS_EXT + CS_EXT + PHP_EXT + JAVA_EXT + PY_EXT):
+            if name.lower().endswith(JS_EXT + CS_EXT + PHP_EXT + JAVA_EXT + PY_EXT + TEMPLATE_EXT):
                 yield os.path.join(root, name)
 
 

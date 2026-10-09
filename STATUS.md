@@ -1,5 +1,15 @@
 # Doğrulanmış durum
 
+## 9 Ekim 2026 güncel teslim
+
+8–9 Ekim değişiklikleri yeniden test edildi: **824 analyzer/bench testi + 2 ayrı
+K01 HTTP testi geçti**, hata/skip yok. Gerçek Chrome strict corpus **9/9,
+TP=3 FP=0 FN=0**. [Yeni kanıt](audit/2026-10-09-resume/README.md).
+R4 hard timeout ve süreç temizliği yerel Windows kabulü geçti. R8 sanitizer
+provenance/context ve dosya/scope düzeltmeleri, R9 callback sınırları ve Docker
+veri koruma guard'ları testli. Gerçek Docker ürün kurulumu/login adapter'ı,
+uzak Linux CI ve genel R4/R8/R9 kapanışı açık. Aşağıdaki 7 Ekim özeti tarihseldir.
+
 7 Ekim 2026. Güncel plan: [ROADMAP](ROADMAP.md). Tarihsel Git teslimi: ZIP üzerinden başlayan düzeltmeler
 `2703d1a` ile GitHub main dalına aktarıldı. Canlı GitHub API'si güncel README'yi
 doğruladı; web arama sonuçları eski taranmış metni gösterebilir. Bu durum yeni

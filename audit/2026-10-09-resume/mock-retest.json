@@ -1,0 +1,122 @@
+{
+  "run_at": "2026-10-09T12:58:53.910379+00:00",
+  "measurement": "legacy-candidate-counts; not confirmed XSS accuracy",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "runner_sha256": "f1887b1db2cc4473e954d3f70d22e05c32e2077249d36a4dc109d6820d7d664c",
+    "scanner_sha256": "c7fb2de05213be8a5c034880986cf06760ebe34a4412314a740fc77c2e771aea",
+    "fixture_sha256": "d08a2659c6a3c69504ed1e193e3baa480e71b0ffe2bfc7976b5b486ce753961e",
+    "corpus_sha256": "60cacff0d0781e3f4912db8a87bc2fea0a813518951153df3476e560997aa7ab"
+  },
+  "corpus_version": "0.7.0-cve-hunt",
+  "scanners": [
+    "dxadyn"
+  ],
+  "rows": [
+    {
+      "id": "mock-reflected-easy",
+      "expect": {
+        "reflected": 1,
+        "stored": 0,
+        "dom": 0
+      },
+      "results": {
+        "dxadyn": {
+          "observed": {
+            "reflected": 1,
+            "stored": 0,
+            "dom": 0,
+            "wall": 1.35,
+            "ok": true,
+            "status": "completed",
+            "measurement": "candidate-counts-not-confirmed-xss",
+            "raw_tail": "[dxadyn] probing http://127.0.0.1:62667/echo-land (depth=0) - authorized/local only\n\nhttp://127.0.0.1:62667/echo  [HTML-REFLECTION] context=body  GET param 'q'  -> UNENCODED (HTML injection)  (HTTP 200)\n\n1 reflected candidate(s) - JavaScript execution not established. Validate in the browser and triage the security boundary.\n[dxadyn] submits clean: 0 rejected (no 403/429/WAF/connection-error).\n"
+          },
+          "score": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "mock-reflected-escaped",
+      "expect": {
+        "reflected": 0,
+        "stored": 0,
+        "dom": 0
+      },
+      "results": {
+        "dxadyn": {
+          "observed": {
+            "reflected": 0,
+            "stored": 0,
+            "dom": 0,
+            "wall": 0.97,
+            "ok": true,
+            "status": "completed",
+            "measurement": "candidate-counts-not-confirmed-xss",
+            "raw_tail": "[dxadyn] probing http://127.0.0.1:62671/safe-echo-land (depth=0) - authorized/local only\n\nNo unencoded reflections found. (Inputs may be encoded, POST-guarded, or absent.)\n[dxadyn] submits clean: 0 rejected (no 403/429/WAF/connection-error).\n"
+          },
+          "score": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "mock-stored-guestbook",
+      "expect": {
+        "reflected": 0,
+        "stored": 1,
+        "dom": 0
+      },
+      "results": {
+        "dxadyn": {
+          "observed": {
+            "reflected": 0,
+            "stored": 1,
+            "dom": 0,
+            "wall": 0.72,
+            "ok": true,
+            "status": "completed",
+            "measurement": "candidate-counts-not-confirmed-xss",
+            "raw_tail": " pages\nhttp://127.0.0.1:62675/guestbook  [HTML-REFLECTION] context=body [auto]  stored via http://127.0.0.1:62675/guestbook field 'msg'  -> UNENCODED (HTML injection)  (submit HTTP 200, check HTTP 200)\n\n1 unique stored candidate(s) - JavaScript execution not established. Validate in the browser and triage the security boundary.\n[dxadyn] submits clean: 0 rejected (no 403/429/WAF/connection-error).\n"
+          },
+          "score": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      }
+    }
+  ],
+  "totals": {
+    "dxadyn": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "wall": 3.04,
+      "selected": 3,
+      "completed": 3,
+      "skipped": 0,
+      "error": 0,
+      "timeout": 0,
+      "invalid": 0,
+      "inconclusive": 0
+    }
+  },
+  "command": [
+    "bench/run.py",
+    "--targets",
+    "mock-reflected-easy,mock-reflected-escaped,mock-stored-guestbook",
+    "--no-history",
+    "--out",
+    "audit/2026-10-09-resume/mock-retest.md"
+  ]
+}

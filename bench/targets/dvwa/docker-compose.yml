@@ -1,27 +1,11 @@
-# DVWA (Damn Vulnerable Web Application) - the canonical XSS testbed.
-#
-# Ships four XSS surfaces: Reflected, Stored, DOM, and CSP-bypass, each at
-# security levels low / medium / high / impossible. The `impossible` level
-# is genuinely safe (proper CSP + encoding); everything else is exploitable.
-#
-# Use as breadth coverage: does the tool catch multiple XSS shapes on
-# multiple difficulty levels in one pass?
-#
-# Bring up:
-#     docker compose -f bench/targets/dvwa/docker-compose.yml up -d
-# Default login: admin / password
-# Set security level in Settings -> DVWA Security -> Low (start there,
-# then re-run against medium / high).
-# Tear down:
-#     docker compose -f bench/targets/dvwa/docker-compose.yml down -v
-
+# Authorized local lab only. Read ../README.md before startup.
 services:
   dvwa:
-    image: vulnerables/web-dvwa:latest
-    container_name: cve-hunt-dvwa
+    image: ${DXA_DVWA_IMAGE:?Set a reviewed immutable DVWA image reference}
     ports:
-      - "8081:80"
-    restart: unless-stopped
+      - "127.0.0.1:8081:80"
+    pull_policy: never
+    restart: "no"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 5s

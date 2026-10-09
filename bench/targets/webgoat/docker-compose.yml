@@ -1,30 +1,15 @@
-# WebGoat 8.2.x - OWASP's Java-stack teaching target.
-#
-# Provides Java servlet-shaped XSS lessons that contrast with Bludit /
-# DVWA's PHP stack. Important precision check: dxa's Java coverage lands
-# on Spring / Servlet / JSP idioms - a scan pass that finds nothing here
-# means those source-context patterns miss the shipped lesson code.
-#
-# Bring up:
-#     docker compose -f bench/targets/webgoat/docker-compose.yml up -d
-#     # WebGoat takes ~20-30s to init on first boot (Spring)
-# Access:
-#     http://localhost:8082/WebGoat
-#     Register a fresh user; each user gets their own progress state.
-# Tear down:
-#     docker compose -f bench/targets/webgoat/docker-compose.yml down
-
+# Authorized local lab only. Read ../README.md before startup.
 services:
   webgoat:
-    image: webgoat/webgoat:8.2.2
-    container_name: cve-hunt-webgoat
+    image: ${DXA_WEBGOAT_IMAGE:?Set a reviewed immutable WebGoat image reference}
     ports:
-      - "8082:8080"
-      - "9090:9090"    # WebWolf, the companion attack surface
+      - "127.0.0.1:8082:8080"
+      - "127.0.0.1:9090:9090"    # WebWolf, the companion attack surface
     environment:
       - WEBGOAT_HOST=0.0.0.0
       - WEBWOLF_HOST=0.0.0.0
-    restart: unless-stopped
+    pull_policy: never
+    restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/WebGoat/ || exit 1"]
       interval: 10s

@@ -1,10 +1,9 @@
 """dxa-callback: out-of-band callback server for blind XSS.
 
-Phase 3.1 of the roadmap. Payloads embedded in stored XSS (admin panel
-moderator queues, notification digests, audit logs) fire hours or days
-after the operator sends them, in someone else's browser session. The
-only signal that a payload landed is an HTTP request the exploit
-JavaScript makes back to a server the operator controls.
+Callback requests can arrive after an authorized probe was submitted.
+An HTTP hit is resource-callback evidence only: an image request or a
+direct HTTP client can produce it without JavaScript execution. Correlation
+does not establish a vulnerability or a verified browser session.
 
 This module is that server. Deliberately small and stdlib-only so it
 can be deployed on any host without a Python venv:
@@ -17,7 +16,7 @@ Endpoints:
                         src=...> payloads don't render broken.
     GET  /c/<cid>.js    records the hit; returns `void 0` so
                         <script src=...> payloads don't error.
-    POST /c/<cid>       records the hit; body preview stored; returns
+    POST /c/<cid>       records the hit; bounded body discarded; returns
                         `{"ok": true}`.
     GET  /callback      generic entry point without a cid (returns 1x1
                         GIF). For fingerprinting-only payloads.
@@ -29,9 +28,14 @@ Endpoints:
                         <count>}` without touching the hits table
                         beyond a COUNT.
 
-CORS: every response ships Access-Control-Allow-Origin: * so browser-
-issued fetches from any origin succeed. This is intentional - the
-whole point of the server is to be reachable from anywhere.
+CORS is allowed only on collection routes. Reads require an exact local
+Host without Origin/cross-site browser headers; an optional bearer token
+protects /hits and /healthz. The listener binds only to 127.0.0.1.
+HTTP collection omits query strings, user agents, referrers and bodies.
+Existing database rows remain unchanged; review legacy data before sharing.
+The optional read token is intended for direct HTTP clients. Existing scanner
+and journal clients do not supply it; enabling it makes those reads fail with
+an explicit authentication/query error until client support is configured.
 
 Storage: SQLite at --db path (default `~/.dxa/callbacks.db`).
 `--memory` uses an in-memory DB (test/dev; loses hits on shutdown).
@@ -58,6 +62,8 @@ import argparse
 import base64
 import contextlib
 import http.server
+import hmac
+import math
 import json
 import os
 import pathlib
@@ -72,7 +78,7 @@ _1PX_GIF = base64.b64decode(
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
 )
 _LIST_LIMIT_DEFAULT = 200
-_BODY_PREVIEW_MAX = 2048
+_BODY_PREVIEW_MAX = 2048  # Maximum accepted body; bodies are never persisted.
 
 
 class CallbackDB:
@@ -168,7 +174,7 @@ def _valid_cid(cid: str) -> bool:
     up to 64 chars to allow operator experiments."""
     if not cid or len(cid) > 64:
         return False
-    return all(c.isalnum() or c in "_-" for c in cid)
+    return cid.isascii() and all(c.isalnum() or c in "_-" for c in cid)
 
 
 class _Handler(http.server.BaseHTTPRequestHandler):
@@ -180,6 +186,12 @@ class _Handler(http.server.BaseHTTPRequestHandler):
     # Class attribute so the server instance can hand the DB in.
     db: CallbackDB
     list_limit: int = _LIST_LIMIT_DEFAULT
+    read_token: Optional[str] = None
+    request_timeout: float = 5.0
+
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(self.request_timeout)
 
     def log_message(self, format, *args):
         return
@@ -188,9 +200,12 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "*")
+        path = urllib.parse.urlsplit(self.path).path
+        if path.startswith("/c/") or path == "/callback":
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body)
@@ -200,13 +215,7 @@ class _Handler(http.server.BaseHTTPRequestHandler):
                    ctype="application/json")
 
     def _remote_ip(self) -> str:
-        # First X-Forwarded-For entry when behind a reverse proxy;
-        # else the raw client address. External-header trust is a
-        # deployment choice - default here honours XFF because most
-        # dxa-callback deploys sit behind a proxy for TLS.
-        xff = self.headers.get("X-Forwarded-For")
-        if xff:
-            return xff.split(",", 1)[0].strip()
+        # Never trust caller-controlled forwarding headers.
         try:
             return self.client_address[0]
         except Exception:                                # noqa: BLE001
@@ -215,32 +224,64 @@ class _Handler(http.server.BaseHTTPRequestHandler):
     def _record_hit(self, cid: str, body_preview: Optional[str]):
         try:
             self.db.record(
-                cid=cid, method=self.command, path=self.path,
-                user_agent=self.headers.get("User-Agent"),
+                cid=cid, method=self.command, path=urllib.parse.urlsplit(self.path).path,
+                user_agent=None,
                 remote_ip=self._remote_ip(),
-                referer=self.headers.get("Referer"),
-                body_preview=body_preview,
+                referer=None,
+                body_preview=None,
             )
-        except Exception:                                # noqa: BLE001
-            # A DB write failure should not turn into a 5xx that changes
-            # what the browser sees. Silent server-side loss beats the
-            # exploit noticing the callback dropped.
-            pass
+        except sqlite3.Error:
+            self._send_json(503, {"error": "callback storage unavailable"})
+            return False
+        return True
+
+    def _authorized(self):
+        values = self.headers.get_all("Authorization", [])
+        if self.read_token is not None and (len(values) != 1 or not
+                hmac.compare_digest(values[0].encode(),
+                                    ("Bearer " + self.read_token).encode())):
+            self._send_json(401, {"error": "authentication required"})
+            return False
+        # CORS alone does not stop same-origin/DNS-rebinding requests.
+        hosts = self.headers.get_all("Host", [])
+        if len(hosts) != 1 or hosts[0] not in {f"127.0.0.1:{self.server.server_port}",
+                        f"localhost:{self.server.server_port}"}:
+            self._send_json(403, {"error": "local host required"})
+            return False
+        if self.headers.get_all("Origin", []) or "cross-site" in self.headers.get_all("Sec-Fetch-Site", []):
+            self._send_json(403, {"error": "browser read access disabled"})
+            return False
+        return True
 
     def do_OPTIONS(self):
         self._send(204, b"", ctype="text/plain")
 
     def do_GET(self):
+        try:
+            return self._get()
+        except sqlite3.Error:
+            return self._send_json(503, {"error": "callback storage unavailable"})
+
+    def _get(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+
+        if path == "/healthz" or path == "/hits" or path.startswith("/hits/"):
+            if not self._authorized():
+                return
 
         if path == "/healthz":
             return self._send_json(200,
                                    {"ok": True, "hits": self.db.count()})
 
         if path == "/hits":
-            qs = urllib.parse.parse_qs(parsed.query)
-            limit = int(qs.get("limit", [self.list_limit])[0])
+            qs = urllib.parse.parse_qs(parsed.query, keep_blank_values=True)
+            values = qs.get("limit", [str(self.list_limit)])
+            if len(values) != 1 or not values[0].isascii() or not values[0].isdigit():
+                return self._send_json(400, {"error": "invalid limit"})
+            if len(values[0]) > 6 or not 1 <= int(values[0]) <= self.list_limit:
+                return self._send_json(400, {"error": "invalid limit"})
+            limit = int(values[0])
             return self._send_json(200, {"hits": self.db.list_all(limit)})
 
         if path.startswith("/hits/"):
@@ -248,10 +289,11 @@ class _Handler(http.server.BaseHTTPRequestHandler):
             if not _valid_cid(cid):
                 return self._send_json(400, {"error": "invalid cid"})
             return self._send_json(
-                200, {"cid": cid, "hits": self.db.list_for_cid(cid)})
+                200, {"cid": cid, "hits": self.db.list_for_cid(cid, self.list_limit)})
 
         if path == "/callback":
-            self._record_hit("callback", None)
+            if not self._record_hit("callback", None):
+                return
             return self._send(200, _1PX_GIF, ctype="image/gif")
 
         # /c/<cid> or /c/<cid>.js
@@ -261,13 +303,15 @@ class _Handler(http.server.BaseHTTPRequestHandler):
                 cid = tail[:-3]
                 if not _valid_cid(cid):
                     return self._send_json(400, {"error": "invalid cid"})
-                self._record_hit(cid, None)
+                if not self._record_hit(cid, None):
+                    return
                 return self._send(200, b"void 0;\n",
                                   ctype="application/javascript")
             cid = tail
             if not _valid_cid(cid):
                 return self._send_json(400, {"error": "invalid cid"})
-            self._record_hit(cid, None)
+            if not self._record_hit(cid, None):
+                return
             return self._send(200, _1PX_GIF, ctype="image/gif")
 
         return self._send_json(404, {"error": "not found"})
@@ -275,25 +319,28 @@ class _Handler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
-        length = int(self.headers.get("Content-Length", "0") or "0")
-        if length > 0:
-            raw = self.rfile.read(min(length, _BODY_PREVIEW_MAX))
-            body_preview = raw.decode("utf-8", errors="replace")
-            # Drain any excess so keep-alive stays healthy.
-            remaining = length - min(length, _BODY_PREVIEW_MAX)
-            while remaining > 0:
-                chunk = self.rfile.read(min(remaining, 4096))
-                if not chunk:
-                    break
-                remaining -= len(chunk)
-        else:
-            body_preview = None
+        self.close_connection = True
+        values = self.headers.get_all("Content-Length", [])
+        if self.headers.get("Transfer-Encoding") is not None:
+            return self._send_json(400, {"error": "transfer encoding unsupported"})
+        if len(values) != 1 or not values[0].isascii() or not values[0].isdigit():
+            return self._send_json(400, {"error": "invalid content length"})
+        if len(values[0]) > 6 or int(values[0]) > _BODY_PREVIEW_MAX:
+            return self._send_json(413, {"error": "body too large"})
+        length = int(values[0])
+        try:
+            raw = self.rfile.read(length)
+        except TimeoutError:
+            return self._send_json(408, {"error": "request body timeout"})
+        if len(raw) != length:
+            return self._send_json(400, {"error": "incomplete body"})
 
         if path.startswith("/c/"):
             cid = path[len("/c/"):]
             if not _valid_cid(cid):
                 return self._send_json(400, {"error": "invalid cid"})
-            self._record_hit(cid, body_preview)
+            if not self._record_hit(cid, None):
+                return
             return self._send_json(200, {"ok": True})
 
         return self._send_json(404, {"error": "not found"})
@@ -305,7 +352,15 @@ class CallbackServer:
     discover the actual assigned port."""
 
     def __init__(self, port: int = 0, db_path: str = ":memory:",
-                 list_limit: int = _LIST_LIMIT_DEFAULT):
+                 list_limit: int = _LIST_LIMIT_DEFAULT, *,
+                 read_token: Optional[str] = None, request_timeout: float = 5.0):
+        if type(list_limit) is not int or not 1 <= list_limit <= 1000:
+            raise ValueError("list_limit must be between 1 and 1000")
+        if not math.isfinite(request_timeout) or request_timeout <= 0:
+            raise ValueError("request_timeout must be finite and positive")
+        if read_token is not None and (len(read_token) < 16 or not read_token.isascii()
+                                      or any(c.isspace() for c in read_token)):
+            raise ValueError("read_token must be at least 16 ASCII characters without whitespace")
         self.db = CallbackDB(db_path)
         # Bind a fresh subclass so the class-level db attribute is
         # scoped to this server instance (multiple servers in one
@@ -313,7 +368,8 @@ class CallbackServer:
         handler_cls = type(
             "_ScopedHandler",
             (_Handler,),
-            {"db": self.db, "list_limit": list_limit},
+            {"db": self.db, "list_limit": list_limit, "read_token": read_token,
+             "request_timeout": request_timeout},
         )
         self._httpd = http.server.ThreadingHTTPServer(
             ("127.0.0.1", port), handler_cls)
@@ -353,11 +409,17 @@ def main() -> int:
                     help="use an in-memory DB. Overrides --db.")
     ap.add_argument("--list-limit", type=int, default=_LIST_LIMIT_DEFAULT,
                     help="max rows returned by /hits and /hits/<cid>.")
+    ap.add_argument("--read-token-env", metavar="NAME",
+                    help="environment variable containing optional /hits bearer token")
     args = ap.parse_args()
 
     db_path = ":memory:" if args.memory else args.db
-    srv = CallbackServer(port=args.port, db_path=db_path,
-                         list_limit=args.list_limit)
+    try:
+        token = os.environ[args.read_token_env] if args.read_token_env else None
+        srv = CallbackServer(port=args.port, db_path=db_path,
+                             list_limit=args.list_limit, read_token=token)
+    except (KeyError, ValueError, sqlite3.Error, OSError):
+        ap.error("invalid callback configuration or unavailable storage/listener")
     print(f"[dxa-callback] listening on http://127.0.0.1:{srv.port} "
           f"(db={db_path})")
     srv.start()
