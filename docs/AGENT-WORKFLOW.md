@@ -1,10 +1,13 @@
 # Roadmap'e bağlı uzman çalışma düzeni
 
-9 Ekim teslim istisnası: kullanıcı 8–9 Ekim çalışmalarının yeniden testinden sonra
-koordinatöre commit ve GitHub push yetkisi verdi. Aşağıdaki önceki Git yasağı bu
-teslime uygulanmaz; uzmanlar bağımsız Git teslimi yapmaz.
+11 Ekim güncel çalışma sözleşmesi: bağlam Git deposundaki belgelerden aktarılır;
+her yeni görev AGENTS/ROADMAP/STATUS/VALIDATION ve ilgili audit'i okuyarak başlar.
+Koordinatör her doğrulanmış teslimi gerekli ilerleme belgeleriyle commit/push
+edebilir; yalnız işe ait dosyalar stage edilir, uzak commit doğrulanır ve CI
+ayrı raporlanır. Uzmanlar bağımsız Git teslimi yapmaz. Tarihsel audit görevleri
+aktif çalışan veya güncel yetki sayılmaz. STATUS tek güncel devam noktasıdır.
 
-## 8 Ekim 2026 — geçerli geliştirme yetkisi
+## Geçerli geliştirme düzeni — 8 Ekim temeli, 11 Ekim Git yetkisi
 
 Kullanıcı ROADMAP'in uygulanabilir açık işlerini bağımlılık sırasıyla geliştirmeyi
 onayladı. Aşağıdaki 6/7 Ekim yetki açıklamaları tarihsel kayıttır. Beş native
@@ -24,8 +27,9 @@ runner/adapter; Storage: mevcut SQLite/callback/Docker ve test; Report: mevcut
 HTML/JSON, güvenli çıktı ve kullanılabilirlik; QA: bağımsız oracle/fixture,
 regresyon ve lab entegrasyonu. Ortak sözleşme ve ana roadmap koordinatördedir.
 
-Commit, push, dış yayın, veri silme ve arka plan otomasyonu yapılmaz. Yalnız
-izinli yerel/disposable lab test edilir. Madde başına tekrar onay istenmez.
+Koordinatörün commit/push yetkisi yukarıdadır; diğer dış yayın, veri silme ve
+arka plan otomasyonu yapılmaz. Yalnız izinli yerel/disposable lab test edilir.
+Madde başına tekrar onay istenmez.
 Engeller ve kesinti öncesi ilerleme audit'e kaydedilir; duran görev aktif diye
 sunulmaz. Ana plan ROADMAP'tir; audit görev kuyruğu ikinci roadmap değildir.
 
@@ -39,8 +43,8 @@ Kapasite her oturumda değişebilir. Otomatik açılış veya zamanlanmış iş 
 **7 Ekim 2026 güncellemesi:** Bu sohbetin beş native `agent_type` çağrısı
 başarılıdır; [çağrı ve kapsam kaydı](../audit/2026-10-07-r4-native/README.md).
 Aşağıdaki doğrulanamadı kayıtları önceki ortamın tarihsel durumudur.
-Yeni geliştirme görevlerinde native rol kullanılır. Engine ve QA tanımları
-proje kapsamında `workspace-write` olarak güncellendi; diğer üç rol read-only.
+Yeni geliştirme görevlerinde native rol kullanılır. 7 Ekim'de Engine ve QA
+tanımları `workspace-write` oldu; 8 Ekim'de beş rolün tamamı aynı değere geçti.
 Eski çalışanlara yeni ayar uygulandığı varsayılmaz; görev sınırı ve gerçek
 araç sonucu ayrıca kaydedilir. Genel sistem/ağ yetkisi genişletilmez.
 

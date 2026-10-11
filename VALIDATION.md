@@ -1,4 +1,26 @@
-# Doğrulama kaydı — 2026-10-09
+# Doğrulama kaydı — 2026-10-11
+
+## 11 Ekim 2026 — R9 CI self-scan ve devamlılık
+
+- Yeni koordinatör kabulü: **143 passed, 13.21 s**, exit 0; failure/error/skip
+  yok. Python 3.10.11 / pytest 9.1.1 / Windows; browser ve Docker kullanılmadı.
+  `bench/test_ci_self_scan.py`, `bench/test_bench.py`, `test_dxa.py` ve
+  `test_static_context.py` birlikte çalıştı. Gerçek examples self-scan exit 0.
+- Başlangıç commit'i `5df2577` + bu teslimin çalışma ağacı. Test edilen kaynak,
+  fixture, CI ve beş agent tanımı SHA-256'ları koşu boyunca sabit:
+  [komut/ortam/hash](audit/2026-10-11-continuity/acceptance.json),
+  [JUnit](audit/2026-10-11-continuity/acceptance.xml),
+  [tekrar üretim script'i](audit/2026-10-11-continuity/run_validation.py).
+- QA'nın ayrı 20 testlik koşusu birleşik 143'e dahildir; sayılar toplanmaz.
+  Eski Bash gate'in RuntimeError/ModuleNotFoundError'ı exit 0'a çevirdiği
+  [yeniden üretildi](audit/2026-10-11-continuity/qa-legacy-gate-retry.json).
+- Önceki 9 Ekim paketindeki 43 kaynak hash'i mevcut dosyalarla eşleşti;
+  824 testlik eski JUnit incelendi. Yeni tam 824 test koşusu yapılmadı.
+- Uzak **başlangıç commit'i** `5df2577` için
+  [CI 37934071361](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/37934071361)
+  ve üç job başarılı; iki artifact metadata'sı görüldü. İçerik/skip sayısı bu
+  kontrolde doğrulanmadı. Bu sonuç yeni değişikliğin uzak CI sonucu değildir.
+- [Denetim, görev sahipliği ve kapsam](audit/2026-10-11-continuity/README.md).
 
 ## 9 Ekim 2026 — 8–9 Ekim değişikliklerinin tam tekrarı
 
@@ -86,7 +108,7 @@ Her dosya ayrı olarak bir kez `python -m pytest <dosya> -q -p no:cacheprovider
 Chrome testi desteklemez. İkincisine aynı ortam değişkeninin eklenmesi öneridir,
 bu teslimde uygulanmadı. Eski browser discovery skip'leri kapanmış sayılmaz.
 
-## Sınırlı multi-agent geliştirme turu — en son koşu
+## Sınırlı multi-agent geliştirme turu — tarihsel 6 Ekim koşusu
 
 - Birleşik scope/HTTP/auth/browser/rapor/benchmark paketi: **339 passed,
   86.51 saniye**. Log/JUnit yerel çıktıdır, depoda yoktur;
@@ -100,7 +122,7 @@ bu teslimde uygulanmadı. Eski browser discovery skip'leri kapanmış sayılmaz.
 - Bu tur tam depo veya uzak CI koşusu değildir. Önceki 36 browser skip'in
   tamamının çözüldüğü iddia edilmez. [Kapsam ve katkılar](audit/2026-10-06-multi-agent-round1/README.md).
 
-## R3 ilk browser zinciri — güncel teslim
+## R3 ilk browser zinciri — tarihsel teslim
 
 - Önceki tam paket **544 passed, 36 skipped, 1 warning**, 141.50 saniye.
   R3 değişikliklerinden sonra odaklı browser paketi **21/21 geçti**;

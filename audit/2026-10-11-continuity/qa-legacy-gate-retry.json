@@ -1,0 +1,17 @@
+[
+    {
+        "body":  "raise RuntimeError()",
+        "gate_exit":  0,
+        "output":  "bash.exe : Traceback (most recent call last):\r\nAt line:2 char:265\r\n+ ... ; $output = \u0026 \u0027C:\\Program Files\\Git\\bin\\bash.exe\u0027 --noprofile --norc  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\r\nRuntimeError\r\nfindings-reported-as-expected\r\n"
+    },
+    {
+        "body":  "import dxa_missing_dependency_for_ci_regression",
+        "gate_exit":  0,
+        "output":  "bash.exe : Traceback (most recent call last):\r\nAt line:2 char:265\r\n+ ... ; $output = \u0026 \u0027C:\\Program Files\\Git\\bin\\bash.exe\u0027 --noprofile --norc  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\r\nModuleNotFoundError: No module named \u0027dxa_missing_dependency_for_ci_regression\u0027\r\nfindings-reported-as-expected\r\n"
+    },
+    {
+        "body":  "import sys; sys.exit(0)",
+        "gate_exit":  1,
+        "output":  ""
+    }
+]

@@ -27,13 +27,10 @@ jobs:
         run: pytest test_http_evidence.py test_blind_correlation.py test_auth_guards.py test_r2_contract.py -q
 
       - name: Self-scan the example corpus
-        working-directory: tools/dom-xss-analyzer
-        run: |
-          # the analyzer must still flag the intentionally-vulnerable examples
-          python dxa.py examples/ --min-confidence high && exit 1 || echo "findings reported as expected"
+        run: python bench/ci_self_scan.py
 
       - name: Benchmark harness tests
-        run: pytest bench/test_bench.py bench/test_proof_adapter.py -q
+        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py -q
 
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:

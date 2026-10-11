@@ -5,7 +5,9 @@ R9 callback/Docker guard değişiklikleri tam yerel tekrarda **824 passed**;
 ayrı K01 HTTP fixture **2 passed**, Chrome proof **9/9, TP=3 FP=0 FN=0**.
 [Kabul ve kapsam](audit/2026-10-09-resume/README.md). Bu dar teslim genel
 R4/R8/R9 kutularını kapatmaz; gerçek ürün bootstrap/port-discovery adapter'ı ve
-uzak Linux CI açık kalır. Aşağıdaki 6–7 Ekim test sayıları tarihsel kanıttır.
+uzak Linux CI artifact kabulü açık kalır. 11 Ekim kontrolde `5df2577` için
+uzak CI/job sonuçları başarılı bulundu; artifact içerikleri henüz incelenmedi.
+Güncel devam noktası [STATUS](STATUS.md); aşağıdaki 6–7 Ekim test sayıları tarihseldir.
 
 6 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
@@ -61,7 +63,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [7 Ekim yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Yerel kabul PASS; dokuz fixture ve gerçek CLI hata izolasyonu doğrulandı; hard timeout, gerçek ürün ve uzak CI açık |
+| R4 | [9 Ekim yeniden doğrulama](audit/2026-10-09-resume/README.md) | Yerel hard timeout/süreç temizliği ve dokuz fixture PASS; gerçek ürün adapter'ı ve uzak artifact kabulü açık |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -190,7 +192,12 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
-7 Ekim son doğrulama: yeni tam paket 681 passed, sıfır skip. Ayrı Chrome CLI
+Güncel dar kabul: 9 Ekim Windows worker timeout/crash/cleanup ve strict corpus
+kanıtı [son pakettedir](audit/2026-10-09-resume/README.md). 11 Ekim kaynak
+hash'leri bu paketle eşleşti. Genel R4 ve aşağıdaki birleşik kabul kutuları
+aynı kapsamı korur; tarihsel eksik listeleri güncel görev listesi değildir.
+
+7 Ekim tarihsel doğrulama: yeni tam paket 681 passed, sıfır skip. Ayrı Chrome CLI
 9/9, TP=3 FP=0 FN=0; eksik browser ve gerçek lab içinde enjekte edilen vaka
 hatası rapor üreterek strict exit 1 verdi. R4 yerel kapsam PASS; genel roadmap
 kapanışı değil. [Yeni sonuçlar](audit/2026-10-07-r3-r4-revalidation/README.md).
@@ -304,6 +311,11 @@ Kod + yanlış davranışı yakalayan test + ilgili fixture sonucu + kısa sür�
 
 Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
 
+9 Ekim dar teslim aşağıdaki ilk altı maddenin context/provenance, fixture ve
+belgeleme alanlarını test etti; [kabul](audit/2026-10-09-resume/README.md) ve
+[regex sınırları](tools/dom-xss-analyzer/STATIC-LIMITS.md) geçerlidir. Birleşik
+R8 kapanışı ve AST ölçümü yapılmış sayılmaz; kutuların kapsamı daraltılmaz.
+
 - [ ] `sanitize(q) + q` ve identity sanitizer taint'i yok etmez; mevcut hard-clear test oracle'ı düzeltilir.
 - [ ] Sanitizer bağlamı ve temizlenen alt ifade değerlendirilir; Markup/SafeString benzeri güven işaretleyicileri encoder sanılmaz.
 - [ ] Dosyalar arası isim/kapsam çakışması negatif fixture'ı vardır; regex destek sınırı yazılır.
@@ -315,6 +327,11 @@ Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
 ## R9 — Operasyon, kapsam ve tekrar üretim (bot; açık)
 
 Dosyalar: callback servisi, CLI, bench compose dosyaları, README/CI.
+
+11 Ekim dar teslim: CI self-scan'in crash/import hatasını beklenen bulgu
+sayması düzeltildi; gerçek CLI + bağımsız karşı örneklerle 143 test geçti.
+[Kanıt](audit/2026-10-11-continuity/README.md). Aşağıdaki birleşik self-scan /
+browser skip / bench CI maddesi ve genel R9 kapanışı açık kalır.
 
 6 Ekim dar teslim: reflected crawler form/link/redirect/CSRF isteklerinde
 scheme/host/port sınırı iki loopback origin ile doğrulandı. Cookie jar korunur.

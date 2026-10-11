@@ -1,0 +1,17 @@
+[
+    {
+        "body":  "raise RuntimeError(\"injected crash\")",
+        "gate_exit":  0,
+        "output":  "bash.exe :   File \"\u003cstring\u003e\", line 1\r\nAt line:2 char:192\r\n+ ... { $output = \u0026 \u0027C:\\Program Files\\Git\\bin\\bash.exe\u0027 --noprofile --norc  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (  File \"\u003cstring\u003e\", line 1:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n    as\r\n    ^^\r\nSyntaxError: invalid syntax\r\nfindings\r\n"
+    },
+    {
+        "body":  "import dxa_missing_dependency_for_ci_regression",
+        "gate_exit":  0,
+        "output":  "bash.exe :   File \"\u003cstring\u003e\", line 1\r\nAt line:2 char:192\r\n+ ... { $output = \u0026 \u0027C:\\Program Files\\Git\\bin\\bash.exe\u0027 --noprofile --norc  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (  File \"\u003cstring\u003e\", line 1:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n    as\r\n    ^^\r\nSyntaxError: invalid syntax\r\nfindings\r\n"
+    },
+    {
+        "body":  "import sys; sys.exit(0)",
+        "gate_exit":  0,
+        "output":  "bash.exe :   File \"\u003cstring\u003e\", line 1\r\nAt line:2 char:192\r\n+ ... { $output = \u0026 \u0027C:\\Program Files\\Git\\bin\\bash.exe\u0027 --noprofile --norc  ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : NotSpecified: (  File \"\u003cstring\u003e\", line 1:String) [], RemoteException\r\n    + FullyQualifiedErrorId : NativeCommandError\r\n \r\n    as\r\n    ^^\r\nSyntaxError: invalid syntax\r\nfindings\r\n"
+    }
+]

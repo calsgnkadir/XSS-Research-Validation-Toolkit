@@ -1,5 +1,16 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-11
+
+- R9 self-scan CI kapısı crash/import hatasını beklenen bulgu diye kabul etmez;
+  fresh JSON raporu, çıkış kodu, source/sink tutarlılığı ve hata/skip kayıtları
+  birlikte denetlenir. Gerçek CLI ve bağımsız karşı örneklerle 143 test geçti.
+- Devamlılık Git ve belge sözleşmesine bağlandı: STATUS tek güncel devam
+  noktası, eski metin audit'te; tarihsel yetki/durum çelişkileri düzeltildi.
+  Beş mevcut custom-agent tanımı korundu.
+- [Kanıt ve sınırlar](audit/2026-10-11-continuity/README.md). Genel R4/R9,
+  gerçek ürün adapter'ı ve uzak artifact kabulü bu teslimle kapanmaz.
+
 ## Unreleased — 2026-10-09
 
 - R4 browser proof worker'ları parent deadline ve sahip olunan süreç ağacıyla

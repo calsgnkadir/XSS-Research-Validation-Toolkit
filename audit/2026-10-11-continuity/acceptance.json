@@ -1,0 +1,61 @@
+{
+  "base_commit": "5df257792d8e3d6f62f1ca7cb46eb4149f29c153",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "pytest": "9.1.1",
+  "browser_used": false,
+  "docker_used": false,
+  "commands": [
+    {
+      "command": "python -m pytest bench/test_ci_self_scan.py bench/test_bench.py tools/dom-xss-analyzer/test_dxa.py tools/dom-xss-analyzer/test_static_context.py -q -p no:cacheprovider --tb=short --junitxml=audit/2026-10-11-continuity/acceptance.xml",
+      "exit_code": 0,
+      "output": "........................................................................ [ 50%]\n.......................................................................  [100%]\n143 passed in 13.21s\n"
+    },
+    {
+      "command": "python bench/ci_self_scan.py",
+      "exit_code": 0,
+      "output": "Self-scan completed with high-confidence static candidates (not execution proof).\n"
+    }
+  ],
+  "junit": {
+    "tests": 143,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "bench/test_ci_self_scan.py": "d94fcdaee0fa6569197869caba7cc22b2925c19e73475d6a20fd01975c74c4a9",
+    "bench/test_bench.py": "3ceb2c238090ed1c24c38f8a49d630f176183ecbf43b91c131ac5c8794f3c4a7",
+    "tools/dom-xss-analyzer/test_dxa.py": "7ecad47b733f7bd82ebaec5d10438227151750b58784be43c22af5e8b8ba927f",
+    "tools/dom-xss-analyzer/test_static_context.py": "f444baf937b70fd42da747d86edd5f1f3bc0e302b9f45640a181736fa5e9ec58",
+    ".github/workflows/ci.yml": "467cdb789fa934d93869b06dd1cffa6da063c7fc15c8fb37fb857b801acc1900",
+    "bench/ci_self_scan.py": "955ee45d8253464797951065c6eb3abe20d1e697e6343cf324491e9941f61f73",
+    "bench/run.py": "f1887b1db2cc4473e954d3f70d22e05c32e2077249d36a4dc109d6820d7d664c",
+    "tools/dom-xss-analyzer/dxa.py": "f15a467bc92d08a282ac4f04e32856c1ba0157dc84a60300a7854b87a5dad386",
+    "tools/dom-xss-analyzer/dxa_evidence.py": "a3b1a18358f6691b27db2a301b1a90c3bddd41daf4281b25bfc31fa83361729c",
+    "audit/2026-10-11-continuity/run_validation.py": "2424eb00207243cbd8b674aad05b1707f65054487b10f87b68af47bed8d38450",
+    ".codex/agents/qa_security_lab_specialist.toml": "74743e238e5c1af92781835ad04dbbfe6d211661fa29783d33c1aae3a15b0837",
+    ".codex/agents/report_frontend_specialist.toml": "0dc894ebecdaa3bd1af07290ffd91a2d5c499b9eb612680ab1c9f41c01a92630",
+    ".codex/agents/scanner_engine_specialist.toml": "f67e99dfbf358abdef13bc59250025365bd336332824bfa5fc32bdad90dd218a",
+    ".codex/agents/storage_docker_specialist.toml": "3cd09e2a439b4bc87ceed5422f9808f56988fc7258aca3503d7f7e1c32b9476a",
+    ".codex/agents/xss_security_researcher.toml": "e15601e43803a6e8fc4145f4bb64f07f71e086846e27766f19279323e02bd39b",
+    "tools/dom-xss-analyzer/examples/flows/cookie-login.json": "3e97778b8aab7a231f678a76ec7067907f1706309c3099a395c09a9c45242621",
+    "tools/dom-xss-analyzer/examples/flows/jwt-login.json": "a85a67cdf38c3d0f49ed9833025c69e72c54ecc814695244fa0dcd772159dc41",
+    "tools/dom-xss-analyzer/examples/flows/register-comment-verify.json": "2bb68a838cca9591e1beb25c3478a464335fc4dc9be0ebed592d669fb218e433",
+    "tools/dom-xss-analyzer/examples/safe.java": "f2dcf3eb7575e4f72f183e9c04c24b0059a5aa8d64061c361b13e9d2ffac5d8d",
+    "tools/dom-xss-analyzer/examples/safe.js": "02a418e8e9ef81a3d1c7488c019fe98e4479f20a829c82ae934196c5477c5dcb",
+    "tools/dom-xss-analyzer/examples/safe.php": "38a7c91efd22b3816b0080f00330968333605ad44c8121b02ac5779353f125cc",
+    "tools/dom-xss-analyzer/examples/safe.py": "8c183d1674d732e4d0109e92488623f2d74268dae769667a99a872e2bb8ebbf0",
+    "tools/dom-xss-analyzer/examples/vulnerable.cs": "ab190900084fa9e4dc0f5531ff7d94e0edf88fcc4994b29820e0a52fd3ea5c87",
+    "tools/dom-xss-analyzer/examples/vulnerable.cshtml": "2fcc7af6a485c6cd0422aff968bf9d75d5dcb767f756280dd66e8bd87427d2a0",
+    "tools/dom-xss-analyzer/examples/vulnerable.java": "fa87bdb3e2cc6d6279f0f592e3a17984ebe9db08cadf42e37e34366d16ad952e",
+    "tools/dom-xss-analyzer/examples/vulnerable.js": "8436414986dd51ddc1181dc70e9327ed22c56ac9c9549449f1d3fd4cfe98efc5",
+    "tools/dom-xss-analyzer/examples/vulnerable.php": "355bdcc64b40139153cbd070817cc65be7338ac87e066f33dc0dc35e984909fc",
+    "tools/dom-xss-analyzer/examples/vulnerable.py": "0ae59d184daa97342b2d3b2d30575ca329f15ea82894c8350d41d4e806b8e488"
+  },
+  "source_unchanged_during_run": true,
+  "previous_acceptance_hash_check": {
+    "checked": 43,
+    "mismatches": []
+  }
+}
