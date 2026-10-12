@@ -1,0 +1,25 @@
+﻿{
+    "checked_at_utc":  "2026-10-12T15:06:42.7688107Z",
+    "run":  {
+                "id":  38267306222,
+                "head_sha":  "8873aaf1848a0ef67d4c48523d9a2bd78ff60d88",
+                "status":  "completed",
+                "conclusion":  "success",
+                "html_url":  "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38267306222"
+            },
+    "jobs":  [
+                 {
+                     "name":  "dxadom browser harness (Playwright opt-in)",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "Required local authenticated browser proof",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "dom-xss-analyzer tests",
+                     "conclusion":  "success"
+                 }
+             ],
+    "artifact_contents_downloaded":  false
+}

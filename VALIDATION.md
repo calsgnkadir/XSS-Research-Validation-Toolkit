@@ -1,5 +1,17 @@
 ﻿# Doğrulama kaydı — 2026-10-12
 
+## 12 Ekim son kontrol — R9 uzak CI ve yeni çalışma kökü
+
+- R9 8873aaf push ve uzak hash eşleşmesi; CI 38267306222 ve üç job success.
+  [Uzak metadata](audit/2026-10-12-r9-report-privacy/remote-delivery.json).
+  Bu koşunun artifact içeriği indirilmedi; R4 indirilen artifact kabulü ayrıdır.
+- Yeni C:\xss\xss-github: **95 passed, 15.90 s**, sıfır failure/error/skip;
+  bench/test_ci_acceptance.py ve test_report_privacy.py tekrarlandı.
+  Önceki 185/126 sayılarına eklenmez. 1076 erişilebilir dosya hash'i ve Git
+  durumu kopyalama öncesi/sonrası eşleşti. Kaynak işlem kilidi ve erişilemeyen
+  cache nedeniyle eski OneDrive kopyası silinmedi.
+  [Kontrol kaydı](audit/2026-10-12-relocation/README.md).
+
 ## 12 Ekim devamı — uzak R4 kabulü ve R9 rapor mahremiyeti
 
 - `c5d5451` push ve uzak main eşleşmesi doğrulandı. CI **38233880679 success**;

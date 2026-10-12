@@ -1,0 +1,24 @@
+{
+  "base_commit": "8873aaf1848a0ef67d4c48523d9a2bd78ff60d88",
+  "verification": {
+    "destination": "C:\\xss\\xss-github",
+    "files_checked": 1076,
+    "mismatches": [],
+    "head_matches": true,
+    "status_matches": true,
+    "old_source_preserved_due_to_open_handle": true,
+    "unreadable_cache_not_copied": [
+      ".pytest_cache"
+    ]
+  },
+  "full_local_manifest": "C:/xss/migration-verification.json",
+  "local_manifest_published": false,
+  "smoke": {
+    "tests": 95,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 15.9,
+    "command": "py -3.10 -m pytest bench/test_ci_acceptance.py tools/dom-xss-analyzer/test_report_privacy.py -q -p no:cacheprovider --tb=short --junitxml=audit/2026-10-12-relocation/smoke.xml"
+  }
+}
