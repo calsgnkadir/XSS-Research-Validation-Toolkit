@@ -2,6 +2,11 @@
 
 ## 12 Ekim R4 ürün adapter taslağı — canlı kabul engelli
 
+- Kod checkpoint'i `db96027` uzak main hash'iyle eşleşti. CI 38302697303 ve
+  üç job success; yeni mock adapter regresyonları CI'da geçti. Bu koşunun
+  artifact içerikleri indirilmedi, Docker ürün lifecycle'ı CI'da çalışmadı.
+  [Uzak metadata](audit/2026-10-12-r4-product-adapter/remote-delivery.json).
+
 - Koordinatör birleşik koşusu **268 passed, 26.46 s**, sıfır failure/error/skip;
   83 bağımsız yeni test bu sayıya dahildir. Python 3.10.11 / Windows.
   Başlangıç `d151a8a` + uncommitted kaynak hash'leri koşu boyunca sabit.

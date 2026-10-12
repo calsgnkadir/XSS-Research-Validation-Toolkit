@@ -20,7 +20,11 @@ raw/escaped public browser kontrolü ve bad-browser/cleanup kabulünü çalışt
 Port kapısı atlanmaz, mevcut uygulama kullanılmaz. Genel R4 kutuları açık.
 Engine native görevi otomatik güvenlik kontrolünde durdu; kısmi kod koordinatörce
 incelendi/düzeltildi. QA native görevi bağımsız 83 testi tamamladı. Aktif uzman
-veya arka plan işi yok. Bu teslimin Git/CI sonucu ayrıca doğrulanacaktır.
+veya arka plan işi yok. Kod checkpoint'i `db96027` push edildi; uzak main hash'i
+birebir doğrulandı. [CI 38302697303](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38302697303)
+ve üç job success; yeni mock adapter test adımı dahil. Artifact içerikleri bu
+koşuda indirilmedi. Bu kayıt sonraki belge commit'indedir; yeni oturum gerçek
+HEAD/upstream'i karşılaştırmalıdır. Canlı ürün kabulü hâlâ engelli.
 
 ## Aktif çalışma yeri
 

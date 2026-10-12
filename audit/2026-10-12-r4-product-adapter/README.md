@@ -81,3 +81,21 @@ acceptance remain open. The raw administrator content control is by design.
 [Docker networking documentation](https://docs.docker.com/desktop/features/networking/networking-how-tos/)
 explains Desktop host access through published ports; the missing binding above
 is a local observation, not a claim about every Docker version or platform.
+
+
+An independent [report in Moby's upstream repository](https://github.com/moby/moby/discussions/53256)
+describes missing published ports on internal-only networks in Engine 29.6.2.
+It corroborates the symptom; it is not a maintainer-confirmed diagnosis of this
+machine. A loopback-only ingress proxy on a separate edge network is a design
+candidate to review, not implemented or accepted here. Attaching the application
+itself to an unrestricted network would change the current isolation contract.
+
+
+## Remote checkpoint
+
+Implementation commit `db9602783068faa10373d15485da7b8f36eb7ed3` was pushed;
+`git ls-remote` matched. CI [38302697303](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38302697303)
+and all three jobs succeeded, including the new mocked benchmark adapter tests.
+[Sanitized job/step metadata](remote-delivery.json). Artifact contents were not
+downloaded for this run. CI did not run the local Bludit image. These delivery
+notes are a subsequent documentation commit; they do not alter tested code.

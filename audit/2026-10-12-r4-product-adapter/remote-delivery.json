@@ -1,0 +1,167 @@
+{
+  "checked_at": "2026-10-12T20:12:30.751037+00:00",
+  "commit": "db9602783068faa10373d15485da7b8f36eb7ed3",
+  "remote_main_verified": true,
+  "run_id": 38302697303,
+  "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38302697303",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "dxadom browser harness (Playwright opt-in)",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pytest + playwright",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run dxadom tests with a real browser",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "dom-xss-analyzer tests",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install pytest",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run test suite",
+          "conclusion": "success"
+        },
+        {
+          "name": "Required R1 and R2 negative controls",
+          "conclusion": "success"
+        },
+        {
+          "name": "Self-scan the example corpus",
+          "conclusion": "success"
+        },
+        {
+          "name": "Benchmark harness tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "Benchmark smoke run (dxadyn on mock corpus, strict)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Required local authenticated browser proof",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m pip install pytest playwright==1.63.0",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run python -m playwright install --with-deps chromium",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run R3 acceptance tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run R4 execution corpus (strict, no history)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run one-command proof demo",
+          "conclusion": "success"
+        },
+        {
+          "name": "Require complete R3/R4 artifact evidence with zero skipped tests",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "artifact_contents_downloaded": false,
+  "live_bludit_acceptance": false
+}
