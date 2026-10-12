@@ -86,6 +86,17 @@ ve üç job başarılı. [Sınırlı API metadata'sı](remote-baseline.json) sak
 iki artifact mevcut ancak içerikleri indirilmedi. Genel workflow yeşilliği,
 skip olmayan browser kabulü veya artifact içeriği için tek başına kanıt değildir.
 Yeni teslimin uzak sonucu başlangıç CI'ından ayrı değerlendirilmelidir.
+Artifact `11618120171/zip` için kimlik doğrulamasız API indirme kontrolü HTTP
+401 döndü. İçerik incelemesi bu erişim engeli nedeniyle yapılmadı; erişim
+başarısızlığı güvenli/başarılı artifact kabulü sayılmadı.
+
+Kod/belge teslimi `471ce977aa843a7286cff8ac86aa993edaf548cf` commit'iyle push
+edildi; `git ls-remote` uzak main eşleşmesini doğruladı. Yeni
+[CI 38171311413](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38171311413)
+ve üç job **success**; yeni self-scan/regresyon ve zorunlu browser/strict corpus
+adımları başarılı. [Metadata](remote-delivery.json) yerel testten ayrı kanıttır.
+Artifact içeriği ve uzak test/skip toplamı bu sonuçtan türetilmez. Sonraki belge
+commit'i bu gerçekleşmiş teslim sonucunu kaydeder; yeni ürün kodu içermez.
 
 R4 gerçek ürün bootstrap/login/port-discovery, uzak artifact içerik kabulü;
 R9 isteğe bağlı browser job/skip denetimi, rapor mahremiyeti ve genel ağ sınırı;

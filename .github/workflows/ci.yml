@@ -30,7 +30,7 @@ jobs:
         run: python bench/ci_self_scan.py
 
       - name: Benchmark harness tests
-        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py -q
+        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py -q
 
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:
@@ -65,10 +65,13 @@ jobs:
         run: python bench/run.py --proof-suite --no-history --out r4-proof.md
       - name: Run one-command proof demo
         run: python tools/dom-xss-analyzer/dxaprove.py --demo --output r3-proof
+      - name: Require complete R3/R4 artifact evidence with zero skipped tests
+        run: python bench/check_ci_acceptance.py --junit r3-r4-pytest.xml --corpus r4-proof.json --demo r3-proof/result.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: r3-browser-proof
+          if-no-files-found: error
           path: |
             r3-proof/
             r3-r4-pytest.xml

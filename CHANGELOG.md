@@ -1,5 +1,13 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-12
+
+- R4/R9 zorunlu CI kapısı JUnit sıfır-skip/hata, tam dokuz fixture'ın
+  kanıt/skor tutarlılığı ve demo execution sonucunu denetler. Exit 0 dönen
+  inconclusive demo kabul edilmez; ayrı opt-in browser job korunur.
+- [Yerel kabul ve uzak erişim sınırı](audit/2026-10-12-r4-ci-acceptance/README.md).
+  Genel R4/R9 kapanışı değildir; uzak artifact içerik kabulü ayrıca gerekir.
+
 ## Unreleased — 2026-10-11
 
 - R9 self-scan CI kapısı crash/import hatasını beklenen bulgu diye kabul etmez;

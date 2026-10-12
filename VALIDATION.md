@@ -1,4 +1,22 @@
-# Doğrulama kaydı — 2026-10-11
+﻿# Doğrulama kaydı — 2026-10-12
+
+## 12 Ekim 2026 — R4/R9 zorunlu CI artifact kapısı (yerel)
+
+- HEAD `471ce977aa843a7286cff8ac86aa993edaf548cf` + commit edilmemiş değişiklikler.
+  Python 3.10.11 / pytest 9.1.1 / Windows / Playwright 1.63.0, Chrome 155.0.8059.39.
+- Gerçek zorunlu browser paketi: **94 passed, 93.37 s**, failure/error/skip yok.
+  Ayrı strict corpus **9/9 completed, TP=3 FP=0 FN=0**, tüm incomplete sayaçları
+  sıfır; ayrı demo execution-observed. Yalnız loopback fixture kullanıldı.
+- Koordinatör birleşik kapı/self-scan/bench/adapter regresyonları:
+  **185 passed, 23.24 s**, failure/error/skip yok. QA'nın 72 testi bunun içindedir;
+  ayrı tekrarlar toplanmaz. Yeni kapı gerçek 94-test JUnit/corpus/demo çıktısını geçti.
+- [Komut ve kaynak hash'leri](audit/2026-10-12-r4-ci-acceptance/acceptance.json),
+  [kapsam ve browser komutları](audit/2026-10-12-r4-ci-acceptance/README.md).
+  Hash'ler birleşik koşu boyunca sabitti; daha önceki browser koşusunun öncesinde
+  alınmış yeni hash iddiası yok. JUnit hostname alanları paylaşım için çıkarıldı.
+- Uzak `471ce97` CI metadata'sı yeniden success; artifact indirmesi HTTP 401.
+  İçerik/uzak skip kabulü yapılmadı. Yeni kapı uzak CI'da çalışmadı;
+  commit/push yok. Genel R4/R9 ve ürün adapter'ı açık.
 
 ## 11 Ekim 2026 — R9 CI self-scan ve devamlılık
 
@@ -21,6 +39,12 @@
   ve üç job başarılı; iki artifact metadata'sı görüldü. İçerik/skip sayısı bu
   kontrolde doğrulanmadı. Bu sonuç yeni değişikliğin uzak CI sonucu değildir.
 - [Denetim, görev sahipliği ve kapsam](audit/2026-10-11-continuity/README.md).
+- Yeni kod commit'i `471ce977aa843a7286cff8ac86aa993edaf548cf` uzak main ile
+  doğrulandı. [Yeni CI 38171311413](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38171311413)
+  ve üç job **success**; self-scan/regresyon, zorunlu R3 ve strict R4 adımları
+  başarılı. [Job/adım metadata'sı](audit/2026-10-11-continuity/remote-delivery.json).
+  Artifact içeriği/skip sayısı ayrıca incelenmedi; indirme API'si HTTP 401 döndü.
+  Bu kayıt yerel 143 sonucundan ayrıdır, uzak test toplamı iddia edilmez.
 
 ## 9 Ekim 2026 — 8–9 Ekim değişikliklerinin tam tekrarı
 

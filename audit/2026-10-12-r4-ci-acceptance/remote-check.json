@@ -1,0 +1,42 @@
+﻿{
+    "checked_at_utc":  "2026-10-12T09:37:01.5941443Z",
+    "run":  {
+                "id":  38171311413,
+                "head_sha":  "471ce977aa843a7286cff8ac86aa993edaf548cf",
+                "status":  "completed",
+                "conclusion":  "success",
+                "html_url":  "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38171311413"
+            },
+    "jobs":  [
+                 {
+                     "name":  "dom-xss-analyzer tests",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "dxadom browser harness (Playwright opt-in)",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "Required local authenticated browser proof",
+                     "conclusion":  "success"
+                 }
+             ],
+    "artifacts":  [
+                      {
+                          "id":  11714213394,
+                          "name":  "r3-browser-proof",
+                          "expired":  false,
+                          "size_in_bytes":  7239
+                      },
+                      {
+                          "id":  11714004285,
+                          "name":  "benchmark-results",
+                          "expired":  false,
+                          "size_in_bytes":  1854
+                      }
+                  ],
+    "artifact_download_http":  401,
+    "artifact_contents_downloaded":  false,
+    "connected_browser_count":  0,
+    "note":  "Public API metadata only; authenticated artifact access unavailable."
+}

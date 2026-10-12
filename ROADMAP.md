@@ -9,6 +9,12 @@ uzak Linux CI artifact kabulü açık kalır. 11 Ekim kontrolde `5df2577` için
 uzak CI/job sonuçları başarılı bulundu; artifact içerikleri henüz incelenmedi.
 Güncel devam noktası [STATUS](STATUS.md); aşağıdaki 6–7 Ekim test sayıları tarihseldir.
 
+12 Ekim dar teslim: zorunlu R3/R4 CI artifact kapısı yerelde JUnit sıfır-skip,
+dokuz vaka tutarlılığı ve demo execution kontrolüyle doğrulandı.
+[Yeni kanıt](audit/2026-10-12-r4-ci-acceptance/README.md). Uzak artifact API'si
+HTTP 401 verdi; içerik kabulü ve yeni kapının uzak CI koşusu açık. Genel
+R4/R9 kutuları değişmedi; Git teslimi kullanıcı tarafından sonradan onaylandı.
+
 6 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.

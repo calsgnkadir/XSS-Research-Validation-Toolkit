@@ -1,0 +1,58 @@
+{
+  "base_commit": "471ce977aa843a7286cff8ac86aa993edaf548cf",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "commands": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "bench/test_ci_acceptance.py",
+        "bench/test_ci_self_scan.py",
+        "bench/test_bench.py",
+        "bench/test_proof_adapter.py",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--tb=short",
+        "--junitxml=audit/2026-10-12-r4-ci-acceptance/integration.xml"
+      ],
+      "exit_code": 0,
+      "stdout": "........................................................................ [ 38%]\n........................................................................ [ 77%]\n.........................................                                [100%]\n185 passed in 23.24s\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python",
+        "bench/check_ci_acceptance.py",
+        "--junit",
+        "audit/2026-10-12-r4-ci-acceptance/browser-acceptance.xml",
+        "--corpus",
+        "audit/2026-10-12-r4-ci-acceptance/proof.json",
+        "--demo",
+        "audit/2026-10-12-r4-ci-acceptance/demo/result.json"
+      ],
+      "exit_code": 0,
+      "stdout": "R3/R4 acceptance passed: 94 tests, zero skips/errors; corpus 9/9 TP=3 FP=0 FN=0; demo execution observed\n",
+      "stderr": ""
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/ci.yml": "3734413e104da9a0d759f99b26d2073d259c161c03265f0aae9cd40d3f0ccab7",
+    "bench/check_ci_acceptance.py": "d7ca1f9509a8a039850fd053221802f7f4dcd6c15dad42c4405c97abc83bb1da",
+    "bench/test_ci_acceptance.py": "7f48a23caf272993f4fd3d4a3bd3e6985fd10652ea0977a137b7f3c156bcf3ef",
+    "bench/run.py": "f1887b1db2cc4473e954d3f70d22e05c32e2077249d36a4dc109d6820d7d664c",
+    "bench/process_control.py": "63fe7ebc4f4a1a71d3aaa0efe6e3955ed3342dc52a6ce0758f3de3ddb7a9c4df",
+    "bench/proof_worker.py": "d2eaa71fc628285987ac5d1fa79fcca86a264403ba2f54ceea31a783174a67ed",
+    "bench/test_proof_adapter.py": "3edaccf308361644c3b5c6e95f789e09af7126b5942b1fc929965e4e65caa31a",
+    "bench/test_proof_corpus.py": "f29a1c4ce8a7e6b71765654990ad34590a786b4e936765bd6568c05ff214994b",
+    "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "ed7e7d9ac780c23de2891042f14c0e5b4aa9a90b77b7ab79ec66aad63428ef1e",
+    "tools/dom-xss-analyzer/test_browser_proof.py": "6b856af8941bed6511b46eacf32ed356d7e8ea50c74193e46007fb9c6826b522",
+    "tools/dom-xss-analyzer/test_proof_cleanup.py": "e232221d53767cc883f121dc4ee89b05c2358d9883e840d2a8a361223309785a"
+  },
+  "source_unchanged_during_integration": true,
+  "browser_evidence_note": "Browser suite, strict corpus and demo were run earlier in this session; this script validates their artifacts, not a new browser run.",
+  "remote_artifact_accepted": false
+}
