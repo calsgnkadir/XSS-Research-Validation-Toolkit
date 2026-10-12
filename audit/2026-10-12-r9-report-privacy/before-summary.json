@@ -1,0 +1,11 @@
+{
+  "base_commit": "c5d5451cc81dc94ce65aab330e3925a3a6150c04",
+  "pytest_exit": 1,
+  "junit": {
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Fake credential sentinels only; old module loaded from git show into memory; worktree unchanged."
+}

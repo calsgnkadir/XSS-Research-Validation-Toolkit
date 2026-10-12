@@ -2,11 +2,15 @@
 
 ## Unreleased — 2026-10-12
 
+- R9 ortak JSON/HTML paylaşım raporları bilinen API/CSRF credential alanlarını
+  ve evidence_links HTTP(S) URL sırlarını maskeler; ham girdiler ve kanıt
+  sınıflandırması korunur. 126 regresyon geçti; genel konsol/serbest metin
+  mahremiyeti kapanışı değildir.
 - R4/R9 zorunlu CI kapısı JUnit sıfır-skip/hata, tam dokuz fixture'ın
   kanıt/skor tutarlılığı ve demo execution sonucunu denetler. Exit 0 dönen
   inconclusive demo kabul edilmez; ayrı opt-in browser job korunur.
 - [Yerel kabul ve uzak erişim sınırı](audit/2026-10-12-r4-ci-acceptance/README.md).
-  Genel R4/R9 kapanışı değildir; uzak artifact içerik kabulü ayrıca gerekir.
+  Yeni uzak Linux artifact içeriği ayrıca doğrulandı; genel R4/R9 kapanışı değildir.
 
 ## Unreleased — 2026-10-11
 

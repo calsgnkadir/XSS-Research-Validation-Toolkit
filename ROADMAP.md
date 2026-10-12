@@ -15,6 +15,13 @@ dokuz vaka tutarlılığı ve demo execution kontrolüyle doğrulandı.
 HTTP 401 verdi; içerik kabulü ve yeni kapının uzak CI koşusu açık. Genel
 R4/R9 kutuları değişmedi; Git teslimi kullanıcı tarafından sonradan onaylandı.
 
+12 Ekim devamı: `c5d5451` uzak Linux CI ve indirilen artifact kabulü geçti:
+94 test sıfır skip, dokuz vaka TP=3 FP=0 FN=0 ve demo execution-observed.
+[Uzak kanıt](audit/2026-10-12-r4-ci-acceptance/remote/acceptance.json).
+R9 ortak JSON/HTML raporlarında bilinen API/CSRF alanları ve HTTP(S) evidence
+linkleri için maskeleme düzeltildi; [126 testlik dar kabul](audit/2026-10-12-r9-report-privacy/README.md).
+Gerçek ürün adapter'ı ve genel R4/R9 kutuları açık kalır.
+
 6 Ekim 2026 güncellemesi. **Öncelik: bot → rapor ve kanıt → portfolyo → staj → araştırma/CVE.**
 Bu belge bütün projenin ana iş listesidir. Aşağıdaki R/C/K/P/S/A kimlikleri görevleri izler;
 STATUS yalnız kısa durum özeti, eski ROADMAP-LEGACY ise tarihsel kayıttır.

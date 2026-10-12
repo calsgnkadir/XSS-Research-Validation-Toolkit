@@ -85,6 +85,25 @@ credential/cookie veya kullanıcı profili yolu paylaşım kanıtına eklenmedi.
 
 ## Devam noktası
 
+### Sonraki doğrulama — uzak kabul tamam
+
+Kullanıcı izniyle `c5d5451cc81dc94ce65aab330e3925a3a6150c04` commit/push
+yapıldı ve uzak main hash'i eşleşti. CI 38233880679 ve yeni zorunlu artifact
+kapısı success. [Uzak metadata](remote-delivery.json).
+
+Git Credential Manager'ın mevcut github.com kimliği sadece bellekte kullanıldı;
+token çıktıya/dosyaya yazılmadı, imzalı artifact indirme URL'sine aktarılmadı.
+Kimlik doğrulamasız 401 engeli böyle çözüldü. Yeni artifact 11740350906 içeriği
+indirildi; [arşiv/member hash ve kabul](remote/acceptance.json).
+Linux/Python 3.12.15 JUnit **94/0 failure/0 error/0 skip**, strict corpus
+**9/9 TP=3 FP=0 FN=0**, demo execution-observed. Yerel kapı bu indirilen
+dosyaları exit 0 ile kabul etti. Runner/scanner/fixture SHA-256'ları commit
+blob'larıyla eşleşti. JUnit hostname çıkarıldı; ham kopya yalnız yerel .dxa'da.
+Corpus hash ortamda eklenen browser_path nedeniyle yerel explicit-Chrome
+corpus hash'iyle eşit olmak zorunda değildir; her dosyanın özgün hash'i kayıtlıdır.
+
+Aşağıdaki paragraf ilk yerel kabul anının durumudur; son uzak sonuç yukarıdadır.
+
 Yetkili artifact erişimiyle eski uzak koşunun içerik kabulü bekliyor. Yeni
 kapının uzak koşusu da yapılmadı; commit/push yasağı korunuyor. R4 gerçek ürün
 bootstrap/login/port-discovery, R9 rapor mahremiyeti ve genel ağ sınırları açık.

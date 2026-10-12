@@ -16,7 +16,12 @@ import urllib.parse
 
 LEVELS = {"candidate", "reflection", "sink-observed", "resource-callback"}
 PRIVATE_KEYS = {"headers", "cookies", "cookie", "authorization", "auth_headers",
-                "password", "token", "vars", "body_preview"}
+                "password", "token", "vars", "body_preview",
+                "api_key", "api-key", "apikey", "x-api-key",
+                "access_token", "refresh_token", "id_token", "client_secret",
+                "csrf_token", "csrfmiddlewaretoken", "authenticity_token", "_token",
+                "tokencsrf", "x-csrf-token", "x-xsrf-token",
+                "set-cookie", "proxy-authorization"}
 
 
 def safe_url(value):
@@ -29,11 +34,14 @@ def safe_url(value):
 
 
 def clean(value, key=""):
-    if key.lower() in PRIVATE_KEYS:
+    key = key.lower()
+    if key in PRIVATE_KEYS:
         return "[redacted]"
     if isinstance(value, dict):
         return {k: clean(v, k) for k, v in value.items()}
     if isinstance(value, list):
+        if key == "evidence_links":
+            return [safe_url(v) if isinstance(v, str) else clean(v) for v in value]
         return [clean(v) for v in value]
     if isinstance(value, str) and ("url" in key or key in ("target", "hit_from_referer")):
         return safe_url(value)

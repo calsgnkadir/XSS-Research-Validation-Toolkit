@@ -10,8 +10,15 @@ Yeni oturum sohbet belleğine değil bu dosyalara ve gerçek Git durumuna dayan�
 
 - **12 Ekim son talimatı:** kullanıcı ana ajan incelemesi sonrası commit/push
   ve ardından OneDrive dışına taşıma istedi; önceki Git yasağı kaldırıldı.
-  Teslim öncesi HEAD/uzak main `471ce97`, kaynak hash'leri ve kayıtlı kabul
-  eşleşiyor. [Son inceleme](audit/2026-10-12-r4-ci-acceptance/prepush-review.md).
+  R4 teslimi `c5d5451cc81dc94ce65aab330e3925a3a6150c04` commit'iyle push
+  edildi; uzak main eşleşti. [Son inceleme](audit/2026-10-12-r4-ci-acceptance/prepush-review.md).
+- Uzak Linux CI **38233880679 success**; Git Credential Manager'ın mevcut
+  GitHub oturumu kullanılarak artifact erişimi çözüldü. Gerçek JUnit **94/0 skip**,
+  corpus **9/9, TP=3 FP=0 FN=0**, demo execution-observed; kapı başarılı.
+  [Artifact kabulü](audit/2026-10-12-r4-ci-acceptance/remote/acceptance.json).
+- R9 ortak rapor mahremiyeti: bilinen API/CSRF alanları ve HTTP(S) evidence_links
+  sırları maskelendi. Eski kodda iki regresyon başarısız; yeni kod **126 passed**,
+  sıfır hata/skip. [Kanıt](audit/2026-10-12-r9-report-privacy/README.md).
 - R4/R9 zorunlu CI artifact kapısı yerelde eklendi: JUnit skip/error/failure,
   tam dokuz vaka ve demo execution denetleniyor. Gerçek Chrome paketi **94 passed**;
   ayrı strict corpus **9/9, TP=3 FP=0 FN=0**, demo execution-observed.
@@ -42,15 +49,16 @@ Yeni oturum sohbet belleğine değil bu dosyalara ve gerçek Git durumuna dayan�
 
 | Sahip | Dosya / sorumluluk | Durum |
 |---|---|---|
-| Koordinatör | STATUS, ROADMAP, VALIDATION, audit/staj, entegrasyon | Son inceleme tamam; Git teslimi ve ardından taşıma |
+| Koordinatör | STATUS, ROADMAP, VALIDATION, audit/staj, entegrasyon | R4 uzak artifact kabulü; R9 kod/oracle incelemesi ve 126-test kabulü tamam |
 | Engine `/root/r4_ci_gate` | `.github/workflows/ci.yml`, `bench/check_ci_acceptance.py` | Tamam; zorunlu artifact kabul kapısı |
 | QA `/root/r4_acceptance_qa` | `bench/test_ci_acceptance.py` | Tamam; 72 bağımsız negatif/pozitif regresyon |
-| Report `/root/r9_report_privacy` | dxa_evidence.py, test_report_privacy.py | Yeni R9 rapor mahremiyeti dar görevi devam ediyor |
+| Report `/root/r9_report_privacy` | dxa_evidence.py, test_report_privacy.py | Kök neden ve kod/test yazıldı; limit sonrası teslimi koordinatör tamamladı |
 
 İki native rol bu oturumda çağrıldı; beş kalıcı TOML tanımı korunuyor.
 Tanım varlığı, native çağrı ve gerçek yazma/test başarısı ayrı kanıtlardır.
-İlk iki uzman görevi bitti. Son turda QA son inceleme ve Report R9 işi için
-en fazla iki uzman çalışıyor; görevler yalnız bu oturumda aktiftir.
+R4 QA son incelemesi tamamlandı. Yeni R9 QA turu ve Report finali kullanım
+limitine takıldı; R9 bağımsız uzman QA tamamlandı sayılmadı. Koordinatör kodu,
+eski-kod karşı örneklerini ve yeni kabulü inceledi. Çalışan arka plan görevi yok.
 
 ## Açık işler ve engeller
 
@@ -58,22 +66,23 @@ en fazla iki uzman çalışıyor; görevler yalnız bu oturumda aktiftir.
   self-scan/browser skip/bench maddesi kapsamındaki diğer kabul işleri açık.
 - R4 sabit gerçek ürün bootstrap/login/port-discovery adapter'ı açık.
   Docker guard mock testleri gerçek ürün lifecycle kabulü değildir.
-- Uzak CI artifact içeriği açık: 12 Ekim API tekrar HTTP 401 verdi; bağlı
-  tarayıcı oturumu görünmedi. Son uzak koşu success metadata'sı doğrulandı.
-  Yeni sıfır-skip/artifact kapısı yerelde geçti, uzak CI'da çalışmadı.
+- Yeni R4 CI artifact kabulü tamam; eski 38171311413 içerikleri incelenmedi.
+  Yeni 38233880679 artifact'i doğrudan indirildi, kaynak hash'leri commit ile
+  eşleşti. Bu dar kabul genel R4/R9 veya gerçek ürün lifecycle kabulü değildir.
   Zorunlu `r3-proof` continue-on-error kullanmaz; ayrı opt-in `browser-tests`
   hâlâ continue-on-error kullanır. Genel R4/R9 kapanışı yapılmadı.
-- R8 regex sınırları ve gelecekteki tek dil AST ölçümü; R9 rapor mahremiyeti,
+- R8 regex sınırları ve gelecekteki tek dil AST ölçümü; R9 genel rapor/konsol mahremiyeti,
   genel ağ/WebSocket kapsamı ve diğer kabul maddeleri açık.
 - R5 bağımsız temiz ortam tekrarı, R6 paketleme ve C/K/P/S/A işleri ROADMAP'te
-  korunuyor. Report mahremiyet geliştirmesi sonraki uygun uzman işi.
+  korunuyor. Ortak rapor maskeleme dar düzeltmesi genel mahremiyet kapanışı değildir.
 - Sandbox komut helper'ı başlatılamıyor; görev içi gerekli komutlar standart
   onaylı yükseltme mekanizmasıyla çalışıyor. Veri/volume silme veya dış tarama yok.
 
 ## Sıradaki adım
 
-Yetkili GitHub artifact erişimi sağlanınca 38171311413 koşusunun içeriklerini
-incele; eski koşu ile yeni kapının uzak CI sonucunu ayrı değerlendir. R9 Report
-mahremiyet teslimini doğrula; görevler bitince OneDrive dışına taşı ve hedef
-Git/veri bütünlüğünü kontrol et. Gerçek ürün adapter'ı açık kalır.
+R9 tesliminin uzak CI sonucunu kontrol et. Kullanıcının belirteceği mevcut
+OneDrive dışı xss hedefini doğrula; çakışan depoyu ezmeden Git ve yerel verileri
+birlikte taşı, bütünlük kontrolü yap. Hedef tam yolu henüz netleşmedi.
+Sonraki bot geliştirme kapısı R4 sabit gerçek ürün bootstrap/login/port-discovery
+adapter'ı; genel R9 rapor/konsol sınırları açık kalır.
 Başarısız veya yarım iş tamamlanmış gösterilmez.

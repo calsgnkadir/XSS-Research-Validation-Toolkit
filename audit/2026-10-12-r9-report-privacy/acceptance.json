@@ -1,0 +1,26 @@
+{
+  "base_commit": "c5d5451cc81dc94ce65aab330e3925a3a6150c04",
+  "python": "3.10.11",
+  "pytest": "9.1.1",
+  "platform": "Windows",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa_evidence.py": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "tools/dom-xss-analyzer/test_report_privacy.py": "f7e382eda1a1ea5d4fba85f0074d486e4110e49a0647bb43b6f2903cf53c7cca",
+    "tools/dom-xss-analyzer/test_r1_contract.py": "b828aa542ffd0f8f671461a4503a910412dc304d110c020bbc0990cb4ed21f31",
+    "tools/dom-xss-analyzer/test_http_evidence.py": "4ba2cf2e04b1e48018c76ae3f836403e77a02f89cc1dd3c345999f0329fa42c7",
+    "tools/dom-xss-analyzer/test_dom_cli_evidence.py": "47a5a5e0b1d10f1a8855d803c9a1ddcf5212dcdc3b83aa33025e20b34b64b62b",
+    "tools/dom-xss-analyzer/test_blind_journal.py": "853b036129a4264eab0c1b408fb745c7afad662e54c68835725b7489fbcb0c63",
+    "tools/dom-xss-analyzer/test_blind_correlation.py": "150d3dd13dca037adce74e5c5702e46a15bbca2dd0d395c409b79cec121de840"
+  },
+  "hash_timing": "Collected after completed run; coordinator verified no edits to these files during the run.",
+  "command": "py -3.10 -m pytest tools/dom-xss-analyzer/test_report_privacy.py tools/dom-xss-analyzer/test_r1_contract.py tools/dom-xss-analyzer/test_http_evidence.py tools/dom-xss-analyzer/test_dom_cli_evidence.py tools/dom-xss-analyzer/test_blind_journal.py tools/dom-xss-analyzer/test_blind_correlation.py -q -p no:cacheprovider --tb=short --junitxml=audit/2026-10-12-r9-report-privacy/acceptance-final.xml",
+  "pytest_exit_code": 0,
+  "tests": 126,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "duration_seconds": 37.09,
+  "initial_attempt": "Wrong nonexistent test_evidence_model.py path: no tests ran, not acceptance; acceptance.xml retained.",
+  "red_regression": "Two tests fail on old committed exporter; see before-summary.json.",
+  "agent_limit": "Report wrote fix/tests; final run and review completed by coordinator after Report and QA usage limit."
+}

@@ -1,6 +1,25 @@
 ﻿# Doğrulama kaydı — 2026-10-12
 
-## 12 Ekim 2026 — R4/R9 zorunlu CI artifact kapısı (yerel)
+## 12 Ekim devamı — uzak R4 kabulü ve R9 rapor mahremiyeti
+
+- `c5d5451` push ve uzak main eşleşmesi doğrulandı. CI **38233880679 success**;
+  yeni zorunlu artifact kapısı success. Mevcut GitHub credential yalnız bellekte
+  kullanılarak artifact indirildi; token kaydedilmedi/gösterilmedi.
+- Uzak Linux/Python 3.12.15: JUnit **94 passed, sıfır failure/error/skip**,
+  corpus **9/9 TP=3 FP=0 FN=0**, demo execution-observed. İndirilen içerik
+  yerelde yeni kapıdan exit 0 ile geçti; runner/scanner/fixture hash'leri uzak
+  commit blob'larıyla eşleşti. [Kanıt](audit/2026-10-12-r4-ci-acceptance/remote/acceptance.json).
+- R9 koordinatör kabulü: **126 passed, 37.09 s**, sıfır failure/error/skip;
+  Python 3.10.11 / pytest 9.1.1 / Windows. Yeni privacy, R1, HTTP, DOM CLI ve
+  blind/journal regresyonları. [Komut/hash](audit/2026-10-12-r9-report-privacy/acceptance.json).
+- Aynı iki privacy regresyonu eski `c5d5451` exporter'ı bellekte yüklenince
+  beklendiği gibi **2 failed** verdi; yeni pakette geçiyor. İlk yanlış dosya
+  adıyla yapılan denemede test koşmadı; acceptance.xml bu başarısız girişimin
+  kaydıdır, acceptance-final.xml 126 testlik gerçek kabuldür.
+- Uzman limitinden sonra R9 test ve son inceleme koordinatörce tamamlandı;
+  bağımsız R9 specialist QA finali yok. Genel R4/R9 kapatılmadı.
+
+## 12 Ekim 2026 — R4/R9 zorunlu CI artifact kapısı (ilk yerel kabul)
 
 - HEAD `471ce977aa843a7286cff8ac86aa993edaf548cf` + commit edilmemiş değişiklikler.
   Python 3.10.11 / pytest 9.1.1 / Windows / Playwright 1.63.0, Chrome 155.0.8059.39.

@@ -60,6 +60,12 @@ execution'ı sağlamaz. Yerel kaynak ve browser ham özetleri değiştirilmez.
 Dosya yolları, alan/rol adları ve operatör notları hâlâ özel bilgi içerebilir;
 maskeleme genel amaçlı bütün sırları bulma garantisi değildir.
 
+12 Ekim R9 dar düzeltmesi: bilinen API-key, OAuth token ve CSRF credential
+alan adları büyük/küçük harften bağımsız maskelenir. `evidence_links` içindeki
+HTTP(S) URL'lere de aynı userinfo/query/fragment temizliği uygulanır; yerel
+dosya bağlantıları korunur. Bu liste keyfi serbest metin, özel alan adı veya
+HTTP(S) dışı URL'lerde sır tespiti sağlamaz. Ham girdiler değiştirilmez.
+
 ## Kullanım ve uyumluluk
 
 - HTTP/DOM: `dxadyn.py ... --json-out report.json --html report.html`
