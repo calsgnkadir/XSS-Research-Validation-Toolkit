@@ -1,0 +1,22 @@
+{
+  "schema": "dxa-bludit-lab/1",
+  "status": "error",
+  "product": "Bludit",
+  "embedded_version": "3.16.2",
+  "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+  "project": "dxa-bludit-c4e0ea732ca3402daa26629698f68036",
+  "triage": "by-design",
+  "cases": [],
+  "events": [
+    {
+      "stage": "preflight",
+      "kind": "error",
+      "reason": "owned-internal-network-required"
+    }
+  ],
+  "cleanup_status": "not-started",
+  "limitations": [
+    "Admin-authored raw/escaped controls; no vulnerability or role-boundary claim.",
+    "Bounded public-reader observation; not general scanner coverage."
+  ]
+}

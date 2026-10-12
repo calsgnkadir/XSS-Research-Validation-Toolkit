@@ -30,7 +30,7 @@ jobs:
         run: python bench/ci_self_scan.py
 
       - name: Benchmark harness tests
-        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py -q
+        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py bench/test_bludit_adapter.py -q
 
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:

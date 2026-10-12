@@ -1,0 +1,48 @@
+{
+  "base_commit": "d151a8a95225382021ca31ce0cc6d5b93d456170",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "test_command": [
+    "-m",
+    "pytest",
+    "bench/test_bludit_adapter.py",
+    "bench/test_bench.py",
+    "bench/test_proof_adapter.py",
+    "bench/test_ci_self_scan.py",
+    "bench/test_ci_acceptance.py",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--tb=short",
+    "--junitxml=audit/2026-10-12-r4-product-adapter/acceptance.xml"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 27.42,
+  "source_hashes": {
+    "bench/bludit_adapter.py": "f984ce3f122068b65a2b2dacc9a071380eca87a40e500ba07a4e5e40d7b34959",
+    "bench/test_bludit_adapter.py": "369d3c05a1b6d6dc092ba7dfd8bc5f5c7a2e4dc8a71cbce4d56da4eee9fc3e64",
+    ".github/workflows/ci.yml": "7b6875718f15612380cb268a30af83420d8b7e87776177e5da2d88d19a0cc11f",
+    "bench/targets/bludit/local-inspected.yml": "06e47f54438f959bdd5d5aa9603a44c879500fc6fd1919c2a9e91935802acd85"
+  },
+  "sources_unchanged": true,
+  "preservation": {
+    "containers_before": 15,
+    "containers_after": 15,
+    "container_ids_equal": true,
+    "volumes_before": 27,
+    "volumes_after": 27,
+    "volume_names_equal": true
+  },
+  "live_acceptance": "blocked-before-bootstrap",
+  "runtime_observation": {
+    "requested_binding": {
+      "HostIp": "127.0.0.1",
+      "HostPort": ""
+    },
+    "observed_ports": {
+      "80/tcp": []
+    },
+    "recheck_delay_seconds": 3
+  },
+  "remote_ci": "not-run-for-these-changes"
+}

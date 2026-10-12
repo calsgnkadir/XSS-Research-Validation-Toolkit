@@ -1,5 +1,20 @@
 ﻿# Doğrulama kaydı — 2026-10-12
 
+## 12 Ekim R4 ürün adapter taslağı — canlı kabul engelli
+
+- Koordinatör birleşik koşusu **268 passed, 26.46 s**, sıfır failure/error/skip;
+  83 bağımsız yeni test bu sayıya dahildir. Python 3.10.11 / Windows.
+  Başlangıç `d151a8a` + uncommitted kaynak hash'leri koşu boyunca sabit.
+- Gerçek Docker üç başlangıçta `80/tcp: []` nedeniyle port kapısında durdu;
+  her seferinde cleanup passed. İlk preflight denemesi normalize boş IPAM
+  alanı yüzünden başlangıçtan önce durdu; guard boş IPAM'a göre düzeltildi.
+- Gerçek installer/login/browser aşamaları çalışmadı; browser hata/negatif
+  davranışı burada yalnız bağımsız mock testleridir. Canlı kabul verilmedi.
+- Mevcut 15 container / 27 volume listesi birebir korundu. Yeni ürün adapter'ı
+  benchmark scorer'ına bağlanmadı; R4 geniş kapsamı ve CI ürün kabulü açık.
+- [Komut/hash/koruma](audit/2026-10-12-r4-product-adapter/acceptance.json),
+  [JUnit](audit/2026-10-12-r4-product-adapter/acceptance.xml).
+
 ## 12 Ekim son kontrol — R9 uzak CI ve yeni çalışma kökü
 
 - R9 8873aaf push ve uzak hash eşleşmesi; CI 38267306222 ve üç job success.

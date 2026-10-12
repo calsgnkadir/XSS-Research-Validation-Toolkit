@@ -36,3 +36,22 @@ The current benchmark runner requires a known published TCP port matching its
 readiness URL before startup. It therefore cannot directly consume the ephemeral
 port in `local-inspected.yml`; a reviewed bootstrap/port-discovery adapter remains
 required. Compose configuration validation alone does not satisfy that acceptance.
+
+
+## Experimental standalone Bludit adapter (12 October)
+
+`python bench/bludit_adapter.py --output <new-directory> --browser <chrome-path>`
+implements a separate disposable lifecycle with pinned image, configuration and
+ownership guards, installer/login, public raw/escaped controls and result
+validation. It does not change the benchmark runner or its scorer. Its unit
+suite runs without Docker or Playwright; it is not live product acceptance.
+
+**Live acceptance is currently blocked on this Docker Desktop environment.**
+With the reviewed internal network, runtime inspection returned `80/tcp: []`
+despite the requested ephemeral loopback binding. The adapter correctly errors
+and tears down its own project. Rechecking after three seconds gave the same
+result. Do not bypass the mapping guard or use an existing application instance.
+The installer/login/browser stages have not yet been reached in the real lab.
+A reviewed ingress design compatible with internal networking is the next step;
+no host firewall, existing network or daemon configuration was changed.
+See [evidence and remaining work](../../audit/2026-10-12-r4-product-adapter/README.md).

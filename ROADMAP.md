@@ -205,6 +205,13 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
+12 Ekim ürün adapter taslağı: pinned Bludit lifecycle ve 83 bağımsız guard testi
+hazır; birleşik 268 test geçti. Gerçek Docker internal network koşusunda host
+port binding oluşmadığı için bootstrap/login/browser kabulü **engelli**.
+[Kanıt ve sıradaki ingress işi](audit/2026-10-12-r4-product-adapter/README.md).
+Bu taslak aşağıdaki gerçek uygulama veya birleşik kabul kutularını kapatmaz.
+
+
 Güncel dar kabul: 9 Ekim Windows worker timeout/crash/cleanup ve strict corpus
 kanıtı [son pakettedir](audit/2026-10-09-resume/README.md). 11 Ekim kaynak
 hash'leri bu paketle eşleşti. Genel R4 ve aşağıdaki birleşik kabul kutuları

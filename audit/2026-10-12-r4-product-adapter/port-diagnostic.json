@@ -1,0 +1,22 @@
+{
+  "schema": "dxa-bludit-lab/1",
+  "status": "error",
+  "product": "Bludit",
+  "embedded_version": "3.16.2",
+  "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+  "project": "dxa-bludit-7a571d9cfa3b4b75a49076f66b9b3187",
+  "triage": "by-design",
+  "cases": [],
+  "events": [
+    {
+      "stage": "port",
+      "kind": "error",
+      "reason": "unexpected-port-map"
+    }
+  ],
+  "cleanup_status": "passed",
+  "limitations": [
+    "Admin-authored raw/escaped controls; no vulnerability or role-boundary claim.",
+    "Bounded public-reader observation; not general scanner coverage."
+  ]
+}

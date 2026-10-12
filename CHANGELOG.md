@@ -2,6 +2,11 @@
 
 ## Unreleased — 2026-10-12
 
+- Deneysel pinned Bludit adapter taslağı, 83 bağımsız guard/lifecycle/rapor testi
+  ve CI test bağlantısı eklendi; birleşik 268 test geçti. Gerçek Docker host
+  port mapping oluşmadığından ürün kabulü engelli; genel R4 kapanmadı.
+  [Kanıt ve sınır](audit/2026-10-12-r4-product-adapter/README.md).
+
 - R9 ortak JSON/HTML paylaşım raporları bilinen API/CSRF credential alanlarını
   ve evidence_links HTTP(S) URL sırlarını maskeler; ham girdiler ve kanıt
   sınıflandırması korunur. 126 regresyon geçti; genel konsol/serbest metin
