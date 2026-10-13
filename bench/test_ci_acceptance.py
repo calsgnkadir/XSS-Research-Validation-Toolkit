@@ -1,5 +1,6 @@
 """Independent adverse artifacts for the R4/R9 CI gate; no browser required."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -7,6 +8,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 import pytest
+import run as runner
 
 
 GATE = Path(__file__).with_name("check_ci_acceptance.py")
@@ -33,6 +35,10 @@ def proof(positive):
     }
 
 
+def source_hash(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
 def corpus():
     rows = []
     for mode, positive in LABELS.items():
@@ -46,10 +52,19 @@ def corpus():
             observation["negative_window_completed"] = True
         if mode == "resource-callback":
             observation.update(callback_observed=True, callback_count=1)
-        rows.append({"id": "proof-" + mode, "expected_ids": [identity] if positive else [],
+        rows.append({"id": "proof-" + mode, "expect": {}, "expected_ids": [identity] if positive else [],
                      "observe_ms": 400, "expected_identity": {"method": "POST", "source_path": "/comments", "parameter": "comment", "read_path": "/comments", "role": "reader"},
+                     "oracle_rationale": "independent fixture label",
                      "results": {"dxaprove": {"observed": observation, "score": {"tp": int(positive), "fp": 0, "fn": 0, "evaluated": True}}}})
-    return {"corpus_version": "loopback-proof/2", "scanners": ["dxaprove"], "rows": rows,
+    return {"run_at": "2026-10-13T00:00:00+00:00",
+            "environment": {"python": "3.12.0", "platform": "Linux-test",
+                            "runner_sha256": source_hash(runner.__file__),
+                            "scanner_sha256": source_hash(runner.DXADYN.with_name("dxaprove.py")),
+                            "fixture_sha256": source_hash(runner.DXADYN.with_name("dxa_proof_lab.py")),
+                            "corpus_sha256": hashlib.sha256(json.dumps(runner.proof_corpus(), sort_keys=True).encode()).hexdigest()},
+            "command": ["bench/run.py", "--proof-suite", "--no-history", "--out", "r4-proof.md"],
+            "measurement": "correlated-browser-execution; not confirmed vulnerability accuracy",
+            "corpus_version": "loopback-proof/2", "scanners": ["dxaprove"], "rows": rows,
             "totals": {"dxaprove": {"selected": 9, "completed": 9, "tp": 3, "fp": 0, "fn": 0,
                                      "error": 0, "timeout": 0, "skipped": 0, "invalid": 0, "inconclusive": 0, "wall": 0.9}}}
 
@@ -59,11 +74,13 @@ def artifacts(tmp_path):
     suite = ET.Element("testsuite", tests="4", failures="0", errors="0", skipped="0")
     for module in MODULES:
         ET.SubElement(suite, "testcase", classname="tests." + module, name="test_acceptance")
-    return {"path": tmp_path, "junit": suite, "corpus": corpus(), "demo": proof(True)}
+    report = corpus()
+    return {"path": tmp_path, "junit": suite, "corpus": report, "markdown": runner.render_md(report), "demo": proof(True)}
 
 
 def invoke(artifacts, missing=None, malformed=None):
-    paths = {key: artifacts["path"] / (key + (".xml" if key == "junit" else ".json")) for key in ("junit", "corpus", "demo")}
+    paths = {key: artifacts["path"] / (key + (".xml" if key == "junit" else ".md" if key == "corpus-markdown" else ".json"))
+             for key in ("junit", "corpus", "corpus-markdown", "demo")}
     for key, path in paths.items():
         if key == missing:
             continue
@@ -71,6 +88,8 @@ def invoke(artifacts, missing=None, malformed=None):
             path.write_text("broken artifact", encoding="utf-8")
         elif key == "junit":
             ET.ElementTree(artifacts[key]).write(path, encoding="utf-8")
+        elif key == "corpus-markdown":
+            path.write_text(artifacts["markdown"], encoding="utf-8")
         else:
             path.write_text(json.dumps(artifacts[key]), encoding="utf-8")
     result = subprocess.run([sys.executable, str(GATE), *[part for key, path in paths.items() for part in ("--" + key, str(path))]], capture_output=True, text=True, timeout=20)
@@ -83,7 +102,7 @@ def test_complete_independent_artifacts_pass(artifacts):
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-@pytest.mark.parametrize("key", ("junit", "corpus", "demo"))
+@pytest.mark.parametrize("key", ("junit", "corpus", "corpus-markdown", "demo"))
 @pytest.mark.parametrize("failure", ("missing", "malformed"))
 def test_unreadable_artifact_fails(artifacts, key, failure):
     assert invoke(artifacts, **{failure: key}).returncode == 1
@@ -231,3 +250,59 @@ def test_boolean_score_is_not_an_integer_count(artifacts):
 def test_demo_external_read_origin_fails_without_network(artifacts):
     artifacts["demo"]["read_url"] = "https://example.invalid/comments"
     assert invoke(artifacts).returncode == 1
+
+
+@pytest.mark.parametrize("field", ("python", "platform", "runner_sha256", "scanner_sha256", "fixture_sha256", "corpus_sha256"))
+def test_missing_or_malformed_provenance_fails(artifacts, field):
+    artifacts["corpus"]["environment"][field] = "unknown" if field.endswith("sha256") else ""
+    assert invoke(artifacts).returncode == 1
+
+
+@pytest.mark.parametrize("field", ("runner_sha256", "scanner_sha256", "fixture_sha256", "corpus_sha256"))
+def test_well_formed_but_stale_source_hash_fails(artifacts, field):
+    artifacts["corpus"]["environment"][field] = "0" * 64
+    assert invoke(artifacts).returncode == 1
+
+
+@pytest.mark.parametrize("command", ([], ["bench/run.py", "--out", "r4-proof.md"],
+                                      ["bench/run.py", "--proof-suite", "--no-history", "--out", "other.md"]))
+def test_wrong_corpus_command_provenance_fails(artifacts, command):
+    artifacts["corpus"]["command"] = command
+    assert invoke(artifacts).returncode == 1
+
+
+def test_markdown_score_mismatch_fails(artifacts):
+    assert invoke(artifacts).returncode == 0
+    path = artifacts["path"] / "corpus-markdown.md"
+    content = path.read_text(encoding="utf-8").replace("| dxaprove | 3 | 0 | 0 |", "| dxaprove | 2 | 1 | 0 |")
+    path.write_text(content, encoding="utf-8")
+    result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
+                             "--corpus", str(artifacts["path"] / "corpus.json"),
+                             "--corpus-markdown", str(path), "--demo", str(artifacts["path"] / "demo.json")],
+                            capture_output=True, text=True, timeout=20)
+    assert result.returncode == 1
+
+
+def test_markdown_missing_case_fails(artifacts):
+    result = invoke(artifacts)
+    assert result.returncode == 0
+    path = artifacts["path"] / "corpus-markdown.md"
+    path.write_text(path.read_text(encoding="utf-8").replace("### proof-json\n", ""), encoding="utf-8")
+    # Re-run the gate against the modified Markdown while retaining the same JSON artifact.
+    result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
+                             "--corpus", str(artifacts["path"] / "corpus.json"),
+                             "--corpus-markdown", str(path), "--demo", str(artifacts["path"] / "demo.json")],
+                            capture_output=True, text=True, timeout=20)
+    assert result.returncode == 1
+
+
+def test_markdown_identity_mismatch_fails(artifacts):
+    assert invoke(artifacts).returncode == 0
+    path = artifacts["path"] / "corpus-markdown.md"
+    content = path.read_text(encoding="utf-8").replace("proof-v2:raw:POST:/comments:comment:/comments:reader", "proof-v2:other:POST:/comments:comment:/comments:reader", 1)
+    path.write_text(content, encoding="utf-8")
+    result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
+                             "--corpus", str(artifacts["path"] / "corpus.json"),
+                             "--corpus-markdown", str(path), "--demo", str(artifacts["path"] / "demo.json")],
+                            capture_output=True, text=True, timeout=20)
+    assert result.returncode == 1

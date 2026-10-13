@@ -1,9 +1,22 @@
-# Güncel devam noktası — 13 Ekim 2026
+# Güncel devam noktası — 14 Ekim 2026
 
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Son doğrulanan teslim — R4 runner ve canlı Bludit kabulü
+## Son doğrulanan teslim — R4 strict corpus artifact gate
+
+14 Ekim: CI artifact gate JSON raporu ve JUnit'i doğruluyordu ama corpus
+Markdown'ını karşılaştırmıyor, çalışma ortamı/komutu/kaynak hashlerini güncel
+checkout'a bağlamıyordu. `check_ci_acceptance.py` artık zorunlu Markdown'ı
+canonical JSON renderer ile tam eşleştiriyor ve runner/scanner/fixture/corpus
+hashlerini doğruluyor; workflow bu Markdown'ı kapıya veriyor. Odaklı gate
+**90 passed**, birleşik scorer/corpus/gate **204 passed**, sıfır
+failure/error/skip. [Yerel kanıt](audit/2026-10-14-r4-provenance-gate/README.md).
+QA ve engine uzmanlarının incelemesi tamamlandı. Değişiklikler henüz commit
+edilmedi; sıradaki adım review sonrası commit/push, hosted CI ve artifact
+indirme/doğrulaması. Uzak artifact kabul edilene kadar ROADMAP kutusu açık.
+
+## Önceki teslim — R4 runner ve canlı Bludit kabulü
 
 13 Ekim 2026: sabit Apache reverse proxy iki ağlı, yeni ve geçici bir Compose
 projesinde çalıştı. Bludit yalnız internal ağda kaldı; proxy 127.0.0.1 üzerinde
@@ -76,7 +89,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
 - R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
-  tamamlandı; commit CI'da geçti. Genel corpus/CI artifact kabul işleri açıktır.
+  tamamlandı. Strict artifact gate değişikliği yerelde 204 testle geçti; commit,
+  hosted CI ve güncel artifact incelemesi bekliyor. Genel corpus/coverage ve
+  karşılaştırma metodolojisi açık.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer

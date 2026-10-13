@@ -1,5 +1,22 @@
 ﻿# Doğrulama kaydı — 2026-10-13
 
+## 14 Ekim R4 strict corpus artifact provenance gate
+
+- Başlangıç commit'i `7ce1927e9ac7c2f24e3bbeccd91c87e7d5a29d60`.
+  Windows 10 / Python 3.10.11 / pytest 9.1.1.
+- Odaklı CI gate adverse tests: **90 passed**. Birleşik benchmark scorer,
+  proof corpus ve artifact gate: **204 passed**, sıfır failure/error/skip.
+- Gate artık `r4-proof.md`'yi zorunlu alıyor; Markdown çıktısını JSON raporun
+  canonical render'ıyla birebir karşılaştırıyor. JSON'daki Python, platform,
+  komut ve runner/scanner/fixture/corpus SHA-256 alanlarını geçerli kılıyor;
+  source hashlerini checkout dosyalarıyla karşılaştırıyor. Yeni karşı örnekler
+  eksik/malformed artifact, stale hash/komut ve JSON-Markdown score/identity
+  uyuşmazlığını reddediyor.
+- [Komutlar ve kaynak hashleri](audit/2026-10-14-r4-provenance-gate/acceptance.json),
+  [R4 kapsam/limit](audit/2026-10-14-r4-provenance-gate/README.md).
+  Bu yerel kabul; değişiklik henüz commit/push edilmedi ve güncel GitHub
+  artifact'i henüz incelenmedi.
+
 ## 13 Ekim R4 Bludit runner bağlantısı
 
 - `py -3.10 -m pytest bench/test_bench.py bench/test_bludit_adapter.py

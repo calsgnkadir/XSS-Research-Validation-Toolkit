@@ -1,0 +1,28 @@
+{
+  "base_commit": "7ce1927e9ac7c2f24e3bbeccd91c87e7d5a29d60",
+  "environment": {
+    "python": "3.10.11",
+    "pytest": "9.1.1",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "tests": {
+    "focused_command": "py -3.10 -m pytest bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
+    "focused_passed": 90,
+    "combined_command": "py -3.10 -m pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_proof_corpus.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
+    "combined_passed": 204,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "sha256": {
+    ".github/workflows/ci.yml": "e4f57e7cb4f814d66751c4c66547337626a63e70a98238217afee501ae3446ea",
+    "bench/check_ci_acceptance.py": "d5d4b96589a051c065867e4ef33afd6569f96f996f03711ff56d0700e5efdfef",
+    "bench/test_ci_acceptance.py": "4d0e95d51ce9e34b1c5c3f21eedf7dfc16da6b759edb189f466e7b1097583c81",
+    "bench/run.py": "d07d3f52a55c52ef68c38b63afa4457f01b78c6009dd773abf8d7bf198075c6b",
+    "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "ed7e7d9ac780c23de2891042f14c0e5b4aa9a90b77b7ab79ec66aad63428ef1e"
+  },
+  "diff_check": "passed",
+  "remote_ci": "pending_push",
+  "remote_artifact_inspection": "pending"
+}
