@@ -25,6 +25,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from typing import Any, Callable, Dict, List
@@ -560,6 +561,153 @@ def strict_failed(report):
         ("fp", "fn", "error", "timeout", "skipped", "invalid", "inconclusive"))
 
 
+# ---------- explicit product-control adapter (never vulnerability scoring) --
+
+_BLUDIT_CONTROL_ID = "bludit-3.16.2-admin-controls"
+_BLUDIT_CASES = (("raw-admin-content", True), ("escaped-admin-content", False))
+_BLUDIT_STAGES = {"preflight", "startup", "ownership", "port", "readiness", "scope", "http",
+                  "bootstrap", "login", "submit", "browser", "acceptance",
+                  "cleanup", "report", "adapter"}
+_BLUDIT_REASONS = {
+    "command-timeout", "command-unavailable", "command-failed",
+    "project-collision", "invalid-project-name", "fresh-installer-required",
+    "installer-timeout", "session-not-verified", "anonymous-login-form-required",
+    "unexpected-redirect", "login-form-unavailable", "invalid-proof",
+    "invalid-browser-version", "proof-case-mismatch", "invalid-observation",
+    "control-mismatch", "browser-dependency-unavailable", "browser-unavailable",
+    "reader-unavailable", "fixture-readback-mismatch", "unexpected-error",
+    "cleanup-failed", "owned-resources-remain", "observation-write-failed",
+    "runner-exception", "invalid-adapter-result", "invalid-browser-path",
+    "invalid-compose-path", "ci-execution-refused", "docker-unavailable",
+    "invalid-loopback-port", "invalid-origin", "foreign-url", "response-too-large",
+    "image-declares-volumes", "single-container-required", "ambiguous-container",
+    "port-inspect-mismatch", "ambiguous-network",
+    "invalid-config", "unsupported-compose-resource", "two-services-required",
+    "invalid-service", "unsupported-service-option", "immutable-image-required",
+    "invalid-attachments", "unexpected-network-attachment", "isolated-app-required",
+    "reviewed-healthcheck-required", "fixed-proxy-command-required", "single-port-required",
+    "ephemeral-loopback-required", "two-networks-required", "invalid-network",
+    "owned-network-required", "unknown-service", "invalid-container",
+    "invalid-container-config", "foreign-container", "image-or-mount-mismatch",
+    "runtime-command-mismatch", "invalid-host-config", "unsafe-runtime",
+    "invalid-network-settings", "invalid-runtime-networks", "unexpected-runtime-networks",
+    "missing-service-alias", "container-not-running", "unexpected-port-binding",
+    "app-port-published", "invalid-network-inspect", "unknown-network",
+    "unexpected-network-options", "network-not-owned", "invalid-network-members",
+    "unexpected-network-members", "timeout",
+}
+
+
+def _sanitized_bludit_event(event):
+    """Keep only bounded adapter codes; never forward exception or HTTP text."""
+    if not isinstance(event, dict):
+        raise ValueError("invalid product-control event")
+    stage, kind, reason = event.get("stage"), event.get("kind"), event.get("reason")
+    if stage not in _BLUDIT_STAGES or kind not in ("error", "info") or reason not in _BLUDIT_REASONS:
+        raise ValueError("invalid product-control event")
+    return {"stage": stage, "kind": kind, "reason": reason}
+
+
+def validate_bludit_control(result):
+    """Validate and reduce standalone Bludit observations to a safe control row.
+
+    These admin-authored controls are product behavior checks. They are never
+    scanner findings and are intentionally not passed through score()/totals.
+    """
+    if not isinstance(result, dict) or result.get("schema") != "dxa-bludit-lab/1":
+        raise ValueError("invalid product-control result")
+    if (result.get("product") != "Bludit" or result.get("embedded_version") != "3.16.2"
+            or result.get("triage") != "by-design"):
+        raise ValueError("invalid product-control identity")
+    status, cleanup = result.get("status"), result.get("cleanup_status")
+    if status not in ("passed", "error") or cleanup not in ("passed", "error", "not-started"):
+        raise ValueError("invalid product-control status")
+    rows = result.get("cases")
+    if not isinstance(rows, list) or len(rows) > len(_BLUDIT_CASES):
+        raise ValueError("incomplete product-control cases")
+    cases = []
+    expected_by_id = dict(_BLUDIT_CASES)
+    case_positions = {case_id: index for index, (case_id, _) in enumerate(_BLUDIT_CASES)}
+    previous_position = -1
+    for row in rows:
+        if not isinstance(row, dict) or row.get("case_id") not in expected_by_id:
+            raise ValueError("product-control case identity mismatch")
+        case_id = row["case_id"]
+        expected = expected_by_id[case_id]
+        position = case_positions[case_id]
+        if position <= previous_position:
+            raise ValueError("product-control case order mismatch")
+        previous_position = position
+        observed, matched = row.get("execution_observed"), row.get("matched")
+        if (type(row.get("expected_execution")) is not bool or row["expected_execution"] is not expected
+                or type(observed) is not bool or type(matched) is not bool
+                or row.get("status") != ("execution-observed" if observed else "no-execution-observed")
+                or row.get("observation_ms") != 1000 or matched is not (observed == expected)):
+            raise ValueError("invalid product-control observation")
+        cases.append({"case_id": case_id, "expected_execution": expected,
+                      "execution_observed": observed, "matched": matched,
+                      "status": row["status"], "observation_ms": 1000})
+    events = result.get("events")
+    if not isinstance(events, list):
+        raise ValueError("invalid product-control events")
+    safe_events = [_sanitized_bludit_event(event) for event in events]
+    if status == "passed" and (cleanup != "passed" or len(cases) != len(_BLUDIT_CASES)
+                                or not all(case["matched"] for case in cases) or safe_events):
+        raise ValueError("contradictory product-control success")
+    if status == "error" and not safe_events:
+        raise ValueError("product-control error lacks bounded reason")
+    return {"id": _BLUDIT_CONTROL_ID, "kind": "product-control", "adapter": "bludit",
+            "status": status if cleanup == "passed" or cleanup == "not-started" else "error",
+            "triage": "by-design", "cleanup_status": cleanup, "cases": cases,
+            "events": safe_events}
+
+
+def _bludit_failure(reason="invalid-adapter-result", cleanup="not-started", events=None):
+    if cleanup not in ("passed", "error", "not-started"):
+        cleanup = "not-started"
+    safe_events = []
+    for event in events if isinstance(events, list) else []:
+        try:
+            safe_events.append(_sanitized_bludit_event(event))
+        except ValueError:
+            continue
+    if not safe_events:
+        safe_events = [{"stage": "adapter", "kind": "error", "reason": reason}]
+    return {"id": _BLUDIT_CONTROL_ID, "kind": "product-control", "adapter": "bludit",
+            "status": "error", "triage": "by-design", "cleanup_status": cleanup,
+            "cases": [], "events": safe_events}
+
+
+def run_bludit_control(*, compose_file=None, browser=None, adapter_class=None):
+    """Run the pinned local product controls only when explicitly requested."""
+    if os.environ.get("CI", "").strip().lower() in ("1", "true", "yes", "on"):
+        return _bludit_failure("ci-execution-refused", events=[{"stage": "preflight", "kind": "error",
+                                                                 "reason": "ci-execution-refused"}])
+    if not isinstance(browser, str) or not pathlib.Path(browser).is_file():
+        return _bludit_failure("invalid-browser-path", events=[{"stage": "browser", "kind": "error",
+                                                                  "reason": "invalid-browser-path"}])
+    compose = pathlib.Path(compose_file) if compose_file else HERE / "targets" / "bludit" / "local-inspected.yml"
+    if not compose.is_file():
+        return _bludit_failure("invalid-compose-path", events=[{"stage": "preflight", "kind": "error",
+                                                                  "reason": "invalid-compose-path"}])
+    try:
+        if adapter_class is None:
+            sys.path.insert(0, str(HERE))
+            from bludit_adapter import BluditAdapter
+            adapter_class = BluditAdapter
+        with tempfile.TemporaryDirectory(prefix="dxa-bludit-control-") as temp_dir:
+            adapter = adapter_class(compose_file=str(compose.resolve()))
+            result = adapter.run(str(pathlib.Path(temp_dir) / "result"), browser)
+        try:
+            return validate_bludit_control(result)
+        except ValueError:
+            cleanup = result.get("cleanup_status", "not-started") if isinstance(result, dict) else "not-started"
+            events = result.get("events") if isinstance(result, dict) else None
+            return _bludit_failure("invalid-adapter-result", cleanup, events)
+    except Exception:
+        return _bludit_failure("runner-exception")
+
+
 # ---------- runner ----------
 
 def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
@@ -700,6 +848,20 @@ def render_md(report: Dict[str, Any]) -> str:
     for s, t in report["totals"].items():
         lines.append(f"| {s} | {t['tp']} | {t['fp']} | {t['fn']} | {round(t['wall'], 2)} |")
     lines.append("")
+    controls = report.get("product_controls", [])
+    if controls:
+        lines.append("## Product controls (by-design; excluded from vulnerability scoring)")
+        lines.append("")
+        for control in controls:
+            lines.append(f"### {control['id']}")
+            lines.append(f"- status: {control['status']}; cleanup: {control['cleanup_status']}; triage: {control['triage']}")
+            lines.append("- case | expected execution | observed execution | matched")
+            for case in control["cases"]:
+                lines.append(f"- {case['case_id']} | {str(case['expected_execution']).lower()} | "
+                             f"{str(case['execution_observed']).lower()} | {str(case['matched']).lower()}")
+            for event in control["events"]:
+                lines.append(f"- adapter event: {event['stage']}/{event['reason']}")
+        lines.append("")
     lines.append("## Per-target")
     lines.append("")
     for row in report["rows"]:
@@ -758,8 +920,24 @@ def main() -> int:
     ap.add_argument("--out", default="")
     ap.add_argument("--proof-suite", action="store_true", help="isolated loopback execution corpus; no legacy candidate totals")
     ap.add_argument("--browser", help="Chrome/Chromium executable for --proof-suite")
+    ap.add_argument("--bludit-control", action="store_true",
+                    help="explicitly run the disposable Bludit product controls (never vulnerability-scored)")
+    ap.add_argument("--bludit-compose", default="",
+                    help="reviewed local Bludit compose file for --bludit-control")
+    ap.add_argument("--bludit-browser", default="",
+                    help="explicit Chrome/Chromium executable required by --bludit-control")
     ap.add_argument("--no-history", action="store_true", help="do not append shared benchmark history")
     args = ap.parse_args()
+
+    if args.bludit_control:
+        if args.proof_suite:
+            ap.error("--bludit-control cannot be combined with --proof-suite")
+        if not args.bludit_browser or not pathlib.Path(args.bludit_browser).is_file():
+            ap.error("--bludit-control requires an existing --bludit-browser executable path")
+        if args.bludit_compose and not pathlib.Path(args.bludit_compose).is_file():
+            ap.error("--bludit-compose must point to an existing reviewed local compose file")
+    elif args.bludit_compose or args.bludit_browser:
+        ap.error("--bludit-compose and --bludit-browser require --bludit-control")
 
     scanners = ["dxadyn"] + [s.strip() for s in args.with_.split(",") if s.strip()]
     only = [t.strip() for t in args.targets.split(",") if t.strip()] or None
@@ -770,6 +948,9 @@ def main() -> int:
         scanners = ["dxaprove"]
     corpus = proof_corpus(args.browser) if args.proof_suite else load_corpus(pathlib.Path(args.corpus))
     report = run_all(corpus, scanners, only)
+    if args.bludit_control:
+        report["product_controls"] = [run_bludit_control(
+            compose_file=args.bludit_compose or None, browser=args.bludit_browser)]
     report["command"] = sys.argv
 
     out_path = pathlib.Path(args.out) if args.out else (HERE / f"results-{_dt.date.today().isoformat()}.md")
@@ -785,6 +966,8 @@ def main() -> int:
         print(f"  {s}: TP={t['tp']} FP={t['fp']} FN={t['fn']} wall={round(t['wall'], 2)}s")
 
     # regression gate: fail if dxadyn has any FN on the mock corpus
+    if args.bludit_control and report["product_controls"][0]["status"] != "passed":
+        return 2
     return 1 if strict_failed(report) and os.environ.get("BENCH_STRICT") == "1" else 0
 
 

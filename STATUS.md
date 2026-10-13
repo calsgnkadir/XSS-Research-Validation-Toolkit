@@ -3,20 +3,23 @@
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Son doğrulanan teslim — R4 ingress ve canlı Bludit kabulü
+## Son doğrulanan teslim — R4 runner ve canlı Bludit kabulü
 
 13 Ekim 2026: sabit Apache reverse proxy iki ağlı, yeni ve geçici bir Compose
 projesinde çalıştı. Bludit yalnız internal ağda kaldı; proxy 127.0.0.1 üzerinde
 geçici port yayımladı. Temiz kurulum, ayrı login, ham ve escaped public browser
 kontrolleri geçti. Eksik browser ve enjekte edilmiş kanıt uyuşmazlığı hata verdi;
 üç UUID projesi de temizlendi. Önceden var olan 15 container, 27 volume ve 9
-network kimlikleri birebir korundu. Birleşik regresyon **335 passed, sıfır
-failure/error/skip**; kaynak hashleri sabit.
-[Yerel kanıt](audit/2026-10-12-r4-ingress-live/README.md). Bu dar lifecycle
-kabulü genel R4/R9, skorlayıcı entegrasyonu veya açıklık triage'ını kapatmaz.
+network kimlikleri birebir korundu. Runner'a opt-in entegrasyon eklendi; gerçek
+CLI koşusunda Bludit kontrolleri ayrı `product_controls` alanında kaldı ve
+scanner skorlarına karışmadı. Benchmark regression paketi **434 passed, sıfır
+failure/error/skip**.
+[Runner kanıtı](audit/2026-10-13-r4-runner-live/README.md) ve
+[lifecycle kanıtı](audit/2026-10-12-r4-ingress-live/README.md). Bu dar teslimler
+genel R4/R9, corpus gate veya açıklık triage'ını kapatmaz.
 Storage ingress/Compose kodunu, QA bağımsız testleri, koordinatör entegrasyon
 ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Kod commit’i `e62bf34` uzak main ile eşleşti; [CI 38404107337](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337)
-üç job success. CI yalnız mock adapter testlerini ve mevcut browser proof’u
+üç job success. Bu CI runner değişikliğini içermez. CI yalnız mock adapter testlerini ve mevcut browser proof’u
 çalıştırdı; yerel Bludit Docker kabulü yukarıdaki ayrı kanıttır.
 
 ## Önceki R4 engeli (12 Ekim)
@@ -70,8 +73,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 ## Açık işler ve sıradaki adım
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
-- R4 bağımsız gerçek ürün lifecycle kabulü tamamlandı; benchmark skorlayıcı
-  entegrasyonu ve genel R4 kabul işleri açıktır.
+- R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
+  tamamlandı; geniş corpus/CI kabul işleri açıktır. Yeni entegrasyon henüz uzak
+  CI'da koşmadı.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer

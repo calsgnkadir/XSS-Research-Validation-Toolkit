@@ -83,7 +83,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [9 Ekim yeniden doğrulama](audit/2026-10-09-resume/README.md) | Yerel hard timeout/süreç temizliği ve dokuz fixture PASS; gerçek ürün adapter'ı ve uzak artifact kabulü açık |
+| R4 | [13 Ekim Bludit runner kabulü](audit/2026-10-13-r4-runner-live/README.md) | Lifecycle ve opt-in runner bağlantısı canlı geçti; geniş scorer/CI kabulü sürüyor |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -126,7 +126,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
-| R4 Doğru benchmark ve CI | Devam — sayaç ve süreç durumları düzeltildi | Kimlik scorer'ını adapter'a bağla; corpus'u genişlet | Bulgu kimliğiyle TP/FP/FN, gerçek hedef adapter'ı, kalıcı sonuç |
+| R4 Doğru benchmark ve CI | Devam — sentetik proof scorer, Bludit lifecycle ve opt-in runner bağlantısı mevcut | Kalan corpus/CI kabulini tamamla; ölçümü by-design XSS metriğinden ayrı tut | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact; genel R4 kriterlerinin karşılanması |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
 | R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
@@ -212,11 +212,17 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
-12 Ekim ürün adapter taslağı: pinned Bludit lifecycle ve 83 bağımsız guard testi
-hazır; birleşik 268 test geçti. Gerçek Docker internal network koşusunda host
-port binding oluşmadığı için bootstrap/login/browser kabulü **engelli**.
-[Kanıt ve sıradaki ingress işi](audit/2026-10-12-r4-product-adapter/README.md).
-Bu taslak aşağıdaki gerçek uygulama veya birleşik kabul kutularını kapatmaz.
+13 Ekim dar teslimler: pinned Bludit 3.16.2 için internal uygulama + sabit Apache
+loopback ingress gerçek kuruluma ulaştı. Ayrı login, iki public raw/escaped
+browser kontrolü ve cleanup geçti; eksik browser/mismatch hata oracleları geçti;
+15/27/9 önceki Docker kaynak kimliği korundu. [Lifecycle kabulü](audit/2026-10-12-r4-ingress-live/README.md).
+Opt-in adapter ayrıca `bench/run.py` üzerinden canlı çalıştı; `product_controls`
+ayrı raporlandı ve scanner TP/FP/FN toplamları değişmedi. [Runner kabulü](audit/2026-10-13-r4-runner-live/README.md).
+Ham içerik admin tarafından yazıldığı için kanıt **by-design**; XSS açığı veya
+role boundary değildir. Geniş R4 scorer, corpus ve CI kabulü açık kalır.
+
+12 Ekim kaydı tarihsel: o tarihte tek internal container host port üretmedi ve
+ürün koşusu başlamadan durdu. [Tarihsel kanıt](audit/2026-10-12-r4-product-adapter/README.md).
 
 
 Güncel dar kabul: 9 Ekim Windows worker timeout/crash/cleanup ve strict corpus
@@ -284,7 +290,7 @@ Kabul ölçütleri:
 - [ ] JSON-only ve sadece resource-callback, doğrulanmış XSS TP'sine katılmaz.
 - [ ] Bilinen negatif fixture'da FP, zorunlu pozitif fixture'da FN CI'ı düşürür.
 - [ ] Gerekli browser işi continue-on-error değildir; skip sayısı doğrulanır.
-- [ ] Sabit uygulama sürümü/digest, bootstrap/login ve doğru endpoint'ler vardır; teardown veri etkisi belgelenir.
+- [x] Sabit uygulama digest'i, bootstrap/login ve endpoint'ler; disposable teardown doğrulandı (13 Ekim Bludit lifecycle kabulü). Bu, scorer entegrasyonunu veya genel R4'ü kapatmaz.
 - [ ] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır.
 - [ ] Rakip kıyaslaması ancak aynı kapsam, auth, bütçe ve insan triage'ı sağlandığında yayımlanır.
 

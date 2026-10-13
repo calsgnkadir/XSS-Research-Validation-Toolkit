@@ -1,5 +1,25 @@
 ﻿# Doğrulama kaydı — 2026-10-13
 
+## 13 Ekim R4 Bludit runner bağlantısı
+
+- `py -3.10 -m pytest bench/test_bench.py bench/test_bludit_adapter.py
+  bench/test_bludit_ingress.py bench/test_bludit_runner.py
+  bench/test_ci_acceptance.py bench/test_ci_self_scan.py
+  bench/test_docker_safety.py bench/test_proof_adapter.py
+  bench/test_proof_corpus.py bench/test_runner_isolation.py -q
+  -p no:cacheprovider --tb=short`: **434 passed**, sıfır failure/error/skip;
+  Python 3.10.11 / Windows.
+- Gerçek opt-in `bench/run.py --targets mock-reflected-easy --bludit-control`
+  koşusu: mock target ayrı candidate TP=1/FP=0/FN=0 (XSS accuracy değildir);
+  Bludit raw/escaped davranışları beklenenle eşleşti, status ve cleanup
+  `passed`. Ürün kontrolleri `product_controls` altında kaldı; scanner totals
+  değişmedi. [Sanitized sonuç](audit/2026-10-13-r4-runner-live/result.json),
+  [tekrar/limitler](audit/2026-10-13-r4-runner-live/README.md).
+- Son Docker sayıları 15 container, 27 volume, 9 network; önceki lifecycle
+  kabulindeki değerlerle aynı. Adapter kendi geçici projesinin cleanup'ını
+  doğruladı. Bu yeni entegrasyon hosted CI'da çalıştırılmadı; CI bu yerel Docker
+  kabulinin yerine geçmez.
+
 ## 13 Ekim R4 ingress ve gerçek ürün kabulü
 
 - Aktif depo `C:\xss\xss-github`, başlangıç commit'i `02e8805`. Python
