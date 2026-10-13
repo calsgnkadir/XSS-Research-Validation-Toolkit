@@ -13,7 +13,9 @@
   9 network kimlik/ad setleri birebir korundu.
   [Live acceptance](audit/2026-10-12-r4-ingress-live/live-acceptance.json).
 - Bu yalnız yerel ürün lifecycle kabulüdür; bench scorer ve uzak CI bu imajı
-  çalıştırmaz. Uzak CI commit sonrası ayrı kaydedilir. Önceki 268 ve engelli
+  çalıştırmaz. `e62bf34` için [uzak CI 38404107337](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337)
+  üç job success; artifact içerikleri bu koşuda indirilmedi.
+  Önceki 268 ve engelli
   denemeler tarihsel kanıttır, bu koşuya eklenmez.
 
 ## 12 Ekim R4 ürün adapter taslağı — canlı kabul engelli

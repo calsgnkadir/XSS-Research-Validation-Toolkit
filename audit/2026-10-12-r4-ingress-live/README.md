@@ -73,3 +73,13 @@ This closes the local standalone R4 product lifecycle/port discovery adapter
 acceptance. Benchmark scorer integration, broader R4/R9, role boundaries and
 upstream image provenance remain open. Hosted CI tests mocked adapter behavior;
 it does not run the local image. Remote delivery is recorded separately.
+
+## GitHub delivery
+
+Implementation commit `e62bf3422456bad2b9f770d0ad4e8a20bc78c76f` was
+pushed to `origin/main`; `git ls-remote` matched the local hash and the working
+tree was clean. [Workflow 38404107337](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337)
+completed successfully, with all three jobs successful. The hosted runner tested
+mocked ingress/adapter behavior and existing browser proof; it did not run the
+pinned local Bludit Docker image. Artifact contents were not separately inspected
+for this run. [Sanitized job metadata](remote-delivery.json).

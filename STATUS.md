@@ -15,8 +15,9 @@ failure/error/skip**; kaynak hashleri sabit.
 [Yerel kanıt](audit/2026-10-12-r4-ingress-live/README.md). Bu dar lifecycle
 kabulü genel R4/R9, skorlayıcı entegrasyonu veya açıklık triage'ını kapatmaz.
 Storage ingress/Compose kodunu, QA bağımsız testleri, koordinatör entegrasyon
-ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Uzak teslim ayrı
-kaydedilir.
+ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Kod commit’i `e62bf34` uzak main ile eşleşti; [CI 38404107337](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337)
+üç job success. CI yalnız mock adapter testlerini ve mevcut browser proof’u
+çalıştırdı; yerel Bludit Docker kabulü yukarıdaki ayrı kanıttır.
 
 ## Önceki R4 engeli (12 Ekim)
 

@@ -1,0 +1,27 @@
+{
+  "implementation_commit": "e62bf3422456bad2b9f770d0ad4e8a20bc78c76f",
+  "remote_main_matched": true,
+  "workflow_run_id": 38404107337,
+  "workflow_url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Required local authenticated browser proof",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "dom-xss-analyzer tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "dxadom browser harness (Playwright opt-in)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "CI mocked ingress/adapter tests plus repository browser proof; local pinned Bludit Docker acceptance was separate",
+  "artifact_contents": "not-inspected-for-this-run"
+}
