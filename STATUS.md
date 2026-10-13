@@ -18,9 +18,11 @@ failure/error/skip**.
 [lifecycle kanıtı](audit/2026-10-12-r4-ingress-live/README.md). Bu dar teslimler
 genel R4/R9, corpus gate veya açıklık triage'ını kapatmaz.
 Storage ingress/Compose kodunu, QA bağımsız testleri, koordinatör entegrasyon
-ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Kod commit’i `e62bf34` uzak main ile eşleşti; [CI 38404107337](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38404107337)
-üç job success. Bu CI runner değişikliğini içermez. CI yalnız mock adapter testlerini ve mevcut browser proof’u
-çalıştırdı; yerel Bludit Docker kabulü yukarıdaki ayrı kanıttır.
+ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Runner commit’i
+`afcb7c1` remote main ile eşleşti; aynı commit için [38444394044](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38444394044)
+ve [38444393733](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38444393733)
+CI koşuları 3/3 job success. Hosted CI yerel Bludit Docker kabulini çalıştırmadı;
+workflow metadata'sı [burada](audit/2026-10-13-r4-runner-live/remote-delivery.json).
 
 ## Önceki R4 engeli (12 Ekim)
 
@@ -74,8 +76,7 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
 - R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
-  tamamlandı; geniş corpus/CI kabul işleri açıktır. Yeni entegrasyon henüz uzak
-  CI'da koşmadı.
+  tamamlandı; commit CI'da geçti. Genel corpus/CI artifact kabul işleri açıktır.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer

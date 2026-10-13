@@ -17,8 +17,10 @@
   [tekrar/limitler](audit/2026-10-13-r4-runner-live/README.md).
 - Son Docker sayıları 15 container, 27 volume, 9 network; önceki lifecycle
   kabulindeki değerlerle aynı. Adapter kendi geçici projesinin cleanup'ını
-  doğruladı. Bu yeni entegrasyon hosted CI'da çalıştırılmadı; CI bu yerel Docker
-  kabulinin yerine geçmez.
+  doğruladı. Commit `afcb7c1` için iki uzak CI çalışması 3/3 job success;
+  [metadata](audit/2026-10-13-r4-runner-live/remote-delivery.json). Hosted CI
+  bu yerel Bludit Docker kabulini çalıştırmadı ve artifact içerikleri bu turda
+  incelenmedi.
 
 ## 13 Ekim R4 ingress ve gerçek ürün kabulü
 

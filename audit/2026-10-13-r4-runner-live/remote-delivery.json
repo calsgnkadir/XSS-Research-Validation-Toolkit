@@ -1,0 +1,30 @@
+{
+  "implementation_commit": "afcb7c1fc8453392178966a18cc8f24d1408b51d",
+  "remote_main_matched": true,
+  "workflow_runs": [
+    {
+      "id": 38444394044,
+      "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38444394044",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": {
+        "Required local authenticated browser proof": "success",
+        "dom-xss-analyzer tests": "success",
+        "dxadom browser harness (Playwright opt-in)": "success"
+      }
+    },
+    {
+      "id": 38444393733,
+      "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38444393733",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": {
+        "Required local authenticated browser proof": "success",
+        "dom-xss-analyzer tests": "success",
+        "dxadom browser harness (Playwright opt-in)": "success"
+      }
+    }
+  ],
+  "scope": "Both push workflows tested commit afcb7c1. Browser proof and benchmark/mock CI ran; neither workflow ran the local pinned Bludit Docker acceptance.",
+  "artifact_contents": "not-inspected-for-this-run"
+}

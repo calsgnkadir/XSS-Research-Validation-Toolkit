@@ -52,7 +52,8 @@ private inventory snapshot.
 
 This does not close general R4: the strict positive/negative corpus gate,
 broader coverage/accounting criteria, CI artifact acceptance for this new
-product-control report, and comparable-tool methodology remain open. Hosted
-CI has not tested this runner integration and does not run the local Bludit
-Docker image. See [ROADMAP](../../ROADMAP.md) and
+product-control report, and comparable-tool methodology remain open. The two
+hosted workflows passed, but did not run the local Bludit Docker image or
+inspect the generated artifact contents; see [CI metadata](remote-delivery.json).
+See [ROADMAP](../../ROADMAP.md) and
 [VALIDATION](../../VALIDATION.md) for remaining work.
