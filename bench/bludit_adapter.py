@@ -16,6 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+import bludit_ingress as ingress
 
 PINNED_IMAGE = 'sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8'
 DEFAULT_COMPOSE = Path(__file__).parent / 'targets/bludit/local-inspected.yml'
@@ -37,35 +38,18 @@ def parse_port(text):
     return f'http://127.0.0.1:{port}'
 
 def validate_config(config, project, image=PINNED_IMAGE):
-    require(set(config) <= {'name', 'services', 'networks'}, 'preflight', 'unsupported-compose-resource')
-    require(set(config.get('services', {})) == {'bludit'}, 'preflight', 'single-service-required')
-    s = config['services']['bludit']
-    require(set(s) <= {'image','pull_policy','restart','ports','networks','healthcheck','command','entrypoint'}, 'preflight', 'unsupported-service-option')
-    require(s.get('image') == image and s.get('pull_policy') == 'never' and s.get('restart') == 'no', 'preflight', 'immutable-image-required')
-    require(s.get('command') is None and s.get('entrypoint') is None, 'preflight', 'image-default-command-required')
-    ports = s.get('ports', [])
-    require(len(ports) == 1, 'preflight', 'single-port-required')
-    p = ports[0]
-    require(p.get('host_ip') == '127.0.0.1' and str(p.get('target')) == '80' and p.get('protocol','tcp') == 'tcp' and p.get('published') in (None,'',0,'0'), 'preflight', 'ephemeral-loopback-required')
-    require(set(s.get('networks', {})) == {'isolated'}, 'preflight', 'isolated-network-required')
-    networks = config.get('networks', {})
-    require(set(networks) == {'isolated'}, 'preflight', 'single-network-required')
-    n = networks['isolated']
-    require(set(n) <= {'name','internal','driver','ipam'} and not n.get('ipam') and n.get('internal') is True and n.get('driver','bridge') == 'bridge' and n.get('name',project+'_isolated') == project+'_isolated', 'preflight', 'owned-internal-network-required')
-    h = s.get('healthcheck', {})
-    require(h.get('test') == ['CMD','curl','-f','http://localhost/'], 'preflight', 'reviewed-healthcheck-required')
+    try:
+        ingress.validate_config(config, project, image)
+    except ingress.IngressError as exc:
+        raise AdapterError(exc.stage, exc.code) from None
 
-def validate_inspect(container, project, image=PINNED_IMAGE):
-    labels = container.get('Config', {}).get('Labels') or {}
-    require(labels.get('com.docker.compose.project') == project and labels.get('com.docker.compose.service') == 'bludit', 'ownership', 'foreign-container')
-    require(container.get('Image') == image and not container.get('Mounts'), 'ownership', 'image-or-mount-mismatch')
-    host = container.get('HostConfig', {})
-    require(not host.get('Privileged') and host.get('NetworkMode') == project+'_isolated', 'ownership','unsafe-runtime')
-    require(container.get('State', {}).get('Running') is True, 'readiness','container-not-running')
-    ports = container.get('NetworkSettings', {}).get('Ports', {})
-    require(set(ports) == {'80/tcp'} and isinstance(ports['80/tcp'],list) and len(ports['80/tcp']) == 1, 'port','unexpected-port-map')
-    p = ports['80/tcp'][0]
-    return parse_port(str(p.get('HostIp',''))+':'+str(p.get('HostPort','')))
+
+def validate_inspect(container, project, image=PINNED_IMAGE, service='ingress'):
+    try:
+        return ingress.validate_inspect(container, project, service, image)
+    except ingress.IngressError as exc:
+        raise AdapterError(exc.stage, exc.code) from None
+
 
 @dataclass
 class Response:
@@ -127,7 +111,16 @@ def bootstrap(client):
     redirect(response, client.origin, '/', 'bootstrap')
     # Discard installer cookies and prove an independent login is required.
     client = HTTPClient(client.origin) if isinstance(client, HTTPClient) else client
-    redirect(client.request('/admin/new-content'), client.origin, '/admin/login', 'login')
+    anonymous = client.request('/admin/new-content')
+    if anonymous.status == 200:
+        # Bludit renders its login controller at the requested admin path.
+        form = Form(anonymous.body)
+        require({'username','password','tokenCSRF'} <= set(form.fields)
+                and bool(form.fields['tokenCSRF']) and not form.admin_author
+                and not {'content','uuid'}.intersection(form.fields),
+                'login','anonymous-login-form-required')
+    else:
+        redirect(anonymous, client.origin, '/admin/login', 'login')
     page = client.request('/admin/login')
     fields = Form(page.body).fields
     require(page.status == 200 and bool(fields.get('tokenCSRF')) and {'username','password'} <= set(fields), 'login','login-form-unavailable')
@@ -141,7 +134,8 @@ def seed_cases(client, run_id):
     for case_id, positive in (('raw-admin-content',True),('escaped-admin-content',False)):
         cid = 'dxa'+secrets.token_hex(16)
         payload = '<img src="/__dxa_missing_'+cid+'" onerror="window.__dxaProof=\''+cid+'\'">'
-        content = payload if positive else html.escape(payload)
+        # An HTML code block prevents Bludit Markdown from changing underscores.
+        content = payload if positive else '<pre><code>'+html.escape(payload)+'</code></pre>'
         slug = 'dxa-'+run_id+'-'+('raw' if positive else 'escaped')
         fields = authenticated_form(client)
         response = client.request('/admin/new-content', {'tokenCSRF':fields['tokenCSRF'],'uuid':fields['uuid'],'title':slug,'slug':slug,'type':'published','content':content})
@@ -152,12 +146,21 @@ def seed_cases(client, run_id):
     return cases
 
 def observe_cases(origin, cases, browser=None):
-    from playwright.sync_api import sync_playwright
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        raise AdapterError('browser', 'browser-dependency-unavailable') from None
+    if browser:
+        require(Path(browser).is_file(), 'browser', 'browser-unavailable')
     observations=[]
     with sync_playwright() as pw:
         launch={'headless':True}
         if browser: launch['executable_path']=str(browser)
-        engine=pw.chromium.launch(**launch)
+        try:
+            engine=pw.chromium.launch(**launch)
+        except Exception as exc:
+            reason = 'timeout' if type(exc).__name__ == 'TimeoutError' else 'browser-unavailable'
+            raise AdapterError('browser', reason) from None
         try:
             version=engine.version
             for case in cases:
@@ -178,7 +181,6 @@ def observe_cases(origin, cases, browser=None):
                     observed=False
                     for _ in range(40):
                         observed=page.evaluate('() => window.__dxaProof || null') == case['canary_id']
-                        if observed: break
                         page.wait_for_timeout(25)
                     observations.append({**case,'execution_observed':observed,'status':'execution-observed' if observed else 'no-execution-observed','observation_ms':1000,'matched':observed == case['expected_execution']})
                 finally: context.close()
@@ -235,14 +237,28 @@ class BluditAdapter:
         self.owned=True
     def start(self):
         self.compose(['up','-d','--pull','never'],'startup',90)
-        ids=self.compose(['ps','-q','bludit'],'ownership').split()
-        require(len(ids)==1 and re.fullmatch('[a-f0-9]{12,64}',ids[0]),'ownership','single-container-required')
-        info=json.loads(self.command(['inspect',ids[0]],'ownership'))
-        require(len(info)==1,'ownership','ambiguous-container')
-        origin=validate_inspect(info[0],self.project)
-        require(parse_port(self.compose(['port','bludit','80'],'port'))==origin,'port','port-inspect-mismatch')
-        networks=json.loads(self.command(['network','inspect',self.project+'_isolated'],'ownership'))
-        require(len(networks)==1 and networks[0].get('Internal') is True and networks[0].get('Labels',{}).get('com.docker.compose.project')==self.project,'ownership','network-not-owned-internal')
+        container_ids = {}
+        origin = None
+        for service in ('bludit', 'ingress'):
+            ids = self.compose(['ps','-q',service],'ownership').split()
+            require(len(ids)==1 and re.fullmatch('[a-f0-9]{12,64}',ids[0]),
+                    'ownership','single-container-required')
+            info = json.loads(self.command(['inspect',ids[0]],'ownership'))
+            require(len(info)==1,'ownership','ambiguous-container')
+            discovered = validate_inspect(info[0],self.project,service=service)
+            container_ids[service] = info[0]['Id']
+            if service == 'ingress':
+                origin = discovered
+        require(parse_port(self.compose(['port','ingress','80'],'port'))==origin,
+                'port','port-inspect-mismatch')
+        for name, members in (('isolated', list(container_ids.values())),
+                              ('edge', [container_ids['ingress']])):
+            networks = json.loads(self.command(['network','inspect',self.project+'_'+name],'ownership'))
+            require(len(networks)==1,'ownership','ambiguous-network')
+            try:
+                ingress.validate_network(networks[0],self.project,name,members)
+            except ingress.IngressError as exc:
+                raise AdapterError(exc.stage,exc.code) from None
         return origin
     def run(self,output_dir,browser=None):
         output=Path(output_dir); output.mkdir(parents=True,exist_ok=False)
@@ -266,6 +282,17 @@ class BluditAdapter:
         except Exception as exc:
             report['events'].append({'stage':exc.stage if isinstance(exc,AdapterError) else 'adapter','kind':'error','reason':exc.code if isinstance(exc,AdapterError) else ('timeout' if isinstance(exc, TimeoutError) or type(exc).__name__ == 'TimeoutError' else 'unexpected-error')})
         finally:
+            # Persist observations before removing the disposable application layer.
+            # A passed observation is provisional until teardown has been verified.
+            snapshot = dict(report)
+            snapshot['cleanup_status'] = 'pending' if self.owned else 'not-started'
+            if snapshot['status'] == 'passed':
+                snapshot['status'] = 'awaiting-cleanup'
+            try:
+                (output/'observations.json').write_text(json.dumps(snapshot,indent=2)+'\n',encoding='utf-8')
+            except OSError:
+                report['status']='error'
+                report['events'].append({'stage':'report','kind':'error','reason':'observation-write-failed'})
             if self.owned:
                 try:
                     # Unique project was empty before startup. Down removes only its resources,

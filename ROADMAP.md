@@ -9,6 +9,13 @@ uzak Linux CI artifact kabulü açık kalır. 11 Ekim kontrolde `5df2577` için
 uzak CI/job sonuçları başarılı bulundu; artifact içerikleri henüz incelenmedi.
 Güncel devam noktası [STATUS](STATUS.md); aşağıdaki 6–7 Ekim test sayıları tarihseldir.
 
+13 Ekim dar R4 teslimi: sabit Bludit 3.16.2 yerel imajı için internal uygulama +
+loopback Apache ingress adapter'ı gerçek Docker kabulünde kurulum, login ve
+ham/escaped browser kontrolünü tamamladı. Eksik browser ve enjekte edilmiş
+kontrol uyuşmazlığı güvenli hata; üç cleanup geçti, 15/27/9 mevcut Docker
+kaynağı korundu. Birleşik **335 test sıfır skip**. [Kanıt](audit/2026-10-12-r4-ingress-live/README.md).
+Gerçek ürün benchmark skorlayıcısına bağlanmadı; genel R4/R9 açık kalır.
+
 12 Ekim dar teslim: zorunlu R3/R4 CI artifact kapısı yerelde JUnit sıfır-skip,
 dokuz vaka tutarlılığı ve demo execution kontrolüyle doğrulandı.
 [Yeni kanıt](audit/2026-10-12-r4-ci-acceptance/README.md). Uzak artifact API'si

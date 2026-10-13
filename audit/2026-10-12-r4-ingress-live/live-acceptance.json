@@ -1,0 +1,69 @@
+{
+  "base_commit": "02e880517b8e1edef1d39af67133ba66291c4611",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "source_hashes": {
+    "bench/bludit_adapter.py": "de49ebe7372865a6f8bd69dfb640f2d14f2ae8fa92ce1dfae12dd410865d4ae6",
+    "bench/bludit_ingress.py": "0858b4d2983072bc3b31ca20d7a621973ce02481425956a99279b5b2a93cbdde",
+    "bench/test_bludit_adapter.py": "165b8430c8787ef13a4a0114e42f9ae6b9f6f228eea8b0ca677c13ab062e25e3",
+    "bench/test_bludit_ingress.py": "0db7bc5f1efc7dbc4ecd2ce758c69f6527a8244be4ced47ae23ec8f84c682143",
+    "bench/targets/bludit/local-inspected.yml": "ffb2f923c24b9c8b075b1b74d934e0f64d134a1ac034bcccc36822260555aefa",
+    ".github/workflows/ci.yml": "323f9d02953e47e24e20d66826b57849c92ca776b50f6af67aa32bc2e506b16c",
+    "audit/2026-10-12-r4-ingress-live/run_validation.py": "1a3f79ff5cbd525659cbc50bc93d966bda9b57daf37cdc13f076c555558977be"
+  },
+  "preservation": {
+    "containers": {
+      "before": 15,
+      "after": 15,
+      "exact_match": true
+    },
+    "volumes": {
+      "before": 27,
+      "after": 27,
+      "exact_match": true
+    },
+    "networks": {
+      "before": 9,
+      "after": 9,
+      "exact_match": true
+    }
+  },
+  "runs": {
+    "success": {
+      "status": "passed",
+      "cleanup": "passed",
+      "events": []
+    },
+    "missing-browser": {
+      "status": "error",
+      "cleanup": "passed",
+      "events": [
+        {
+          "stage": "browser",
+          "kind": "error",
+          "reason": "browser-unavailable"
+        }
+      ]
+    },
+    "control-mismatch": {
+      "status": "error",
+      "cleanup": "passed",
+      "events": [
+        {
+          "stage": "acceptance",
+          "kind": "error",
+          "reason": "control-mismatch"
+        }
+      ]
+    }
+  },
+  "positive_control": true,
+  "negative_control": true,
+  "pre_cleanup_snapshots": {
+    "success": true,
+    "missing-browser": true,
+    "control-mismatch": true
+  },
+  "sources_unchanged": true,
+  "accepted": true
+}

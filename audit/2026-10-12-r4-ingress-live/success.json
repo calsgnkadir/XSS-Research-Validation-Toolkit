@@ -1,0 +1,50 @@
+{
+  "schema": "dxa-bludit-lab/1",
+  "status": "passed",
+  "product": "Bludit",
+  "embedded_version": "3.16.2",
+  "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+  "project": "dxa-bludit-22873cb6b1d74cf4937ad21edeadff1e",
+  "triage": "by-design",
+  "cases": [
+    {
+      "case_id": "raw-admin-content",
+      "path": "/dxa-22873cb6b1d74cf4937ad21edeadff1e-raw",
+      "canary_id": "dxaaa3f7a4ec8cbe34373025ad86040a053",
+      "expected_execution": true,
+      "payload_sha256": "fcbae6f2fe2d3bf623d844cd03a4b94e72b8947bb5acf79a907ea7f05009b882",
+      "triage": "by-design",
+      "read_status": 200,
+      "execution_observed": true,
+      "status": "execution-observed",
+      "observation_ms": 1000,
+      "matched": true
+    },
+    {
+      "case_id": "escaped-admin-content",
+      "path": "/dxa-22873cb6b1d74cf4937ad21edeadff1e-escaped",
+      "canary_id": "dxa8378ebc3d4862b049a40d15bd9e30f89",
+      "expected_execution": false,
+      "payload_sha256": "cf16c7feb9ac39f391256008d38e6e0ba69c670629eb8145c89779b795873827",
+      "triage": "by-design",
+      "read_status": 200,
+      "execution_observed": false,
+      "status": "no-execution-observed",
+      "observation_ms": 1000,
+      "matched": true
+    }
+  ],
+  "events": [],
+  "cleanup_status": "passed",
+  "limitations": [
+    "Admin-authored raw/escaped controls; no vulnerability or role-boundary claim.",
+    "Bounded public-reader observation; not general scanner coverage."
+  ],
+  "origin": "http://127.0.0.1:65291",
+  "session": {
+    "session_checked": true,
+    "author": "admin",
+    "role_verified": false
+  },
+  "browser_version": "155.0.8059.40"
+}

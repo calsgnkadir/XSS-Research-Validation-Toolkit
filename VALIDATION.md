@@ -1,4 +1,20 @@
-﻿# Doğrulama kaydı — 2026-10-12
+﻿# Doğrulama kaydı — 2026-10-13
+
+## 13 Ekim R4 ingress ve gerçek ürün kabulü
+
+- Aktif depo `C:\xss\xss-github`, başlangıç commit'i `02e8805`. Python
+  3.10.11 / Windows, yerel Docker Desktop ve pinned Bludit imajı.
+- `py -3.10 audit/2026-10-12-r4-ingress-live/run_validation.py`:
+  **335 passed, sıfır failure/error/skip**, JUnit, komut ve sabit kaynak
+  hashleri [acceptance.json](audit/2026-10-12-r4-ingress-live/acceptance.json).
+- Aynı script `--live --browser <yerel Chrome yolu>`: gerçek kurulum, ayrı
+  login, iki public browser kontrolü PASS; eksik browser ve enjekte edilmiş
+  proof uyuşmazlığı doğru error. Üç cleanup PASS. Eski 15 container, 27 volume,
+  9 network kimlik/ad setleri birebir korundu.
+  [Live acceptance](audit/2026-10-12-r4-ingress-live/live-acceptance.json).
+- Bu yalnız yerel ürün lifecycle kabulüdür; bench scorer ve uzak CI bu imajı
+  çalıştırmaz. Uzak CI commit sonrası ayrı kaydedilir. Önceki 268 ve engelli
+  denemeler tarihsel kanıttır, bu koşuya eklenmez.
 
 ## 12 Ekim R4 ürün adapter taslağı — canlı kabul engelli
 

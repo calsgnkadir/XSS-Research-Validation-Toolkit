@@ -1,5 +1,13 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-13
+
+- R4 Bludit ingress, internal uygulama + loopback sabit reverse proxy ile
+  gerçek kurulum/login/raw-escaped browser kontrolünden geçti. Üç disposable
+  koşuda hata ve temizlik kontrolleri, 335 regresyon ve mevcut Docker veri
+  koruması doğrulandı. Genel R4 ve benchmark entegrasyonu açık.
+  [Yerel kabul](audit/2026-10-12-r4-ingress-live/README.md).
+
 ## Unreleased — 2026-10-12
 
 - Deneysel pinned Bludit adapter taslağı, 83 bağımsız guard/lifecycle/rapor testi

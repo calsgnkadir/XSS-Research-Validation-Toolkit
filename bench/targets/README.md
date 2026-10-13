@@ -23,20 +23,14 @@ read-only inspection of this image found `BLUDIT_VERSION=3.16.2` in
 No site database was present at `bl-content/databases/site.php`. This verifies
 the embedded version string, not upstream authenticity or vulnerability status.
 The image has no declared volumes. Other machines must obtain/review their own
-image; this file deliberately cannot pull it. Its internal network blocks
-ordinary container egress; the published HTTP port is ephemeral on 127.0.0.1.
+image; this file deliberately cannot pull it. Its application network is
+internal; the fixed ingress proxy publishes an ephemeral HTTP port on
+127.0.0.1.
 
-Start only under a fresh project, discover its mapped port with Compose `port
-bludit 80`, and complete installation in that fresh instance. Bootstrap/login,
-fixture contents and expected evidence must be independently verified before
-benchmark acceptance. Removing this disposable container loses its writable
-layer: export required evidence first. Never substitute an existing user site.
-
-The current benchmark runner requires a known published TCP port matching its
-readiness URL before startup. It therefore cannot directly consume the ephemeral
-port in `local-inspected.yml`; a reviewed bootstrap/port-discovery adapter remains
-required. Compose configuration validation alone does not satisfy that acceptance.
-
+The standalone adapter below owns bootstrap, port discovery, explicit login and
+controlled browser evidence for fresh UUID projects. It exports observations
+before tearing down its disposable writable layers. The main benchmark runner
+still does not consume this product adapter.
 
 ## Experimental standalone Bludit adapter (12 October)
 
@@ -44,14 +38,29 @@ required. Compose configuration validation alone does not satisfy that acceptanc
 implements a separate disposable lifecycle with pinned image, configuration and
 ownership guards, installer/login, public raw/escaped controls and result
 validation. It does not change the benchmark runner or its scorer. Its unit
-suite runs without Docker or Playwright; it is not live product acceptance.
+suite runs without Docker or Playwright; its 12 October mock tests were not
+live product acceptance.
 
-**Live acceptance is currently blocked on this Docker Desktop environment.**
-With the reviewed internal network, runtime inspection returned `80/tcp: []`
-despite the requested ephemeral loopback binding. The adapter correctly errors
-and tears down its own project. Rechecking after three seconds gave the same
-result. Do not bypass the mapping guard or use an existing application instance.
-The installer/login/browser stages have not yet been reached in the real lab.
-A reviewed ingress design compatible with internal networking is the next step;
-no host firewall, existing network or daemon configuration was changed.
-See [evidence and remaining work](../../audit/2026-10-12-r4-product-adapter/README.md).
+**Historical 12 October blocker:** an internal-only application container had
+no published host port at runtime. The adapter failed closed and cleaned up.
+The 13 October ingress acceptance below resolves that local blocker.
+[Earlier evidence](../../audit/2026-10-12-r4-product-adapter/README.md).
+
+### 13 October Bludit ingress acceptance
+
+`local-inspected.yml` now runs the pinned application only on an internal
+network. A fixed Apache reverse proxy on the same pinned image joins that
+network and an edge bridge; only the proxy publishes an ephemeral loopback port.
+`bench/bludit_adapter.py` verifies topology, container commands, image,
+ownership, network members and mapping before HTTP. Run on a machine with the
+locally reviewed image and Chrome:
+
+```powershell
+py -3.10 bench/bludit_adapter.py --output .dxa/my-new-bludit-run --browser "C:\Program Files\Google\Chrome\Application\chrome.exe"
+```
+
+The output directory must be new. Observations are written before removing the
+UUID project's containers and networks without `down -v`. Raw/escaped controls
+are administrator-authored and by design.
+[Local acceptance and limits](../../audit/2026-10-12-r4-ingress-live/README.md).
+The benchmark scorer still does not consume this standalone adapter.

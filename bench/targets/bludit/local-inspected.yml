@@ -1,18 +1,84 @@
-# Fresh local lab, no persistent or host data mounts. See ../README.md.
-services:
-  bludit:
-    image: sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8
-    pull_policy: never
-    restart: "no"
-    ports:
-      - "127.0.0.1::80"
-    networks:
-      - isolated
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 2s
-      timeout: 2s
-      retries: 15
-networks:
-  isolated:
-    internal: true
+# Disposable loopback ingress; application stays internal. JSON is valid YAML.
+{
+  "services": {
+    "bludit": {
+      "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+      "pull_policy": "never",
+      "restart": "no",
+      "networks": [
+        "isolated"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost/"
+        ],
+        "interval": "2s",
+        "timeout": "2s",
+        "retries": 15
+      }
+    },
+    "ingress": {
+      "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+      "pull_policy": "never",
+      "restart": "no",
+      "entrypoint": [
+        "/usr/sbin/apache2"
+      ],
+      "command": [
+        "-f",
+        "/dev/null",
+        "-DFOREGROUND",
+        "-C",
+        "ServerRoot /etc/apache2",
+        "-C",
+        "LoadModule mpm_event_module /usr/lib/apache2/modules/mod_mpm_event.so",
+        "-C",
+        "LoadModule authz_core_module /usr/lib/apache2/modules/mod_authz_core.so",
+        "-C",
+        "LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so",
+        "-C",
+        "LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so",
+        "-C",
+        "Listen 80",
+        "-C",
+        "ServerName 127.0.0.1",
+        "-C",
+        "PidFile /tmp/dxa-ingress.pid",
+        "-C",
+        "DefaultRuntimeDir /tmp",
+        "-C",
+        "User www-data",
+        "-C",
+        "Group www-data",
+        "-C",
+        "ErrorLog /proc/self/fd/2",
+        "-C",
+        "ProxyRequests Off",
+        "-C",
+        "ProxyPreserveHost On",
+        "-C",
+        "ProxyPass / http://bludit:80/ connectiontimeout=3 timeout=10",
+        "-C",
+        "ProxyPassReverse / http://bludit:80/"
+      ],
+      "ports": [
+        "127.0.0.1::80"
+      ],
+      "networks": [
+        "edge",
+        "isolated"
+      ]
+    }
+  },
+  "networks": {
+    "isolated": {
+      "internal": true
+    },
+    "edge": {
+      "driver": "bridge"
+    }
+  }
+}

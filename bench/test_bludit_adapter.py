@@ -11,22 +11,12 @@ import bludit_adapter as adapter
 PROJECT = 'dxa-bludit-' + 'a' * 32
 
 
-def inspected():
-    return {
-        'Id': 'a' * 64,
-        'Image': adapter.PINNED_IMAGE,
-        'Config': {'Labels': {'com.docker.compose.project': PROJECT,
-                              'com.docker.compose.service': 'bludit'}},
-        'Mounts': [],
-        'HostConfig': {'Privileged': False, 'NetworkMode': PROJECT + '_isolated'},
-        'State': {'Running': True},
-        'NetworkSettings': {'Ports': {'80/tcp': [{'HostIp': '127.0.0.1', 'HostPort': '49152'}]}}
-    }
+from test_bludit_ingress import compose_config, inspected, network, APP_ID, INGRESS_ID
 
 
 def test_single_loopback_mapping_is_discovered():
     assert adapter.parse_port('127.0.0.1:49152\n') == 'http://127.0.0.1:49152'
-    assert adapter.validate_inspect(inspected(), PROJECT) == 'http://127.0.0.1:49152'
+    assert adapter.validate_inspect(inspected(), PROJECT, service='ingress') == 'http://127.0.0.1:49152'
 
 
 @pytest.mark.parametrize('value', [
@@ -39,92 +29,6 @@ def test_ambiguous_or_unsafe_port_is_rejected(value):
     with pytest.raises(adapter.AdapterError):
         adapter.parse_port(value)
 
-
-@pytest.mark.parametrize('mutation', [
-    'project', 'service', 'labels-missing', 'image', 'mount', 'privileged',
-    'host-network', 'stopped', 'wildcard-ip', 'extra-binding', 'extra-port',
-    'no-port', 'invalid-port',
-])
-def test_runtime_inspect_rejects_unowned_or_unsafe_container(mutation):
-    row = inspected()
-    if mutation == 'project':
-        row['Config']['Labels']['com.docker.compose.project'] = 'existing-user-site'
-    elif mutation == 'service':
-        row['Config']['Labels']['com.docker.compose.service'] = 'other'
-    elif mutation == 'labels-missing':
-        row['Config']['Labels'] = {}
-    elif mutation == 'image':
-        row['Image'] = 'sha256:' + 'f' * 64
-    elif mutation == 'mount':
-        row['Mounts'] = [{'Type': 'volume', 'Name': 'existing-data'}]
-    elif mutation == 'privileged':
-        row['HostConfig']['Privileged'] = True
-    elif mutation == 'host-network':
-        row['HostConfig']['NetworkMode'] = 'host'
-    elif mutation == 'stopped':
-        row['State']['Running'] = False
-    elif mutation == 'wildcard-ip':
-        row['NetworkSettings']['Ports']['80/tcp'][0]['HostIp'] = '0.0.0.0'
-    elif mutation == 'extra-binding':
-        row['NetworkSettings']['Ports']['80/tcp'].append({'HostIp': '127.0.0.1', 'HostPort': '49153'})
-    elif mutation == 'extra-port':
-        row['NetworkSettings']['Ports']['22/tcp'] = [{'HostIp': '127.0.0.1', 'HostPort': '49153'}]
-    elif mutation == 'no-port':
-        row['NetworkSettings']['Ports'] = {}
-    else:
-        row['NetworkSettings']['Ports']['80/tcp'][0]['HostPort'] = '0'
-    with pytest.raises(adapter.AdapterError):
-        adapter.validate_inspect(row, PROJECT)
-
-
-def compose_config():
-    return {'name': PROJECT, 'services': {'bludit': {
-        'image': adapter.PINNED_IMAGE, 'pull_policy': 'never', 'restart': 'no',
-        'command': None, 'entrypoint': None,
-        'ports': [{'target': 80, 'published': '0', 'host_ip': '127.0.0.1', 'protocol': 'tcp'}],
-        'networks': {'isolated': None},
-        'healthcheck': {'test': ['CMD', 'curl', '-f', 'http://localhost/']},
-    }}, 'networks': {'isolated': {'name': PROJECT + '_isolated', 'internal': True, 'ipam': {}}}}
-
-
-def test_isolated_ephemeral_compose_config_is_accepted():
-    adapter.validate_config(compose_config(), PROJECT)
-
-
-@pytest.mark.parametrize('mutation', ['image', 'pull', 'volume', 'bind', 'privileged',
-                                       'external-network', 'public-network', 'port',
-                                       'extra-service', 'container-name', 'command', 'entrypoint', 'ipam'])
-def test_compose_guard_rejects_data_attachment_or_scope_expansion(mutation):
-    config = compose_config()
-    svc = config['services']['bludit']
-    if mutation == 'image':
-        svc['image'] = 'bludit:latest'
-    elif mutation == 'pull':
-        svc['pull_policy'] = 'always'
-    elif mutation == 'volume':
-        svc['volumes'] = [{'type': 'volume', 'source': 'existing', 'target': '/var/www/html'}]
-    elif mutation == 'bind':
-        svc['volumes'] = [{'type': 'bind', 'source': 'C:/user', 'target': '/data'}]
-    elif mutation == 'privileged':
-        svc['privileged'] = True
-    elif mutation == 'external-network':
-        config['networks']['isolated']['external'] = True
-    elif mutation == 'public-network':
-        config['networks']['isolated']['internal'] = False
-    elif mutation == 'port':
-        svc['ports'][0]['host_ip'] = '0.0.0.0'
-    elif mutation == 'extra-service':
-        config['services']['foreign'] = copy.deepcopy(svc)
-    elif mutation == 'command':
-        svc['command'] = ['sh', '-c', 'echo unexpected']
-    elif mutation == 'entrypoint':
-        svc['entrypoint'] = ['sh']
-    elif mutation == 'ipam':
-        config['networks']['isolated']['ipam'] = {'config': [{'subnet': '10.0.0.0/24'}]}
-    else:
-        svc['container_name'] = 'existing-user-container'
-    with pytest.raises(adapter.AdapterError):
-        adapter.validate_config(config, PROJECT)
 
 ORIGIN = 'http://127.0.0.1:49152'
 FORM = '<input name="tokenCSRF" value="FAKE_CSRF"><input name="uuid" value="uuid"><input name="title"><textarea name="content"></textarea><input disabled value="admin">'
@@ -262,16 +166,16 @@ class DockerScript:
                 raise subprocess.TimeoutExpired(cmd, 90, stderr='FAKE_PROCESS_SECRET')
             value = ''
         elif 'ps' in cmd:
-            value = 'a' * 64
+            value = APP_ID if cmd[-1] == 'bludit' else INGRESS_ID
         elif cmd[1] == 'inspect':
-            row = inspected()
+            row = inspected('bludit' if cmd[-1] == APP_ID else 'ingress')
             if self.failure == 'foreign-container':
                 row['Config']['Labels']['com.docker.compose.project'] = 'foreign'
             value = json.dumps([row])
         elif 'port' in cmd:
             value = '127.0.0.1:49153' if self.failure == 'port-mismatch' else '127.0.0.1:49152'
         elif cmd[1:3] == ['network', 'inspect']:
-            value = json.dumps([{'Internal': True, 'Labels': {'com.docker.compose.project': PROJECT}}])
+            value = json.dumps([network(cmd[-1].removeprefix(PROJECT + '_'))])
         elif 'down' in cmd:
             self.down = True
             if self.failure == 'cleanup':
@@ -448,3 +352,131 @@ def test_existing_output_is_preserved_without_starting_docker(tmp_path):
         lab.run(output)
     assert prior.read_text() == 'previous-evidence'
     assert docker.calls == []
+
+
+@pytest.mark.parametrize('failure,expected', [(None, 'awaiting-cleanup'), ('startup-timeout', 'error'), ('cleanup', 'awaiting-cleanup')])
+def test_observation_snapshot_exists_before_teardown(tmp_path, monkeypatch, failure, expected):
+    original = DockerScript.__call__
+    snapshots = []
+    def checked(self, cmd, **kwargs):
+        if 'down' in cmd:
+            snapshots.append(json.loads((tmp_path / 'report/observations.json').read_text()))
+        return original(self, cmd, **kwargs)
+    monkeypatch.setattr(DockerScript, '__call__', checked)
+    result, docker = run_fake(tmp_path, monkeypatch, failure=failure)
+    assert docker.down and len(snapshots) == 1
+    assert snapshots[0]['status'] == expected
+    assert snapshots[0]['cleanup_status'] == 'pending'
+    assert snapshots[0]['cases'] == result['cases']
+    if failure == 'cleanup':
+        assert result['status'] == 'error' and result['cleanup_status'] == 'error'
+    assert json.loads((tmp_path / 'report/observations.json').read_text()) == snapshots[0]
+
+
+def test_snapshot_write_failure_still_cleans_and_cannot_pass(tmp_path, monkeypatch):
+    original = pathlib.Path.write_text
+    def failing(path, *args, **kwargs):
+        if path.name == 'observations.json':
+            raise OSError('FAKE_FILESYSTEM_SECRET')
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(pathlib.Path, 'write_text', failing)
+    result, docker = run_fake(tmp_path, monkeypatch)
+    assert docker.down and result['cleanup_status'] == 'passed'
+    assert result['status'] == 'error'
+    assert {'stage': 'report', 'kind': 'error', 'reason': 'observation-write-failed'} in result['events']
+    assert 'FAKE_FILESYSTEM_SECRET' not in (tmp_path / 'report/result.json').read_text()
+
+
+def test_anonymous_inline_login_still_requires_explicit_login_and_author_check():
+    script = bootstrap_script()
+    script[2] = ('/admin/new-content', response(LOGIN.replace('FAKE_LOGIN_TOKEN', 'FAKE_ANONYMOUS_TOKEN')))
+    client = ScriptedClient(script)
+    _, result = adapter.bootstrap(client)
+    assert result == {'session_checked': True, 'author': 'admin', 'role_verified': False}
+    assert not client.responses
+    assert client.calls[3] == ('/admin/login', None)
+    assert client.calls[4][0] == '/admin/login'
+    assert client.calls[4][1]['tokenCSRF'] == 'FAKE_LOGIN_TOKEN'
+    assert client.calls[4][1]['password'] == client.calls[1][1]['password']
+    assert client.calls[5] == ('/admin/new-content', None)
+
+
+@pytest.mark.parametrize('body', [
+    '<h1>Welcome</h1>', FORM, LOGIN.replace('FAKE_LOGIN_TOKEN', ''),
+    LOGIN.replace('<input name="username">', ''),
+    LOGIN.replace('<input name="password">', ''),
+    LOGIN + '<input disabled value="admin">',
+    LOGIN + '<textarea name="content"></textarea>',
+    LOGIN + '<input name="uuid" value="uuid">',
+])
+def test_anonymous_200_must_be_exclusively_a_login_form(body):
+    script = bootstrap_script()
+    script[2] = ('/admin/new-content', response(body))
+    client = ScriptedClient(script)
+    with pytest.raises(adapter.AdapterError):
+        adapter.bootstrap(client)
+    assert len(client.calls) == 3, 'Invalid anonymous response must stop before credential submission'
+
+
+def test_inline_login_response_does_not_remove_final_authenticated_form_guard():
+    script = bootstrap_script()
+    script[2] = ('/admin/new-content', response(LOGIN))
+    script[5] = ('/admin/new-content', response(LOGIN))
+    client = ScriptedClient(script)
+    with pytest.raises(adapter.AdapterError):
+        adapter.bootstrap(client)
+    assert len(client.calls) == 6
+
+
+def test_escaped_control_preserves_literal_canary_in_inert_code_block():
+    import html
+    class StorageClient:
+        origin = ORIGIN
+        def __init__(self):
+            self.stored = {}
+        def request(self, path, data=None):
+            if path == '/admin/new-content' and data is None:
+                return response(FORM)
+            if data is not None:
+                self.stored['/' + data['slug']] = data['content']
+                return response(status=302, location='/admin/content')
+            return response('<article>' + self.stored[path] + '</article>')
+    client = StorageClient()
+    raw, escaped = adapter.seed_cases(client, 'fixture')
+    assert raw['canary_id'] != escaped['canary_id']
+    def payload(cid):
+        return '<img src="/__dxa_missing_' + cid + '" onerror="window.__dxaProof=\'' + cid + '\'">'
+    assert client.stored[raw['path']] == payload(raw['canary_id'])
+    assert client.stored[escaped['path']] == '<pre><code>' + html.escape(payload(escaped['canary_id'])) + '</code></pre>'
+    class Tags(adapter.HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.tags = []
+        def handle_starttag(self, tag, attrs):
+            self.tags.append(tag)
+    parser = Tags()
+    parser.feed(client.stored[escaped['path']])
+    assert parser.tags == ['pre', 'code'], 'Escaped fixture must contain no active img element'
+
+
+def test_markdown_modified_escaped_readback_is_rejected():
+    class MarkdownClient:
+        origin = ORIGIN
+        def __init__(self):
+            self.stored = {}
+            self.posts = 0
+        def request(self, path, data=None):
+            if path == '/admin/new-content' and data is None:
+                return response(FORM)
+            if data is not None:
+                self.posts += 1
+                self.stored['/' + data['slug']] = data['content']
+                return response(status=302, location='/admin/content')
+            content = self.stored[path]
+            if path.endswith('-escaped'):
+                content = content.replace('__dxa_missing_', '<strong>dxa_missing_').replace('__dxaProof', '</strong>dxaProof')
+            return response(content)
+    client = MarkdownClient()
+    with pytest.raises(adapter.AdapterError, match='fixture-readback-mismatch'):
+        adapter.seed_cases(client, 'fixture')
+    assert client.posts == 2

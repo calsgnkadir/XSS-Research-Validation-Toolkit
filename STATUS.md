@@ -1,30 +1,28 @@
-﻿# Güncel devam noktası — 12 Ekim 2026
+# Güncel devam noktası — 13 Ekim 2026
 
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Son R4 çalışma noktası — ürün adapter taslağı
+## Son doğrulanan teslim — R4 ingress ve canlı Bludit kabulü
 
-Yeni `bench/bludit_adapter.py` ve bağımsız 83 test geliştirildi; koordinatörün
-birleşik kapısı **268 passed, 26.46 s**, sıfır hata/skip. Kaynak hash'leri sabit.
-Bu sayı gerçek ürün kabulü değildir. Docker Desktop gerçek koşularında internal
-network için istenen loopback ephemeral binding runtime'da `80/tcp: []` döndü;
-üç saniye beklenen tekrar da aynı. Adapter port kapısında hata verip kendi
-projesini temizledi. Gerçek bootstrap/login/browser henüz doğrulanmadı.
-Önceden mevcut 15 container ve 27 volume kimlik/ad listeleri tamamen aynı.
-[Kanıt, komut ve sınırlar](audit/2026-10-12-r4-product-adapter/README.md).
+13 Ekim 2026: sabit Apache reverse proxy iki ağlı, yeni ve geçici bir Compose
+projesinde çalıştı. Bludit yalnız internal ağda kaldı; proxy 127.0.0.1 üzerinde
+geçici port yayımladı. Temiz kurulum, ayrı login, ham ve escaped public browser
+kontrolleri geçti. Eksik browser ve enjekte edilmiş kanıt uyuşmazlığı hata verdi;
+üç UUID projesi de temizlendi. Önceden var olan 15 container, 27 volume ve 9
+network kimlikleri birebir korundu. Birleşik regresyon **335 passed, sıfır
+failure/error/skip**; kaynak hashleri sabit.
+[Yerel kanıt](audit/2026-10-12-r4-ingress-live/README.md). Bu dar lifecycle
+kabulü genel R4/R9, skorlayıcı entegrasyonu veya açıklık triage'ını kapatmaz.
+Storage ingress/Compose kodunu, QA bağımsız testleri, koordinatör entegrasyon
+ve canlı kabulü üstlendi. Aktif agent/arka plan işi yok. Uzak teslim ayrı
+kaydedilir.
 
-Sıradaki R4 işi: internal uygulama izolasyonunu koruyan, Docker Desktop ile
-uyumlu ingress tasarımını incele ve test et; ardından gerçek installer/login,
-raw/escaped public browser kontrolü ve bad-browser/cleanup kabulünü çalıştır.
-Port kapısı atlanmaz, mevcut uygulama kullanılmaz. Genel R4 kutuları açık.
-Engine native görevi otomatik güvenlik kontrolünde durdu; kısmi kod koordinatörce
-incelendi/düzeltildi. QA native görevi bağımsız 83 testi tamamladı. Aktif uzman
-veya arka plan işi yok. Kod checkpoint'i `db96027` push edildi; uzak main hash'i
-birebir doğrulandı. [CI 38302697303](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38302697303)
-ve üç job success; yeni mock adapter test adımı dahil. Artifact içerikleri bu
-koşuda indirilmedi. Bu kayıt sonraki belge commit'indedir; yeni oturum gerçek
-HEAD/upstream'i karşılaştırmalıdır. Canlı ürün kabulü hâlâ engelli.
+## Önceki R4 engeli (12 Ekim)
+
+Eski tek-container internal ağda Docker host portu oluşmadığı için kurulumdan
+önce duruldu. [Tarihsel kanıt](audit/2026-10-12-r4-product-adapter/README.md).
+13 Ekim'deki iki-container ingress bu engeli yerel kabul kapsamında çözdü.
 
 ## Aktif çalışma yeri
 
@@ -71,8 +69,8 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 ## Açık işler ve sıradaki adım
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
-- R4 sıradaki bot işi yukarıdaki Docker ingress engelini çözmek; adapter taslağı
-  ve mock testleri gerçek ürün lifecycle kabulü değildir.
+- R4 bağımsız gerçek ürün lifecycle kabulü tamamlandı; benchmark skorlayıcı
+  entegrasyonu ve genel R4 kabul işleri açıktır.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer

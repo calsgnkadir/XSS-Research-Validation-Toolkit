@@ -1,0 +1,28 @@
+{
+  "schema": "dxa-bludit-lab/1",
+  "status": "error",
+  "product": "Bludit",
+  "embedded_version": "3.16.2",
+  "image": "sha256:7eb101cdb879f549d6e0088b13c07afa231292e9e15eeff741491abeafb3ebb8",
+  "project": "dxa-bludit-b77d135192c94ccaad9dff5a592cfb87",
+  "triage": "by-design",
+  "cases": [],
+  "events": [
+    {
+      "stage": "browser",
+      "kind": "error",
+      "reason": "browser-unavailable"
+    }
+  ],
+  "cleanup_status": "passed",
+  "limitations": [
+    "Admin-authored raw/escaped controls; no vulnerability or role-boundary claim.",
+    "Bounded public-reader observation; not general scanner coverage."
+  ],
+  "origin": "http://127.0.0.1:57367",
+  "session": {
+    "session_checked": true,
+    "author": "admin",
+    "role_verified": false
+  }
+}
