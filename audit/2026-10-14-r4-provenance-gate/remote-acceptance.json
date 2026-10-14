@@ -1,0 +1,53 @@
+{
+  "head_sha": "7f67d53b8960788519e76d61dd0e4b4bf9b947ec",
+  "remote_main_sha_verified": true,
+  "workflow_run": {
+    "id": 38475480351,
+    "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38475480351",
+    "conclusion": "success",
+    "jobs": [
+      {"name": "Required local authenticated browser proof", "conclusion": "success"},
+      {"name": "dom-xss-analyzer tests", "conclusion": "success"},
+      {"name": "dxadom browser harness (Playwright opt-in)", "conclusion": "success"}
+    ]
+  },
+  "artifact": {
+    "id": 11853144599,
+    "name": "r3-browser-proof",
+    "archive_sha256": "02bf76308e11d261bca90d26bb90c4da1ad59c2a0fe00634e1c5d6a1a1b0c40d",
+    "archive_digest_matches_github_metadata": true,
+    "contents_downloaded": true,
+    "member_sha256": {
+      "r3-r4-pytest.xml": "6ef10b8aa3d82f547ccf35bab21f550886f0d74ba07b529da74aeed4fde4fd25",
+      "r4-proof.json": "ed5bb14ed27cf3b6bbbea6752252e035f05dba8a80556020296cd462bd7fcc28",
+      "r4-proof.md": "42f32c6e1e5782a17e5a429afa0dc7aee6509c43469e5b84a7e141884fa63699",
+      "r3-proof/result.html": "466b943ea934d5a664a79e01a2db7db7c2361eb7ca8d38687c7227dcf28459de",
+      "r3-proof/result.json": "9df9fc3f3d4b673ee45ef8d89bb11bbdb5a5fa7cb8503607e820ac448e8fe47f"
+    }
+  },
+  "gate": {
+    "command": "py -3.10 bench/check_ci_acceptance.py --junit <artifact>/r3-r4-pytest.xml --corpus <artifact>/r4-proof.json --corpus-markdown <artifact>/r4-proof.md --demo <artifact>/r3-proof/result.json",
+    "exit_code": 0,
+    "result": "94 tests, zero skips/errors; corpus 9/9 TP=3 FP=0 FN=0; JSON/Markdown provenance matched; demo execution observed",
+    "source_hashes_match_checkout": {
+      "runner": true,
+      "scanner": true,
+      "fixture": true,
+      "corpus": true
+    }
+  },
+  "report": {
+    "python": "3.12.15",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "command": "bench/run.py --proof-suite --no-history --out r4-proof.md",
+    "runner_sha256": "d07d3f52a55c52ef68c38b63afa4457f01b78c6009dd773abf8d7bf198075c6b",
+    "scanner_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "fixture_sha256": "ed7e7d9ac780c23de2891042f14c0e5b4aa9a90b77b7ab79ec66aad63428ef1e",
+    "corpus_sha256": "dcde1f6dfb5669f3fe96471368824339562e78e0296d00f3f18511e8e86e58e7"
+  },
+  "limitations": [
+    "Hosted CI did not run the opt-in local Bludit Docker acceptance.",
+    "This artifact acceptance closes only the corresponding R4 CI criteria, not the broader R4 corpus, coverage, or competitor-comparison criteria."
+  ],
+  "credentials_saved": false
+}

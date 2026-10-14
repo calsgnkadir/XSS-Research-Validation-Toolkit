@@ -1,21 +1,30 @@
-﻿# Doğrulama kaydı — 2026-10-13
+﻿# Doğrulama kaydı — 2026-10-14
 
 ## 14 Ekim R4 strict corpus artifact provenance gate
 
 - Başlangıç commit'i `7ce1927e9ac7c2f24e3bbeccd91c87e7d5a29d60`.
   Windows 10 / Python 3.10.11 / pytest 9.1.1.
-- Odaklı CI gate adverse tests: **90 passed**. Birleşik benchmark scorer,
-  proof corpus ve artifact gate: **204 passed**, sıfır failure/error/skip.
+- İlk gate: **90/204 passed**. QA follow-up runtime karşı örnekleri eklendikten
+  sonra güncel odaklı CI gate: **94 passed**; birleşik benchmark scorer, proof
+  corpus ve artifact gate: **208 passed**, sıfır failure/error/skip.
 - Gate artık `r4-proof.md`'yi zorunlu alıyor; Markdown çıktısını JSON raporun
   canonical render'ıyla birebir karşılaştırıyor. JSON'daki Python, platform,
   komut ve runner/scanner/fixture/corpus SHA-256 alanlarını geçerli kılıyor;
   source hashlerini checkout dosyalarıyla karşılaştırıyor. Yeni karşı örnekler
   eksik/malformed artifact, stale hash/komut ve JSON-Markdown score/identity
   uyuşmazlığını reddediyor.
+- QA, Python/platform değerleri için makul ama CI dışı karşı örnekleri ekledi;
+  gate artık Python 3.12/Linux'u zorunlu kılar. `7f67d53` için uzak run
+  38475480351 üç job'da success ve indirilen artifact eski gate'ten geçti.
+  Runtime sıkılaştırması henüz push edilmedi; bunun yeni uzak kabulü bekleniyor.
 - [Komutlar ve kaynak hashleri](audit/2026-10-14-r4-provenance-gate/acceptance.json),
-  [R4 kapsam/limit](audit/2026-10-14-r4-provenance-gate/README.md).
-  Bu yerel kabul; değişiklik henüz commit/push edilmedi ve güncel GitHub
-  artifact'i henüz incelenmedi.
+  [yerel/uzak kanıt ve sınırlar](audit/2026-10-14-r4-provenance-gate/README.md).
+
+- Devam koşusu (`7f67d53` + runtime/test diff): JSON ve Markdown birlikte
+  değiştirilerek dört runtime regresyonu güçlendirildi. Eski gate bu dört
+  yanlış beyanı kabul etti (4 regression failure), güncel gate reddetti (4 pass).
+  Son birleşik JUnit: **208 passed**, sıfır failure/error/skip; 94 gate vakası
+  bu toplamın içindedir. Kaynak ve JUnit hashleri acceptance.json içindedir.
 
 ## 13 Ekim R4 Bludit runner bağlantısı
 

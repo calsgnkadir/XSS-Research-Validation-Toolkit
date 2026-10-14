@@ -1,5 +1,11 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-14
+
+- R4 CI kapısı JSON/Markdown tutarlılığını ve kaynak/corpus hashlerini
+  doğrular; runtime follow-up Python 3.12/Linux dışındaki beyanları reddeder.
+  Dar kabul ve uzak koşu sınırları [audit kaydında](audit/2026-10-14-r4-provenance-gate/README.md); genel R4 açık.
+
 ## Unreleased — 2026-10-13
 
 - R4 Bludit ingress, internal uygulama + loopback sabit reverse proxy ile

@@ -7,22 +7,43 @@
   },
   "tests": {
     "focused_command": "py -3.10 -m pytest bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
-    "focused_passed": 90,
+    "focused_passed": 94,
     "combined_command": "py -3.10 -m pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_proof_corpus.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
-    "combined_passed": 204,
+    "combined_passed": 208,
     "failures": 0,
     "errors": 0,
     "skips": 0
   },
   "sha256": {
     ".github/workflows/ci.yml": "e4f57e7cb4f814d66751c4c66547337626a63e70a98238217afee501ae3446ea",
-    "bench/check_ci_acceptance.py": "d5d4b96589a051c065867e4ef33afd6569f96f996f03711ff56d0700e5efdfef",
-    "bench/test_ci_acceptance.py": "4d0e95d51ce9e34b1c5c3f21eedf7dfc16da6b759edb189f466e7b1097583c81",
+    "bench/check_ci_acceptance.py": "ab9129cdc2300927ae96d4a6c0fbdca372a98a931ce6dd430a13fc4a5fc00893",
+    "bench/test_ci_acceptance.py": "af979201d041670fac45c12a6e97daced34eb45f65c780b18b85a076b1dd0c93",
     "bench/run.py": "d07d3f52a55c52ef68c38b63afa4457f01b78c6009dd773abf8d7bf198075c6b",
     "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
     "tools/dom-xss-analyzer/dxa_proof_lab.py": "ed7e7d9ac780c23de2891042f14c0e5b4aa9a90b77b7ab79ec66aad63428ef1e"
   },
   "diff_check": "passed",
-  "remote_ci": "pending_push",
-  "remote_artifact_inspection": "pending"
+  "qa_review_commit": "7f67d53b8960788519e76d61dd0e4b4bf9b947ec",
+  "prior_remote_ci_run": 38475480351,
+  "prior_remote_ci": "success; artifact passed the then-current gate",
+  "qa_follow_up": "found and fixed syntactically valid but incorrect Python/platform provenance values",
+  "remote_ci_for_runtime_hardening": "pending_push",
+  "runtime_revalidation": {
+    "base_commit": "7f67d53b8960788519e76d61dd0e4b4bf9b947ec",
+    "validated_at": "2026-10-14T07:41:10.598593+00:00",
+    "command": "py -3.10 -m pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_proof_corpus.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short --junitxml=.dxa/r4-runtime-combined.xml",
+    "passed": 208,
+    "gate_cases": 94,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "junit_sha256": "959962b0e8ba9dac21143cc5e494850a2e5e31d56ab22e560f24fe540a1ce92e",
+    "old_gate_counterexample": {
+      "commit": "7f67d53b8960788519e76d61dd0e4b4bf9b947ec",
+      "rejected_expectations_failed": 4,
+      "old_gate_exit_code_each": 0,
+      "current_gate_tests_passed": 4,
+      "scope": "Only test_well_formed_but_non_ci_runtime_fails, with synchronized JSON and Markdown; old gate tested in ignored temporary copy."
+    }
+  }
 }

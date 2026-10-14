@@ -111,11 +111,10 @@ def check_provenance(report):
     environment = report.get("environment")
     require(isinstance(environment, dict), "corpus environment provenance is missing")
     require(isinstance(environment.get("python"), str)
-            and re.fullmatch(r"\d+\.\d+(?:\.\d+)?", environment["python"]) is not None
+            and re.fullmatch(r"3\.12(?:\.\d+)?", environment["python"]) is not None
             and isinstance(environment.get("platform"), str)
-            and len(environment["platform"].strip()) > 1
-            and environment["platform"].lower() != "unknown",
-            "corpus runtime provenance is incomplete")
+            and environment["platform"].startswith("Linux"),
+            "corpus runtime does not match required Python 3.12/Linux CI")
     for key in ("runner_sha256", "scanner_sha256", "fixture_sha256", "corpus_sha256"):
         require(isinstance(environment.get(key), str)
                 and re.fullmatch(r"[0-9a-f]{64}", environment[key]) is not None,

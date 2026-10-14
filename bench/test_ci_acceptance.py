@@ -258,6 +258,18 @@ def test_missing_or_malformed_provenance_fails(artifacts, field):
     assert invoke(artifacts).returncode == 1
 
 
+@pytest.mark.parametrize(("field", "value"), (
+    ("python", "3.11.9"), ("python", "3.13.0"),
+    ("platform", "Windows-10-10.0.26200-SP0"), ("platform", "Darwin-24.0.0"),
+))
+def test_well_formed_but_non_ci_runtime_fails(artifacts, field, value):
+    artifacts["corpus"]["environment"][field] = value
+    # Keep the two artifacts internally consistent so this exercises runtime
+    # provenance, not the earlier Markdown/JSON consistency guard.
+    artifacts["markdown"] = runner.render_md(artifacts["corpus"])
+    assert invoke(artifacts).returncode == 1
+
+
 @pytest.mark.parametrize("field", ("runner_sha256", "scanner_sha256", "fixture_sha256", "corpus_sha256"))
 def test_well_formed_but_stale_source_hash_fails(artifacts, field):
     artifacts["corpus"]["environment"][field] = "0" * 64

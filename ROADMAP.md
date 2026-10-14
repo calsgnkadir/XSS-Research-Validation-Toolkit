@@ -83,7 +83,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [14 Ekim strict artifact gate](audit/2026-10-14-r4-provenance-gate/README.md) | Yerel JSON/Markdown/provenance gate ve 204-test paketi geçti; güncel uzak artifact incelemesi ve genel R4 sürüyor |
+| R4 | [14 Ekim strict artifact gate](audit/2026-10-14-r4-provenance-gate/README.md) | QA follow-up runtime gate ve 208-test paketi yerelde geçti; yeni remote doğrulaması ve genel R4 sürüyor |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -126,7 +126,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
-| R4 Doğru benchmark ve CI | Devam — sentetik proof scorer, Bludit lifecycle, opt-in runner ve yerel artifact gate mevcut | Güncel GitHub artifact'ini incele; geniş corpus/coverage ve karşılaştırma metodolojisini tamamla | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact; genel R4 kriterlerinin karşılanması |
+| R4 Doğru benchmark ve CI | Devam — sentetik proof scorer, Bludit lifecycle, opt-in runner ve artifact gate mevcut | Runtime gate follow-up CI/artifact'ini doğrula; geniş corpus/coverage ve karşılaştırma metodolojisini tamamla | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact; genel R4 kriterlerinin karşılanması |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
 | R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
@@ -216,9 +216,12 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 ve JSON raporunun Python/platform/komut/kaynak hashlerini checkout'a bağlamamasıydı.
 Gate şimdi canonical Markdown render'ını JSON ile tam eşleştiriyor ve source /
 corpus hash'lerini mevcut checkout'la doğruluyor; workflow `r4-proof.md`'yi
-kapıya veriyor. Yerel birleşik doğrulama 204/204 geçti. Uzak artifact içerikleri
-bu yeni değişiklik için henüz incelenmedi; artifact kabul kutusu açık.
-[Yerel kanıt](audit/2026-10-14-r4-provenance-gate/README.md).
+kapıya veriyor. QA incelemesi makul ama yanlış Python/platform beyanlarını kabul
+eden bir boşluk buldu; gate artık CI Python 3.12/Linux runtime'ına bağlanıyor ve
+bu karşı örnekleri reddediyor. Takip paketi 94 focused, 208 birleşik test geçti.
+`7f67d53` artifact'i doğrulanmıştı; runtime sıkılaştırmasının yeni remote CI ve
+artifact kabulü push sonrası bekliyor.
+[Yerel ve remote kanıt](audit/2026-10-14-r4-provenance-gate/README.md).
 
 13 Ekim dar teslimler: pinned Bludit 3.16.2 için internal uygulama + sabit Apache
 loopback ingress gerçek kuruluma ulaştı. Ayrı login, iki public raw/escaped
@@ -274,7 +277,7 @@ fixture tam corpus, gerçek ürün adapter'ı veya uzak CI kapanışı değildir
 
 R3'ten devreden doğrulama işleri:
 
-- [ ] Uzak Linux CI işi çalıştırılır ve artifact sonucu yerel Windows başarısından ayrı kaydedilir.
+- [x] Uzak Linux CI işi ve artifact sonucu yerel Windows başarısından ayrı kaydedilir ([14 Ekim remote kabul](audit/2026-10-14-r4-provenance-gate/remote-acceptance.json)).
 - [ ] Browser trafiğinden allowlist edilmiş auth/CSRF header harvest'i ayrı gözlem çıktısı olarak doğrulanır; ham değer rapora girmez.
 
 | Kontrol | Beklenti |
@@ -297,9 +300,9 @@ Kabul ölçütleri:
 - [ ] Crash/timeout/skipped `ok` veya true negative sayılmaz; kapsama paydası açıklanır.
 - [ ] JSON-only ve sadece resource-callback, doğrulanmış XSS TP'sine katılmaz.
 - [ ] Bilinen negatif fixture'da FP, zorunlu pozitif fixture'da FN CI'ı düşürür.
-- [ ] Gerekli browser işi continue-on-error değildir; skip sayısı doğrulanır.
+- [x] Gerekli browser işi continue-on-error değildir; uzak JUnit sıfır skip ile gate'ten geçti (14 Ekim).
 - [x] Sabit uygulama digest'i, bootstrap/login ve endpoint'ler; disposable teardown doğrulandı (13 Ekim Bludit lifecycle kabulü). Bu, scorer entegrasyonunu veya genel R4'ü kapatmaz.
-- [ ] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır.
+- [x] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır ve indirilen içerik gate'ten geçti (14 Ekim).
 - [ ] Rakip kıyaslaması ancak aynı kapsam, auth, bütçe ve insan triage'ı sağlandığında yayımlanır.
 
 ## R5 — Stajın devamı olan güçlü vaka

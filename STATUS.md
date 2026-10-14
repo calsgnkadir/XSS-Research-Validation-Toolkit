@@ -3,18 +3,22 @@
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Son doğrulanan teslim — R4 strict corpus artifact gate
+## Son doğrulanan teslim — R4 strict corpus artifact gate ve QA follow-up
 
 14 Ekim: CI artifact gate JSON raporu ve JUnit'i doğruluyordu ama corpus
 Markdown'ını karşılaştırmıyor, çalışma ortamı/komutu/kaynak hashlerini güncel
 checkout'a bağlamıyordu. `check_ci_acceptance.py` artık zorunlu Markdown'ı
 canonical JSON renderer ile tam eşleştiriyor ve runner/scanner/fixture/corpus
-hashlerini doğruluyor; workflow bu Markdown'ı kapıya veriyor. Odaklı gate
-**90 passed**, birleşik scorer/corpus/gate **204 passed**, sıfır
-failure/error/skip. [Yerel kanıt](audit/2026-10-14-r4-provenance-gate/README.md).
-QA ve engine uzmanlarının incelemesi tamamlandı. Değişiklikler henüz commit
-edilmedi; sıradaki adım review sonrası commit/push, hosted CI ve artifact
-indirme/doğrulaması. Uzak artifact kabul edilene kadar ROADMAP kutusu açık.
+hashlerini doğruluyor; workflow bu Markdown'ı kapıya veriyor. İlk sürüm 90
+focused/204 birleşik test geçti; `7f67d53` için uzak CI 3/3 başarılı ve artifact
+gate'ten geçti. Bağımsız QA, makul fakat yanlış runtime beyanlarının da geçebildiği
+dar bir boşluk buldu; gate bunu Python 3.12/Linux koşuluyla kapatıyor. Güncel
+follow-up **94 focused / 208 birleşik test** geçti. [Kanıt ve sınırlar](audit/2026-10-14-r4-provenance-gate/README.md).
+JSON/Markdown birlikte değiştirilmiş dört regresyon eski gate açığını
+yeniden üretti; son birleşik JUnit 208/208 geçti. QA ve Engine incelemesi
+tamamlandı. Runtime follow-up henüz commit edilmedi; sırada commit/push ve güncel workflow
+artifact'ini aynı gate ile yeniden doğrulamak var. Geniş corpus/coverage ve rakip
+kıyaslaması açık kalır.
 
 ## Önceki teslim — R4 runner ve canlı Bludit kabulü
 
@@ -89,9 +93,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
 - R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
-  tamamlandı. Strict artifact gate değişikliği yerelde 204 testle geçti; commit,
-  hosted CI ve güncel artifact incelemesi bekliyor. Genel corpus/coverage ve
-  karşılaştırma metodolojisi açık.
+  tamamlandı. İlk artifact gate 7f67d53 CI/artifact kabulünü geçti. Runtime
+  follow-up yerelde 208 testle doğrulandı; yeni commit, hosted CI ve artifact
+  incelemesi bekliyor. Genel corpus/coverage ve karşılaştırma metodolojisi açık.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
