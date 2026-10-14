@@ -16,6 +16,8 @@ zero failures/errors/skips; proof recorded Linux/Python 3.12.15, five of five
 controls, five distinct closed fixture ports and matching source/fix/artifact
 hashes. [Remote acceptance](remote-acceptance.json). Port closure occurred
 on the runner and is recorded in its artifact; historical sockets cannot be
-rechecked from the downloaded archive. A CI runner
-is a second environment, not an independent second person; general R5
+rechecked from the downloaded archive.
+
+A CI runner is a second environment, not an independent second person;
+general R5
 acceptance remains open.

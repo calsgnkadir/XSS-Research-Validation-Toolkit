@@ -13,12 +13,15 @@ Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
   ikinci kişi kabulü açık.
   [R5 gate](audit/2026-10-14-r5-linux-gate/README.md).
 - R8 Security: statik encoder rebinding FN dar düzeltmesi 91 odaklı test geçti;
-  d41c1cd CI 3/3 başarılı; alias/branch/AST sınırları açık. [R8](audit/2026-10-14-r8-rebound/README.md).
+  d41c1cd CI 3/3 başarılı; alias/branch/AST sınırları açık.
+  [R8](audit/2026-10-14-r8-rebound/README.md).
 - R6 koordinatör: geliştirici paketi temiz venv'e kuruldu, üç CLI help ve
-  paketlenmiş browser demo geçti. d41c1cd CI paket install/help adımı başarılı. Yayın etiketi ve R6 genel kabulü açık.
+  paketlenmiş browser demo geçti. d41c1cd CI paket install/help adımı
+  başarılı. Yayın etiketi ve R6 genel kabulü açık.
   [R6](audit/2026-10-14-r6-package-scaffold/README.md).
 - Genel CI 38596197488 3/3 geçti; R5 Linux artifact kabulü ayrıca geçti. İki
-  uzman görevini bitirdi; aktif uzman yok. Sıradaki küçük adım R6 config önceliği ve ikinci kişi R5 tekrarı.
+  uzman görevini bitirdi; aktif uzman yok. Sıradaki küçük adım R6 config
+  önceliği ve ikinci kişi R5 tekrarı.
   Blind/admin ve rakip kıyası sırada bekler.
 
 ## R5/K01 aynı-host temiz venv tekrarı

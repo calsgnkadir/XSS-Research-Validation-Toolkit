@@ -35,7 +35,8 @@ workflow'u ve artifact gate yazıldı; Windows'ta 104 birleşik regresyon
 ve gate 5/5 doğrulandı; d41c1cd Linux run 38596197622 de başarılı:
 13 JUnit, 5/5 proof ve indirilen artifact digest/kaynak hashleri eşleşti.
 [R5 gate kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
-R8 açık encoder rebinding kaynaklı statik FN düzeltildi; 91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı.
+R8 açık encoder rebinding kaynaklı statik FN düzeltildi; 91 odaklı test
+geçti. d41c1cd genel CI 38596197488 3/3 başarılı.
 [R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
 R6 geliştirici paketi temiz venv'de kuruldu, üç CLI help ve paketlenmiş
 browser demo çalıştı; d41c1cd CI paket install/help adımı geçti.
@@ -392,7 +393,8 @@ Chrome ile bağımsız agent tekrarında 5/5 kontrol ve 5/5 fixture teardown ge�
 Kaydetme→ayrı okuyucu context'i→canary, aynı payload ile encoding sonrası retest,
 JS kapalı/JSON/normal dialog negatif kontrolleri; request/response, fix diff,
 ortam sürümleri ve kaynak hash'leri mevcut. Yeni CVE/gerçek ürün bulgusu değildir.
-Tam R5'in bağımsız temiz ortam tekrarı henüz yapılmadı; aşağıdaki ilk madde açık.
+Temiz Windows ve Linux ortam koşuları var; bağımsız ikinci kişi tekrarı
+henüz yapılmadı, aşağıdaki ilk madde açık.
 
 İlk vaka için mevcut yetkili laboratuvar veya minimal yerel fixture kullanılabilir. Teslimat: hedef sürümü, kaynak→sink izi, iki rol gerekiyorsa hesap A/B kontrolü, tam komut, maskeli request/response, cid ile proof, negatif kontrol, fix diff ve aynı testin fix sonrası sonucu.
 
@@ -441,7 +443,8 @@ Kod + yanlış davranışı yakalayan test + ilgili fixture sonucu + kısa sür�
 
 Açık encoder adı identity fonksiyonuna yeniden atanınca taint'in kaybolması
 dar kapsamda düzeltildi; önce/sonra ve gerçek encoder karşı örnekleriyle
-91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı. Dinamik alias/branch ve genel AST ölçümü açık.
+91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı.
+Dinamik alias/branch ve genel AST ölçümü açık.
 [Dar R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
 
 
