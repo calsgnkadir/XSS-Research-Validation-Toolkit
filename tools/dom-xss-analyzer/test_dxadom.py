@@ -890,14 +890,14 @@ def test_extract_auth_headers_pulls_x_csrf_token():
              "headers": {"Content-Type": "application/json",
                          "X-CSRF-Token": "rails-abc123"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out == {"x-csrf-token": "rails-abc123"}
+    assert out == {"x-csrf-token": True}
 
 
 def test_extract_auth_headers_pulls_x_xsrf_token_angular():
     reqs = [{"method": "GET", "url": "/api/x",
              "headers": {"X-XSRF-TOKEN": "angular-xyz"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out == {"x-xsrf-token": "angular-xyz"}
+    assert out == {"x-xsrf-token": True}
 
 
 def test_extract_auth_headers_pulls_django_csrftoken():
@@ -905,22 +905,22 @@ def test_extract_auth_headers_pulls_django_csrftoken():
     reqs = [{"method": "POST", "url": "/api/x",
              "headers": {"X-CSRFToken": "django-tok"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out == {"x-csrftoken": "django-tok"}
+    assert out == {"x-csrftoken": True}
 
 
 def test_extract_auth_headers_pulls_bearer_authorization():
     reqs = [{"method": "GET", "url": "/api/users",
              "headers": {"Authorization": "Bearer eyJ0...token"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out == {"authorization": "Bearer eyJ0...token"}
+    assert out == {"authorization": True}
 
 
 def test_extract_auth_headers_pulls_api_key_family():
     reqs = [{"method": "GET", "url": "/api/x",
              "headers": {"X-API-Key": "key-1", "X-Auth-Token": "sess-2"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out.get("x-api-key") == "key-1"
-    assert out.get("x-auth-token") == "sess-2"
+    assert out.get("x-api-key") is True
+    assert out.get("x-auth-token") is True
 
 
 def test_extract_auth_headers_pulls_x_requested_with():
@@ -928,7 +928,7 @@ def test_extract_auth_headers_pulls_x_requested_with():
     reqs = [{"method": "POST", "url": "/api/x",
              "headers": {"X-Requested-With": "XMLHttpRequest"}}]
     out = dxadom.extract_auth_headers(reqs)
-    assert out == {"x-requested-with": "XMLHttpRequest"}
+    assert out == {"x-requested-with": True}
 
 
 def test_extract_auth_headers_case_insensitive_on_input():
@@ -945,13 +945,11 @@ def test_extract_auth_headers_case_insensitive_on_input():
     out = dxadom.extract_auth_headers(reqs)
     # Every entry stored under the same lowercase key; last write wins.
     assert list(out.keys()) == ["authorization"]
-    assert out["authorization"] == "Bearer 3"
+    assert out["authorization"] is True
 
 
-def test_extract_auth_headers_takes_most_recent_value_per_key():
-    """When the same header appears in multiple requests with different
-    values (token rotation), the extractor keeps the LAST observed value
-    so callers replaying the header hit a still-fresh token."""
+def test_extract_auth_headers_discards_rotated_values():
+    """Repeated and rotated credentials still yield presence only."""
     reqs = [
         {"method": "POST", "url": "/a",
          "headers": {"X-CSRF-Token": "first"}},
@@ -961,7 +959,7 @@ def test_extract_auth_headers_takes_most_recent_value_per_key():
          "headers": {"X-CSRF-Token": "third"}},
     ]
     out = dxadom.extract_auth_headers(reqs)
-    assert out["x-csrf-token"] == "third"
+    assert out["x-csrf-token"] is True
 
 
 def test_extract_auth_headers_ignores_unknown_header_names():
@@ -1001,10 +999,37 @@ def test_extract_auth_headers_mixed_families_all_present():
                          "X-Requested-With": "XMLHttpRequest"}}]
     out = dxadom.extract_auth_headers(reqs)
     assert out == {
-        "x-csrf-token": "csrf-1",
-        "authorization": "Bearer 2",
-        "x-requested-with": "XMLHttpRequest",
+        "x-csrf-token": True,
+        "authorization": True,
+        "x-requested-with": True,
     }
+
+
+def test_header_observations_redact_values_and_url_credentials():
+    requests = [{
+        "url": "https://user:secret@example.test:8443/api/items?token=QUERYSECRET#FRAGMENTSECRET",
+        "headers": {"X-CSRF-Token": "CSRFSECRET", "Authorization": "Bearer AUTHSECRET",
+                    "X-Custom-Only": "CUSTOMSECRET", "X-API-Key": ""},
+    }]
+    observations = dxadom.observe_auth_headers(requests)
+    assert observations == [
+        {"name": "x-csrf-token", "origin": "https://example.test:8443",
+         "route": "/api/items", "present": True},
+        {"name": "authorization", "origin": "https://example.test:8443",
+         "route": "/api/items", "present": True},
+        {"name": "x-api-key", "origin": "https://example.test:8443",
+         "route": "/api/items", "present": False},
+    ]
+    assert all(secret not in repr(observations) for secret in
+               ("secret", "QUERYSECRET", "FRAGMENTSECRET", "CSRFSECRET",
+                "AUTHSECRET", "CUSTOMSECRET"))
+
+
+def test_header_observations_skip_unscoped_url_and_unknown_header():
+    assert dxadom.observe_auth_headers([
+        {"url": "javascript:alert(1)", "headers": {"Authorization": "secret"}},
+        {"url": "http://127.0.0.1/a", "headers": {"X-Random": "secret"}},
+    ]) == []
 
 
 # --- real-browser tests: page makes XHR/fetch, headers auto-detected -------
@@ -1028,7 +1053,7 @@ class _XhrFixture(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
             self._send('''<html><body><script>
-fetch("/api/whoami", {
+fetch("/api/whoami?token=dxaURL-observed", {
     method: "POST",
     headers: {
         "Content-Type": "application/json",
@@ -1076,16 +1101,22 @@ def xhr_server():
 
 @_skip
 def test_xhr_headers_captured_and_auth_extracted(xhr_server):
-    """End-to-end: a page fires XHR with X-CSRF-Token / Authorization /
-    X-Requested-With, our visit picks up all three from the auto-detected
-    auth_headers dict."""
+    """Local browser traffic yields only allowlisted presence observations."""
     port = xhr_server
     with dxadom.BrowserSession() as sess:
         summary = sess.visit(f"http://127.0.0.1:{port}/")
     auth = summary["auth_headers"]
-    assert auth.get("x-csrf-token") == "dxaCSRF-observed"
-    assert auth.get("authorization") == "Bearer dxaBEARER-observed"
-    assert auth.get("x-requested-with") == "XMLHttpRequest"
+    assert auth == {"x-csrf-token": True, "authorization": True,
+                    "x-requested-with": True}
+    assert all(row["origin"] == f"http://127.0.0.1:{port}"
+               and row["route"] == "/api/whoami" and row["present"]
+               for row in summary["header_observations"])
+    assert {row["name"] for row in summary["header_observations"]} == set(auth)
+    assert "dxaCSRF-observed" not in repr(summary)
+    assert "dxaBEARER-observed" not in repr(summary)
+    assert "dxaURL-observed" not in repr(summary)
+    assert "headers" not in summary["requests"][0]
+    assert "execution-confirmed" not in repr(summary)
 
 
 @_skip
@@ -1096,11 +1127,11 @@ def test_requests_list_captures_xhr_only_not_document(xhr_server):
     port = xhr_server
     with dxadom.BrowserSession() as sess:
         summary = sess.visit(f"http://127.0.0.1:{port}/")
-    urls = [r["url"] for r in summary["requests"]]
+    routes = [r["route"] for r in summary["requests"]]
     # The page's XHR to /api/whoami must be present
-    assert any(u.endswith("/api/whoami") for u in urls)
+    assert "/api/whoami" in routes
     # The top-level navigation to `/` must NOT be in the pool
-    assert not any(u.rstrip("/").endswith(f"127.0.0.1:{port}") for u in urls)
+    assert "/" not in routes
 
 
 @_skip
@@ -1119,6 +1150,8 @@ def test_xhr_with_only_unknown_headers_yields_empty_auth(xhr_server):
     port = xhr_server
     with dxadom.BrowserSession() as sess:
         summary = sess.visit(f"http://127.0.0.1:{port}/xhr-no-auth")
-    # Custom header is captured in requests but not surfaced as auth.
+    # The request is counted, but unknown headers never enter observations.
     assert summary["auth_headers"] == {}
+    assert summary["header_observations"] == []
+    assert "not-known" not in repr(summary)
     assert len(summary["requests"]) >= 1

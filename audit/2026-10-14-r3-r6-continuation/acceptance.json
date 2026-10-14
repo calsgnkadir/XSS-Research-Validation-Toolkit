@@ -1,0 +1,38 @@
+{
+  "base_commit": "d91238bfbfeb9736068dc6197738f464b5708312",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "browser": "installed Chrome; path added to dxadom._CHROMIUM_HINTS in memory"
+  },
+  "tests": {
+    "browser_command": "py -3.10 -c \"import sys; sys.path.insert(0, 'tools/dom-xss-analyzer'); import dxadom; dxadom._CHROMIUM_HINTS.insert(0, r'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'); import pytest; raise SystemExit(pytest.main(['tools/dom-xss-analyzer/test_dxadom.py', '-q', '-p', 'no:cacheprovider', '--tb=short']))\"",
+    "browser_passed": 75,
+    "browser_skipped": 0,
+    "combined_command": "py -3.10 -m pytest tools/dom-xss-analyzer/test_dxa_config.py tools/dom-xss-analyzer/test_dxa.py tools/dom-xss-analyzer/test_r8_sanitizer.py tools/dom-xss-analyzer/test_dxadyn_report_identity.py tools/dom-xss-analyzer/test_dxadyn.py tools/dom-xss-analyzer/test_http_evidence.py tools/dom-xss-analyzer/test_r1_contract.py tools/dom-xss-analyzer/test_dom_cli_evidence.py -q -p no:cacheprovider --tb=short",
+    "combined_passed": 293,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "package": {
+    "wheel_sha256": "febb6d8171339cec78472ebd1e302849125e4b50a43e04715fe6d1c9c3a59ca5",
+    "installed_in_new_venv": true,
+    "outside_source_directory": true,
+    "help_exit_codes": {"dxa": 0, "dxadyn": 0, "dxaprove": 0},
+    "bom_config_high_exit": 0,
+    "cli_low_override_exit": 1,
+    "override_findings": 1,
+    "json_html_same_finding_id": true
+  },
+  "local_source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "59dbb07252851e52502119b1afdc0b9175b6cf9f10a3ad75dca34124ae86f5c6",
+    "tools/dom-xss-analyzer/dxadyn.py": "4719b611c75d84c21b706b2ddb07ddeac8519c580887195b389e8672942cf181",
+    "tools/dom-xss-analyzer/dxadom.py": "b43677bd5c396f9bdbc6c9cb5d36dce40ebbf07ecb428594752be04c671d08c4",
+    "tools/dom-xss-analyzer/test_dxa_config.py": "a311047acb193b51261847e8352789145a02ac8057e2b99c0c4d26fe30c9614f",
+    "tools/dom-xss-analyzer/test_dxadyn_report_identity.py": "6cce417ba30029e8bd0c58d36d79a29e873f59c5041efa9d84665597a9617bdf",
+    "tools/dom-xss-analyzer/test_dxadom.py": "4dfd98fdff6ab45bc07af18bc688f2892dff35f8a644297d54eda21be020598b"
+  },
+  "diff_check": "passed",
+  "remote_ci": "pending_push"
+}

@@ -797,22 +797,43 @@ def render_html(findings, target):
     return evidence.render_report(evidence.report(evidence.static_observations(findings), "static", REPORT_EVENTS))
 
 
+def _load_cli_config(path, parser):
+    """Load the small, versioned static CLI config without echoing its contents."""
+    if path is None:
+        return {}
+    try:
+        with open(path, encoding="utf-8-sig") as stream:
+            config = json.load(stream)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        parser.error("--config must name a readable UTF-8 JSON file")
+    if (not isinstance(config, dict)
+            or type(config.get("schema_version")) is not int
+            or config["schema_version"] != 1
+            or not set(config) <= {"schema_version", "min_confidence"}
+            or not isinstance(config.get("min_confidence", "low"), str)
+            or config.get("min_confidence", "low") not in CONF_RANK):
+        parser.error("--config requires schema_version 1 and min_confidence low|medium|high")
+    return config
+
+
 def main():
     ap = argparse.ArgumentParser(description="source-to-sink XSS analyzer (JS + C#/.NET)")
     ap.add_argument("target", help="file or directory to scan")
     ap.add_argument("--json", action="store_true", help="emit JSON instead of text")
     ap.add_argument("--json-out", metavar="FILE", help="write common R1 evidence report")
     ap.add_argument("--html", metavar="FILE", help="write a self-contained HTML report to FILE")
+    ap.add_argument("--config", metavar="FILE", help="versioned JSON static scan settings")
     ap.add_argument("--min-confidence", choices=["low", "medium", "high"],
-                    default="low", help="hide findings below this confidence")
+                    help="hide findings below this confidence (overrides config; default low)")
     args = ap.parse_args()
+    config = _load_cli_config(args.config, ap)
     REPORT_EVENTS.clear()
     if args.json_out and args.html and os.path.abspath(args.json_out) == os.path.abspath(args.html):
         ap.error("--json-out and --html must have distinct paths")
     if not os.path.exists(args.target):
         REPORT_EVENTS.append(evidence.ReportEvent("static-discovery", "error", "target does not exist", args.target))
 
-    floor = CONF_RANK[args.min_confidence]
+    floor = CONF_RANK[args.min_confidence or config.get("min_confidence", "low")]
     # Phase 0.4: two-pass scan. First collect the full file list (one os.walk
     # traversal), then pre-build the cross-file tainted-return function map
     # over Python + JS + PHP files. Java / C# skipped in Phase 0.4. The map is
@@ -830,14 +851,16 @@ def main():
         REPORT_EVENTS.append(evidence.ReportEvent("static-filter", "skip", f"{len(findings)-len(filtered)} candidates below confidence threshold"))
     findings = filtered
     findings.sort(key=lambda f: (-CONF_RANK[f["confidence"]], f["file"], f["line"]))
+    document = (evidence.report(evidence.static_observations(findings), "static", REPORT_EVENTS)
+                if args.json_out or args.html else None)
     if args.json_out:
         with open(args.json_out, "w", encoding="utf-8") as fh:
-            json.dump(evidence.report(evidence.static_observations(findings), "static", REPORT_EVENTS), fh, indent=2)
+            json.dump(document, fh, indent=2)
     result_code = 2 if any(event.kind == "error" for event in REPORT_EVENTS) else (1 if findings else 0)
 
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
-            fh.write(render_html(findings, args.target))
+            fh.write(evidence.render_report(document))
         print(f"HTML report written to {args.html}  ({len(findings)} finding(s))")
         sys.exit(result_code)
 

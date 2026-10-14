@@ -83,6 +83,16 @@ Chrome yolu açıkça verilir. Paket adı dxa-research-toolkit, geliştirici sü
 kabulü yapılmadı. Eski doğrudan Python komutları çalışmayı sürdürür.
 Tarama örneklerini kendi yerel fixture'ların veya açıkça yetkili hedeflerin üzerinde çalıştır.
 
+Statik `dxa` CLI için isteğe bağlı JSON config örneği:
+
+```json
+{"schema_version": 1, "min_confidence": "medium"}
+```
+
+`dxa <yerel-kaynak> --config scan.json` komutunda öncelik
+`--min-confidence` > config > varsayılan `low` şeklindedir. Bu dar config
+sözleşmesi yalnız statik CLI için geçerlidir; dosyaya oturum bilgisi koymayın.
+
 ## Staj ve araştırma kayıtları
 
 - [11 tarihsel teknik yazı](writeups/README.md): XSS, SQLi, JWT, BOLA ve araç geliştirme.

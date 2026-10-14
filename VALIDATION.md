@@ -1,5 +1,17 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim R3 header ve R6 CLI/rapor yerel kabulü
+
+Başlangıç HEAD `d91238bfbfeb9736068dc6197738f464b5708312`.
+Windows/Python 3.10.11, kurulu Chrome. Koordinatörün gerçek browser
+`test_dxadom.py` koşusu **75 passed, 0 skipped**; etkilenen statik/dinamik/
+kanıt paketinin birleşik koşusu **293 passed**, sıfır failure/error/skip.
+Güncel wheel yeni venv'e kaynak dizini dışından kuruldu; üç CLI help exit 0,
+BOM'lu config high exit 0, CLI low override bir adayla exit 1 ve JSON/HTML
+aynı bulgu kimliği. Tam komutlar, yerel kaynak SHA-256 ve wheel digest'i
+[acceptance.json](audit/2026-10-14-r3-r6-continuation/acceptance.json) içinde.
+`git diff --check` geçti. Uzak CI henüz bu yeni kod için çalışmadı.
+
 ## 14 Ekim üç işin bağımsız yeniden denetimi
 
 R8: `py -3.10 -m pytest tools/dom-xss-analyzer/test_r8_sanitizer.py

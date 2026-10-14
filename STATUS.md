@@ -1,4 +1,16 @@
-# Güncel devam noktası — 14 Ekim 2026
+# Güncel devam noktası — 15 Ekim 2026
+
+R3/R6 üçlü devam teslimi yerelde tamamlandı: Engine `dxadom` allowlist header
+adlarını değersiz gözlem olarak çıkardı; Report `dxadyn` JSON/HTML'yi tek
+normalize belgeye bağladı; koordinatör statik `dxa` config önceliğini, BOM
+kabulünü ve aynı belgeyi ekledi. Gerçek Chrome R3 **75 passed, 0 skipped**;
+etkilenen birleşik paket **293 passed, 0 failure/error/skip**. Güncel wheel
+temiz venv'de kaynak dışından çalıştı. [Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
+Bu kod henüz commit/push edilmedi; uzak CI bekliyor. İki uzman kod ve testini
+tamamladı; koordinatör entegrasyon ve uzak kabulü sürdürüyor. R3 header adları
+gözlemi rol/token kanıtı değil. Genel R4/R6, R5 bağımsız insan tekrarı,
+R8/R9 ve C/K/P/S/A maddeleri açık. Son doğrulanmış uzak kod 74cda81,
+belge HEAD d91238b.
 
 Son yeniden denetim: R8 modül düzeyi encoder rebinding karşı örneği düzeltildi;
 92 ilgili test geçti. R6 wheel temiz venv'de kaynak dizini dışında kuruldu.

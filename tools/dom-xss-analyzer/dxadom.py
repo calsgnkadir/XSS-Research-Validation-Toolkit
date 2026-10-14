@@ -13,11 +13,9 @@ Phase 2.4: SPA route discovery - init script intercepts
            history.pushState / replaceState / hashchange to capture
            runtime navigations; static pass scans <script> text and
            bundle content for React/Vue/Angular route declarations.
-Phase 2.5: CSRF-in-header auto-detect - page.on('request') captures
-           every XHR/fetch header, extract_auth_headers() pulls the
-           documented CSRF/session/auth families out of the observed
-           set so downstream reflected/stored probes can replay them
-           without manual --csrf-refresh + --csrf-header config.
+Phase 2.5: page.on('request') observes allowlisted auth/CSRF header
+           names on XHR/fetch traffic. The visit summary keeps origin,
+           route and presence, never credential values or replay material.
 
 Zero-dep discipline for the CORE tool stays: this module imports
 playwright *inside* is_available() so an install missing playwright
@@ -37,6 +35,7 @@ from __future__ import annotations
 import contextlib
 import glob
 import os
+from urllib.parse import urlsplit
 from typing import Any, Iterator, List, Optional
 
 # Known chromium binary paths, in probe order. First hit wins.
@@ -296,18 +295,11 @@ _ROUTE_PATTERNS = [
 
 # --- Phase 2.5: CSRF-in-header auto-detect ---------------------------------
 #
-# Modern SPAs (Angular, React with axios interceptors, any XHR wrapper
-# that self-installs) attach anti-CSRF / session / API-key headers to
-# every stateful request without any HTML meta-tag or hidden form input.
-# Phase 1.4's --csrf-refresh + --csrf-header pair requires the operator
-# to know that URL and header name up front. Phase 2.5 removes that
-# knowledge burden: the browser session watches its own XHR/fetch
-# traffic, records the outgoing headers, and callers can pick out the
-# canonical CSRF / auth families with extract_auth_headers().
+# Modern SPAs can attach anti-CSRF and session headers to XHR/fetch
+# requests. This observer records allowlisted header names and request
+# locations for operator review; it does not retain or transfer values.
 #
 # Names recognized (case-insensitive; the extractor normalises keys).
-# Split into families so a caller can pick "just CSRF" or "all auth"
-# without walking the whole set.
 
 _CSRF_HEADER_NAMES = {
     "x-csrf-token",     # Rails, Laravel meta-injected
@@ -330,17 +322,11 @@ _METADATA_HEADER_NAMES = {
 
 
 def extract_auth_headers(requests: List[dict]) -> dict:
-    """Walk a captured requests list, return a dict of every CSRF / session /
-    metadata header that appeared, keyed by canonical lower-case name and
-    valued by the MOST RECENT observed value.
+    """Return allowlisted header names with presence booleans, never values.
 
-    Empty/None input returns {}. Requests without headers are skipped.
-    Header names not in the documented families are ignored - a random
-    `X-Custom-Foo` from user code does not get promoted to auth on its
-    own, but the operator can extend the families via the module-level
-    sets if a target needs it.
-
-    Returns {} when no known family matched; never raises."""
+    This is observation only. A present header does not establish an active
+    session, a working CSRF token, permission to replay it or JS execution.
+    """
     if not requests:
         return {}
     known = _CSRF_HEADER_NAMES | _SESSION_HEADER_NAMES | _METADATA_HEADER_NAMES
@@ -350,8 +336,37 @@ def extract_auth_headers(requests: List[dict]) -> dict:
         for name, value in headers.items():
             key = name.lower()
             if key in known and value:
-                out[key] = value
+                out[key] = True
     return out
+
+
+def observe_auth_headers(requests: List[dict]) -> List[dict]:
+    """Describe each allowlisted XHR/fetch header without retaining its value.
+
+    Query, fragment and userinfo are omitted from request locations. The
+    route is a path, and can still contain application data; sharing a
+    summary requires the normal evidence review.
+    """
+    known = _CSRF_HEADER_NAMES | _SESSION_HEADER_NAMES | _METADATA_HEADER_NAMES
+    observations = []
+    for req in requests or []:
+        parsed = urlsplit(req.get("url") or "")
+        if parsed.scheme not in ("http", "https") or not parsed.hostname:
+            continue
+        try:
+            origin = f"{parsed.scheme}://{parsed.hostname}"
+            if parsed.port is not None:
+                origin += f":{parsed.port}"
+        except ValueError:
+            continue
+        for name, value in (req.get("headers") or {}).items():
+            key = name.lower()
+            if key in known:
+                observations.append({
+                    "name": key, "origin": origin,
+                    "route": parsed.path or "/", "present": bool(value),
+                })
+    return observations
 
 
 def extract_static_routes(script_text: str) -> List[str]:
@@ -485,13 +500,9 @@ class BrowserSession:
               'runtime': [ {kind, url, ts} ],  # pushState/replaceState/hashchange
               'static':  [str],                # regex-extracted from <script>
             },
-            'requests': [ {method, url, headers} ],    # Phase 2.5 - every
-                                                        # XHR/fetch made during
-                                                        # load, headers included
-            'auth_headers': { name_lower: value },     # Phase 2.5 - subset of
-                                                        # requests[].headers that
-                                                        # matched CSRF/session/
-                                                        # metadata families
+            'requests': [ {method, origin, route} ],
+            'header_observations': [ {name, origin, route, present} ],
+            'auth_headers': { name_lower: True },       # names only
           }
 
         The sink init script runs BEFORE any user JS, so every subsequent
@@ -513,7 +524,7 @@ class BrowserSession:
             "body_len": 0, "console": [], "errors": [],
             "sinks": [], "dialogs": [],
             "routes": {"runtime": [], "static": []},
-            "requests": [], "auth_headers": {},
+            "requests": [], "header_observations": [], "auth_headers": {},
             "limitations": ["eval-not-instrumented-to-preserve-lexical-scope"],
         }
         with self._page_scope() as page:
@@ -526,24 +537,29 @@ class BrowserSession:
             # the message is always preserved. Every dialog MUST be
             # dismissed or the page hangs waiting for a response - even
             # if the recorder throws.
-            # Phase 2.5: capture every outgoing XHR/fetch request. We
-            # keep method + url + headers (small footprint, no body).
-            # `request` fires for the initial navigation too - we filter
-            # on resource_type so only script-initiated requests land in
-            # the auth-detection pool. Main-document nav doesn't set
-            # anti-CSRF headers itself, only the SPA's XHR/fetch do.
+            # Phase 2.5: observe XHR/fetch header names. Values are read
+            # only inside this callback and never enter the visit summary.
+            # Only browser-classified XHR/fetch requests enter the pool.
             def _on_request(req):
                 try:
-                    if req.resource_type in ("document", "stylesheet",
-                                              "image", "font", "media"):
+                    if req.resource_type not in ("xhr", "fetch"):
                         return
+                    observations = observe_auth_headers([{
+                        "url": req.url, "headers": req.headers,
+                    }])
+                    parsed = urlsplit(req.url)
+                    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+                        return
+                    origin = f"{parsed.scheme}://{parsed.hostname}"
+                    if parsed.port is not None:
+                        origin += f":{parsed.port}"
                     summary["requests"].append({
-                        "method": req.method,
-                        "url": req.url,
-                        "headers": dict(req.headers),
+                        "method": req.method, "origin": origin,
+                        "route": parsed.path or "/",
                     })
-                except Exception as e:                    # noqa: BLE001
-                    summary["errors"].append(f"request record: {e}")
+                    summary["header_observations"].extend(observations)
+                except Exception:                         # noqa: BLE001
+                    summary["errors"].append("request observation failed")
             page.on("request", _on_request)
 
             def _on_dialog(d):
@@ -617,15 +633,16 @@ class BrowserSession:
                 except Exception as e:                    # noqa: BLE001
                     summary["errors"].append(f"route-static: {e}")
 
-                # Phase 2.5: post-process the captured requests list to
-                # extract the canonical CSRF / auth / metadata headers.
-                # Callers can install these into dxadyn.EXTRA_HEADERS to
-                # authenticate subsequent probes without --csrf-refresh.
+                # Phase 2.5: names only. No browser credential can be
+                # replayed from this observation or written into a report.
                 try:
-                    summary["auth_headers"] = extract_auth_headers(
-                        summary["requests"])
-                except Exception as e:                    # noqa: BLE001
-                    summary["errors"].append(f"auth-extract: {e}")
+                    summary["auth_headers"] = {
+                        row["name"]: True
+                        for row in summary["header_observations"]
+                        if row["present"]
+                    }
+                except Exception:                         # noqa: BLE001
+                    summary["errors"].append("auth observation failed")
             except Exception as e:                        # noqa: BLE001
                 summary["errors"].append(f"goto(): {e}")
         return summary

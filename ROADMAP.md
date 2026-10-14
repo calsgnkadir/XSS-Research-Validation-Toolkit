@@ -4,6 +4,12 @@ Son üç işin yeniden denetimi: R8 modül düzeyi encoder ataması karşı örn
 düzeltildi (92 ilgili test geçti); R6 wheel temiz venv'de kaynak dizin dışından
 kuruldu; R5 ayrı agent koşusu 5/5 geçti. İkinci insan tekrarı açık.
 
+14–15 Ekim devam teslimi: R3 allowlist header gözlemi ham değer tutmadan ayrı
+çıktıya bağlandı; R6 statik CLI config önceliği ve statik/dinamik JSON/HTML
+tek kanıt belgesi dar kapsamda geliştirildi. Yerel Chrome 75/75, etkilenen
+birleşik paket 293/293 geçti. Genel R4/R6 ve R5 ikinci insan kabulü açık.
+[Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
+
 ## 14 Ekim 2026 — güncel yetenek ve kalan işler
 
 **Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
@@ -361,7 +367,7 @@ fixture tam corpus, gerçek ürün adapter'ı veya uzak CI kapanışı değildir
 R3'ten devreden doğrulama işleri:
 
 - [x] Uzak Linux CI işi ve artifact sonucu yerel Windows başarısından ayrı kaydedilir ([14 Ekim remote kabul](audit/2026-10-14-r4-provenance-gate/remote-acceptance.json)).
-- [ ] Browser trafiğinden allowlist edilmiş auth/CSRF header harvest'i ayrı gözlem çıktısı olarak doğrulanır; ham değer rapora girmez.
+- [x] Browser trafiğinden allowlist edilmiş auth/CSRF header adları ayrı gözlem çıktısı olarak doğrulandı; ham değer rapora girmez. Bu gözlem token/rol doğrulaması veya header replay değildir ([yerel Chrome kabulü](audit/2026-10-14-r3-r6-continuation/README.md)).
 
 | Kontrol | Beklenti |
 |---|---|
@@ -420,6 +426,12 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 0.0.0.dev0 geliştirici paketi ve browser extra yerel temiz venv'de kuruldu;
 paketlenmiş CLI demo çalıştı. CI paket smoke geçti (38596197488); ilk sürüm/release
 etiketi henüz yok. [Dar R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
+
+Yeni dar teslimde statik `dxa` için `CLI > config > low` önceliği ve BOM'lu JSON
+config test edildi. Statik ve dinamik CLI JSON/HTML çıktıları tek normalize
+kanıt belgesini paylaşır; reflekte mod için kimlik/escape/redaksiyon regresyonu
+var. Tüm CLI config seçenekleri ve rapor modları matrisi, release kapısı açık.
+[Devam kanıtı](audit/2026-10-14-r3-r6-continuation/README.md).
 
 
 İlk doğrulanmış araştırma sürümünün yayın kapısı: **R1 + R2 + R3 yerel uçtan uca

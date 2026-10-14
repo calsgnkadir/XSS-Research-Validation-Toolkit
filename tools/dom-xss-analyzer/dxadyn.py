@@ -1802,7 +1802,7 @@ def _render_blind_section(blind_hits, color_hex, esc):
     )
 
 
-def render_html(findings, target, mode, meta=None, events=None):
+def render_html(findings, target, mode, meta=None, events=None, document=None):
     """Self-contained HTML report - no external assets. Same visual language as
     dxa's report (dark GitHub-ish theme, severity/confidence badges) so the two
     tools' outputs feel like one product. `meta` is a dict of extra context
@@ -1810,8 +1810,11 @@ def render_html(findings, target, mode, meta=None, events=None):
     def esc(s):
         return htmllib.escape(str(s))
 
-    meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
-    report = evidence.report(findings, mode, REPORT_EVENTS if events is None else events, meta)
+    if document is None:
+        meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
+        report = evidence.report(findings, mode, REPORT_EVENTS if events is None else events, meta)
+    else:
+        report = document
     findings, meta = report["findings"], report["meta"]
     target = evidence.safe_url(target)
 
@@ -1910,22 +1913,24 @@ def render_html(findings, target, mode, meta=None, events=None):
 """
 
 
-def write_json_report(path, findings, mode, meta=None):
-    """Export the same HTTP findings supplied to HTML, excluding auth/flow vars."""
-    if not path:
-        return
+def write_json_report(path, findings, mode, meta=None, *, for_html=False):
+    """Build one sharing document for JSON and HTML, excluding auth/flow vars."""
+    if not path and not for_html:
+        return None
     meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
-    with open(path, "w", encoding="utf-8") as fh:
-        json.dump(evidence.report(findings, mode, REPORT_EVENTS, meta),
-                  fh, ensure_ascii=False, indent=2)
+    document = evidence.report(findings, mode, REPORT_EVENTS, meta)
+    if path:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(document, fh, ensure_ascii=False, indent=2)
+    return document
 
 
 def write_failure_reports(args, mode, reason):
     REPORT_EVENTS.append(evidence.ReportEvent(mode, "error", reason))
-    write_json_report(args.json_out, [], mode)
+    document = write_json_report(args.json_out, [], mode, for_html=bool(args.html))
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
-            fh.write(render_html([], "", mode))
+            fh.write(render_html([], "", mode, document=document))
 
 
 def _parse_kv_list(text):
@@ -2545,20 +2550,20 @@ def main():
             import dxadom
         except ImportError as e:
             REPORT_EVENTS.append(evidence.ReportEvent("browser", "error", "harness import failed", args.url or ""))
-            write_json_report(args.json_out, [], "dom")
+            document = write_json_report(args.json_out, [], "dom", for_html=bool(args.html))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
-                    fh.write(render_html([], args.url or "", "dom"))
+                    fh.write(render_html([], args.url or "", "dom", document=document))
             print(f"[dxadom] harness import failed: {e}", file=sys.stderr)
             sys.exit(2)
         print(dxadom.summarize_availability())
         ok, reason = dxadom.is_available()
         if not ok:
             REPORT_EVENTS.append(evidence.ReportEvent("browser", "skip", "browser unavailable", args.url or ""))
-            write_json_report(args.json_out, [], "dom")
+            document = write_json_report(args.json_out, [], "dom", for_html=bool(args.html))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
-                    fh.write(render_html([], args.url or "", "dom"))
+                    fh.write(render_html([], args.url or "", "dom", document=document))
             sys.exit(2)
         if not args.url:
             # No URL given: the operator just wanted the availability
@@ -2578,10 +2583,10 @@ def main():
         dom_findings, dom_events = evidence.dom_observations(summary, SESSION_ROLE)
         REPORT_EVENTS.extend(dom_events)
         record_response_event("browser-navigation", args.url, summary.get("status"))
-        write_json_report(args.json_out, dom_findings, "dom")
+        document = write_json_report(args.json_out, dom_findings, "dom", for_html=bool(args.html))
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
-                fh.write(render_html(dom_findings, args.url, "dom"))
+                fh.write(render_html(dom_findings, args.url, "dom", document=document))
         print(f"[dxadom] visited {summary['url']} status={summary['status']} "
               f"title={summary['title']!r} body_len={summary['body_len']}")
         # Phase 2.2: report DOM sink hits (executed sinks, not response
@@ -2616,14 +2621,13 @@ def main():
             print(f"[dxadom] SPA static routes ({len(st)}):")
             for r in st[:20]:
                 print(f"    {r}")
-        # Phase 2.5: report auto-detected auth headers. When set, the
-        # operator can wire them into subsequent probes without knowing
-        # the target's CSRF-refresh URL up front (Phase 1.4).
+        # Phase 2.5: report observed auth header names only. Browser header
+        # values are unavailable here and are never replayed into probes.
         auth = summary.get("auth_headers") or {}
         if auth:
-            print(f"[dxadom] auto-detected auth headers ({len(auth)}):")
-            for name, value in list(auth.items())[:20]:
-                print(f"    {name}: [redacted]")
+            print(f"[dxadom] observed auth header names ({len(auth)}); values unavailable, no replay:")
+            for name in list(auth)[:20]:
+                print(f"    {name}")
         # Optional: report request count for context (useful when auth is
         # empty - tells the operator if the page even made any XHRs).
         reqs = summary.get("requests") or []
@@ -2736,10 +2740,10 @@ def main():
             sys.exit(2)
         print("[dxadyn] target session contract passed; role label remains operator supplied")
         if not (args.stored or args.flow or args.url):
-            write_json_report(args.json_out, [], "auth-check")
+            document = write_json_report(args.json_out, [], "auth-check", for_html=bool(args.html))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
-                    fh.write(render_html([], "", "auth-check"))
+                    fh.write(render_html([], "", "auth-check", document=document))
             return
 
     # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
@@ -2752,10 +2756,11 @@ def main():
             sys.exit(2)
         summary = run_flow(flow)
         report_meta = {"steps_run": summary["steps_run"], "error": "flow failed" if summary["error"] else None}
-        write_json_report(args.json_out, summary["verdicts"], "flow", report_meta)
+        document = write_json_report(args.json_out, summary["verdicts"], "flow", report_meta,
+                                     for_html=bool(args.html))
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
-                fh.write(render_html(summary["verdicts"], summary["name"], "flow", report_meta))
+                fh.write(render_html(summary["verdicts"], summary["name"], "flow", document=document))
         print(f"[dxadyn] flow '{summary['name']}' ran {summary['steps_run']} step(s)")
         if summary["error"]:
             print(f"[dxadyn] flow error: {summary['error']}", file=sys.stderr)
@@ -2869,15 +2874,13 @@ def main():
                       f"JavaScript execution not established "
                       f"(callback @ {BLIND_CALLBACK})")
 
-        write_json_report(args.json_out, findings, "stored-auto" if args.auto_check else "stored")
+        mode = "stored-auto" if args.auto_check else "stored"
+        meta = {"target": args.target, "shape": shape_desc, "canary_id": cid}
+        document = write_json_report(args.json_out, findings, mode, meta,
+                                     for_html=bool(args.html))
         if args.html:
-            mode = "stored-auto" if args.auto_check else "stored"
-            meta = {"target": args.target, "shape": shape_desc,
-                    "canary_id": cid}
-            if args.auto_check:
-                meta["submit_landing"] = meta.get("submit_landing")
             with open(args.html, "w", encoding="utf-8") as fh:
-                fh.write(render_html(findings, args.target, mode, meta))
+                fh.write(render_html(findings, args.target, mode, document=document))
             print(f"[dxadyn] HTML report -> {args.html}")
 
         if not findings:
@@ -2940,17 +2943,18 @@ def main():
         findings += probe_headers(args.url, hdrs, variants=variants,
                                   waf_bypass=args.waf_bypass)
 
-    write_json_report(args.json_out, findings, "reflected")
+    meta = {"depth": str(args.depth)}
+    if args.probe_headers:
+        meta["probe_headers"] = args.probe_headers
+    if variants != ["body"]:
+        meta["variants"] = ",".join(variants)
+    if args.waf_bypass:
+        meta["waf_bypass"] = "on"
+    document = write_json_report(args.json_out, findings, "reflected", meta,
+                                 for_html=bool(args.html))
     if args.html:
-        meta = {"depth": str(args.depth)}
-        if args.probe_headers:
-            meta["probe_headers"] = args.probe_headers
-        if variants != ["body"]:
-            meta["variants"] = ",".join(variants)
-        if args.waf_bypass:
-            meta["waf_bypass"] = "on"
         with open(args.html, "w", encoding="utf-8") as fh:
-            fh.write(render_html(findings, args.url, "reflected", meta))
+            fh.write(render_html(findings, args.url, "reflected", document=document))
         print(f"[dxadyn] HTML report -> {args.html}")
 
     if not findings:
