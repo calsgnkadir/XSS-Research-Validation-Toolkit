@@ -15,8 +15,13 @@ K01 gate testleri ayrıca `py -3.10 -m pytest cases/k01-stored-comment/test_fixt
 cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short`
 komutuyla **13 passed** verdi.
 [Komut/ortam/sınır](audit/2026-10-14-three-work-recheck/README.md).
-Bu yeni kod için uzak CI sonucu henüz yok; aşağıdaki d41c1cd koşuları önceki
-teslime aittir.
+74cda81 için genel CI 38598901908 3/3 başarılı; kurulu CLI, analyzer test
+paketi ve zorunlu R3/R4 artifact gate adımları geçti.
+[Uzak CI kaydı](audit/2026-10-14-three-work-recheck/remote-ci.json).
+K01 Linux 38598901721 başarılı; indirilen artifact digest eşleşti,
+JUnit 13/0 failure/error/skip, proof 5/5 ve kaynak/çıktı hashleri eşleşti.
+[Uzak K01 kabulü](audit/2026-10-14-three-work-recheck/remote-k01-acceptance.json).
+Aşağıdaki d41c1cd koşuları önceki teslimin tarihsel kanıtıdır.
 
 ## 14 Ekim R5 Linux gate, R8 ve R6 yerel kabulü
 

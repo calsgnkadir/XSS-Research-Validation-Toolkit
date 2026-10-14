@@ -50,7 +50,9 @@ Blind/admin ve araç kıyası bu turda ele alınmadı.
 **Üç işin yeniden denetimi:** R8'de fonksiyondan önceki modül düzeyi encoder
 atamasının gözden kaçtığı karşı örnek bulundu ve dar regresyonla düzeltildi.
 R6 wheel temiz venv'e kaynak dizini dışında kuruldu; R5 ayrı agent yeni kanıtla
-5/5 tekrarladı. Bunlar ikinci insanın temiz makine kabulü değildir.
+5/5 tekrarladı. 74cda81 için genel CI 38598901908 3/3 ve Linux K01
+38598901721 geçti; indirilen K01 artifact'i kabul edildi. Bunlar ikinci insanın
+temiz makine kabulü değildir.
 [Yeniden denetim](audit/2026-10-14-three-work-recheck/README.md).
 
 **Kalan sıra:**

@@ -13,8 +13,10 @@ Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
   düzeltme sonrası 92/92 ilgili testle geçti. R6 wheel modül ve CLI kontrolü,
   R5 ayrı agent 5/5 ve kanıt hashleri doğrulandı.
   [Kanıt](audit/2026-10-14-three-work-recheck/README.md).
-  Bu son düzeltmenin uzak CI'ı henüz çalışmadı; aşağıdaki d41c1cd CI geçmişi
-  bu yeni kodun kabulü değildir. R5 ikinci insan/temiz makine tekrarı açık.
+  Kod commit'i 74cda81 için genel CI 38598901908 3/3 ve K01 Linux
+  38598901721 geçti; indirilen K01 artifact'i de kabul edildi.
+  [Uzak kanıt](audit/2026-10-14-three-work-recheck/remote-k01-acceptance.json).
+  R5 ikinci insan/temiz makine tekrarı açık.
 
 - R5 QA: Ubuntu/Python 3.12 K01 workflow/artifact gate hazır. Koordinatör
   Windows'ta R5+R8 birleşik 104 testi ve 5/5 kapalı-port gate'i doğruladı.

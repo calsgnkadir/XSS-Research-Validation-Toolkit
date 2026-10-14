@@ -1,0 +1,17 @@
+{
+  "code_commit": "74cda814a68f2159bcc935db8c9b7531580ff7df",
+  "run_id": 38598901908,
+  "run_url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38598901908",
+  "conclusion": "success",
+  "jobs": [
+    {"name": "dom-xss-analyzer tests", "conclusion": "success"},
+    {"name": "Required local authenticated browser proof", "conclusion": "success"},
+    {"name": "dxadom browser harness (Playwright opt-in)", "conclusion": "success"}
+  ],
+  "checked_steps": [
+    {"name": "Install research CLI package and check entry points", "conclusion": "success"},
+    {"name": "Run test suite", "conclusion": "success"},
+    {"name": "Benchmark harness tests", "conclusion": "success"},
+    {"name": "Require complete R3/R4 artifact evidence with zero skipped tests", "conclusion": "success"}
+  ]
+}

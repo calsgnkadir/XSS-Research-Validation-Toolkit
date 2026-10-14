@@ -69,8 +69,17 @@ The coordinator also ran the K01 fixture and gate tests: **13/13 passed**,
 zero failures/errors/skips, with
 `py -3.10 -m pytest cases/k01-stored-comment/test_fixture.py cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short`.
 
-This recheck did not contact external targets or rerun Docker. Previous hosted
-CI results are historical until a new commit's workflows complete.
+The code commit `74cda814a68f2159bcc935db8c9b7531580ff7df` was pushed and
+remote `main` matched. [General CI run 38598901908](remote-ci.json) passed all
+three jobs, including installed package entrypoints, analyzer tests and the
+required R3/R4 artifact gate. [K01 Linux run 38598901721](remote-k01-acceptance.json)
+passed its single job. The downloaded K01 ZIP digest matched GitHub artifact
+metadata; JUnit had 13 tests with zero failures/errors/skips, proof 5/5,
+five distinct closed ports recorded on the runner, and source/proof member
+hashes matched the code commit. Historical fixture sockets cannot be checked
+again from the archive.
+
+This recheck did not contact external targets or rerun Docker.
 The canonical generated `proof/fix.diff` contains two blank context lines with
 the required unified-diff prefix space. Plain `git diff --cached --check`
 reports only those two lines; changing them would invalidate the exact fix-diff
