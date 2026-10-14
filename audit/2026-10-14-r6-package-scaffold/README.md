@@ -9,7 +9,7 @@ A fresh Windows Python 3.10 venv installed the project and browser extra.
 All three installed CLI help commands worked. The installed dxaprove module
 loaded from site-packages and its disposable Chrome demo produced matching
 browser execution. [Acceptance details](acceptance.json). Required CI now
-installs the package and checks entrypoints. Hosted acceptance is pending push.
+installs the package and checks entrypoints. [Hosted CI run 38596197488](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38596197488) passed all three jobs, including the package install/help step. [Step record](remote-ci.json). Hosted installed browser demo was not run; the local packaged Chrome demo is separate.
 
 This establishes a local installation path, not a published or tagged
 release. Config precedence, package docs completeness and full R6 release

@@ -5,13 +5,20 @@
 - R5+R8 birleşik etkilenen paket: 104 passed, sıfır failure/error/skip.
   Yeni K01 gate Windows Chrome çıktısında 5/5 ve beş kapalı portu kabul etti.
   [R5 komut/hash](audit/2026-10-14-r5-linux-gate/acceptance.json).
-  Hosted Linux sonucu henüz alınmadı; ikinci kişi kabulü açık.
+  d41c1cd için Linux run 38596197622 ve indirilen artifact geçti:
+  13 JUnit sıfır failure/error/skip, K01 5/5 ve beş kapanan port, arşiv
+  digest ve kaynak hashleri eşleşti.
+  [Uzak kanıt](audit/2026-10-14-r5-linux-gate/remote-acceptance.json).
+  İkinci kişi kabulü açık.
 - R8 odaklı statik paket: 91 passed, sıfır failure/error/skip.
   [R8 komut/hash](audit/2026-10-14-r8-rebound/acceptance.json).
+  d41c1cd genel CI 38596197488 3/3 başarılı; analyzer test step geçti.
 - R6 temiz venv core/browser extra kuruldu; üç entrypoint help ve paketlenmiş
   Chrome demo execution-observed geçti.
   [R6 komut/hash](audit/2026-10-14-r6-package-scaffold/acceptance.json).
-  Yeni CI ve release kabulü henüz alınmadı.
+  d41c1cd genel CI 38596197488 3/3 başarılı; paket install/help step geçti.
+  [CI step kaydı](audit/2026-10-14-r6-package-scaffold/remote-ci.json).
+  Release kabulü henüz alınmadı.
 
 ## 14 Ekim R5/K01 yeni venv tekrarı
 

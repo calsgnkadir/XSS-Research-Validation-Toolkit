@@ -1,0 +1,23 @@
+{
+  "code_commit": "d41c1cd72164e28526e3a6900aa6ed0d20734a11",
+  "run_id": 38596197488,
+  "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38596197488",
+  "conclusion": "success",
+  "jobs": {
+    "dom-xss-analyzer tests": "success",
+    "Required local authenticated browser proof": "success",
+    "dxadom browser harness (Playwright opt-in)": "success"
+  },
+  "relevant_steps": {
+    "Install research CLI package and check entry points": "success",
+    "Run test suite": "success",
+    "Run R3 acceptance tests": "success",
+    "Run R4 execution corpus (strict, no history)": "success",
+    "Require complete R3/R4 artifact evidence with zero skipped tests": "success"
+  },
+  "limitations": [
+    "R8 standalone test count is local 91; hosted full test step passed but per-module count was not inspected.",
+    "R6 package install/help step passed; hosted installed browser demo was not run in this workflow.",
+    "The CI proof job was successful; its downloaded artifact was not re-inspected for this code commit."
+  ]
+}

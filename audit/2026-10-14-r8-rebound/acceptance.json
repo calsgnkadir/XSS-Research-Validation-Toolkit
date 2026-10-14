@@ -15,5 +15,11 @@
     "tools/dom-xss-analyzer/dxa.py": "9335f4d1ae8879a3d3f788ef0c680607dbcfadf2fc5675f539bd1494f32ffcb6",
     "tools/dom-xss-analyzer/test_r8_sanitizer.py": "8855b5bec8d7bb554f81829f8bc0bdeca70d163fd020f2c11cc53e0a13a787e0"
   },
-  "remote_ci": "pending_push"
+  "remote_ci": {
+    "run_id": 38596197488,
+    "code_commit": "d41c1cd72164e28526e3a6900aa6ed0d20734a11",
+    "conclusion": "success",
+    "jobs_passed": 3,
+    "steps": "see audit/2026-10-14-r6-package-scaffold/remote-ci.json"
+  }
 }

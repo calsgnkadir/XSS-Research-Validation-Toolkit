@@ -31,13 +31,15 @@ Engine entegrasyonu tamamladı; R5 QA aynı-host tekrarı yaptı. Aktif uzman yo
 Gerçek admin/blind fixture ve kontrollü kıyas açık.
 
 **14 Ekim üçlü devam teslimi:** R5 için yeni Ubuntu/Python 3.12 K01
-workflow'u ve artifact gate yazıldı; yalnız Windows'ta 104 birleşik regresyon
-ve gate 5/5 doğrulandı, Linux CI/artifact bekliyor.
+workflow'u ve artifact gate yazıldı; Windows'ta 104 birleşik regresyon
+ve gate 5/5 doğrulandı; d41c1cd Linux run 38596197622 de başarılı:
+13 JUnit, 5/5 proof ve indirilen artifact digest/kaynak hashleri eşleşti.
 [R5 gate kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
-R8 açık encoder rebinding kaynaklı statik FN düzeltildi; 91 odaklı test geçti.
+R8 açık encoder rebinding kaynaklı statik FN düzeltildi; 91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı.
 [R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
 R6 geliştirici paketi temiz venv'de kuruldu, üç CLI help ve paketlenmiş
-browser demo çalıştı; sürüm etiketi/yayın yok.
+browser demo çalıştı; d41c1cd CI paket install/help adımı geçti.
+Sürüm etiketi/yayın yok.
 [R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
 Blind/admin ve araç kıyası bu turda ele alınmadı.
 
@@ -377,7 +379,8 @@ Kabul ölçütleri:
 ## R5 — Stajın devamı olan güçlü vaka
 
 Linux clean workflow ve bağımsız artifact gate kodu eklendi; yerel Windows
-gate 5/5 geçti. Hosted Linux ve ikinci kişi kabulü ayrı açık.
+gate 5/5, uzak Linux run 38596197622 5/5 ve artifact kabulü geçti.
+İkinci kişi kabulü ayrı açık.
 [Dar R5 kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
 
 
@@ -402,7 +405,7 @@ Tam R5'in bağımsız temiz ortam tekrarı henüz yapılmadı; aşağıdaki ilk 
 ## R6 — Kullanılabilir ilk sürüm
 
 0.0.0.dev0 geliştirici paketi ve browser extra yerel temiz venv'de kuruldu;
-paketlenmiş CLI demo çalıştı. CI paket smoke eklendi; ilk sürüm/release
+paketlenmiş CLI demo çalıştı. CI paket smoke geçti (38596197488); ilk sürüm/release
 etiketi henüz yok. [Dar R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
 
 
@@ -438,7 +441,7 @@ Kod + yanlış davranışı yakalayan test + ilgili fixture sonucu + kısa sür�
 
 Açık encoder adı identity fonksiyonuna yeniden atanınca taint'in kaybolması
 dar kapsamda düzeltildi; önce/sonra ve gerçek encoder karşı örnekleriyle
-91 odaklı test geçti. Dinamik alias/branch ve genel AST ölçümü açık.
+91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı. Dinamik alias/branch ve genel AST ölçümü açık.
 [Dar R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
 
 

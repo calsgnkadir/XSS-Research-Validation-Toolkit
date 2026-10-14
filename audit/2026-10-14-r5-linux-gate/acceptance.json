@@ -22,6 +22,14 @@
     "cases/k01-stored-comment/check_repro.py": "5f4d6623334fbea6d204a283f8f8e7b09c9aea001e49de4c6c29b31a3b3bab02",
     "cases/k01-stored-comment/test_repro_gate.py": "11f8cb136982eaee4af9aed708698217a8b5d13305cd721230256187e0805ab1"
   },
-  "hosted_linux": "pending_push",
+  "hosted_linux": {
+    "run_id": 38596197622,
+    "conclusion": "success",
+    "junit_tests": 13,
+    "proof_controls": 5,
+    "closed_ports": 5,
+    "artifact_digest_verified": true,
+    "record": "remote-acceptance.json"
+  },
   "limitation": "Not an independent second person; local check is Windows, Linux requires new hosted run and artifact inspection."
 }

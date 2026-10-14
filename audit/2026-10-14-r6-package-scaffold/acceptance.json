@@ -30,6 +30,12 @@
     "README.md": "25320469337ae960aa715d901c92cb774bb90ea1a8915d82a1f6bbe4b47bffa8",
     ".gitignore": "7e59644058225e4b8af1f8a6501901756ea0f46feeb507b48143f492a26a0c0c"
   },
-  "remote_ci": "pending_push",
+  "remote_ci": {
+    "run_id": 38596197488,
+    "code_commit": "d41c1cd72164e28526e3a6900aa6ed0d20734a11",
+    "conclusion": "success",
+    "jobs_passed": 3,
+    "steps": "see audit/2026-10-14-r6-package-scaffold/remote-ci.json"
+  },
   "release_tag": false
 }
