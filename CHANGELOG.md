@@ -2,6 +2,11 @@
 
 ## Unreleased — 2026-10-14
 
+- R6 paketleme taslağı: Python çekirdeği ve üç CLI entrypoint için yerel
+  kurulum; opsiyonel browser extra Playwright sürümünü sabitler. Temiz venv'de
+  kurulum/help ve paketlenmiş yerel demo kontrolü yapıldı. Bu bir release değil.
+
+
 - R4 loopback-proof/3, beş yeni bağlamla 14 vakaya çıktı. Alternatif
   source/sink/role ve frame eşlemesi, bağımsız oracle testleri ve CI gate
   güncellendi. Kapsam paydası ve karşılaştırma protokolü açıklandı.

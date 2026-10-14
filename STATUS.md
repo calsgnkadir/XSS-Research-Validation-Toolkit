@@ -5,6 +5,22 @@ Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/ski
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
+## Son yerel kabul ve uzak bekleyen işler — R5, R8, R6
+
+- R5 QA: Ubuntu/Python 3.12 K01 workflow/artifact gate hazır. Koordinatör
+  Windows'ta R5+R8 birleşik 104 testi ve 5/5 kapalı-port gate'i doğruladı.
+  Linux CI/artifact ve ikinci kişi kabulü açık.
+  [R5 gate](audit/2026-10-14-r5-linux-gate/README.md).
+- R8 Security: statik encoder rebinding FN dar düzeltmesi 91 odaklı test geçti;
+  alias/branch/AST sınırları açık. [R8](audit/2026-10-14-r8-rebound/README.md).
+- R6 koordinatör: geliştirici paketi temiz venv'e kuruldu, üç CLI help ve
+  paketlenmiş browser demo geçti. Yayın etiketi ve R6 genel kabulü açık.
+  [R6](audit/2026-10-14-r6-package-scaffold/README.md).
+- Üç kod tesliminin yeni uzak CI sonuçları push sonrası incelenecek. İki
+  uzman görevini bitirdi; aktif uzman yok. Sıradaki küçük adım Linux K01
+  artifact kabulü, ardından R6 config önceliği ve ikinci kişi R5 tekrarı.
+  Blind/admin ve rakip kıyası sırada bekler.
+
 ## R5/K01 aynı-host temiz venv tekrarı
 
 QA uzmanı yeni Python 3.10.11 venv + pinned Playwright 1.63.0 + kurulu

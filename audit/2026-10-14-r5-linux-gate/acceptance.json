@@ -1,0 +1,27 @@
+{
+  "base_commit": "8e1f11705ecce32534b229eff6205a5ecdd9e9f8",
+  "local_environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "local_tests": {
+    "command": "py -3.10 -m pytest cases/k01-stored-comment/test_fixture.py cases/k01-stored-comment/test_repro_gate.py tools/dom-xss-analyzer/test_r8_sanitizer.py tools/dom-xss-analyzer/test_static_context.py tools/dom-xss-analyzer/test_dxa.py -q -p no:cacheprovider --tb=short",
+    "combined_passed": 104,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "local_gate": {
+    "proof": "new disposable Windows/Chrome K01 output in ignored .dxa",
+    "passed": 5,
+    "fixture_ports_closed": 5,
+    "source_hashes_match_prior_K01_commit": true
+  },
+  "source_sha256": {
+    ".github/workflows/k01-repro.yml": "f52e23218b5b4ebfab31f22157ce4adb9d2f5aeef58e8a63e80300b0cb238030",
+    "cases/k01-stored-comment/check_repro.py": "5f4d6623334fbea6d204a283f8f8e7b09c9aea001e49de4c6c29b31a3b3bab02",
+    "cases/k01-stored-comment/test_repro_gate.py": "11f8cb136982eaee4af9aed708698217a8b5d13305cd721230256187e0805ab1"
+  },
+  "hosted_linux": "pending_push",
+  "limitation": "Not an independent second person; local check is Windows, Linux requires new hosted run and artifact inspection."
+}

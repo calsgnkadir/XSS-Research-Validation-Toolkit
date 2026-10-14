@@ -68,7 +68,19 @@ python -m pytest -q
 
 Pytest kurulu değilse test ortamına ayrıca kurulmalıdır. `--dom` şu an bir
 URL ziyaretini gözlemler; stored/auth-flow ile birleşik doğrulama değildir.
-Paketlenmiş `pip install dxa[browser]` kurulumu henüz mevcut değil.
+R6 araştırma paketi taslağı depo kökünden bir sanal ortamda kurulabilir:
+
+    python -m pip install .
+    python -m pip install ".[browser]"
+    python -m playwright install chromium
+    dxa --help
+    dxadyn --help
+    dxaprove --help
+
+Browser extra Playwright 1.63.0 kurar; browser binary ayrı kurulur veya yerel
+Chrome yolu açıkça verilir. Paket adı dxa-research-toolkit, geliştirici sürümü
+0.0.0.dev0 yalnız test amaçlıdır. PyPI yayını, Git release etiketi ve R6 genel
+kabulü yapılmadı. Eski doğrudan Python komutları çalışmayı sürdürür.
 Tarama örneklerini kendi yerel fixture'ların veya açıkça yetkili hedeflerin üzerinde çalıştır.
 
 ## Staj ve araştırma kayıtları

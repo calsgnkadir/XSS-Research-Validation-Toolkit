@@ -435,20 +435,29 @@ def _closing_paren(text, opening):
 # HTML-body mitigation hints only. A matching spelling is not a guarantee that
 # the library has not been rebound/configured insecurely. Never trust local
 # sanitize/clean/validate names, Markup or SafeString as encoders.
-_HTML_ENCODER_CALL = re.compile(
-    r'(?<![\w.])(?:html\.escape|markupsafe\.escape|bleach\.clean|nh3\.clean|'
+_HTML_ENCODER_NAMES = (
+    r'html\.escape|markupsafe\.escape|bleach\.clean|nh3\.clean|'
     r'htmlspecialchars|htmlentities|StringEscapeUtils\.escapeHtml[34]?|'
     r'HtmlUtils\.htmlEscape|Encode\.forHtml(?:Content)?|'
     r'ESAPI\.encoder\(\)\.encodeForHTML|HttpUtility\.HtmlEncode|'
     r'WebUtility\.HtmlEncode|HtmlEncoder\.(?:Default\.)?Encode|Html\.Encode|'
-    r'DOMPurify\.sanitize|he\.encode|_\.escape)\s*\(')
+    r'DOMPurify\.sanitize|he\.encode|_\.escape'
+)
+_HTML_ENCODER_CALL = re.compile(r'(?<![\w.])(?:' + _HTML_ENCODER_NAMES + r')\s*\(')
+_HTML_ENCODER_REBIND = re.compile(r'^\s*(' + _HTML_ENCODER_NAMES + r')\s*=(?!=)')
+
+
+def _rebound_html_encoders(lines):
+    """Track explicit local rebinding; dynamic imports/aliases remain unsupported."""
+    return {match.group(1) for line in lines
+            if (match := _HTML_ENCODER_REBIND.match(line))}
 
 
 def _ambiguous_html_context(text):
     return bool(re.search(r'<\s*(?:script|style)\b|\b[\w:-]+\s*=\s*[\'"]', text, re.I))
 
 
-def _html_residual(text):
+def _html_residual(text, rebound=frozenset()):
     """Remove just recognized HTML encoder calls, retaining every other term."""
     # Embedded script/style, URL and attribute contexts require other encoders.
     # This deliberately declines mitigation for ambiguous string constructions.
@@ -457,6 +466,8 @@ def _html_residual(text):
     out, pos = [], 0
     for match in _HTML_ENCODER_CALL.finditer(text):
         if match.start() < pos:
+            continue
+        if match.group()[:-1].strip() in rebound:
             continue
         end = _closing_paren(text, match.end() - 1)
         if end is None:
@@ -643,7 +654,10 @@ def compute_taint(lines, sources, msg_active, assign_re=ASSIGN,
             r')\s*\(')
     for _ in range(6):
         changed = False
+        rebound = set()
         for line in lines:
+            if html_context and (binding := _HTML_ENCODER_REBIND.match(line)):
+                rebound.add(binding.group(1))
             m = assign_re.match(line)
             if not m:
                 continue
@@ -652,7 +666,7 @@ def compute_taint(lines, sources, msg_active, assign_re=ASSIGN,
             # view removes recognized call spans; concatenated raw data remains.
             context_tainted = raw_tainted if html_context and _ambiguous_html_context(rhs) else tainted
             if html_context:
-                rhs = _html_residual(rhs)
+                rhs = _html_residual(rhs, rebound)
             if (source_hits(rhs, sources, msg_active)
                 or any(re.search(r'(?<!\w)' + re.escape(v) + r'\b', rhs)
                        for v in context_tainted)
@@ -723,6 +737,7 @@ def scan_file(path, cross_file_funcs=None):
         html_tainted = (compute_taint(scope, sources, msg_active, assign_re,
                                       cross_file_funcs=cross_file_funcs, html_context=True)
                         if wants_taint else set())
+        rebound = _rebound_html_encoders(scope)
         # v3.9 dedup: drop specific sinks when the general one already matched
         suppressed = {specific for specific, general in SINK_SUPPRESSIONS
                       if specific in matched_here and general in matched_here}
@@ -731,7 +746,7 @@ def scan_file(path, cross_file_funcs=None):
                 continue
             expr = _sink_expression(line, rx.search(line), sid)
             html_body = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(expr)
-            evaluated = _html_residual(expr) if html_body else expr
+            evaluated = _html_residual(expr, rebound) if html_body else expr
             srcs = source_hits(evaluated, sources, msg_active)
             tvars = sorted(v for v in (html_tainted if html_body else tainted)
                            if re.search(r'(?<!\w)' + re.escape(v) + r'\b', evaluated))

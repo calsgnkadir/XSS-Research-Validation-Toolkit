@@ -1,0 +1,19 @@
+{
+  "base_commit": "8e1f11705ecce32534b229eff6205a5ecdd9e9f8",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "tests": {
+    "command": "py -3.10 -m pytest tools/dom-xss-analyzer/test_r8_sanitizer.py tools/dom-xss-analyzer/test_static_context.py tools/dom-xss-analyzer/test_dxa.py -q -p no:cacheprovider --tb=short",
+    "passed": 91,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "9335f4d1ae8879a3d3f788ef0c680607dbcfadf2fc5675f539bd1494f32ffcb6",
+    "tools/dom-xss-analyzer/test_r8_sanitizer.py": "8855b5bec8d7bb554f81829f8bc0bdeca70d163fd020f2c11cc53e0a13a787e0"
+  },
+  "remote_ci": "pending_push"
+}

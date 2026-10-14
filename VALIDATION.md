@@ -1,5 +1,18 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim R5 Linux gate, R8 ve R6 yerel kabulü
+
+- R5+R8 birleşik etkilenen paket: 104 passed, sıfır failure/error/skip.
+  Yeni K01 gate Windows Chrome çıktısında 5/5 ve beş kapalı portu kabul etti.
+  [R5 komut/hash](audit/2026-10-14-r5-linux-gate/acceptance.json).
+  Hosted Linux sonucu henüz alınmadı; ikinci kişi kabulü açık.
+- R8 odaklı statik paket: 91 passed, sıfır failure/error/skip.
+  [R8 komut/hash](audit/2026-10-14-r8-rebound/acceptance.json).
+- R6 temiz venv core/browser extra kuruldu; üç entrypoint help ve paketlenmiş
+  Chrome demo execution-observed geçti.
+  [R6 komut/hash](audit/2026-10-14-r6-package-scaffold/acceptance.json).
+  Yeni CI ve release kabulü henüz alınmadı.
+
 ## 14 Ekim R5/K01 yeni venv tekrarı
 
 Ayrı QA agentı Python 3.10.11 yeni venv, Playwright 1.63.0 ve kurulu Chrome

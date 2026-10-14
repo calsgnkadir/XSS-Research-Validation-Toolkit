@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=65.5.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dxa-research-toolkit"
+version = "0.0.0.dev0"
+description = "Research CLI for XSS candidate analysis and local proof labs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.optional-dependencies]
+browser = ["playwright==1.63.0"]
+
+[project.scripts]
+dxa = "dxa:main"
+dxadyn = "dxadyn:main"
+dxaprove = "dxaprove:main"
+
+[tool.setuptools]
+py-modules = [
+  "dxa", "dxadyn", "dxaprove", "dxadom", "dxa_evidence",
+  "dxa_callback", "dxa_attempts", "dxa_proof_lab", "dxa2dyn"
+]
+
+[tool.setuptools.package-dir]
+"" = "tools/dom-xss-analyzer"

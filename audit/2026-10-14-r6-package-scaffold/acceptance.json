@@ -1,0 +1,35 @@
+{
+  "base_commit": "8e1f11705ecce32534b229eff6205a5ecdd9e9f8",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "venv": "fresh ignored .dxa/r6-package-venv"
+  },
+  "install": {
+    "core": "pip install --no-deps --no-build-isolation . (wheel installed as build prerequisite)",
+    "browser_extra": "pip install --no-build-isolation .[browser]",
+    "package_version": "0.0.0.dev0",
+    "entrypoints_help": [
+      "dxa",
+      "dxadyn",
+      "dxaprove"
+    ],
+    "installed_modules_loaded_from": "venv site-packages",
+    "playwright_pin": "1.63.0"
+  },
+  "demo": {
+    "command": "installed dxaprove --demo --browser <installed Chrome> --output <new ignored directory>",
+    "status": "execution-observed",
+    "execution_observed": true,
+    "proof_count": 1,
+    "result_sha256": "583e0adac009813626463e0e4810590bc3c017843c281e4382642fd8d5c541e5"
+  },
+  "source_sha256": {
+    "pyproject.toml": "f1d94b3139f6be0321a7fcee2cb02ee8effa3e066e8bd02ccee3ca416d4575b2",
+    ".github/workflows/ci.yml": "eaf58ecc7a74e86e1e8108f9765f30825cb9faff052337fd849be1b4dfc24692",
+    "README.md": "25320469337ae960aa715d901c92cb774bb90ea1a8915d82a1f6bbe4b47bffa8",
+    ".gitignore": "7e59644058225e4b8af1f8a6501901756ea0f46feeb507b48143f492a26a0c0c"
+  },
+  "remote_ci": "pending_push",
+  "release_tag": false
+}

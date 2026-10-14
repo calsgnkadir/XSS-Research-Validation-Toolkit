@@ -9,3 +9,5 @@ bench/history.jsonl
 **/pytest.xml
 **/proof-results.json
 **/proof-results.md
+build/
+*.egg-info/

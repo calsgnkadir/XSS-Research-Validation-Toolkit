@@ -30,6 +30,17 @@ artifact 169 JUnit, proof 14/14, auth controls 6/6 kabul edildi.
 Engine entegrasyonu tamamladı; R5 QA aynı-host tekrarı yaptı. Aktif uzman yok.
 Gerçek admin/blind fixture ve kontrollü kıyas açık.
 
+**14 Ekim üçlü devam teslimi:** R5 için yeni Ubuntu/Python 3.12 K01
+workflow'u ve artifact gate yazıldı; yalnız Windows'ta 104 birleşik regresyon
+ve gate 5/5 doğrulandı, Linux CI/artifact bekliyor.
+[R5 gate kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
+R8 açık encoder rebinding kaynaklı statik FN düzeltildi; 91 odaklı test geçti.
+[R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
+R6 geliştirici paketi temiz venv'de kuruldu, üç CLI help ve paketlenmiş
+browser demo çalıştı; sürüm etiketi/yayın yok.
+[R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
+Blind/admin ve araç kıyası bu turda ele alınmadı.
+
 **Kalan sıra:**
 1. R4 genel corpus genişletmesi, blind/admin kimlik ve kanıt sınırları,
    eşit koşullu araç karşılaştırması. Auth/CSRF operasyonel hata kontrolleri
@@ -365,6 +376,11 @@ Kabul ölçütleri:
 
 ## R5 — Stajın devamı olan güçlü vaka
 
+Linux clean workflow ve bağımsız artifact gate kodu eklendi; yerel Windows
+gate 5/5 geçti. Hosted Linux ve ikinci kişi kabulü ayrı açık.
+[Dar R5 kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
+
+
 **K01-min tamam:** [stored yorum vakası](cases/k01-stored-comment/README.md).
 14 Ekim aynı Windows hostunda yeni Python venv, pinned Playwright ve mevcut
 Chrome ile bağımsız agent tekrarında 5/5 kontrol ve 5/5 fixture teardown geçti.
@@ -384,6 +400,11 @@ Tam R5'in bağımsız temiz ortam tekrarı henüz yapılmadı; aşağıdaki ilk 
 - [x] Writeup 01/10/11'e güncel vaka bağlantısı eklendi; eski rapor değiştirilmedi. Yazıların bütün C düzeltmeleri tamamlandı sayılmaz.
 
 ## R6 — Kullanılabilir ilk sürüm
+
+0.0.0.dev0 geliştirici paketi ve browser extra yerel temiz venv'de kuruldu;
+paketlenmiş CLI demo çalıştı. CI paket smoke eklendi; ilk sürüm/release
+etiketi henüz yok. [Dar R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
+
 
 İlk doğrulanmış araştırma sürümünün yayın kapısı: **R1 + R2 + R3 yerel uçtan uca
 kanıtı + R4 zorunlu negatif/pozitif CI ölçümü + R5/K01 vaka paketi + aşağıdaki R6
@@ -414,6 +435,12 @@ Genel subdomain/dizin brute-force motoru, IoT genişlemesi, daha çok mutation s
 Kod + yanlış davranışı yakalayan test + ilgili fixture sonucu + kısa sürüm notu + STATUS güncellemesi. Yeşil test sayısı artışı zorunlu hedef değildir; doğru beklenti ve kapsama anlamı esastır. Süre tahmini yerine bir sonraki küçük teslim ve kabul koşulu takip edilir.
 
 ## R8 — Statik analiz ve fixture doğruluğu (bot; açık)
+
+Açık encoder adı identity fonksiyonuna yeniden atanınca taint'in kaybolması
+dar kapsamda düzeltildi; önce/sonra ve gerçek encoder karşı örnekleriyle
+91 odaklı test geçti. Dinamik alias/branch ve genel AST ölçümü açık.
+[Dar R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
+
 
 Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
 
