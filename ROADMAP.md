@@ -1,5 +1,40 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+## 14 Ekim 2026 — güncel yetenek ve kalan işler
+
+**Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
+henüz yok. Son kabul edilen kod **4331403**, uzak kanıt teslimi **550e2bc**.
+[Durum](STATUS.md) · [Doğrulama](VALIDATION.md) ·
+[Corpus v3 kabulü](audit/2026-10-14-r4-corpus-v3/README.md).
+
+| Soru / alan | Kanıtlanan durum | Sınır / kalan kabul |
+|---|---|---|
+| Bot gelişti mi? | Corpus 9'dan 14'e çıktı; kaynak/parametre/okuma/rol/frame eşlemesi ve CI artifact doğrulaması güçlendi. | Bu gelişme ölçüm güvenilirliğidir; gerçek ürünlerde başarı oranı henüz ölçülmedi. |
+| XSS adayı bulabilir mi? | Statik aday analizi, HTTP reflection ve stored akışları, DOM/sink gözlemleri, oturum/CSRF desteği mevcut. | Her adayın bağlamı ve etkisi ayrıca incelenir; reflection açık kanıtı değildir. |
+| JavaScript çalışmasını doğrulayabilir mi? | İzinli loopback lab'da submit→read→eşleşen canary execution; corpus 14/14, TP=7 FP=0 FN=0. | Yedi pozitif/yedi negatif kontrollü vaka; genel web veya ürün doğruluğuna genellenmez. |
+| Blind/admin seviyesi | Stored/stored-auto attempt kaydı ve CID callback uzlaştırması mevcut. | Callback JS execution değildir; ayrı admin hesabı/yetki sınırı kabulü açık. |
+| CVE araştırmasına yardım eder mi? | Aday toplama ve tekrar üretilebilir kanıt hazırlamaya yardımcı olabilir. | Yeni CVE keşfi doğrulanmadı. Ürün/sürüm, etkilenen rol, güvenlik etkisi, by-design/self-XSS ayrımı, yenilik ve fix/retest incelemesi gerekiyor. |
+| Araçlarla karşılaştırma | Kapsam, bütçe ve kanıt eşitliğini tanımlayan protokol var. | Kontrollü rakip koşusu ve karşılaştırılabilir başarı ölçümü yok; üstünlük iddiası yok. |
+| Test kanıtı | Son yerel birleşik paket 527 passed; kod CI 3/3, indirilen artifact gate 134 test ve 14/14 corpus. | Farklı paketlerin sayıları toplanmaz; bu belge güncellemesi yeni test koşusu değildir. |
+
+**Aktif görevlendirme:** R4 auth/CSRF hata corpus'u Engine uzmanına;
+blind/admin kapsamı ve kontrollü araç karşılaştırması QA uzmanına verildi.
+Bu atamalar tamamlanmış kabul sayılmaz; çalışma/engel durumu STATUS'ta izlenir.
+
+**Kalan sıra:**
+1. R4 auth/CSRF hatalarında eksik koşunun doğru sınıflandırılması; blind/admin
+   kimlik ve kanıt sınırları; eşit koşullu araç karşılaştırması.
+2. R4 geniş corpus/coverage kabulü ve R3 otomatik header gözlemi.
+3. R5/K01 bağımsız temiz ortam tekrarı; R6 kurulum/paketleme/release.
+4. R8 analiz kapsamı, R9 operasyon sınırları; aşağıdaki C/K/P/S maddeleri.
+5. A01–A05/R7 ürün bazlı araştırma ve CVE triage; yeni doğrulanmış CVE yok.
+
+### Önceki ilerleme kayıtları
+
+Aşağıdaki tarihli paragraflar ilgili teslim anını anlatır; güncel devam noktası
+yukarıdaki özet ve STATUS'tur. Tarihsel açıklar daha sonraki dar kabullerle
+ilerletilmiş olabilir; ana kabul kutuları aşağıda korunur.
+
 9 Ekim ilerleme kaydı: R4 hard timeout/süreç temizliği, R8 statik context ve
 R9 callback/Docker guard değişiklikleri tam yerel tekrarda **824 passed**;
 ayrı K01 HTTP fixture **2 passed**, Chrome proof **9/9, TP=3 FP=0 FN=0**.
@@ -83,7 +118,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [14 Ekim strict artifact gate](audit/2026-10-14-r4-provenance-gate/README.md) | Runtime gate 208 yerel test + 3ca474a uzak CI/artifact kabulünü geçti; genel R4 sürüyor |
+| R4 | [14 Ekim corpus v3](audit/2026-10-14-r4-corpus-v3/README.md) | 527 yerel test; 4331403 uzak CI/artifact 14/14 kabulü; auth/CSRF, blind/admin ve kontrollü kıyas açık |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 

@@ -3,6 +3,18 @@
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
+## Yeni görevler — 14 Ekim
+
+- Engine native agent r4_auth_csrf: auth/CSRF hata corpus'u; yeni
+  bench/auth_failure_corpus.py ve bench/test_auth_failure_corpus.py sahipliği.
+- QA native agent r4_blind_comparison: blind/admin sözleşme regresyonu ve
+  yerel araç karşılaştırmasına hazırlık; yeni bench/test_blind_admin_contract.py
+  ve audit/2026-10-14-r4-blind-comparison/README.md sahipliği.
+- Koordinatör: ortak şema/runner entegrasyonu, ROADMAP ve Git teslimi.
+- Görevler kabul edilmedi; uzman sonuçları incelendikten sonra ilerleme yazılır.
+  QA normal komut altyapısında setup refresh hatası bildirdi; salt okumalar
+  koordinatör aracılığıyla sağlanacak. Arka planda kesintisiz çalışma varsayılmaz.
+
 ## Aktif teslim — R4 corpus v3 yerel ve uzak kabulü
 
 Başlangıç 61dde5c. Corpus 9→14 genişledi: escaped/raw birlikte, no-op
@@ -13,7 +25,7 @@ Koordinatör kabulü: **527 test geçti**, sıfır hata/skip; strict Chrome CLI
 CI gate yeni kimlik ve 14 vaka sözleşmesine bağlandı. Kapsam paydası raporda
 açık; [karşılaştırma protokolü](bench/COMPARISON-PROTOCOL.md) yazıldı.
 Engine ve QA kod/test katkısından sonra kullanım limitinde durdu; koordinatör
-eksikleri tamamlayıp doğruladı. Aktif uzman/arka plan işi yok.
+eksikleri tamamlayıp doğruladı. Bu teslimdeki uzmanlar durdu; yeni görevler yukarıda.
 Docker kodu değişmedi ve ürün regresyonları geçti; canlı Docker tekrar edilmedi.
 Kod teslimi 4331403 push edildi; uzak main eşleşti. CI 38550538424 üç job
 başarılı; indirilen artifact commit kaynaklarıyla gate'ten geçti:
