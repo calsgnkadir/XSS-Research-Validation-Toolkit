@@ -5,12 +5,15 @@ QA R5 taşınabilir tekrar komutunu tamamladı. Koordinatör R6 mod çakışmala
 işlem öncesi reddetti; yedi rapor dalının JSON/HTML matrisi eklendi.
 R6 odaklı 68 ve etkilenen birleşik 304 test; koordinatör R4/R5 birleşik
 231 test geçti, sıfır hata/atlama. R5 canlı yerel CLI 5/5 ve port cleanup geçti.
-İki uzman tamamlandı; aktif uzman yok. Uzak kabul henüz bekliyor.
+İki uzman tamamlandı; aktif uzman yok. Kod 9b6b7c3 push edildi ve uzak main
+eşleşti. Genel CI 38640435614 3/3, K01 Linux 38640435613 başarılı.
+İndirilen R4 artifact'i 169 test, corpus 14/14 (TP=7 FP=0 FN=0), auth6/6;
+K01 artifact'i 22 test ve proof5/5 ile doğrulandı. ZIP/source hashleri eşleşti.
 [15 Ekim devam kaydı](audit/2026-10-15-r4-r5-r6-continuation/README.md).
 R5 bağımsız ikinci insan tekrarı, geniş R4 ve genel R6/release açık.
 Sıradaki işler: R5 bağımsız kişiye temiz checkout/venv komutlarını uygulama;
 R6 kalan CLI config kapsamı ve release önkoşulları. R4 ayrı admin fixture'ı
-ve kontrollü karşılaştırma ertelenmiş durumda. Son doğrulanan uzak HEAD 8dd50ac.
+ve kontrollü karşılaştırma ertelenmiş durumda. Son doğrulanan kod 9b6b7c3.
 
 R3/R6 üçlü devam teslimi yerelde tamamlandı: Engine `dxadom` allowlist header
 adlarını değersiz gözlem olarak çıkardı; Report `dxadyn` JSON/HTML'yi tek

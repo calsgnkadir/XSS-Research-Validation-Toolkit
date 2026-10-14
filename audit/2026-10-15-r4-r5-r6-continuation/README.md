@@ -45,5 +45,25 @@ R5 automated local/CI repetition does not fulfill independent second-human
 acceptance. Docker was not required for these changes. Broad R4 coverage and
 controlled competitor comparison remain open.
 
-Remote CI for this delivery is pending until the coordinator records the
-specific pushed code commit and its workflow results.
+## Remote acceptance
+
+Code commit `9b6b7c3c25088263be5969e962d155aa83ae13d1` was pushed; remote main
+matched and the working tree was clean. General CI
+[38640435614](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38640435614)
+passed all three jobs. The downloaded `r3-browser-proof` ZIP digest matched
+GitHub metadata; the exact committed gate accepted 169 tests with no skips/errors,
+14/14 corpus (TP=7, FP=0, FN=0), canonical JSON/Markdown and source provenance,
+and observed demo execution. Separate auth controls passed 6/6 with cleanup.
+[R4 archive/member evidence](remote-r4-acceptance.json).
+
+K01 Linux run
+[38640435613](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38640435613)
+passed. Its downloaded artifact digest matched GitHub metadata; JUnit showed
+22 tests with no failures/errors/skips, proof 5/5 and five distinct closed
+fixture ports recorded by CI. Profile `ci`, gate/source hashes and twelve proof
+member hashes were checked against the commit/artifact.
+[R5 archive/member evidence](remote-r5-acceptance.json).
+Downloaded artifacts do not re-observe historical socket closure or establish
+independent human acceptance. Hosted CI did not run Bludit Docker acceptance.
+The local acceptance JSON's pending-push entry describes the earlier snapshot;
+these remote records document its follow-up.

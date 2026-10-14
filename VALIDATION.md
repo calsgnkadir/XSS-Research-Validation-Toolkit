@@ -1,4 +1,4 @@
-﻿# Doğrulama kaydı — 2026-10-14
+﻿# Doğrulama kaydı — 2026-10-15
 
 ## 15 Ekim R4/R5/R6 devam kabulü
 
@@ -11,7 +11,11 @@ beş ayrı kapalı fixture portu: ikinci insan/fresh venv kabulü değil.
 R6 rapor matrisi mock CLI testi; Docker tekrarına ihtiyaç olmadı.
 Komutlar, hashler ve kapsam: [devam kabulü](audit/2026-10-15-r4-r5-r6-continuation/README.md),
 [R4](audit/2026-10-15-r4-acceptance/README.md), [R5](audit/2026-10-15-r5-handoff/README.md).
-Bu teslimin uzak CI sonucu henüz bekliyor.
+Kod 9b6b7c3: genel CI 38640435614 3/3 başarılı; indirilen artifact güncel
+gate ile 169 test, corpus14/14 TP7/FP0/FN0, auth6/6 geçti. K01 Linux
+38640435613 başarılı; artifact22 test/proof5/5, ci profili ve gate kaynak
+hashi doğrulandı. Her iki ZIP digest'i GitHub metadata ile eşleşti.
+Uzak kanıtlar devam kabulündeki remote-r4/remote-r5-acceptance.json dosyalarında.
 
 ## 14 Ekim R3 header ve R6 CLI/rapor yerel kabulü
 

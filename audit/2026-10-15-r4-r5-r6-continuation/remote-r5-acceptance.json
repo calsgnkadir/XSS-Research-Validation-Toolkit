@@ -1,0 +1,63 @@
+{
+  "code_commit": "9b6b7c3c25088263be5969e962d155aa83ae13d1",
+  "run_id": 38640435613,
+  "run_url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38640435613",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "K01 clean Linux browser proof",
+      "conclusion": "success"
+    }
+  ],
+  "artifact": {
+    "id": 11929194438,
+    "name": "k01-linux-proof",
+    "archive_sha256": "a03cbbaa87a16df671a94759ec65997b417ef4860eeb6384eecc9fe901552fe5",
+    "digest_matches_github_metadata": true,
+    "member_sha256": {
+      "k01-linux-proof/acceptance.json": "6b41d38048d7ecda40476030943670e2511401b83cef8559b913c11ea1271084",
+      "k01-linux-proof/fixed-request.json": "6529128192e1dd3ba7b8d4ff560d1a9448b288e157a473b9a9e5dcd775209c41",
+      "k01-linux-proof/fix.diff": "0da42525012a010833ea93c52e95647363851e3021582ef87739c4c8bddc32a8",
+      "k01-linux-proof/fixed-response.txt": "a91561b285f5ba495e50d93f4b7f2fffb126d82588aa88ec68e52a5deba2aead",
+      "k01-linux-proof/javascript-disabled-request.json": "6529128192e1dd3ba7b8d4ff560d1a9448b288e157a473b9a9e5dcd775209c41",
+      "k01-linux-proof/javascript-disabled-response.txt": "0e8fc53e117c1e53ff87888db478649dfb6cf23230fa8fb45400a047ed68b911",
+      "k01-linux-proof/json-only-request.json": "698220b166a0547421d20c0cec57f6af49a440a4208fbc2f8f8fffb0768dab2d",
+      "k01-linux-proof/json-only-response.txt": "5d39a39da46474b958ab86e9b42f503b726080ddd86612b312076fac00881827",
+      "k01-linux-proof/normal-dialog-request.json": "50d2371e53dcb3466f22fcb2f2eed74cbfcff39f2553ea1e43619fdaf2fbec84",
+      "k01-linux-proof/normal-dialog-response.txt": "73cc2c86013250329161a55cb3460e917c807c5ac80dae51533558a8c4b1ef37",
+      "k01-linux-proof/result.json": "1d0e426be98c44c1822c9287349e424333f10b29cb7f187421bf12449f876a46",
+      "k01-linux-proof/vulnerable-request.json": "6529128192e1dd3ba7b8d4ff560d1a9448b288e157a473b9a9e5dcd775209c41",
+      "k01-linux-proof/vulnerable-response.txt": "0e8fc53e117c1e53ff87888db478649dfb6cf23230fa8fb45400a047ed68b911",
+      "k01-gate-pytest.xml": "328dda2b7159c96948793fb594e2557d91754714bf91c4b0fa1072aad364ce23"
+    }
+  },
+  "junit": {
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "proof": {
+    "environment": {
+      "python": "3.12.15",
+      "platform": "Linux",
+      "playwright": "1.63.0",
+      "browser_version": "153.0.8010.12"
+    },
+    "result": {
+      "passed": 5,
+      "total": 5,
+      "fixture_ports_closed": 5,
+      "distinct_fixture_ports": 5
+    },
+    "source_hashes_match_commit": true,
+    "proof_member_hashes_match": true,
+    "profile": "ci",
+    "gate_hash_matches_commit": true
+  },
+  "credentials_saved": false,
+  "limitations": [
+    "Fixture port closure was observed and recorded on the CI runner; downloaded artifacts cannot recheck historical CI sockets.",
+    "A CI runner is a second environment, not an independent second person."
+  ]
+}
