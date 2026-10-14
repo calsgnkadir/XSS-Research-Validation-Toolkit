@@ -1,5 +1,23 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim üç işin bağımsız yeniden denetimi
+
+R8: `py -3.10 -m pytest tools/dom-xss-analyzer/test_r8_sanitizer.py
+tools/dom-xss-analyzer/test_static_context.py tools/dom-xss-analyzer/test_dxa.py
+-q -p no:cacheprovider --tb=short` — **92 passed**; ilk yeni karşı örnek
+eski kodda 1 failure verdi. Python 3.10.11/Windows. R6: mevcut build venv'iyle
+wheel oluşturuldu; yeni `.dxa/r6-recheck-venv` içine wheel kuruldu ve kaynak
+dizini dışından `dxa`, `dxadyn`, `dxaprove --help` çıkışları 0 oldu. Wheel dokuz
+beklenen modülü içeriyor. R5: ayrı agent yeni loopback proof 5/5 yaptı;
+12 kanıt ve üç kaynak SHA-256 değeri checkout ile eşleşti. Aynı Windows hostu,
+mevcut Python; ikinci insan kabulü sayılmaz.
+K01 gate testleri ayrıca `py -3.10 -m pytest cases/k01-stored-comment/test_fixture.py
+cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short`
+komutuyla **13 passed** verdi.
+[Komut/ortam/sınır](audit/2026-10-14-three-work-recheck/README.md).
+Bu yeni kod için uzak CI sonucu henüz yok; aşağıdaki d41c1cd koşuları önceki
+teslime aittir.
+
 ## 14 Ekim R5 Linux gate, R8 ve R6 yerel kabulü
 
 - R5+R8 birleşik etkilenen paket: 104 passed, sıfır failure/error/skip.

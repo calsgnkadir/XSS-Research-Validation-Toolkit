@@ -565,8 +565,15 @@ def _scope_lines(lines, index, lang):
     containing = [(start, end) for start, end in scopes if start <= index < end]
     if containing:
         start, end = max(containing)
-        return [line for i, line in enumerate(lines[start:index + 1], start)
-                if not any(start < child <= i < stop for child, stop in scopes)]
+        # An explicit module-level encoder override is visible inside a later
+        # function. Carry only those bindings, not unrelated module taint or
+        # assignments inside a sibling function.
+        module_rebindings = [line for i, line in enumerate(lines[:start])
+                             if line == line.lstrip()
+                             and _HTML_ENCODER_REBIND.match(line)
+                             and not any(child <= i < stop for child, stop in scopes)]
+        return module_rebindings + [line for i, line in enumerate(lines[start:index + 1], start)
+                                    if not any(start < child <= i < stop for child, stop in scopes)]
     return [line for i, line in enumerate(lines[:index + 1])
             if not any(start <= i < end for start, end in scopes)]
 

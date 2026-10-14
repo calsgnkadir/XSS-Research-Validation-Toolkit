@@ -114,3 +114,15 @@ def test_unrelated_function_local_rebinding_does_not_affect_other_function(tmp_p
             if row["sink"] == "fastapi-html"]
     assert len(rows) == 1
     assert rows[0]["confidence"] == "medium"
+
+
+def test_module_rebinding_before_function_is_visible_at_html_sink(tmp_path):
+    row = html_finding(
+        tmp_path,
+        'html.escape = lambda value: value\n'
+        'def render():\n'
+        '    q = request.args["q"]\n'
+        '    return HTMLResponse(html.escape(q))\n',
+    )
+    assert row["confidence"] == "high"
+    assert row["tainted_vars"] == ["q"]

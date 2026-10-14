@@ -1,11 +1,20 @@
 # Güncel devam noktası — 14 Ekim 2026
 
-Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
+Son yeniden denetim: R8 modül düzeyi encoder rebinding karşı örneği düzeltildi;
+92 ilgili test geçti. R6 wheel temiz venv'de kaynak dizini dışında kuruldu.
+R5 ayrı agent K01'i 5/5 tekrarladı; ikinci insan kabulü hâlâ açık.
 
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Son yerel kabul ve uzak bekleyen işler — R5, R8, R6
+## Son yerel kabul ve kalan işler — R5, R8, R6
+
+- Yeniden denetim: R8 için önce kırmızı olan modül düzeyi rebinding testi
+  düzeltme sonrası 92/92 ilgili testle geçti. R6 wheel modül ve CLI kontrolü,
+  R5 ayrı agent 5/5 ve kanıt hashleri doğrulandı.
+  [Kanıt](audit/2026-10-14-three-work-recheck/README.md).
+  Bu son düzeltmenin uzak CI'ı henüz çalışmadı; aşağıdaki d41c1cd CI geçmişi
+  bu yeni kodun kabulü değildir. R5 ikinci insan/temiz makine tekrarı açık.
 
 - R5 QA: Ubuntu/Python 3.12 K01 workflow/artifact gate hazır. Koordinatör
   Windows'ta R5+R8 birleşik 104 testi ve 5/5 kapalı-port gate'i doğruladı.
@@ -19,9 +28,9 @@ Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
   paketlenmiş browser demo geçti. d41c1cd CI paket install/help adımı
   başarılı. Yayın etiketi ve R6 genel kabulü açık.
   [R6](audit/2026-10-14-r6-package-scaffold/README.md).
-- Genel CI 38596197488 3/3 geçti; R5 Linux artifact kabulü ayrıca geçti. İki
-  uzman görevini bitirdi; aktif uzman yok. Sıradaki küçük adım R6 config
-  önceliği ve ikinci kişi R5 tekrarı.
+- Genel CI 38596197488 3/3 geçti; R5 Linux artifact kabulü ayrıca geçti.
+  Bu işlerdeki ajanlar görevlerini bitirdi; aktif uzman yok. Sıradaki küçük
+  adım R6 config önceliği ve ikinci insanın R5 tekrarıdır.
   Blind/admin ve rakip kıyası sırada bekler.
 
 ## R5/K01 aynı-host temiz venv tekrarı
@@ -30,8 +39,9 @@ QA uzmanı yeni Python 3.10.11 venv + pinned Playwright 1.63.0 + kurulu
 Chrome ile K01 proof 5/5 tekrarladı. Koordinatör 12 kanıt üyesinin hashlerini
 ve vaka README diffini doğruladı. Beş geçici port kapandı, aynı payload/fix
 retest kaydedildi. [Kanıt](audit/2026-10-14-r5-k01-clean-repeat/README.md).
-İkinci kişi/farklı ortam kabulü henüz yok; genel R5 açık. QA görevi tamam,
-aktif uzman yok.
+İkinci kişi/farklı ortam kabulü henüz yok; genel R5 açık. Daha sonraki ayrı
+agent koşusu [burada](audit/2026-10-14-r5-independent-agent-repeat/README.md);
+aynı host ve mevcut Python ile çalıştı.
 
 ## Son doğrulanan R4 teslimi — auth/CSRF ana runner entegrasyonu
 

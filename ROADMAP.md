@@ -1,12 +1,15 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
+Son üç işin yeniden denetimi: R8 modül düzeyi encoder ataması karşı örneği
+düzeltildi (92 ilgili test geçti); R6 wheel temiz venv'de kaynak dizin dışından
+kuruldu; R5 ayrı agent koşusu 5/5 geçti. İkinci insan tekrarı açık.
 
 ## 14 Ekim 2026 — güncel yetenek ve kalan işler
 
 **Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
-henüz yok. Son kabul edilen R4 kodu **bec59b4**, R5/K01 aynı-host kanıt commit’i
-**70093ff**. Kod CI ve indirilen artifact kabulü R4 için geçti.
+henüz yok. R4 auth runner kodu **bec59b4**, R5/K01 aynı-host kanıt commit'i
+**70093ff**; sonraki R5/R8/R6 kodu **d41c1cd** için CI ve ilgili indirilen
+artifact kabulü geçti. Güncel HEAD ve açık işler [STATUS](STATUS.md) içindedir.
 [Durum](STATUS.md) · [Doğrulama](VALIDATION.md) ·
 [Corpus v3 kabulü](audit/2026-10-14-r4-corpus-v3/README.md).
 
@@ -43,6 +46,12 @@ browser demo çalıştı; d41c1cd CI paket install/help adımı geçti.
 Sürüm etiketi/yayın yok.
 [R6 kanıtı](audit/2026-10-14-r6-package-scaffold/README.md).
 Blind/admin ve araç kıyası bu turda ele alınmadı.
+
+**Üç işin yeniden denetimi:** R8'de fonksiyondan önceki modül düzeyi encoder
+atamasının gözden kaçtığı karşı örnek bulundu ve dar regresyonla düzeltildi.
+R6 wheel temiz venv'e kaynak dizini dışında kuruldu; R5 ayrı agent yeni kanıtla
+5/5 tekrarladı. Bunlar ikinci insanın temiz makine kabulü değildir.
+[Yeniden denetim](audit/2026-10-14-three-work-recheck/README.md).
 
 **Kalan sıra:**
 1. R4 genel corpus genişletmesi, blind/admin kimlik ve kanıt sınırları,

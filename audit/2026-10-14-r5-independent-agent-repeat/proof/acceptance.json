@@ -1,0 +1,44 @@
+{
+  "case_version": "k01-v1.0",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows",
+    "playwright": "1.63.0",
+    "browser_version": "155.0.8059.79"
+  },
+  "result": {
+    "passed": 5,
+    "total": 5,
+    "fixture_ports_closed": 5,
+    "distinct_fixture_ports": 5
+  },
+  "source_sha256": {
+    "prove.py": "55b9ba58de66f0effc51a73477f5cf2035b815ad89901e24ddc35b8611056491",
+    "render_fixed.py": "99960d46babaa86700aabe2daba5a3052bdb4cb8d5c1a25da78a99b212c38aaa",
+    "render_vulnerable.py": "23a884fad172562171b808f0a8b1bf570140b557e5506073bc581e2e1ce8f4a5"
+  },
+  "proof_sha256": {
+    "fix.diff": "dfcd62d10721300feb9a2b724533b477b3c79e85e1460e95eea2cbe1c6980348",
+    "fixed-request.json": "e341c00573a069e175fc0e9cf141c2540f9de8ac736d82b5fbf8db4f708966d8",
+    "fixed-response.txt": "7c0798c8a04db037f2de7fb7fc14cd3caa7df445c4db3cbc5a3cce3bc38d9169",
+    "javascript-disabled-request.json": "e341c00573a069e175fc0e9cf141c2540f9de8ac736d82b5fbf8db4f708966d8",
+    "javascript-disabled-response.txt": "91a9b07a10d27bf9666d2d2ca2680d8cfa9538b030f0f948ea09677ad2ecda38",
+    "json-only-request.json": "b1e8522f126d05c00d6575641cf6024a69a2edaf9176b5f5e2c2afa12092420f",
+    "json-only-response.txt": "5d31f8e289421dd5cfb8f65c30810f56b75f76f4d7c9beccd2d880f7f7543d07",
+    "normal-dialog-request.json": "14750a3ee2eac62360922fd3774cb25414ae94f39d3cfc1a3893ddde208ca16c",
+    "normal-dialog-response.txt": "73cc2c86013250329161a55cb3460e917c807c5ac80dae51533558a8c4b1ef37",
+    "result.json": "52c364803e1a015a82e368de167f6048d2854d753baffd670e3c0fa44ca8473b",
+    "vulnerable-request.json": "e341c00573a069e175fc0e9cf141c2540f9de8ac736d82b5fbf8db4f708966d8",
+    "vulnerable-response.txt": "91a9b07a10d27bf9666d2d2ca2680d8cfa9538b030f0f948ea09677ad2ecda38"
+  },
+  "scope": "fresh 127.0.0.1 fixture; anonymous author and separate reader context",
+  "limitation": "Hosted Linux repetition is not an independent second person or product/CVE claim",
+  "fixture_ports": [
+    62386,
+    63645,
+    58009,
+    62858,
+    64429
+  ],
+  "runner": "independent agent on same host; not a second human"
+}

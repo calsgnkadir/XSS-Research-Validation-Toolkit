@@ -15,8 +15,10 @@ own evidence; see EVIDENCE-CONTRACT.md and BROWSER-PROOF.md.
 - Recognized HTML encoder call spans provide only an HTML-body mitigation
   hint. Adjacent raw expressions still flow. Encoding is not assumed to protect
   eval, template source, script/style, URL or attribute contexts. Library names
-  can be rebound and sanitizer configuration is not validated; a lowered
-  confidence is never sanitizer verification.
+  can be rebound: explicit same-scope assignments and module-level assignments
+  before a Python function are tracked. Dynamic aliases, later runtime
+  rebinding and sanitizer configuration are not validated; a lowered confidence
+  is never sanitizer verification.
 - C#/Razor have source and sink pattern detection, including same-line sources,
   but no assignment taint propagation. Language support is not equivalent.
 - `.html`, `.htm`, `.twig`, `.jinja`, `.jinja2` and `.vue` are discovered.
