@@ -1,5 +1,13 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-15
+
+- R4 gate, callback özetini fixture gözlemiyle eşleştirir.
+- R5 K01 gate yerel runtime profili ve browser seçeneğiyle çalışır;
+  optimize Python'u reddeder, varsayılan CI şartları korunur.
+- R6 dinamik CLI çakışan modları ve DOM ile HTTP oturum seçeneklerini
+  işlem öncesi reddeder; JSON/HTML rapor dalları için regresyon matrisi eklendi.
+
 ## Unreleased — 2026-10-14
 
 - R6 paketleme taslağı: Python çekirdeği ve üç CLI entrypoint için yerel

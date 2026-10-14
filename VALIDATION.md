@@ -1,5 +1,18 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 15 Ekim R4/R5/R6 devam kabulü
+
+Başlangıç `8dd50acb80ed41bb2e44d4f1ab9defa9f1deca09`, Windows/Python 3.10.11.
+R4 uzman gate/scorer/identity paketi 233; R5 uzman fixture/gate paketi 22 geçti.
+Koordinatör R4/R5 birleşik paket 231 ve R6 etkilenen paket 304 geçti;
+paketler örtüşür, toplam benzersiz test sayısı olarak toplanmaz.
+Tüm bu koşularda sıfır hata/atlama. R5 yeni gerçek yerel CLI 5/5 kontrol ve
+beş ayrı kapalı fixture portu: ikinci insan/fresh venv kabulü değil.
+R6 rapor matrisi mock CLI testi; Docker tekrarına ihtiyaç olmadı.
+Komutlar, hashler ve kapsam: [devam kabulü](audit/2026-10-15-r4-r5-r6-continuation/README.md),
+[R4](audit/2026-10-15-r4-acceptance/README.md), [R5](audit/2026-10-15-r5-handoff/README.md).
+Bu teslimin uzak CI sonucu henüz bekliyor.
+
 ## 14 Ekim R3 header ve R6 CLI/rapor yerel kabulü
 
 Başlangıç HEAD `d91238bfbfeb9736068dc6197738f464b5708312`.

@@ -98,3 +98,88 @@ def test_dom_cli_observed_header_names_have_no_values_or_replay_claim(monkeypatc
     assert "observed auth header names (1); values unavailable, no replay" in output
     assert "Authorization" in output
     assert "LOCAL_HEADER_SECRET" not in output
+
+
+@pytest.mark.parametrize("outputs", ["json", "html", "both"])
+@pytest.mark.parametrize("mode", ["stored", "stored-auto", "flow", "dom", "auth-check", "login", "auth-flow"])
+def test_cli_report_mode_matrix(monkeypatch, tmp_path, mode, outputs):
+    """Every output branch shares one document, including operational failures."""
+    url = "http://127.0.0.1/fixture"
+    argv = ["dxadyn"]
+    expected_exit = 0
+    if mode in ("stored", "stored-auto"):
+        argv += ["--stored", "--target", url, "--target-field", "comment"]
+        if mode == "stored":
+            argv += ["--check", url]
+            monkeypatch.setattr(dxadyn, "probe_stored", lambda *a, **k: ([], "cid-fixture"))
+        else:
+            argv += ["--auto-check"]
+            monkeypatch.setattr(dxadyn, "probe_stored_auto", lambda *a, **k: (
+                [], "cid-fixture", {"submit_landing": url, "checked_pages": 1, "candidates": 1}))
+    elif mode == "flow":
+        argv += ["--flow", "fixture.json"]
+        monkeypatch.setattr(dxadyn, "_load_flow", lambda *a: {})
+        monkeypatch.setattr(dxadyn, "run_flow", lambda *a: {
+            "verdicts": [], "name": "fixture", "steps_run": 1, "error": None})
+    elif mode == "dom":
+        argv += [url, "--dom"]
+        browser = MagicMock()
+        browser.__enter__.return_value.visit.return_value = {
+            "url": url, "status": 200, "title": "fixture", "body_len": 0,
+            "console": [], "errors": []}
+        monkeypatch.setattr(dxadom, "BrowserSession", lambda: browser)
+        monkeypatch.setattr(dxadom, "is_available", lambda: (True, "fixture"))
+        monkeypatch.setattr(dxadom, "summarize_availability", lambda: "fixture")
+    elif mode == "auth-check":
+        argv += ["--auth-check", "fixture.json"]
+        monkeypatch.setattr(dxadyn, "_load_flow", lambda *a: {})
+        monkeypatch.setattr(dxadyn, "verify_session", lambda *a: True)
+    elif mode == "login":
+        argv += [url, "--login", url, "--user", "fixture", "--pass", "LOCAL_SECRET"]
+        monkeypatch.setattr(dxadyn, "login", lambda *a, **k: False)
+        expected_exit = 2
+    else:
+        argv += [url, "--auth-flow", "fixture.json"]
+        monkeypatch.setattr(dxadyn, "_load_flow", lambda *a: {"__error__": "fixture failure"})
+        expected_exit = 2
+
+    documents, rendered = [], []
+    original_report, original_render = dxadyn.evidence.report, dxadyn.render_html
+
+    def track_report(*args, **kwargs):
+        document = original_report(*args, **kwargs)
+        documents.append(document)
+        return document
+
+    def track_render(*args, **kwargs):
+        rendered.append(kwargs.get("document"))
+        return original_render(*args, **kwargs)
+
+    monkeypatch.setattr(dxadyn.evidence, "report", track_report)
+    monkeypatch.setattr(dxadyn, "render_html", track_render)
+    out, page = tmp_path / "report.json", tmp_path / "report.html"
+    if outputs in ("json", "both"):
+        argv += ["--json-out", str(out)]
+    if outputs in ("html", "both"):
+        argv += ["--html", str(page)]
+    monkeypatch.setattr(sys, "argv", argv)
+    try:
+        dxadyn.main()
+    except SystemExit as result:
+        assert result.code == expected_exit
+    else:
+        assert expected_exit == 0
+    assert len(documents) == 1
+    document = documents[0]
+    assert document["schema_version"] == 1
+    assert document["mode"] == mode
+    assert "LOCAL_SECRET" not in json.dumps(document)
+    if expected_exit == 2:
+        assert any(event["kind"] == "error" for event in document["events"])
+    assert out.exists() == (outputs in ("json", "both"))
+    assert page.exists() == (outputs in ("html", "both"))
+    if out.exists():
+        assert json.loads(out.read_text(encoding="utf-8")) == document
+    if page.exists():
+        assert len(rendered) == 1 and rendered[0] is document
+        assert "LOCAL_SECRET" not in page.read_text(encoding="utf-8")

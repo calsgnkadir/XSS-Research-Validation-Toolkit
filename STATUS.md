@@ -1,5 +1,17 @@
 # Güncel devam noktası — 15 Ekim 2026
 
+Yerel teslim tamam: Engine R4 callback özetini fixture kanıtına bağlayan gate'i,
+QA R5 taşınabilir tekrar komutunu tamamladı. Koordinatör R6 mod çakışmalarını
+işlem öncesi reddetti; yedi rapor dalının JSON/HTML matrisi eklendi.
+R6 odaklı 68 ve etkilenen birleşik 304 test; koordinatör R4/R5 birleşik
+231 test geçti, sıfır hata/atlama. R5 canlı yerel CLI 5/5 ve port cleanup geçti.
+İki uzman tamamlandı; aktif uzman yok. Uzak kabul henüz bekliyor.
+[15 Ekim devam kaydı](audit/2026-10-15-r4-r5-r6-continuation/README.md).
+R5 bağımsız ikinci insan tekrarı, geniş R4 ve genel R6/release açık.
+Sıradaki işler: R5 bağımsız kişiye temiz checkout/venv komutlarını uygulama;
+R6 kalan CLI config kapsamı ve release önkoşulları. R4 ayrı admin fixture'ı
+ve kontrollü karşılaştırma ertelenmiş durumda. Son doğrulanan uzak HEAD 8dd50ac.
+
 R3/R6 üçlü devam teslimi yerelde tamamlandı: Engine `dxadom` allowlist header
 adlarını değersiz gözlem olarak çıkardı; Report `dxadyn` JSON/HTML'yi tek
 normalize belgeye bağladı; koordinatör statik `dxa` config önceliğini, BOM
@@ -9,7 +21,7 @@ temiz venv'de kaynak dışından çalıştı. [Devam raporu](audit/2026-10-14-r3
 Kod commit'i a0cf348 push edildi; uzak main eşleşti, genel CI 38637484190
 3/3 ve K01 Linux 38637484214 başarılı. K01 artifact'i bu turda yeniden
 indirilmedi. [Uzak CI](audit/2026-10-14-r3-r6-continuation/remote-ci.json).
-İki uzman kod ve testini tamamladı; aktif uzman yok. R3 header adları
+Önceki iki uzman kod ve testini tamamladı. R3 header adları
 gözlemi rol/token kanıtı değil. Genel R4/R6, R5 bağımsız insan tekrarı,
 R8/R9 ve C/K/P/S/A maddeleri açık. Son doğrulanmış kod a0cf348.
 

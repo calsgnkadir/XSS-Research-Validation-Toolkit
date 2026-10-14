@@ -2498,8 +2498,16 @@ def main():
                     help="versioned HTTP/DOM findings and operational events")
     ap.add_argument("--auth-check", metavar="JSON", help="Target-specific session check file: url and expect JSONPath/value map; mismatch stops scanning")
     args = ap.parse_args()
+    # Validate mode selection before browser discovery, session setup or I/O.
+    if sum(bool(mode) for mode in (args.dom, args.stored, args.flow)) > 1:
+        ap.error("choose only one of --dom, --stored, or --flow")
+    if args.url and (args.stored or args.flow):
+        ap.error("positional URL is for reflected/--dom mode; stored/flow defines its own target")
     if args.dom and args.auth_check:
         ap.error("--auth-check checks the HTTP session; --dom session transfer is not supported")
+    if args.dom and any((args.auth_flow, args.login, args.cookie, args.header,
+                         args.csrf_refresh, args.csrf_header)):
+        ap.error("--dom does not support HTTP session options (--auth-flow, --login, --cookie, --header, --csrf-refresh, --csrf-header)")
     if (args.stored and not args.json_body and not args.header_target
             and args.csrf_field and args.csrf_header):
         ap.error("choose form CSRF or header CSRF for stored submission; use --csrf-field '' for header mode")
@@ -2569,11 +2577,6 @@ def main():
             # No URL given: the operator just wanted the availability
             # check. Exit clean.
             sys.exit(0)
-        if args.stored or args.flow or args.auth_flow:
-            print("[dxadom] --dom currently drives a bare URL visit only. "
-                  "Composition with --stored/--flow/--auth-flow is Phase 2.2+.",
-                  file=sys.stderr)
-            sys.exit(2)
         try:
             with dxadom.BrowserSession() as sess:
                 summary = sess.visit(args.url)

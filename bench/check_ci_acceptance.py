@@ -90,6 +90,11 @@ def check_corpus(report):
                                      observed.get("fixture_observation"))
         require(adapted["status"] == "completed" and observed["findings"] == adapted["findings"],
                 "corpus nested proof does not support observed findings")
+        if target["mode"] == "resource-callback":
+            require(type(observed.get("callback_count")) is int
+                    and observed["callback_count"] == adapted["callback_count"]
+                    and observed.get("callback_observed") is adapted["callback_observed"],
+                    "corpus callback summary disagrees with fixture observation")
         require(observed["proof"]["execution_observed"] is positive,
                 "corpus execution disagrees with independent fixture label")
         require(result["score"] == {"tp": int(positive), "fp": 0, "fn": 0, "evaluated": True}

@@ -198,6 +198,34 @@ def test_missing_callback_is_not_a_completed_callback_negative(artifacts):
     assert invoke(artifacts).returncode == 1
 
 
+@pytest.mark.parametrize("field,value", (
+    ("callback_count", 0), ("callback_count", 2), ("callback_count", True),
+    ("callback_count", 1.0), ("callback_count", None),
+    ("callback_observed", False), ("callback_observed", 1),
+    ("callback_observed", None),
+))
+def test_callback_summary_must_match_fixture_with_consistent_markdown(artifacts, field, value):
+    observed = next(row for row in artifacts["corpus"]["rows"]
+                    if row["id"] == "proof-resource-callback")["results"]["dxaprove"]["observed"]
+    if value is None:
+        observed.pop(field)
+    else:
+        observed[field] = value
+    # Regenerate Markdown: rejection must come from fixture evidence, not from
+    # the pre-existing JSON/Markdown equality guard.
+    artifacts["markdown"] = runner.render_md(artifacts["corpus"])
+    assert invoke(artifacts).returncode == 1
+
+
+def test_multiple_correlated_callbacks_remain_a_negative_execution_control(artifacts):
+    observed = next(row for row in artifacts["corpus"]["rows"]
+                    if row["id"] == "proof-resource-callback")["results"]["dxaprove"]["observed"]
+    observed["fixture_observation"]["resource_callback_hits"][CID] = 3
+    observed["callback_count"] = 3
+    artifacts["markdown"] = runner.render_md(artifacts["corpus"])
+    assert invoke(artifacts).returncode == 0
+
+
 @pytest.mark.parametrize("target", ("demo", "corpus"))
 @pytest.mark.parametrize("value", (None, [], "unexpected"))
 def test_json_document_wrong_type_fails_cleanly(artifacts, target, value):

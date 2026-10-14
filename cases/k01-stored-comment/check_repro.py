@@ -30,7 +30,7 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def validate(output, ports, expected_platform="Linux", expected_python="3.12."):
+def validate(output, ports, expected_platform="Linux", expected_python="3.12.", *, runtime=None):
     """Check proof semantics, artifact integrity and fixture shutdown."""
     output = Path(output)
     members = {p.name for p in output.iterdir() if p.is_file()}
@@ -39,6 +39,9 @@ def validate(output, ports, expected_platform="Linux", expected_python="3.12."):
     }
     require(members == expected_members, "missing or unexpected proof members")
     report = json.loads((output / "result.json").read_text(encoding="utf-8"))
+    if runtime is not None:
+        require(all(report.get(key) == runtime[key] for key in ("platform", "python")),
+                "reported environment differs from executing runtime")
     require(report.get("case_version") == "k01-v1.0", "wrong case version")
     require(report.get("platform") == expected_platform, "wrong platform")
     require(report.get("python", "").startswith(expected_python), "wrong Python version")
@@ -122,14 +125,23 @@ def validate(output, ports, expected_platform="Linux", expected_python="3.12."):
         "source_sha256": sources,
         "proof_sha256": {name: sha256(output / name) for name in sorted(expected_members)},
         "scope": "fresh 127.0.0.1 fixture; anonymous author and separate reader context",
-        "limitation": "Hosted Linux repetition is not an independent second person or product/CVE claim",
+        "limitation": "Automated repetition is not an independent second person or product/CVE claim",
     }
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, help="new proof directory; must not exist")
-    args = parser.parse_args()
+    parser.add_argument("--profile", choices=("ci", "local"), default="ci",
+                        help="ci requires Linux/Python 3.12; local binds to the executing runtime")
+    parser.add_argument("--browser", help="optional installed Chromium/Chrome executable")
+    args = parser.parse_args(argv)
+    if sys.flags.optimize:
+        parser.error("optimized Python disables fixture assertions; run without -O/PYTHONOPTIMIZE")
+    runtime = {"platform": platform.system(), "python": platform.python_version()}
+    if args.profile == "ci" and (runtime["platform"] != "Linux" or
+                                 sys.version_info[:2] != (3, 12)):
+        parser.error("ci profile requires Linux/Python 3.12; use --profile local for local reproduction")
     output = Path(args.output)
     ports = []
     original_fixture = prove.fixture
@@ -143,10 +155,14 @@ def main():
 
     prove.fixture = observed_fixture
     try:
-        prove.run(output)
-        record = validate(output, ports)
+        prove.run(output, args.browser)
+        expected_platform = "Linux" if args.profile == "ci" else runtime["platform"]
+        expected_python = "3.12." if args.profile == "ci" else runtime["python"]
+        record = validate(output, ports, expected_platform, expected_python, runtime=runtime)
+        record["profile"] = args.profile
+        record["gate_sha256"] = sha256(Path(__file__))
         (output / "acceptance.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
-        print("K01 Linux: 5/5 controls; 5/5 loopback fixtures closed; artifact gate passed")
+        print(f"K01 {args.profile}: 5/5 controls; 5/5 loopback fixtures closed; artifact gate passed")
     finally:
         prove.fixture = original_fixture
 

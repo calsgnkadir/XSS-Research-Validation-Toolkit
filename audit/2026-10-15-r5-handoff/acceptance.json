@@ -1,0 +1,60 @@
+{
+  "base_commit": "8dd50acb80ed41bb2e44d4f1ab9defa9f1deca09",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "tests": {
+    "command": "py -3.10 -m pytest cases/k01-stored-comment/test_fixture.py cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short",
+    "passed": 22,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "live_command": "py -3.10 cases/k01-stored-comment/check_repro.py --profile local --browser <installed-Chrome> --output .dxa/r5-handoff-20261015-proof",
+  "live_acceptance": {
+    "case_version": "k01-v1.0",
+    "environment": {
+      "python": "3.10.11",
+      "platform": "Windows",
+      "playwright": "1.63.0",
+      "browser_version": "155.0.8059.79"
+    },
+    "result": {
+      "passed": 5,
+      "total": 5,
+      "fixture_ports_closed": 5,
+      "distinct_fixture_ports": 5
+    },
+    "source_sha256": {
+      "prove.py": "55b9ba58de66f0effc51a73477f5cf2035b815ad89901e24ddc35b8611056491",
+      "render_fixed.py": "99960d46babaa86700aabe2daba5a3052bdb4cb8d5c1a25da78a99b212c38aaa",
+      "render_vulnerable.py": "23a884fad172562171b808f0a8b1bf570140b557e5506073bc581e2e1ce8f4a5"
+    },
+    "proof_sha256": {
+      "fix.diff": "dfcd62d10721300feb9a2b724533b477b3c79e85e1460e95eea2cbe1c6980348",
+      "fixed-request.json": "8b72b467f5ee1aa3ad08c3f83ccdc7bd81293d233bc40541193ff24bd10ba4fa",
+      "fixed-response.txt": "d11f2cdec48f77a367ee396fe54eccd6e5c0a2c2f1ba3d4b69bd7f68d013c0d6",
+      "javascript-disabled-request.json": "8b72b467f5ee1aa3ad08c3f83ccdc7bd81293d233bc40541193ff24bd10ba4fa",
+      "javascript-disabled-response.txt": "4928b11c042d8e51fa684e8f8855b87a4309826e2ac1671941c25b46baaa9d67",
+      "json-only-request.json": "d5f1ac7fd87088a3e833feab829795516d221d697eef96ad9c770bb8be618c0c",
+      "json-only-response.txt": "4e22fd7fc328adf948669e1b36ef64a1c519227bcc84b602b9939e1b95ce279b",
+      "normal-dialog-request.json": "e8fe127b3bf63633b75c5b00a8aacc7b16941e53ebacdb7760bf4b88a2468083",
+      "normal-dialog-response.txt": "73cc2c86013250329161a55cb3460e917c807c5ac80dae51533558a8c4b1ef37",
+      "result.json": "8582934b1ee16058bcfc2c054a18bf8f8425803152c54ba54b0f48925422c3bc",
+      "vulnerable-request.json": "8b72b467f5ee1aa3ad08c3f83ccdc7bd81293d233bc40541193ff24bd10ba4fa",
+      "vulnerable-response.txt": "4928b11c042d8e51fa684e8f8855b87a4309826e2ac1671941c25b46baaa9d67"
+    },
+    "scope": "fresh 127.0.0.1 fixture; anonymous author and separate reader context",
+    "limitation": "Automated repetition is not an independent second person or product/CVE claim",
+    "profile": "local",
+    "gate_sha256": "de4a5e427686587629f1b8c30944abe03a27ae6bccd9565259f7c4b9076c51a8"
+  },
+  "sha256": {
+    "cases/k01-stored-comment/check_repro.py": "de4a5e427686587629f1b8c30944abe03a27ae6bccd9565259f7c4b9076c51a8",
+    "cases/k01-stored-comment/test_repro_gate.py": "fd5d29176769d047018df9f5e097f321046f89dbc774d58199e259bf36d18dfe",
+    "cases/k01-stored-comment/README.md": "8fd4b58bf6c9239dbb63fdb94db3caf023be3fa85a6de8963dd849169e1dabbf"
+  },
+  "remote_ci": "not run by specialist",
+  "independent_human_acceptance": false
+}

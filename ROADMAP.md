@@ -395,7 +395,18 @@ Kabul ölçütleri:
 - [x] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır ve indirilen içerik gate'ten geçti (14 Ekim).
 - [ ] Rakip kıyaslaması ancak aynı kapsam, auth, bütçe ve insan triage'ı sağlandığında yayımlanır.
 
+15 Ekim R4 artifact kapısı, callback sayısı/varlığı özetini nested fixture
+kanıtıyla türü dahil eşleştiriyor. Sekiz yanlış JSON/Markdown çifti önce hatayı
+üretti; dar düzeltme kabul edildi. Genel corpus/admin ve karşılaştırma açık.
+[R4 kabul eşlemesi](audit/2026-10-15-r4-acceptance/README.md).
+
 ## R5 — Stajın devamı olan güçlü vaka
+
+15 Ekim: `check_repro.py --profile local --browser ...` taşınabilir kabul
+komutu eklendi; varsayılan CI Linux/Python 3.12 şartını koruyor. Her iki profil
+tam runtime beyanını kontrol eder; optimize Python reddedilir. Yeni yerel
+5/5 kontrol ve kapalı port kabulü, ikinci insan tekrarı değildir.
+[R5 teslim](audit/2026-10-15-r5-handoff/README.md).
 
 Linux clean workflow ve bağımsız artifact gate kodu eklendi; yerel Windows
 gate 5/5, uzak Linux run 38596197622 5/5 ve artifact kabulü geçti.
@@ -423,6 +434,12 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 - [x] Writeup 01/10/11'e güncel vaka bağlantısı eklendi; eski rapor değiştirilmedi. Yazıların bütün C düzeltmeleri tamamlandı sayılmaz.
 
 ## R6 — Kullanılabilir ilk sürüm
+
+15 Ekim: dinamik CLI ana mod çakışmaları ve DOM ile HTTP oturum seçenekleri
+işlem öncesinde reddedilir. Yedi rapor dalında JSON/HTML tek belge matrisi
+eklendi; etkilenen 304 test geçti. Mock CLI testleri yeni canlı tarama kanıtı
+değildir; genel config kapsamı ve release kapısı açık.
+[R6 devam kabulü](audit/2026-10-15-r4-r5-r6-continuation/README.md).
 
 0.0.0.dev0 geliştirici paketi ve browser extra yerel temiz venv'de kuruldu;
 paketlenmiş CLI demo çalıştı. CI paket smoke geçti (38596197488); ilk sürüm/release

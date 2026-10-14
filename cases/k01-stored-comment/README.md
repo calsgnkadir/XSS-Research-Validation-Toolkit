@@ -60,7 +60,7 @@ bir sanal ortam ve kanıt klasörü kullanılır:
 python -m venv .venv-k01
 .venv-k01\Scripts\python -m pip install -r cases/k01-stored-comment/requirements-proof.txt
 .venv-k01\Scripts\python -m playwright install chromium
-.venv-k01\Scripts\python cases/k01-stored-comment/prove.py --output .dxa/k01-new-run
+.venv-k01\Scripts\python cases/k01-stored-comment/check_repro.py --profile local --output .dxa/k01-new-run
 ```
 
 Linux/macOS'ta `.venv-k01/bin/python` kullanılır. Alternatif olarak kurulu Chrome
@@ -68,18 +68,44 @@ yolunu ver; `<chrome-yolu>` yerine Chrome çalıştırılabilir dosyanızın yol
 yazın. Depodaki kanıt bu seçenekle üretildi:
 
 ```powershell
-python cases/k01-stored-comment/prove.py --browser "<chrome-yolu>" --output .dxa/k01-chrome-run
+.venv-k01\Scripts\python cases/k01-stored-comment/check_repro.py --profile local --browser "<chrome-yolu>" --output .dxa/k01-chrome-run
 ```
 
 Normal Python çalıştırmasını kullan; `-O` ile assertion kontrollerini devre dışı
-bırakma. Output dizini önceden varsa komut durur; önceki kanıtı ezmez.
+bırakma; gate optimize edilmiş Python'u deney başlamadan reddeder. Output dizini
+önceden varsa komut durur; önceki kanıtı ezmez.
 Browser/Playwright yoksa deney başarısız olur, geçmiş sayılmaz. Ağ dış hedefe
 yöneltilemez; browser istekleri fixture origin'iyle sınırlandırılır.
 
 14 Ekim'de yeni Python venv'i ve sabit Playwright sürümü ile aynı Windows
 makinesinde kurulu Chrome kullanılarak 5/5 tekrarlandı. [Yeni koşu kanıtı](../../audit/2026-10-14-r5-k01-clean-repeat/README.md)
-ortamı, hash'leri ve fixture kapanışını kaydeder. Bağımsız ikinci kişi veya
-farklı işletim sistemi kabulü henüz yoktur; tam R5 maddesi açıktır.
+ortamı, hash'leri ve fixture kapanışını kaydeder. Sonraki
+[Linux CI kabulü](../../audit/2026-10-14-r5-linux-gate/README.md) farklı işletim
+sistemini kapsadı. Bağımsız ikinci insan kabulü henüz yoktur; tam R5 maddesi açıktır.
+
+### Bağımsız kişiye teslim ve gate profilleri
+
+`--profile local`, rapordaki tam Python sürümünü ve işletim sistemini komutu
+çalıştıran ortamla eşleştirir. Varsayılan `--profile ci` Linux/Python 3.12 ister;
+hosted workflow bu varsayılanı kullanır. Her iki profil de Playwright 1.63.0,
+aynı beş kontrol, kaynak/çıktı hashleri, sabit fix diff, tek POST ve beş kapalı
+fixture portu koşullarını uygular. `acceptance.json` profil ve gate kaynak
+hash'ini kaydeder. `local` sonucu CI veya bağımsız insan kabulü diye etiketlenmez.
+
+Başka bir kişi temiz checkout ve yeni venv ile yukarıdaki komutları çalıştırmalı;
+başlangıç commit'ini `git rev-parse HEAD` ile, çalışma ağacını `git status --short`
+ile kaydetmeli. Linux'ta Python yolunu `.venv-k01/bin/python` olarak değiştirin;
+browser sistem bağımlılıkları eksikse Playwright'ın kurulum hatasını giderip yeni
+kanıt diziniyle tekrar deneyin. Başarı için exit 0 ve yeni `acceptance.json`
+gereklidir. Hata, timeout veya yarım çıktı başarı/skip yerine başarısız tekrar
+olarak bildirilir; gate bunlar için acceptance üretmez.
+
+Teslim: commit ve ortam, uygulanan komut, exit kodu, `result.json`, `fix.diff`,
+on request/response dosyası ve `acceptance.json`. Yerel browser yolu ve kişisel
+terminal çıktısını paylaşım öncesi ayıklayın. Beş portun kapalı oluşu yalnız canlı
+koşuda denetlenir; arşivi başka makineye taşımak tarihsel socket durumunu tekrar
+kanıtlamaz. İkinci kişinin temiz ortamda uygulaması ve sonuç değerlendirmesi
+ayrıca kaydedilmeden R5 insan kabulü tamamlanmaz.
 
 ## Kanıt dosyaları ve tekrar test
 

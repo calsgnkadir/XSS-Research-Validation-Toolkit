@@ -68,6 +68,12 @@ python -m pytest -q
 
 Pytest kurulu değilse test ortamına ayrıca kurulmalıdır. `--dom` şu an bir
 URL ziyaretini gözlemler; stored/auth-flow ile birleşik doğrulama değildir.
+`dxadyn` ana modlarından `--dom`, `--stored` ve `--flow` birlikte seçilemez.
+Stored/flow hedefini kendi seçeneklerinden alır; yanına positional URL verilmez.
+`--dom` HTTP oturum seçeneklerini (`--login`, `--auth-flow`, `--auth-check`,
+`--cookie`, `--header`, `--csrf-refresh`, `--csrf-header`) kabul etmez.
+Bu desteklenmeyen birleşimler ağ/browser işlemi ve rapor yazımı başlamadan
+exit 2 verir. Oturumlu browser proof için `dxaprove` kullanılır.
 R6 araştırma paketi taslağı depo kökünden bir sanal ortamda kurulabilir:
 
     python -m pip install .
