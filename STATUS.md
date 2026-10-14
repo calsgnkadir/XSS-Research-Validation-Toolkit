@@ -14,13 +14,14 @@ retest kaydedildi. [Kanıt](audit/2026-10-14-r5-k01-clean-repeat/README.md).
 İkinci kişi/farklı ortam kabulü henüz yok; genel R5 açık. QA görevi tamam,
 aktif uzman yok.
 
-## Devam eden teslim — auth/CSRF ana runner entegrasyonu
+## Son doğrulanan R4 teslimi — auth/CSRF ana runner entegrasyonu
 
 Engine ana runner kod/testini tamamladı. Koordinatör 215 birleşik regresyonu
 ve gerçek Chrome runner CLI 6/6 kontrolünü doğruladı; altı cleanup geçti,
 aday XSS skorları ayrı kaldı. [Yerel kabul](audit/2026-10-14-r4-auth-runner/README.md).
-Zorunlu browser CI yeni testleri ve gerçek kontrol adımını çalıştıracak;
-uzak sonuç henüz bekliyor. R5/K01 aynı-host tekrar kanıtı yukarıda; ikinci ortam açık.
+bec59b4 uzak CI 38593458769 3/3 başarılı; indirilen artifact 169 JUnit
+ve proof 14/14 yanında auth controls 6/6 ve cleanup 6/6 kapıdan geçti.
+[Uzak kabul](audit/2026-10-14-r4-auth-runner/remote-acceptance.json). R5/K01 aynı-host tekrar kanıtı yukarıda; ikinci ortam açık.
 Blind/admin ve kontrollü araç kıyası sırada.
 
 ## Son çalışma — auth/CSRF ve blind/admin sınır kontrolleri
@@ -29,7 +30,7 @@ Engine auth fixture'ını yazdı; iki uzman da kullanım limitinde durdu.
 Koordinatör devraldı: altı gerçek browser hata kontrolü ve yedi blind/admin
 adapter regresyonu **13/13** geçti. Ayrı süre sınırlı CLI **6/6** geçti.
 [Kanıt ve sınırlar](audit/2026-10-14-r4-auth-blind-controls/README.md).
-Yeni modüller required browser CI test listesine eklendi; uzak kabul bekliyor.
+Yeni modüller required browser CI test listesine eklendi; uzak kabul yukarıda.
 Bu altı hata kontrolü XSS skorlarına girmez. Ana runner entegrasyonu yukarıda;
 ayrı admin hesabıyla blind fixture ve eşit koşullu araç karşılaştırması açık. DalFox/XSStrike/ZAP/Go mevcut PATH'te bulunamadı.
 

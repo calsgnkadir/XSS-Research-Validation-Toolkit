@@ -13,7 +13,10 @@ Bu bir pytest koşusu veya ikinci işletim sistemi kabulü değildir; genel R5 a
 Koordinatör birleşik etkilenen paket: 215 passed, sıfır failure/error/skip.
 Gerçek Chrome runner CLI: altı kontrol ve altı cleanup geçti; ayrı mock
 candidate skoru TP=1 FP=0 FN=0. [Komut, ortam, hash](audit/2026-10-14-r4-auth-runner/acceptance.json).
-Yeni uzak CI henüz doğrulanmadı. Bu sayılar önceki 193/527 koşularının yerine geçmez.
+bec59b4 uzak CI 38593458769 3/3 başarılı; artifact digest eşleşti,
+169 JUnit sıfır skip/error, proof 14/14 TP=7 FP=0 FN=0, auth controls
+6/6 cleanup 6/6 ve canonical JSON/Markdown doğrulandı.
+[Uzak kabul](audit/2026-10-14-r4-auth-runner/remote-acceptance.json). Bu sayılar önceki 193/527 koşularının yerine geçmez.
 
 Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
 

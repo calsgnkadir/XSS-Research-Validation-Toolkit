@@ -5,7 +5,8 @@ Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/ski
 ## 14 Ekim 2026 — güncel yetenek ve kalan işler
 
 **Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
-henüz yok. Son kabul edilen kod **4331403**, uzak kanıt teslimi **550e2bc**.
+henüz yok. Son kabul edilen R4 kodu **bec59b4**, R5/K01 aynı-host kanıt commit’i
+**70093ff**. Kod CI ve indirilen artifact kabulü R4 için geçti.
 [Durum](STATUS.md) · [Doğrulama](VALIDATION.md) ·
 [Corpus v3 kabulü](audit/2026-10-14-r4-corpus-v3/README.md).
 
@@ -17,19 +18,22 @@ henüz yok. Son kabul edilen kod **4331403**, uzak kanıt teslimi **550e2bc**.
 | Blind/admin seviyesi | Stored/stored-auto attempt kaydı ve CID callback uzlaştırması mevcut. | Callback JS execution değildir; ayrı admin hesabı/yetki sınırı kabulü açık. |
 | CVE araştırmasına yardım eder mi? | Aday toplama ve tekrar üretilebilir kanıt hazırlamaya yardımcı olabilir. | Yeni CVE keşfi doğrulanmadı. Ürün/sürüm, etkilenen rol, güvenlik etkisi, by-design/self-XSS ayrımı, yenilik ve fix/retest incelemesi gerekiyor. |
 | Araçlarla karşılaştırma | Kapsam, bütçe ve kanıt eşitliğini tanımlayan protokol var. | Kontrollü rakip koşusu ve karşılaştırılabilir başarı ölçümü yok; üstünlük iddiası yok. |
-| Test kanıtı | Son yerel birleşik paket 527 passed; kod CI 3/3, indirilen artifact gate 134 test ve 14/14 corpus. | Farklı paketlerin sayıları toplanmaz; bu belge güncellemesi yeni test koşusu değildir. |
+| Test kanıtı | R4 auth runner etkili paket 215 passed; CI 3/3, artifact gate 169 test ve 14/14 corpus; auth kontrolleri 6/6. R5 K01 yeni venv 5/5. | Farklı paketlerin sayıları toplanmaz; bu belge güncellemesi yeni test koşusu değildir. |
 
 **Son dar ilerleme:** auth/CSRF altı hata kontrolü gerçek browser ile, yedi
 blind/admin adapter sınır testiyle birlikte 13/13 geçti; ayrı bounded CLI 6/6.
 Ana benchmark runner entegrasyonu da yerel 215 birleşik test ve gerçek CLI 6/6
-ile kabul edildi; [runner kanıtı](audit/2026-10-14-r4-auth-runner/README.md).
-[Kanıt](audit/2026-10-14-r4-auth-blind-controls/README.md). İki uzman limitte
-durdu, koordinatör devraldı; aktif uzman yok. Yeni uzak CI kabulü bekliyor.
+ile kabul edildi; bec59b4 uzak CI 38593458769 3/3 geçti ve indirilen
+artifact 169 JUnit, proof 14/14, auth controls 6/6 kabul edildi.
+[Runner kanıtı](audit/2026-10-14-r4-auth-runner/README.md).
+[Önceki dar kanıt](audit/2026-10-14-r4-auth-blind-controls/README.md).
+Engine entegrasyonu tamamladı; R5 QA aynı-host tekrarı yaptı. Aktif uzman yok.
 Gerçek admin/blind fixture ve kontrollü kıyas açık.
 
 **Kalan sıra:**
-1. R4 auth/CSRF hatalarında eksik koşunun doğru sınıflandırılması; blind/admin
-   kimlik ve kanıt sınırları; eşit koşullu araç karşılaştırması.
+1. R4 genel corpus genişletmesi, blind/admin kimlik ve kanıt sınırları,
+   eşit koşullu araç karşılaştırması. Auth/CSRF operasyonel hata kontrolleri
+   dar kapsamda runner/CI kabulünü geçti.
 2. R4 geniş corpus/coverage kabulü ve R3 otomatik header gözlemi.
 3. R5/K01 bağımsız temiz ortam tekrarı; R6 kurulum/paketleme/release.
 4. R8 analiz kapsamı, R9 operasyon sınırları; aşağıdaki C/K/P/S maddeleri.

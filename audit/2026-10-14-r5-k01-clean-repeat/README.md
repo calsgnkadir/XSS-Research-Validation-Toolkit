@@ -25,3 +25,8 @@ Yeni .dxa/r5-k01-venv-20261014-a Python 3.10.11 venv'i oluşturuldu. cases/k01-s
 [Proof klasöründe](proof/result.json) tam sentetik request/response, vaka JSON'u ve [fix diff](proof/fix.diff) bulunur. Dosyalar paylaşım öncesi yerel kullanıcı yolu ve credential dizgileri açısından denetlendi; yalnız rastgele test CID'si ve geçici loopback portları taşır. Browser gözlemi vaka özeldir. Botun HTTP bulguları execution-confirmed yapılmadı.
 
 Bu, **aynı Windows makinesinde yeni Python ortamıyla** yapılan tekrardır. Bağımsız ikinci kişi veya farklı işletim sistemi kabulü yapılmadı. Ayrı doğrulanmış kullanıcı rolleri ve gerçek ürün/CVE iddiası yoktur. Negatif browser penceresi yalnız bu senkron fixture'ın 500 ms gözlem süresidir. R5 genel “başka biri temiz ortamda” maddesi bu tek kayıtla kapatılmamalıdır.
+
+Paylaşılan proof/fix.diff, renderer kaynaklarının birebir diff çıktısıdır;
+boş bağlam satırlarında kaynak diff formatının son boşluğu vardır. Varsayılan
+git diff --check yalnız bu iki satırı işaretler; hashli fixture kanıtı
+değiştirilmedi.

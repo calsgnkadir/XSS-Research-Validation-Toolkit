@@ -42,6 +42,13 @@
     "bench/test_auth_failure_runner.py": "274db51107fa50d959095acd970cde94cfcaf20a89fdd21d1221d9e881b9d5b4",
     ".github/workflows/ci.yml": "1e64d23aefc5ac304fa94794be8ffdfad663fb7bf83a5c0e72c2de0fb1210d5d"
   },
-  "remote_ci": "pending_push",
+  "remote_ci": {
+    "commit": "bec59b48267ce61adbd485f617bb82bc2d22f4d6",
+    "run_id": 38593458769,
+    "conclusion": "success",
+    "jobs_passed": 3,
+    "artifact_gate": "passed",
+    "evidence": "remote-acceptance.json"
+  },
   "docker": "No Docker code change; live Docker not rerun."
 }
