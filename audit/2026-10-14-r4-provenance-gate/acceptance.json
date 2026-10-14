@@ -27,7 +27,7 @@
   "prior_remote_ci_run": 38475480351,
   "prior_remote_ci": "success; artifact passed the then-current gate",
   "qa_follow_up": "found and fixed syntactically valid but incorrect Python/platform provenance values",
-  "remote_ci_for_runtime_hardening": "pending_push",
+  "remote_ci_for_runtime_hardening": "success; run 38530419858; downloaded artifact passed current gate",
   "runtime_revalidation": {
     "base_commit": "7f67d53b8960788519e76d61dd0e4b4bf9b947ec",
     "validated_at": "2026-10-14T07:41:10.598593+00:00",
@@ -45,5 +45,6 @@
       "current_gate_tests_passed": 4,
       "scope": "Only test_well_formed_but_non_ci_runtime_fails, with synchronized JSON and Markdown; old gate tested in ignored temporary copy."
     }
-  }
+  },
+  "runtime_remote_evidence": "runtime-remote-acceptance.json"
 }

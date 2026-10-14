@@ -44,8 +44,8 @@ An independent QA review then found the gate accepted any syntactically valid
 Python/platform strings, even though the recorded artifact itself was correct.
 The gate now requires Python 3.12 and Linux, with negative tests for plausible
 but wrong runtime values. Locally this follow-up passed 94 focused and 208
-combined tests. The runtime-hardening changes still need a fresh hosted CI run
-and artifact inspection; the earlier remote result covers commit 7f67d53 only.
+combined tests. The earlier remote result covers commit 7f67d53 only; the runtime-hardening
+follow-up now has a separate fresh hosted CI and artifact acceptance below.
 Broader R4 corpus and coverage, the full comparison methodology, R3 header
 harvesting, and general R9 remain separate roadmap work. Hosted CI did not run
 the opt-in local Bludit Docker acceptance.
@@ -69,3 +69,17 @@ it is not cryptographic runtime attestation. Bludit/Docker was not rerun in
 this follow-up. General corpus/coverage and comparison methodology remain
 open; the next corpus increment needs distinct source/sink/role identities
 and explicit incomplete-run coverage, with Bludit still in product controls.
+
+## Runtime follow-up remote acceptance
+
+Code commit `3ca474a29a33efed19214a569c4ed51af9c80823` was pushed and
+remote main matched. [Run 38530419858](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38530419858)
+completed with all three jobs successful. Artifact `r3-browser-proof`
+(id `11877996817`) was downloaded; its ZIP SHA-256 matched GitHub metadata.
+The current runtime gate passed its 94-test JUnit with zero skips/errors,
+all nine corpus cases (TP=3, FP=0, FN=0), canonical JSON/Markdown equality,
+source/corpus hashes and observed demo execution. The report records
+Python 3.12.15/Linux. Full member hashes and gate result are in
+[runtime-remote-acceptance.json](runtime-remote-acceptance.json).
+This completes the runtime follow-up acceptance, not general R4. The local
+Bludit Docker control was not rerun by this hosted job.

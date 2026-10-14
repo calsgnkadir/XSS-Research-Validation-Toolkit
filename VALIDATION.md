@@ -16,7 +16,10 @@
 - QA, Python/platform değerleri için makul ama CI dışı karşı örnekleri ekledi;
   gate artık Python 3.12/Linux'u zorunlu kılar. `7f67d53` için uzak run
   38475480351 üç job'da success ve indirilen artifact eski gate'ten geçti.
-  Runtime sıkılaştırması henüz push edilmedi; bunun yeni uzak kabulü bekleniyor.
+  Runtime sıkılaştırması `3ca474a` push edildi. Yeni run 38530419858 CI 3/3
+  başarılı; indirilen artifact güncel gate ile geçti (JUnit 94 sıfır skip/error,
+  corpus 9/9 TP=3 FP=0 FN=0, Python 3.12.15/Linux, kaynak hashleri eşleşti).
+  [Yeni uzak kanıt](audit/2026-10-14-r4-provenance-gate/runtime-remote-acceptance.json).
 - [Komutlar ve kaynak hashleri](audit/2026-10-14-r4-provenance-gate/acceptance.json),
   [yerel/uzak kanıt ve sınırlar](audit/2026-10-14-r4-provenance-gate/README.md).
 

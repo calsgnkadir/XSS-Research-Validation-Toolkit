@@ -16,9 +16,14 @@ dar bir boşluk buldu; gate bunu Python 3.12/Linux koşuluyla kapatıyor. Günce
 follow-up **94 focused / 208 birleşik test** geçti. [Kanıt ve sınırlar](audit/2026-10-14-r4-provenance-gate/README.md).
 JSON/Markdown birlikte değiştirilmiş dört regresyon eski gate açığını
 yeniden üretti; son birleşik JUnit 208/208 geçti. QA ve Engine incelemesi
-tamamlandı. Runtime follow-up henüz commit edilmedi; sırada commit/push ve güncel workflow
-artifact'ini aynı gate ile yeniden doğrulamak var. Geniş corpus/coverage ve rakip
-kıyaslaması açık kalır.
+tamamlandı. Runtime follow-up `3ca474a` push edildi ve uzak main eşleşti.
+[38530419858](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38530419858)
+CI 3/3 başarılı; indirilen artifact güncel gate ile geçti: JUnit 94, sıfır
+skip/error; corpus 9/9, TP=3 FP=0 FN=0; Python 3.12.15/Linux ve kaynak
+hashleri eşleşti. [Uzak kabul](audit/2026-10-14-r4-provenance-gate/runtime-remote-acceptance.json).
+Sıradaki R4 işi: mevcut tek reader/source/sink kimliğini genişleten corpus
+vakaları ve incomplete-run kapsam paydası; karşılaştırma yöntemi de açık.
+QA `r4_qa_audit`, Engine `r4_strict_corpus` tamamlandı; aktif uzman yok.
 
 ## Önceki teslim — R4 runner ve canlı Bludit kabulü
 
@@ -93,9 +98,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
 - R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
-  tamamlandı. İlk artifact gate 7f67d53 CI/artifact kabulünü geçti. Runtime
-  follow-up yerelde 208 testle doğrulandı; yeni commit, hosted CI ve artifact
-  incelemesi bekliyor. Genel corpus/coverage ve karşılaştırma metodolojisi açık.
+  tamamlandı. Runtime follow-up 3ca474a için yerel 208 test, hosted CI 3/3
+  ve indirilen artifact kabulü geçti. Genel corpus/coverage ve karşılaştırma
+  metodolojisi açık.
 - Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
   Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
