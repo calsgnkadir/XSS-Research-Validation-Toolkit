@@ -76,7 +76,13 @@
     "qa": "Independent identity/frame/coverage tests written; stopped before final review at usage limit",
     "coordinator": "Reviewed all changes; finished sanitizer DOM path, repaired incomplete test count/identity oracle, verified 527 tests and strict CLI; integrated gate/workflow and comparison protocol"
   },
-  "remote_ci": "pending_push",
+  "remote_ci": {
+    "code_commit": "43314032bbe26f4809dac6f565a6e751fba2ad70",
+    "run_id": 38550538424,
+    "conclusion": "success",
+    "artifact_gate": "passed",
+    "evidence": "remote-acceptance.json"
+  },
   "diff_check": {
     "command": "git -c core.whitespace=-blank-at-eof diff --cached --check",
     "result": "passed",

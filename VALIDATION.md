@@ -10,7 +10,11 @@
 - Kaynak/çıktı hashleri, tam komut ve ortam
   [acceptance.json](audit/2026-10-14-r4-corpus-v3/acceptance.json) içinde.
 - Docker kodu değişmedi; mevcut ürün kontrol regresyonları bu koşuya dahil.
-  Canlı Docker/Bludit tekrar edilmedi. Yeni uzak CI/artifact kabulü bekliyor.
+  Canlı Docker/Bludit tekrar edilmedi. Kod 4331403 için uzak CI 38550538424
+  3/3 başarılı; indirilen artifact gate 134 test, sıfır skip/error ve corpus
+  14/14 TP=7 FP=0 FN=0 ile geçti. Commit kaynaklarının birebir LF byte
+  kopyasıyla doğrulandı; yerel CRLF hashleri korunuyor.
+  [Uzak kanıt](audit/2026-10-14-r4-corpus-v3/remote-acceptance.json).
 
 
 ## 14 Ekim R4 strict corpus artifact provenance gate

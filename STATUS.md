@@ -3,7 +3,7 @@
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Aktif teslim — R4 corpus v3 yerel kabulü
+## Aktif teslim — R4 corpus v3 yerel ve uzak kabulü
 
 Başlangıç 61dde5c. Corpus 9→14 genişledi: escaped/raw birlikte, no-op
 sanitizer→DOM, editor notes raw/fixed ve aynı-origin iframe. Adapter artık
@@ -15,7 +15,11 @@ açık; [karşılaştırma protokolü](bench/COMPARISON-PROTOCOL.md) yazıldı.
 Engine ve QA kod/test katkısından sonra kullanım limitinde durdu; koordinatör
 eksikleri tamamlayıp doğruladı. Aktif uzman/arka plan işi yok.
 Docker kodu değişmedi ve ürün regresyonları geçti; canlı Docker tekrar edilmedi.
-Sırada bu teslimin commit/push, hosted CI ve indirilen artifact kabulü var.
+Kod teslimi 4331403 push edildi; uzak main eşleşti. CI 38550538424 üç job
+başarılı; indirilen artifact commit kaynaklarıyla gate'ten geçti:
+JUnit 134, sıfır skip/error; corpus 14/14, TP=7 FP=0 FN=0.
+[Uzak kanıt](audit/2026-10-14-r4-corpus-v3/remote-acceptance.json).
+Sıradaki uygulanabilir R4 işi auth/CSRF hata corpus kapsamıdır.
 Genel R4, auth/CSRF ve blind/admin kapsamı ile kontrollü rakip kıyası açık.
 
 ## Son doğrulanan teslim — R4 strict corpus artifact gate ve QA follow-up
@@ -36,8 +40,8 @@ tamamlandı. Runtime follow-up `3ca474a` push edildi ve uzak main eşleşti.
 CI 3/3 başarılı; indirilen artifact güncel gate ile geçti: JUnit 94, sıfır
 skip/error; corpus 9/9, TP=3 FP=0 FN=0; Python 3.12.15/Linux ve kaynak
 hashleri eşleşti. [Uzak kabul](audit/2026-10-14-r4-provenance-gate/runtime-remote-acceptance.json).
-Sıradaki R4 işi: mevcut tek reader/source/sink kimliğini genişleten corpus
-vakaları ve incomplete-run kapsam paydası; karşılaştırma yöntemi de açık.
+Bu teslimden sonraki kimlik/corpus ve kapsam paydası işi yukarıdaki v3 tesliminde
+ilerletildi; kontrollü araç karşılaştırması henüz yapılmadı.
 Bu runtime teslimindeki QA/Engine görevleri tamamlandı; yeni corpus görevleri yukarıda.
 
 ## Önceki teslim — R4 runner ve canlı Bludit kabulü

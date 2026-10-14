@@ -215,7 +215,8 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 14 Ekim corpus v3: 14 vaka; önceki dokuza sanitized+raw, no-op sanitizer→DOM,
 alternatif editor/source/sink için raw/fixed ve açık same-origin iframe eklendi.
 Kimlik/frame adapter ve CI gate buna bağlandı. Yerel 527 birleşik test ve
-strict CLI 14/14 (TP=7 FP=0 FN=0) geçti; yeni uzak kabul bekliyor.
+strict CLI 14/14 (TP=7 FP=0 FN=0) geçti. 4331403 uzak CI 38550538424
+3/3 başarılı; indirilen artifact gate 134 test ve corpus 14/14 ile geçti.
 [Kanıt ve sınırlar](audit/2026-10-14-r4-corpus-v3/README.md).
 [Kapsam paydası ve karşılaştırma protokolü](bench/COMPARISON-PROTOCOL.md)
 hazır; gerçek rakip kıyası yapılmadı. Bu, statik taint, farklı hesaplar arası

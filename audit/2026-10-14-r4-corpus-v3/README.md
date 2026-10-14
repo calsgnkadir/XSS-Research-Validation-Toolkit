@@ -1,4 +1,4 @@
-# R4 loopback corpus v3 — local acceptance
+# R4 loopback corpus v3 — local and remote acceptance
 
 Base commit: 61dde5c31c8c5624aead0cd399708d563b6f8e71.
 Active checkout: C:/xss/xss-github.
@@ -64,4 +64,17 @@ prove static taint analysis. Only the named same-origin iframe is covered.
 Blind/admin correlation, auth/CSRF failure corpus, broader identity/taint
 coverage and an actual controlled competitor comparison remain open.
 
-New hosted CI and downloaded artifact verification are pending push.
+Code commit 43314032bbe26f4809dac6f565a6e751fba2ad70 was pushed and remote
+main matched. [CI run 38550538424](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38550538424)
+passed all three jobs. The downloaded archive digest matched GitHub metadata.
+The exact-commit gate passed: JUnit 134 tests, zero skips/errors; corpus
+14/14, TP=7 FP=0 FN=0; exact JSON/Markdown and source/corpus provenance;
+demo execution observed. The report records Python 3.12.15/Linux.
+[Remote acceptance and member hashes](remote-acceptance.json).
+
+The Windows working runner/fixture bytes use CRLF while committed and hosted
+sources use LF. The first local artifact check correctly rejected those
+different byte hashes. Verification then used a minimal temporary source tree
+containing exact Git blob bytes from the tested commit; no gate check was
+relaxed. Local acceptance hashes retain the locally tested Windows bytes.
+Hosted CI did not run Bludit Docker acceptance.
