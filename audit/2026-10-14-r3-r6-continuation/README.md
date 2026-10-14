@@ -65,6 +65,13 @@ explicit CLI low override returned one static candidate (exit 1), with the
 same finding ID in JSON and HTML. Browser extra/demo was not repeated for
 this wheel. The prior packaged browser demo remains historical evidence.
 
+The code commit `a0cf34847fea69ebd19a71e97dbc550c3954986c` was pushed;
+remote `main` matched and the worktree was clean. [Remote CI](remote-ci.json)
+run 38637484190 passed all three jobs. The installed CLI, analyzer suite,
+required R3/R4 artifact gate and optional real-browser harness steps were
+successful. K01 Linux run 38637484214 also passed. Its artifact was not
+downloaded again for this delivery; the K01 source was unchanged and its
+independently inspected artifact belongs to the earlier recheck.
+
 This delivery does not change R4's corpus scores, claim a real product
-vulnerability/CVE, close the R5 second-human repeat, or release R6. Hosted CI
-for this new code is pending until commit and push.
+vulnerability/CVE, close the R5 second-human repeat, or release R6.

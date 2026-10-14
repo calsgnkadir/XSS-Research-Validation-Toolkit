@@ -8,6 +8,7 @@ kuruldu; R5 ayrı agent koşusu 5/5 geçti. İkinci insan tekrarı açık.
 çıktıya bağlandı; R6 statik CLI config önceliği ve statik/dinamik JSON/HTML
 tek kanıt belgesi dar kapsamda geliştirildi. Yerel Chrome 75/75, etkilenen
 birleşik paket 293/293 geçti. Genel R4/R6 ve R5 ikinci insan kabulü açık.
+Kod a0cf348 için genel CI 38637484190 3/3 ve K01 Linux 38637484214 geçti.
 [Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
 
 ## 14 Ekim 2026 — güncel yetenek ve kalan işler

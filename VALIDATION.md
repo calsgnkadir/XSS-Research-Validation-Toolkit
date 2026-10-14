@@ -10,7 +10,10 @@ Güncel wheel yeni venv'e kaynak dizini dışından kuruldu; üç CLI help exit 
 BOM'lu config high exit 0, CLI low override bir adayla exit 1 ve JSON/HTML
 aynı bulgu kimliği. Tam komutlar, yerel kaynak SHA-256 ve wheel digest'i
 [acceptance.json](audit/2026-10-14-r3-r6-continuation/acceptance.json) içinde.
-`git diff --check` geçti. Uzak CI henüz bu yeni kod için çalışmadı.
+`git diff --check` geçti. Kod a0cf348 push edildi; genel CI 38637484190
+3/3 başarılı. Kurulu CLI/analyzer/required artifact gate/opsiyonel browser
+adımları success. K01 Linux 38637484214 başarılı; artifact bu turda
+indirilmedi. [Uzak step kaydı](audit/2026-10-14-r3-r6-continuation/remote-ci.json).
 
 ## 14 Ekim üç işin bağımsız yeniden denetimi
 

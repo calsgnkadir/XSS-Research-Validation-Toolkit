@@ -6,11 +6,12 @@ normalize belgeye bağladı; koordinatör statik `dxa` config önceliğini, BOM
 kabulünü ve aynı belgeyi ekledi. Gerçek Chrome R3 **75 passed, 0 skipped**;
 etkilenen birleşik paket **293 passed, 0 failure/error/skip**. Güncel wheel
 temiz venv'de kaynak dışından çalıştı. [Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
-Bu kod henüz commit/push edilmedi; uzak CI bekliyor. İki uzman kod ve testini
-tamamladı; koordinatör entegrasyon ve uzak kabulü sürdürüyor. R3 header adları
+Kod commit'i a0cf348 push edildi; uzak main eşleşti, genel CI 38637484190
+3/3 ve K01 Linux 38637484214 başarılı. K01 artifact'i bu turda yeniden
+indirilmedi. [Uzak CI](audit/2026-10-14-r3-r6-continuation/remote-ci.json).
+İki uzman kod ve testini tamamladı; aktif uzman yok. R3 header adları
 gözlemi rol/token kanıtı değil. Genel R4/R6, R5 bağımsız insan tekrarı,
-R8/R9 ve C/K/P/S/A maddeleri açık. Son doğrulanmış uzak kod 74cda81,
-belge HEAD d91238b.
+R8/R9 ve C/K/P/S/A maddeleri açık. Son doğrulanmış kod a0cf348.
 
 Son yeniden denetim: R8 modül düzeyi encoder rebinding karşı örneği düzeltildi;
 92 ilgili test geçti. R6 wheel temiz venv'de kaynak dizini dışında kuruldu.
