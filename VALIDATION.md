@@ -1,5 +1,13 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
+
+## 14 Ekim auth/CSRF hata kontrolleri
+
+13 focused test geçti; ayrı sahipli/süre sınırlı CLI altı beklenen hata kontrolünü
+6/6 kabul etti. Bunlar XSS TP/TN değildir. [Komut, ortam ve hashler](audit/2026-10-14-r4-auth-blind-controls/acceptance.json).
+Yeni uzak CI kabulü bekliyor; önceki 527 sayısı bu yeni dosyaların testi değildir.
+
 ## 14 Ekim R4 corpus v3
 
 - Base 61dde5c; Windows/Python 3.10.11, pytest 9.1.1, zorunlu Chrome.

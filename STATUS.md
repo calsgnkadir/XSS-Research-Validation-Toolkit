@@ -1,19 +1,20 @@
 # Güncel devam noktası — 14 Ekim 2026
 
+Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
+
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
-## Yeni görevler — 14 Ekim
+## Son çalışma — auth/CSRF ve blind/admin sınır kontrolleri
 
-- Engine native agent r4_auth_csrf: auth/CSRF hata corpus'u; yeni
-  bench/auth_failure_corpus.py ve bench/test_auth_failure_corpus.py sahipliği.
-- QA native agent r4_blind_comparison: blind/admin sözleşme regresyonu ve
-  yerel araç karşılaştırmasına hazırlık; yeni bench/test_blind_admin_contract.py
-  ve audit/2026-10-14-r4-blind-comparison/README.md sahipliği.
-- Koordinatör: ortak şema/runner entegrasyonu, ROADMAP ve Git teslimi.
-- Görevler kabul edilmedi; uzman sonuçları incelendikten sonra ilerleme yazılır.
-  QA normal komut altyapısında setup refresh hatası bildirdi; salt okumalar
-  koordinatör aracılığıyla sağlanacak. Arka planda kesintisiz çalışma varsayılmaz.
+Engine auth fixture'ını yazdı; iki uzman da kullanım limitinde durdu.
+Koordinatör devraldı: altı gerçek browser hata kontrolü ve yedi blind/admin
+adapter regresyonu **13/13** geçti. Ayrı süre sınırlı CLI **6/6** geçti.
+[Kanıt ve sınırlar](audit/2026-10-14-r4-auth-blind-controls/README.md).
+Yeni modüller required browser CI test listesine eklendi; uzak kabul bekliyor.
+Aktif uzman yok. Bu altı hata kontrolü XSS skorlarına girmez; ana runner
+raporuna entegrasyon, ayrı admin hesabıyla blind fixture ve eşit koşullu araç
+karşılaştırması açık. DalFox/XSStrike/ZAP/Go mevcut PATH'te bulunamadı.
 
 ## Aktif teslim — R4 corpus v3 yerel ve uzak kabulü
 

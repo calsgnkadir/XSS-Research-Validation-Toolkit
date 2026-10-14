@@ -1,0 +1,312 @@
+{
+  "schema": "auth-failure-controls/1",
+  "measurement": "expected-operational-failure-not-xss-accuracy",
+  "selected": 6,
+  "passed": 6,
+  "rows": [
+    {
+      "case_id": "auth-failure-v1:login-rejected",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "http-auth",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 0,
+        "submit_requests": 0,
+        "posts": 0,
+        "reads": 0,
+        "csrf_fetches": 0
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": false,
+        "browser_session_checked": false,
+        "events": [
+          {
+            "stage": "http-auth",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:36:57.238419+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:51362/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:51362/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79"
+      }
+    },
+    {
+      "case_id": "auth-failure-v1:http-identity-mismatch",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "http-auth",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 1,
+        "submit_requests": 0,
+        "posts": 0,
+        "reads": 0,
+        "csrf_fetches": 0
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": false,
+        "browser_session_checked": false,
+        "events": [
+          {
+            "stage": "http-auth",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:37:00.785248+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:49295/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:49295/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79"
+      }
+    },
+    {
+      "case_id": "auth-failure-v1:browser-role-mismatch",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "browser-auth",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 2,
+        "submit_requests": 0,
+        "posts": 0,
+        "reads": 0,
+        "csrf_fetches": 0
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": true,
+        "browser_session_checked": false,
+        "events": [
+          {
+            "stage": "browser-auth",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:37:02.554358+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:49300/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:49300/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79",
+        "browser_header_names": []
+      }
+    },
+    {
+      "case_id": "auth-failure-v1:csrf-missing",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "submit",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 2,
+        "submit_requests": 0,
+        "posts": 0,
+        "reads": 0,
+        "csrf_fetches": 1
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": true,
+        "browser_session_checked": true,
+        "events": [
+          {
+            "stage": "submit",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:37:04.492751+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:60400/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:60400/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79",
+        "browser_header_names": [],
+        "canary_id": "dxafeb35292b2d0857e414126ecea9d77cb",
+        "variant": "image",
+        "payload_sha256": "c7bb1586cc0e0432cbfd2d115f6a0cb625898c47a8721c27e802a4226e9c4e02",
+        "submit_status": null
+      }
+    },
+    {
+      "case_id": "auth-failure-v1:csrf-rejected",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "submit",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 2,
+        "submit_requests": 1,
+        "posts": 0,
+        "reads": 0,
+        "csrf_fetches": 1
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": true,
+        "browser_session_checked": true,
+        "events": [
+          {
+            "stage": "submit",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:37:06.590750+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:58523/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:58523/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79",
+        "browser_header_names": [],
+        "canary_id": "dxa07d612e448a37408c228f199b761e45c",
+        "variant": "image",
+        "payload_sha256": "10aeef1a65c9d5304dca25588ef52c83bfd852ea417e9ba7c61562395491ac40",
+        "submit_status": 403
+      }
+    },
+    {
+      "case_id": "auth-failure-v1:session-expired-after-submit",
+      "measurement": "expected-operational-failure-not-xss-accuracy",
+      "expected_status": "error",
+      "expected_stage": "browser-auth-after-submit",
+      "control_passed": true,
+      "scanner_status": "error",
+      "accuracy_evaluated": false,
+      "fixture": {
+        "login_requests": 1,
+        "checks": 3,
+        "submit_requests": 1,
+        "posts": 1,
+        "reads": 0,
+        "csrf_fetches": 0
+      },
+      "proof": {
+        "schema": "dxa-browser-proof/1",
+        "status": "error",
+        "triage": "unreviewed",
+        "execution_observed": false,
+        "http_session_checked": true,
+        "browser_session_checked": false,
+        "events": [
+          {
+            "stage": "browser-auth-after-submit",
+            "kind": "error",
+            "reason": "ValueError"
+          }
+        ],
+        "proofs": [],
+        "scope": "loopback, single origin, one shared account, no vulnerability confirmation",
+        "source_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+        "python": "3.10.11",
+        "platform": "Windows",
+        "created_at": "2026-10-14T15:37:08.349165+00:00",
+        "observe_ms": 100,
+        "read_url": "http://127.0.0.1:65222/view",
+        "session_role": "reader",
+        "source": {
+          "url": "http://127.0.0.1:65222/comments",
+          "parameter": "comment",
+          "method": "POST"
+        },
+        "playwright": "1.63.0",
+        "browser_version": "155.0.8059.79",
+        "browser_header_names": [],
+        "canary_id": "dxae4701486f6102f22777b9c3a9ed27fd5",
+        "variant": "image",
+        "payload_sha256": "cc7eaefe7e5465ec23f28e900e2642b80a7104601eaf6216eea6effc7944eb11",
+        "submit_status": 201
+      }
+    }
+  ]
+}

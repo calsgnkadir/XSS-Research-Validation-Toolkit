@@ -1,5 +1,7 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
+
 ## 14 Ekim 2026 — güncel yetenek ve kalan işler
 
 **Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
@@ -17,9 +19,11 @@ henüz yok. Son kabul edilen kod **4331403**, uzak kanıt teslimi **550e2bc**.
 | Araçlarla karşılaştırma | Kapsam, bütçe ve kanıt eşitliğini tanımlayan protokol var. | Kontrollü rakip koşusu ve karşılaştırılabilir başarı ölçümü yok; üstünlük iddiası yok. |
 | Test kanıtı | Son yerel birleşik paket 527 passed; kod CI 3/3, indirilen artifact gate 134 test ve 14/14 corpus. | Farklı paketlerin sayıları toplanmaz; bu belge güncellemesi yeni test koşusu değildir. |
 
-**Aktif görevlendirme:** R4 auth/CSRF hata corpus'u Engine uzmanına;
-blind/admin kapsamı ve kontrollü araç karşılaştırması QA uzmanına verildi.
-Bu atamalar tamamlanmış kabul sayılmaz; çalışma/engel durumu STATUS'ta izlenir.
+**Son dar ilerleme:** auth/CSRF altı hata kontrolü gerçek browser ile, yedi
+blind/admin adapter sınır testiyle birlikte 13/13 geçti; ayrı bounded CLI 6/6.
+[Kanıt](audit/2026-10-14-r4-auth-blind-controls/README.md). İki uzman limitte
+durdu, koordinatör devraldı; aktif uzman yok. Yeni uzak CI kabulü bekliyor.
+Ana runner entegrasyonu, gerçek admin/blind fixture ve kontrollü kıyas açık.
 
 **Kalan sıra:**
 1. R4 auth/CSRF hatalarında eksik koşunun doğru sınıflandırılması; blind/admin

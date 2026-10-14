@@ -1,0 +1,42 @@
+{
+  "base_commit": "1775c06d6d623e7c973afb9107bbb9e69e830588",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "focused": {
+    "command": "py -3.10 -m pytest bench/test_auth_failure_corpus.py bench/test_blind_admin_contract.py -q -p no:cacheprovider --tb=short",
+    "passed": 13,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "browser": "Installed Chrome with DXA_BROWSER"
+  },
+  "cli": {
+    "command": "py -3.10 bench/auth_failure_corpus.py --browser <installed Chrome> --out <new JSON file>",
+    "passed": 6,
+    "selected": 6,
+    "exit_code": 0,
+    "accuracy_evaluated": false
+  },
+  "source_sha256": {
+    "bench/auth_failure_corpus.py": "d8f53a09e88a191d9d65be78cca0c75b1ed72868a2829710f45e9c82fce276d5",
+    "bench/test_auth_failure_corpus.py": "f11be54e1c28e8f9ca6cc01b4a483185854d5b069a60e392d0a0ed2ec6a89dfd",
+    "bench/test_blind_admin_contract.py": "9ad24f021d50046a9fa8c135c7fe91ecf47251cf161480e9a98b1703d35e99a0",
+    ".github/workflows/ci.yml": "27a776a21ae077533ff129488745f08dababe9985a2dc01577e16cbe7f5b07f7"
+  },
+  "remote_ci": "pending_push",
+  "specialists": {
+    "engine": "Auth fixture implementation; stopped at usage limit before tests",
+    "qa": "Analysis and scope proposal; stopped at usage limit before implementation",
+    "coordinator": "Reviewed fixture; implemented tests and isolated CLI; ran acceptance"
+  },
+  "docker": "Not rerun; no Docker code changed",
+  "combined": {
+    "command": "py -3.10 -m pytest bench/test_auth_failure_corpus.py bench/test_blind_admin_contract.py bench/test_proof_adapter.py bench/test_proof_identity_matrix.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
+    "passed": 193,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  }
+}
