@@ -5,6 +5,15 @@ Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/ski
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
+## Devam eden teslim — auth/CSRF ana runner entegrasyonu
+
+Engine ana runner kod/testini tamamladı. Koordinatör 215 birleşik regresyonu
+ve gerçek Chrome runner CLI 6/6 kontrolünü doğruladı; altı cleanup geçti,
+aday XSS skorları ayrı kaldı. [Yerel kabul](audit/2026-10-14-r4-auth-runner/README.md).
+Zorunlu browser CI yeni testleri ve gerçek kontrol adımını çalıştıracak;
+uzak sonuç henüz bekliyor. R5/K01 temiz ortam tekrarı QA uzmanında sürüyor.
+Blind/admin ve kontrollü araç kıyası sırada.
+
 ## Son çalışma — auth/CSRF ve blind/admin sınır kontrolleri
 
 Engine auth fixture'ını yazdı; iki uzman da kullanım limitinde durdu.
@@ -12,9 +21,8 @@ Koordinatör devraldı: altı gerçek browser hata kontrolü ve yedi blind/admin
 adapter regresyonu **13/13** geçti. Ayrı süre sınırlı CLI **6/6** geçti.
 [Kanıt ve sınırlar](audit/2026-10-14-r4-auth-blind-controls/README.md).
 Yeni modüller required browser CI test listesine eklendi; uzak kabul bekliyor.
-Aktif uzman yok. Bu altı hata kontrolü XSS skorlarına girmez; ana runner
-raporuna entegrasyon, ayrı admin hesabıyla blind fixture ve eşit koşullu araç
-karşılaştırması açık. DalFox/XSStrike/ZAP/Go mevcut PATH'te bulunamadı.
+Bu altı hata kontrolü XSS skorlarına girmez. Ana runner entegrasyonu yukarıda;
+ayrı admin hesabıyla blind fixture ve eşit koşullu araç karşılaştırması açık. DalFox/XSStrike/ZAP/Go mevcut PATH'te bulunamadı.
 
 ## Aktif teslim — R4 corpus v3 yerel ve uzak kabulü
 

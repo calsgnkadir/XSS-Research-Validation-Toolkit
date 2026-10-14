@@ -1,0 +1,47 @@
+{
+  "base_commit": "fed161026d4272468b856f309801b866144a2f0f",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "browser": "installed Chrome supplied explicitly"
+  },
+  "tests": {
+    "command": "py -3.10 -m pytest bench/test_auth_failure_corpus.py bench/test_auth_failure_runner.py bench/test_blind_admin_contract.py bench/test_proof_adapter.py bench/test_proof_identity_matrix.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short",
+    "passed": 215,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "agent_tests": {
+    "runner_bludit_bench_passed": 82,
+    "auth_real_browser_passed": 28
+  },
+  "live_runner": {
+    "exit_code": 0,
+    "control_passed": 6,
+    "control_selected": 6,
+    "cleanup_passed": 6,
+    "candidate_totals": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "wall": 0.28,
+      "selected": 1,
+      "completed": 1,
+      "skipped": 0,
+      "error": 0,
+      "timeout": 0,
+      "invalid": 0,
+      "inconclusive": 0
+    },
+    "control_source_sha256": "3801bab51f7957d55118ca0a87fe2cf3ac9076e58b311c808367ba806640ee43"
+  },
+  "source_sha256": {
+    "bench/run.py": "86189c68f711f64cf592318f0eca4fefb5ce9907f64e4e734f7a894c4a7e5c11",
+    "bench/auth_failure_corpus.py": "3801bab51f7957d55118ca0a87fe2cf3ac9076e58b311c808367ba806640ee43",
+    "bench/test_auth_failure_runner.py": "274db51107fa50d959095acd970cde94cfcaf20a89fdd21d1221d9e881b9d5b4",
+    ".github/workflows/ci.yml": "1e64d23aefc5ac304fa94794be8ffdfad663fb7bf83a5c0e72c2de0fb1210d5d"
+  },
+  "remote_ci": "pending_push",
+  "docker": "No Docker code change; live Docker not rerun."
+}

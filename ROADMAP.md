@@ -21,9 +21,11 @@ henüz yok. Son kabul edilen kod **4331403**, uzak kanıt teslimi **550e2bc**.
 
 **Son dar ilerleme:** auth/CSRF altı hata kontrolü gerçek browser ile, yedi
 blind/admin adapter sınır testiyle birlikte 13/13 geçti; ayrı bounded CLI 6/6.
+Ana benchmark runner entegrasyonu da yerel 215 birleşik test ve gerçek CLI 6/6
+ile kabul edildi; [runner kanıtı](audit/2026-10-14-r4-auth-runner/README.md).
 [Kanıt](audit/2026-10-14-r4-auth-blind-controls/README.md). İki uzman limitte
 durdu, koordinatör devraldı; aktif uzman yok. Yeni uzak CI kabulü bekliyor.
-Ana runner entegrasyonu, gerçek admin/blind fixture ve kontrollü kıyas açık.
+Gerçek admin/blind fixture ve kontrollü kıyas açık.
 
 **Kalan sıra:**
 1. R4 auth/CSRF hatalarında eksik koşunun doğru sınıflandırılması; blind/admin

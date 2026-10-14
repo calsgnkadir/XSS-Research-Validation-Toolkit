@@ -112,7 +112,11 @@ def failure_lab(case):
 def accept_failure(case, proof, counters):
     """Validate expected failure separately from scanner accuracy."""
     stage, requests, posts = CASES[case]
+    if not isinstance(proof, dict) or not isinstance(counters, dict):
+        return False
     events = proof.get("events", [])
+    if not isinstance(events, list):
+        return False
     errors = [event for event in events if isinstance(event, dict) and event.get("kind") == "error"]
     return (
         proof.get("schema") == "dxa-browser-proof/1"
@@ -166,15 +170,25 @@ def run_suite(browser_path=None):
                 raise ValueError("wrong case identity")
             # Parent independently repeats acceptance rather than trusting worker boolean.
             row["control_passed"] = accept_failure(case, row["proof"], row["fixture"])
+            row["accuracy_evaluated"] = False
+            row["scanner_status"] = row["proof"].get("status")
         except Exception as error:
             row = {"case_id": "auth-failure-v1:" + case, "control_passed": False,
                    "scanner_status": "timeout" if isinstance(error, subprocess.TimeoutExpired) else "error",
                    "reason": type(error).__name__, "accuracy_evaluated": False}
         finally:
             if worker is not None:
-                worker.close()
+                try:
+                    worker.close()
+                    row["cleanup_status"] = "passed"
+                except Exception:
+                    row.update(control_passed=False, cleanup_status="error", reason="cleanup-failed")
+            else:
+                row["cleanup_status"] = "not-started"
         rows.append(row)
+    import hashlib
     return {"schema": "auth-failure-controls/1",
+            "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             "measurement": "expected-operational-failure-not-xss-accuracy",
             "selected": len(CASES),
             "passed": sum(row["control_passed"] is True for row in rows),

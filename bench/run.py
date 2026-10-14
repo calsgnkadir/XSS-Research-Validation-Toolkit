@@ -897,6 +897,17 @@ def render_md(report: Dict[str, Any]) -> str:
             for event in control["events"]:
                 lines.append(f"- adapter event: {event['stage']}/{event['reason']}")
         lines.append("")
+    for control in report.get("operational_controls", []):
+        lines.append("## Auth/CSRF operational controls (excluded from XSS accuracy)")
+        lines.append("")
+        lines.append(f"- expected failure controls passed/selected: {control['passed']}/{control['selected']}")
+        lines.append("- Acceptance checks intended error stages; no TP/FP/FN or completed-negative credit.")
+        lines.append(f"- source SHA-256: {control.get('source_sha256', 'unavailable')}")
+        for case in control["rows"]:
+            lines.append(f"- {case['case_id']}: matched={case['control_passed']}; "
+                         f"scanner={case['scanner_status']}; expected stage={case.get('expected_stage', 'unavailable')}; "
+                         f"cleanup={case.get('cleanup_status', 'unavailable')}")
+        lines.append("")
     lines.append("## Per-target")
     lines.append("")
     for row in report["rows"]:
@@ -955,7 +966,9 @@ def main() -> int:
     ap.add_argument("--targets", default="", help="comma-separated target ids; empty = all")
     ap.add_argument("--out", default="")
     ap.add_argument("--proof-suite", action="store_true", help="isolated loopback execution corpus; no legacy candidate totals")
-    ap.add_argument("--browser", help="Chrome/Chromium executable for --proof-suite")
+    ap.add_argument("--browser", help="Chrome/Chromium executable for proof suite or auth failure controls")
+    ap.add_argument("--auth-failure-controls", action="store_true",
+                    help="run six isolated auth/CSRF expected-failure controls; excluded from XSS accuracy")
     ap.add_argument("--bludit-control", action="store_true",
                     help="explicitly run the disposable Bludit product controls (never vulnerability-scored)")
     ap.add_argument("--bludit-compose", default="",
@@ -965,6 +978,8 @@ def main() -> int:
     ap.add_argument("--no-history", action="store_true", help="do not append shared benchmark history")
     args = ap.parse_args()
 
+    if args.browser and not (args.proof_suite or args.auth_failure_controls):
+        ap.error("--browser requires --proof-suite or --auth-failure-controls")
     if args.bludit_control:
         if args.proof_suite:
             ap.error("--bludit-control cannot be combined with --proof-suite")
@@ -987,6 +1002,9 @@ def main() -> int:
     if args.bludit_control:
         report["product_controls"] = [run_bludit_control(
             compose_file=args.bludit_compose or None, browser=args.bludit_browser)]
+    if args.auth_failure_controls:
+        from auth_failure_corpus import run_suite
+        report["operational_controls"] = [run_suite(args.browser)]
     report["command"] = sys.argv
 
     out_path = pathlib.Path(args.out) if args.out else (HERE / f"results-{_dt.date.today().isoformat()}.md")
@@ -1001,6 +1019,10 @@ def main() -> int:
     for s, t in totals.items():
         print(f"  {s}: TP={t['tp']} FP={t['fp']} FN={t['fn']} wall={round(t['wall'], 2)}s")
 
+    if args.auth_failure_controls:
+        control = report["operational_controls"][0]
+        if control["selected"] != 6 or control["passed"] != 6:
+            return 2
     # regression gate: fail if dxadyn has any FN on the mock corpus
     if args.bludit_control and report["product_controls"][0]["status"] != "passed":
         return 2

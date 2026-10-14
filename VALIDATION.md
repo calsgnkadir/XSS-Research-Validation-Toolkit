@@ -1,5 +1,12 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim R4 auth kontrol runner entegrasyonu
+
+Koordinatör birleşik etkilenen paket: 215 passed, sıfır failure/error/skip.
+Gerçek Chrome runner CLI: altı kontrol ve altı cleanup geçti; ayrı mock
+candidate skoru TP=1 FP=0 FN=0. [Komut, ortam, hash](audit/2026-10-14-r4-auth-runner/acceptance.json).
+Yeni uzak CI henüz doğrulanmadı. Bu sayılar önceki 193/527 koşularının yerine geçmez.
+
 Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/skip.
 
 ## 14 Ekim auth/CSRF hata kontrolleri
