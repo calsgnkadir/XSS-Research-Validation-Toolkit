@@ -2,6 +2,11 @@
 
 ## Unreleased — 2026-10-14
 
+- R4 loopback-proof/3, beş yeni bağlamla 14 vakaya çıktı. Alternatif
+  source/sink/role ve frame eşlemesi, bağımsız oracle testleri ve CI gate
+  güncellendi. Kapsam paydası ve karşılaştırma protokolü açıklandı.
+  Yerel 527 test ve strict 14/14 kabulü; [sınırlar](audit/2026-10-14-r4-corpus-v3/README.md).
+
 - R4 CI kapısı JSON/Markdown tutarlılığını ve kaynak/corpus hashlerini
   doğrular; runtime follow-up Python 3.12/Linux dışındaki beyanları reddeder.
   Dar kabul ve uzak koşu sınırları [audit kaydında](audit/2026-10-14-r4-provenance-gate/README.md); genel R4 açık.

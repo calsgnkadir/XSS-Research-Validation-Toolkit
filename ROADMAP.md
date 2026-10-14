@@ -212,6 +212,16 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
+14 Ekim corpus v3: 14 vaka; önceki dokuza sanitized+raw, no-op sanitizer→DOM,
+alternatif editor/source/sink için raw/fixed ve açık same-origin iframe eklendi.
+Kimlik/frame adapter ve CI gate buna bağlandı. Yerel 527 birleşik test ve
+strict CLI 14/14 (TP=7 FP=0 FN=0) geçti; yeni uzak kabul bekliyor.
+[Kanıt ve sınırlar](audit/2026-10-14-r4-corpus-v3/README.md).
+[Kapsam paydası ve karşılaştırma protokolü](bench/COMPARISON-PROTOCOL.md)
+hazır; gerçek rakip kıyası yapılmadı. Bu, statik taint, farklı hesaplar arası
+yetki sınırı, blind/admin veya auth/CSRF genel kabulünü kapatmaz.
+
+
 14 Ekim: strict gate'teki gerçek eksik, CI'nin Markdown corpus çıktısını okumaması
 ve JSON raporunun Python/platform/komut/kaynak hashlerini checkout'a bağlamamasıydı.
 Gate şimdi canonical Markdown render'ını JSON ile tam eşleştiriyor ve source /

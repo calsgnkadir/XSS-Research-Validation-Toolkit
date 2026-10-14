@@ -31,22 +31,36 @@ EXPECTED = {
     "proof-title": False,
     "proof-textarea": False,
     "proof-resource-callback": False,
+    "proof-sanitized-then-raw": True,
+    "proof-identity-sanitizer": True,
+    "proof-editor-raw": True,
+    "proof-editor-fixed": False,
+    "proof-iframe": True,
 }
+EDITOR_CASES = {"proof-editor-raw", "proof-editor-fixed"}
+EXPECTED_FRAME_PATHS = {"proof-iframe": ["/frame"]}
 ORACLE_CID = "dxa0123456789abcdef0123456789abcdef"
 ORACLE_PAYLOAD = ORACLE_CID + '<img src="/__dxa_missing" onerror="window.__dxaProof=\'' + ORACLE_CID + '\'">'
 
 
 def test_corpus_has_exact_independent_labels_and_identities():
     corpus = runner.proof_corpus()
-    assert corpus["corpus_version"] == "loopback-proof/2"
+    assert corpus["corpus_version"] == "loopback-proof/3"
     targets = {t["id"]: t for t in corpus["targets"]}
-    assert len(corpus["targets"]) == 9
+    assert len(corpus["targets"]) == 14
     assert targets.keys() == EXPECTED.keys()
     for case, positive in EXPECTED.items():
         mode = case.removeprefix("proof-")
-        identity = f"proof-v2:{mode}:POST:/comments:comment:/comments:reader"
+        source_path, parameter, read_path, role = (
+            ("/notes", "text", "/review", "editor") if case in EDITOR_CASES
+            else ("/comments", "comment", "/comments", "reader"))
+        identity = f"proof-v3:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
         assert targets[case]["case_id"] == identity
         assert targets[case]["expected_ids"] == ([identity] if positive else [])
+        assert targets[case]["expected_identity"] == {
+            "method": "POST", "source_path": source_path, "parameter": parameter,
+            "read_path": read_path, "role": role}
+        assert targets[case]["expected_frame_paths"] == EXPECTED_FRAME_PATHS.get(case, [read_path])
         assert targets[case]["observe_ms"] == 400
         assert targets[case]["oracle_rationale"]
 
@@ -56,7 +70,8 @@ def submit_fixture(spec, value):
     login = spec["auth_flow"]["steps"][0]
     with opener.open(login["url"], urllib.parse.urlencode(login["body"]).encode()) as response:
         assert response.status == 200
-    with opener.open(spec["submit"]["url"], urllib.parse.urlencode({"comment": value}).encode()) as response:
+    field = spec["submit"]["field"]
+    with opener.open(spec["submit"]["url"], urllib.parse.urlencode({field: value}).encode()) as response:
         assert response.status == 201
     return opener
 
@@ -72,8 +87,19 @@ def test_fixture_content_and_state_independent_of_scanner(case):
             body = response.read().decode()
         assert state["posts"] == 1
         assert state["value"] == value
-        if mode == "fixed":
+        if mode in ("fixed", "editor-fixed"):
             assert html.escape(value) in body and value not in body
+        elif mode == "sanitized-then-raw":
+            assert '<div class="sanitized">' + html.escape(value) + '</div>' in body
+            assert '<div class="raw">' + value + '</div>' in body
+        elif mode == "identity-sanitizer":
+            assert 'function identitySanitize(value){return value;}' in body
+            assert 'document.getElementById("sink").innerHTML=identitySanitize(' in body
+            assert json.dumps(value) in body
+        elif mode == "editor-raw":
+            assert spec["submit"]["url"].endswith("/notes")
+            assert spec["read_url"].endswith("/review")
+            assert value in body
         elif mode == "json":
             assert content_type == "application/json"
             assert json.loads(body) == {"comment": value}
@@ -90,6 +116,8 @@ def test_fixture_content_and_state_independent_of_scanner(case):
             assert '<img src="/resource-callback?cid=' + ORACLE_CID + '">' in body
             assert "<script" not in body
             assert state["resource_callback_hits"] == {}
+        elif mode == "iframe":
+            assert '<iframe src="/frame"></iframe>' in body
         else:
             assert value in body
 
@@ -131,10 +159,13 @@ def test_real_runner_matches_independent_case_oracle(browser_report, case, posit
     assert proof["execution_observed"] is positive
     assert proof["status"] == ("execution-observed" if positive else "inconclusive")
     assert proof["http_session_checked"] and proof["browser_session_checked"]
-    assert proof["session_role"] == "reader"
+    target = next(target for target in runner.proof_corpus()["targets"] if target["id"] == case)
+    assert proof["session_role"] == target["expected_identity"]["role"]
     assert proof["submit_status"] == 201 and proof["read_status"] == 200
     if positive:
         assert proof["proofs"] and all(p["canary_id"] == proof["canary_id"] for p in proof["proofs"])
+        assert all(urllib.parse.urlsplit(p["frame_url"]).path in target["expected_frame_paths"]
+                   for p in proof["proofs"])
     else:
         assert proof["proofs"] == [] and observed["negative_window_completed"]
     if case == "proof-resource-callback":
@@ -145,8 +176,8 @@ def test_real_runner_matches_independent_case_oracle(browser_report, case, posit
 
 def test_real_runner_strict_totals(browser_report):
     totals = browser_report["totals"]["dxaprove"]
-    assert totals["selected"] == totals["completed"] == 9
-    assert (totals["tp"], totals["fp"], totals["fn"]) == (3, 0, 0)
+    assert totals["selected"] == totals["completed"] == 14
+    assert (totals["tp"], totals["fp"], totals["fn"]) == (7, 0, 0)
     assert all(totals[status] == 0 for status in ("error", "timeout", "skipped", "invalid", "inconclusive"))
     assert not runner.strict_failed(browser_report)
 

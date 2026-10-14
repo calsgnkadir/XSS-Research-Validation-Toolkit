@@ -42,10 +42,13 @@ def lab(mode="raw"):
                         return self.send(200, '{"token":"lab-only-secret"}', "application/json")
                     return self.send(200, "ok", cookie=True)
                 return self.send(401, "denied")
-            if self.path == "/comments" and self.authed():
+            editor_case = mode in ("editor-raw", "editor-fixed")
+            submit_path = "/notes" if editor_case else "/comments"
+            submit_field = "text" if editor_case else "comment"
+            if self.path == submit_path and self.authed():
                 if mode == "csrf" and fields.get("csrf") != ["single-use"]:
                     return self.send(403, "missing csrf")
-                state["value"] = fields.get("comment", [""])[0]
+                state["value"] = fields.get(submit_field, [""])[0]
                 state["posts"] += 1
                 return self.send(201, "stored")
             self.send(403, "denied")
@@ -64,15 +67,25 @@ def lab(mode="raw"):
                 return self.send(200, "resource observed", "text/plain")
             if self.path == "/me":
                 state["checks"] += 1
-                role = "wrong" if mode == "wrong-browser-role" and state["checks"] >= 2 else "reader"
+                role = "editor" if mode in ("editor-raw", "editor-fixed") else "reader"
+                if mode == "wrong-browser-role" and state["checks"] >= 2:
+                    role = "wrong"
                 return self.send(200, json.dumps({"user": "alice", "role": role}), "application/json")
             if self.path == "/__dxa_missing":
                 return self.send(404, "missing")
             if mode == "csrf" and self.path == "/comments":
                 return self.send(200, '<input name="csrf" value="single-use">')
             value = state["value"]
-            if mode == "fixed":
+            if mode in ("fixed", "editor-fixed"):
                 body = html.escape(value)
+            elif mode == "sanitized-then-raw":
+                body = '<div class="sanitized">' + html.escape(value) + '</div><div class="raw">' + value + '</div>'
+            elif mode == "identity-sanitizer":
+                # Execute a no-op sanitizer-to-DOM path, not another raw HTML copy.
+                body = ('<div id="sink"></div><script>'
+                        'function identitySanitize(value){return value;}'
+                        'document.getElementById("sink").innerHTML=identitySanitize('
+                        + json.dumps(value) + ');</script>')
             elif mode in ("title", "textarea"):
                 # The image payload has no closing title/textarea tag: it is inert RCDATA.
                 body = '<' + mode + '>' + value + '</' + mode + '>'
@@ -105,12 +118,17 @@ def lab(mode="raw"):
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f"http://127.0.0.1:{server.server_port}"
+    editor_case = mode in ("editor-raw", "editor-fixed")
+    role = "editor" if editor_case else "reader"
+    submit_path = "/notes" if editor_case else "/comments"
+    submit_field = "text" if editor_case else "comment"
+    read_path = "/review" if editor_case else "/comments"
     spec = {"origin": base, "role_path": "$.role", "observe_ms": 400,
             "auth_flow": {"steps": [{"url": base + "/login", "method": "POST",
                                       "body": {"user": "alice", "password": "lab-password"}}]},
-            "session_check": {"url": base + "/me", "expect": {"$.user": "alice", "$.role": "reader"}},
-            "submit": {"url": base + "/comments", "field": "comment", "csrf_field": ""},
-            "read_url": base + "/comments"}
+            "session_check": {"url": base + "/me", "expect": {"$.user": "alice", "$.role": role}},
+            "submit": {"url": base + submit_path, "field": submit_field, "csrf_field": ""},
+            "read_url": base + read_path}
     if mode == "bearer":
         spec["auth_flow"]["steps"][0]["save"] = {"token": "$.token"}
         spec["auth_flow"]["auth"] = {"header": "Authorization", "value": "Bearer {token}"}

@@ -1,3 +1,22 @@
+# Current benchmark status — 14 October 2026
+
+The current proof benchmark is loopback-proof/3: 14 disposable loopback
+fixtures, seven execution-positive and seven bounded negative windows.
+Use --proof-suite --no-history; BENCH_STRICT=1 rejects FP/FN and incomplete
+outcomes. Candidate scanner counts and Bludit product controls are separate.
+
+[Current acceptance and limits](../audit/2026-10-14-r4-corpus-v3/README.md),
+[comparison/coverage protocol](COMPARISON-PROTOCOL.md),
+[main roadmap](../ROADMAP.md).
+
+Local acceptance: 527 benchmark/R3 tests; strict browser CLI 14/14,
+TP=7 FP=0 FN=0. New hosted acceptance is tracked in the linked audit.
+External CLI candidate parsers do not establish comparable execution accuracy.
+
+---
+
+## Historical Phase 0.5 notes
+
 > **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
 
 # Benchmark harness (Phase 0.5)

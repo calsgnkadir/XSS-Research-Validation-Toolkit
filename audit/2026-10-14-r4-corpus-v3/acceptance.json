@@ -1,0 +1,85 @@
+{
+  "base_commit": "61dde5c31c8c5624aead0cd399708d563b6f8e71",
+  "validated_at": "2026-10-14T10:29:52.879870+00:00",
+  "environment": {
+    "python": "3.10.11",
+    "pytest": "9.1.1",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "browser": "Installed Chrome, explicit Program Files executable"
+  },
+  "tests": {
+    "command": "py -3.10 -m pytest bench tools/dom-xss-analyzer/test_browser_proof.py tools/dom-xss-analyzer/test_proof_cleanup.py -q -p no:cacheprovider --tb=short --junitxml=.dxa/r4-v3-combined.xml",
+    "environment_flags": {
+      "DXA_REQUIRE_BROWSER": "1",
+      "DXA_BROWSER": "C:/Program Files/Google/Chrome/Application/chrome.exe"
+    },
+    "passed": 527,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "junit_sha256": "61d0564347783deba09c9b1b1cbea7daeb9f05508125e40be8f4a0eebc55837e"
+  },
+  "cli": {
+    "strict": true,
+    "exit_code": 0,
+    "command": [
+      "bench/run.py",
+      "--proof-suite",
+      "--browser",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "--no-history",
+      "--out",
+      "audit/2026-10-14-r4-corpus-v3/local-proof.md"
+    ],
+    "totals": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "wall": 36.16,
+      "selected": 14,
+      "completed": 14,
+      "skipped": 0,
+      "error": 0,
+      "timeout": 0,
+      "invalid": 0,
+      "inconclusive": 0
+    },
+    "canonical_markdown_matches_json": true,
+    "json_sha256": "333b2e52bd90909afede289b2421d0677dfe8c675ed8ba7306e931093c665a5c",
+    "markdown_sha256": "b88d78c1a75a3d7dadf2ebc80f72c24c1aefbd4982f081b15123199ea899a271"
+  },
+  "source_sha256": {
+    "bench/run.py": "6d0f38f7e872ceb01211c9813a79343d3ab438b6adb81c9ee4e02d256d760739",
+    "bench/check_ci_acceptance.py": "ec0d1ce082cb70cb19e482ea0a8b1dd618e6332f4a6b8f21b202ec4ab40f3301",
+    "bench/test_ci_acceptance.py": "79ae03cb6616fc32cd67082f33124545a3e1d74317e4d9234151aae9f8e5fecd",
+    "bench/test_proof_adapter.py": "6d50ec3141567cbe917ce123a9fd9f448e4708aac5ecc6db979d1737e138dca8",
+    "bench/test_proof_corpus.py": "fb55b952ca569ddb4235576574d587a03ea243ff8830e1a7c933d084dfa063fe",
+    "bench/test_proof_identity_matrix.py": "b376d5a44dfd326879319bcbba1aa95eb398f3f452fcc414be54589ada4117a0",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "c6755694906082e908d5ed710f34cec5036a11c511c4a52391e752b6bb9f1320",
+    "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    ".github/workflows/ci.yml": "a99317f3a8078f547f32a625a4f5dda46242400b2432b5b5c8d5c008a06a5c68"
+  },
+  "docker": {
+    "review": "coordinator source comparison; live Docker not rerun",
+    "unchanged_runner_components": {
+      "DockerTarget": true,
+      "validate_bludit_control": true,
+      "run_bludit_control": true,
+      "_bludit_failure": true,
+      "_sanitized_bludit_event": true
+    },
+    "adapter_files_changed": [],
+    "reason": "Changes are confined to proof corpus/adapter, loopback fixture and proof report metadata; Bludit lifecycle and product_controls implementation are unchanged."
+  },
+  "specialists": {
+    "engine": "Partial corpus/adapter/test implementation; stopped at usage limit",
+    "qa": "Independent identity/frame/coverage tests written; stopped before final review at usage limit",
+    "coordinator": "Reviewed all changes; finished sanitizer DOM path, repaired incomplete test count/identity oracle, verified 527 tests and strict CLI; integrated gate/workflow and comparison protocol"
+  },
+  "remote_ci": "pending_push",
+  "diff_check": {
+    "command": "git -c core.whitespace=-blank-at-eof diff --cached --check",
+    "result": "passed",
+    "exception": "The canonical generated local-proof.md ends with a blank line. Default diff --check flags only that line; preserving byte-for-text renderer output is intentional."
+  }
+}

@@ -67,11 +67,19 @@ def test_completed_window_status_does_not_depend_on_expected_label(monkeypatch):
     positive = runner.adapt_proof(runner.proof_corpus()["targets"][0], p, "http://127.0.0.1:1234")
     assert negative["status"] == "completed"
     assert positive["status"] == "completed"
-    monkeypatch.setattr(runner, "run_dxaprove", lambda target: runner.adapt_proof(
-        target, p, "http://127.0.0.1:1234", {"resource_callback_hits": {"attempt-123": 1}}))
+    def completed_negative(target):
+        current = dict(p)
+        # Independent alternate fixture identity; labels never drive completion.
+        if target["id"] in ("proof-editor-raw", "proof-editor-fixed"):
+            current.update(session_role="editor",
+                           source={"url": "http://127.0.0.1:1234/notes", "parameter": "text", "method": "POST"},
+                           read_url="http://127.0.0.1:1234/review")
+        return runner.adapt_proof(target, current, "http://127.0.0.1:1234",
+                                  {"resource_callback_hits": {"attempt-123": 1}})
+    monkeypatch.setattr(runner, "run_dxaprove", completed_negative)
     report = runner.run_all(runner.proof_corpus(), ["dxaprove"], None)
-    assert report["totals"]["dxaprove"]["fn"] == 3
-    assert report["totals"]["dxaprove"]["completed"] == 9
+    assert report["totals"]["dxaprove"]["fn"] == 7
+    assert report["totals"]["dxaprove"]["completed"] == 14
     assert runner.strict_failed(report)
 
 
@@ -85,7 +93,7 @@ def test_incomplete_proof_rows_fail_gate_and_are_not_scored(monkeypatch, status)
     monkeypatch.setattr(runner, "run_dxaprove", lambda target: {
         "status": status, "findings": [], "ok": False})
     report = runner.run_all(runner.proof_corpus(), ["dxaprove"], None)
-    assert report["totals"]["dxaprove"][status] == 9
+    assert report["totals"]["dxaprove"][status] == 14
     assert report["totals"]["dxaprove"]["completed"] == 0
     assert all(not row["results"]["dxaprove"]["score"]["evaluated"] for row in report["rows"])
     assert runner.strict_failed(report)
@@ -126,6 +134,45 @@ def test_malformed_or_contradictory_proof_is_invalid(field, value):
 def test_non_object_proof_is_invalid(malformed):
     result = runner.adapt_proof(runner.proof_corpus()["targets"][0], malformed, "http://127.0.0.1:1234")
     assert result["status"] == "invalid"
+
+
+@pytest.mark.parametrize("mutation", ["source", "read", "role", "frame"])
+def test_expected_identity_and_frame_allowlist_are_exact(mutation):
+    target = next(t for t in runner.proof_corpus()["targets"] if t["id"] == "proof-iframe")
+    p = proof()
+    p["source"] = {"url": "http://127.0.0.1:1234/comments", "parameter": "comment", "method": "POST"}
+    p["read_url"] = "http://127.0.0.1:1234/comments"
+    p["proofs"][0]["frame_url"] = "http://127.0.0.1:1234/frame"
+    if mutation == "source":
+        p["source"]["url"] += "/wrong"
+    elif mutation == "read":
+        p["read_url"] += "/wrong"
+    elif mutation == "role":
+        p["session_role"] = "editor"
+    else:
+        p["proofs"][0]["frame_url"] = "http://127.0.0.1:1234/unlisted-frame"
+    result = runner.adapt_proof(target, p, "http://127.0.0.1:1234")
+    assert result["status"] == "invalid"
+    assert result["findings"] == []
+
+
+def test_target_identity_drives_editor_source_read_and_role():
+    target = next(t for t in runner.proof_corpus()["targets"] if t["id"] == "proof-editor-raw")
+    p = proof()
+    p.update(session_role="editor", source={"url": "http://127.0.0.1:1234/notes", "parameter": "text", "method": "POST"},
+             read_url="http://127.0.0.1:1234/review")
+    p["proofs"][0]["frame_url"] = "http://127.0.0.1:1234/review"
+    result = runner.adapt_proof(target, p, "http://127.0.0.1:1234")
+    assert result["status"] == "completed"
+    assert result["findings"][0]["finding_id"] == target["case_id"]
+
+
+def test_missing_target_identity_keeps_legacy_demo_defaults():
+    target = dict(runner.proof_corpus()["targets"][0])
+    target.pop("expected_identity")
+    target.pop("expected_frame_paths")
+    result = runner.adapt_proof(target, proof(), "http://127.0.0.1:1234")
+    assert result["status"] == "completed"
 
 
 @pytest.mark.parametrize("hits", [{}, {"wrong-cid": 1}, {"attempt-123": 0}])

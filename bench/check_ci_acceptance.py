@@ -19,11 +19,13 @@ import run as runner
 
 REQUIRED_MODULES = {
     "test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus",
+    "test_proof_identity_matrix",
 }
-POSITIVE = {"proof-raw", "proof-delayed", "proof-eval"}
+POSITIVE = {"proof-raw", "proof-delayed", "proof-eval", "proof-sanitized-then-raw",
+            "proof-identity-sanitizer", "proof-editor-raw", "proof-iframe"}
 CASE_IDS = POSITIVE | {
     "proof-fixed", "proof-json", "proof-dialog", "proof-title", "proof-textarea",
-    "proof-resource-callback",
+    "proof-resource-callback", "proof-editor-fixed",
 }
 
 
@@ -55,17 +57,17 @@ def check_junit(path):
     return len(cases)
 
 
-def proof_origin(proof):
+def proof_origin(proof, expected_read_path="/comments"):
     url = proof["read_url"]
     parsed = urlsplit(url)
     require(parsed.scheme == "http" and parsed.hostname in ("127.0.0.1", "localhost", "::1")
-            and not parsed.username and not parsed.password and parsed.path == "/comments"
+            and not parsed.username and not parsed.password and parsed.path == expected_read_path
             and not parsed.query and not parsed.fragment, "proof is not a loopback fixture read")
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
 def check_corpus(report):
-    require(report["corpus_version"] == "loopback-proof/2"
+    require(report["corpus_version"] == "loopback-proof/3"
             and report["scanners"] == ["dxaprove"], "unexpected corpus or scanner")
     rows = report["rows"]
     require(isinstance(rows, list) and len(rows) == len(CASE_IDS)
@@ -78,12 +80,13 @@ def check_corpus(report):
         expected_ids = [target["case_id"]] if positive else []
         require(row["expected_ids"] == expected_ids
                 and row["expected_identity"] == target["expected_identity"]
+                and row["expected_frame_paths"] == target["expected_frame_paths"]
                 and type(row["observe_ms"]) is int and row["observe_ms"] == 400,
                 "corpus expected identity or window changed")
         result = row["results"]["dxaprove"]
         observed = runner.validate_proof_result(result["observed"])
         require(observed["status"] == "completed", "corpus case did not complete")
-        adapted = runner.adapt_proof(target, observed["proof"], proof_origin(observed["proof"]),
+        adapted = runner.adapt_proof(target, observed["proof"], proof_origin(observed["proof"], target["expected_identity"]["read_path"]),
                                      observed.get("fixture_observation"))
         require(adapted["status"] == "completed" and observed["findings"] == adapted["findings"],
                 "corpus nested proof does not support observed findings")
@@ -98,7 +101,7 @@ def check_corpus(report):
                     "negative fixture lacks completed observation window")
         wall += observed.get("wall", 0)
     totals = report["totals"]["dxaprove"]
-    for key, expected in dict(tp=3, fp=0, fn=0, selected=9, completed=9,
+    for key, expected in dict(tp=len(POSITIVE), fp=0, fn=0, selected=len(CASE_IDS), completed=len(CASE_IDS),
                               skipped=0, error=0, timeout=0, invalid=0, inconclusive=0).items():
         require(type(totals.get(key)) is int and totals[key] == expected,
                 "corpus totals disagree with required case outcomes")
@@ -175,7 +178,7 @@ def main(argv=None):
         # Artifact values may contain sensitive content; do not echo them.
         print("R3/R4 acceptance failed: missing, malformed or incomplete artifacts", file=sys.stderr)
         return 1
-    print(f"R3/R4 acceptance passed: {count} tests, zero skips/errors; corpus 9/9 TP=3 FP=0 FN=0; JSON/Markdown provenance matched; demo execution observed")
+    print(f"R3/R4 acceptance passed: {count} tests, zero skips/errors; corpus {len(CASE_IDS)}/{len(CASE_IDS)} TP={len(POSITIVE)} FP=0 FN=0; JSON/Markdown provenance matched; demo execution observed")
     return 0
 
 

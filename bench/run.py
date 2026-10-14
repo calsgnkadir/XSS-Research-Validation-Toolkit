@@ -366,25 +366,32 @@ def proof_corpus(browser_path=None):
     """Small versioned execution corpus, entirely in disposable loopback labs."""
     targets = []
     cases = (
-        ("raw", True, "Raw HTML image onerror assigns the submitted canary."),
-        ("fixed", False, "HTML encoding leaves the submitted image payload as text."),
-        ("json", False, "An application/json response does not execute the submitted image markup."),
-        ("dialog", False, "An ordinary application dialog never assigns the submitted canary."),
-        ("delayed", True, "After 150 ms the submitted image enters innerHTML within the 400 ms window."),
-        ("eval", True, "Native direct eval reads a function-local binding before inserting the submitted image."),
-        ("title", False, "The image payload remains inert title RCDATA without a closing title tag."),
-        ("textarea", False, "The image payload remains inert textarea RCDATA without a closing textarea tag."),
-        ("resource-callback", False, "Escaped payload plus a handler-free image requests its CID URL; HTTP callback is not execution."),
+        ("raw", True, "Raw HTML image onerror assigns the submitted canary.", "/comments", "comment", "/comments", "reader", None),
+        ("fixed", False, "HTML encoding leaves the submitted image payload as text.", "/comments", "comment", "/comments", "reader", None),
+        ("json", False, "An application/json response does not execute the submitted image markup.", "/comments", "comment", "/comments", "reader", None),
+        ("dialog", False, "An ordinary application dialog never assigns the submitted canary.", "/comments", "comment", "/comments", "reader", None),
+        ("delayed", True, "After 150 ms the submitted image enters innerHTML within the 400 ms window.", "/comments", "comment", "/comments", "reader", None),
+        ("eval", True, "Native direct eval reads a function-local binding before inserting the submitted image.", "/comments", "comment", "/comments", "reader", None),
+        ("title", False, "The image payload remains inert title RCDATA without a closing title tag.", "/comments", "comment", "/comments", "reader", None),
+        ("textarea", False, "The image payload remains inert textarea RCDATA without a closing textarea tag.", "/comments", "comment", "/comments", "reader", None),
+        ("resource-callback", False, "Escaped payload plus a handler-free image requests its CID URL; HTTP callback is not execution.", "/comments", "comment", "/comments", "reader", None),
+        ("sanitized-then-raw", True, "The same input is rendered escaped and raw; only raw output executes the canary.", "/comments", "comment", "/comments", "reader", None),
+        ("identity-sanitizer", True, "A deliberately identity sanitizer leaves the submitted canary executable.", "/comments", "comment", "/comments", "reader", None),
+        ("editor-raw", True, "The editor-role fixture renders the submitted note as raw HTML.", "/notes", "text", "/review", "editor", None),
+        ("editor-fixed", False, "The editor-role fixture HTML-encodes the submitted note.", "/notes", "text", "/review", "editor", None),
+        ("iframe", True, "The submitted canary executes in the fixture's explicitly expected same-origin /frame.", "/comments", "comment", "/comments", "reader", ["/frame"]),
     )
-    for mode, executes, rationale in cases:
-        identity = f"proof-v2:{mode}:POST:/comments:comment:/comments:reader"
+    for mode, executes, rationale, source_path, parameter, read_path, role, frame_paths in cases:
+        identity = f"proof-v3:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
+        expected_frame_paths = frame_paths if frame_paths is not None else [read_path]
         targets.append({"id": "proof-" + mode, "kind": "proof-lab", "mode": mode,
                         "case_id": identity, "expected_ids": [identity] if executes else [],
-                        "expected_identity": {"method": "POST", "source_path": "/comments",
-                                              "parameter": "comment", "read_path": "/comments", "role": "reader"},
+                        "expected_identity": {"method": "POST", "source_path": source_path,
+                                              "parameter": parameter, "read_path": read_path, "role": role},
+                        "expected_frame_paths": expected_frame_paths,
                         "oracle_rationale": rationale, "observe_ms": 400,
                         "expect": {}, "browser_path": browser_path, "budget_seconds": 30})
-    return {"corpus_version": "loopback-proof/2", "targets": targets}
+    return {"corpus_version": "loopback-proof/3", "targets": targets}
 
 
 def adapt_proof(target, proof, base_url, fixture_observation=None):
@@ -408,12 +415,34 @@ def adapt_proof(target, proof, base_url, fixture_observation=None):
         return observed
     no_canary = any(e.get("stage") == "observe" and e.get("reason") == "no-canary-within-window"
                     and e.get("kind") == "info" for e in events)
-    expected_url = base_url + "/comments"
+    identity = target.get("expected_identity", {
+        "method": "POST", "source_path": "/comments", "parameter": "comment",
+        "read_path": "/comments", "role": "reader"})
+    identity_fields = {"method", "source_path", "parameter", "read_path", "role"}
+    if (not isinstance(identity, dict) or set(identity) != identity_fields
+            or any(not isinstance(identity.get(key), str) or not identity[key]
+                   for key in identity_fields)
+            or any(not identity[path_key].startswith("/") or identity[path_key].startswith("//")
+                   or any(char in identity[path_key] for char in "?#")
+                   for path_key in ("source_path", "read_path"))):
+        return observed
+    expected_source_url = base_url + identity.get("source_path", "/comments")
+    expected_url = base_url + identity.get("read_path", "/comments")
+    expected_frame_paths = target.get("expected_frame_paths")
+    if expected_frame_paths is None:
+        expected_frame_paths = [identity.get("read_path", "/comments")]
+    if (not isinstance(expected_frame_paths, list) or not expected_frame_paths
+            or any(not isinstance(path, str) or not path.startswith("/") or path.startswith("//")
+                   or any(char in path for char in "?#") for path in expected_frame_paths)):
+        return observed
+    expected_frame_urls = {base_url + path for path in expected_frame_paths}
     common = (proof.get("schema") == "dxa-browser-proof/1"
               and proof.get("http_session_checked") is True
               and proof.get("browser_session_checked") is True
-              and proof.get("session_role") == "reader"
-              and proof.get("source") == {"url": expected_url, "parameter": "comment", "method": "POST"}
+              and proof.get("session_role") == identity.get("role", "reader")
+              and proof.get("source") == {"url": expected_source_url,
+                                           "parameter": identity.get("parameter", "comment"),
+                                           "method": identity.get("method", "POST")}
               and proof.get("read_url") == expected_url
               and proof.get("read_status") == 200 and proof.get("submit_status") == 201
               and type(proof.get("observe_ms")) is int
@@ -429,7 +458,7 @@ def adapt_proof(target, proof, base_url, fixture_observation=None):
         observed["callback_observed"] = observed["callback_count"] > 0
     if proof.get("status") == "execution-observed" and proof.get("execution_observed") is True:
         if no_canary or not proofs or any(p.get("canary_id") != proof["canary_id"]
-                             or p.get("frame_url") != expected_url
+                             or p.get("frame_url") not in expected_frame_urls
                              or p.get("event") != "matching-browser-canary" for p in proofs):
             return observed
         observed.update(status="completed", ok=True, findings=[{
@@ -718,6 +747,7 @@ def run_one(target: Dict[str, Any], scanners: List[str]) -> Dict[str, Any]:
             raise ValueError("cannot mix execution and candidate measurements")
         row["expected_ids"] = target["expected_ids"]
         row["expected_identity"] = target["expected_identity"]
+        row["expected_frame_paths"] = target.get("expected_frame_paths", [target["expected_identity"]["read_path"]])
         row["oracle_rationale"] = target["oracle_rationale"]
         row["observe_ms"] = target["observe_ms"]
         if "mode" not in target:
@@ -840,6 +870,11 @@ def render_md(report: Dict[str, Any]) -> str:
     for name, total in report['totals'].items():
         lines.append(f"- {name} coverage: " + ', '.join(f"{key}={total.get(key, 0)}" for key in
                      ('selected', 'completed', 'skipped', 'error', 'timeout', 'invalid', 'inconclusive')))
+        if report.get("measurement", "").startswith("correlated-browser-execution"):
+            selected = total.get("selected", 0)
+            ratio = f"{total.get('completed', 0)}/{selected}" if selected else "n/a"
+            lines.append(f"- {name} completed/selected coverage ratio: {ratio}")
+            lines.append(f"- {name} accuracy denominator: completed rows only; incomplete rows are excluded and fail strict acceptance; selected=0 is n/a, not a safe or true-negative result")
     lines.append("")
     lines.append("## Totals")
     lines.append("")
@@ -872,6 +907,7 @@ def render_md(report: Dict[str, Any]) -> str:
         if "expected_ids" in row:
             lines.append(f"- expected execution case IDs: {row['expected_ids']}")
             lines.append(f"- expected identity: {json.dumps(row['expected_identity'], sort_keys=True)}")
+            lines.append(f"- expected proof frame paths: {json.dumps(row.get('expected_frame_paths', []), sort_keys=True)}")
             lines.append(f"- oracle: {row['oracle_rationale']}")
             lines.append(f"- observation window: {row['observe_ms']} ms")
         else:

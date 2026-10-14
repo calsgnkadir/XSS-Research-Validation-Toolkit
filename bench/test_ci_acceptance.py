@@ -15,22 +15,27 @@ GATE = Path(__file__).with_name("check_ci_acceptance.py")
 LABELS = {
     "raw": True, "fixed": False, "json": False, "dialog": False,
     "delayed": True, "eval": True, "title": False, "textarea": False,
-    "resource-callback": False,
+    "resource-callback": False, "sanitized-then-raw": True,
+    "identity-sanitizer": True, "editor-raw": True, "editor-fixed": False, "iframe": True,
 }
-MODULES = ("test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus")
+MODULES = ("test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus", "test_proof_identity_matrix")
 CID = "dxa0123456789abcdef0123456789abcdef"
 URL = "http://127.0.0.1:49152/comments"
 
 
-def proof(positive):
+def proof(positive, mode="raw"):
+    editor = mode.startswith("editor-")
+    source_url = "http://127.0.0.1:49152/notes" if editor else URL
+    read_url = "http://127.0.0.1:49152/review" if editor else URL
+    frame_url = "http://127.0.0.1:49152/frame" if mode == "iframe" else read_url
     return {
         "schema": "dxa-browser-proof/1", "status": "execution-observed" if positive else "inconclusive",
         "execution_observed": positive, "http_session_checked": True,
-        "browser_session_checked": True, "session_role": "reader", "triage": "unreviewed",
-        "source": {"url": URL, "parameter": "comment", "method": "POST"},
-        "read_url": URL, "read_status": 200, "submit_status": 201, "observe_ms": 400,
+        "browser_session_checked": True, "session_role": "editor" if editor else "reader", "triage": "unreviewed",
+        "source": {"url": source_url, "parameter": "text" if editor else "comment", "method": "POST"},
+        "read_url": read_url, "read_status": 200, "submit_status": 201, "observe_ms": 400,
         "canary_id": CID,
-        "proofs": [{"canary_id": CID, "frame_url": URL, "event": "matching-browser-canary"}] if positive else [],
+        "proofs": [{"canary_id": CID, "frame_url": frame_url, "event": "matching-browser-canary"}] if positive else [],
         "events": [] if positive else [{"stage": "observe", "kind": "info", "reason": "no-canary-within-window"}],
     }
 
@@ -42,9 +47,14 @@ def source_hash(path):
 def corpus():
     rows = []
     for mode, positive in LABELS.items():
-        identity = f"proof-v2:{mode}:POST:/comments:comment:/comments:reader"
+        editor = mode.startswith("editor-")
+        expected_identity = {"method": "POST", "source_path": "/notes" if editor else "/comments",
+                             "parameter": "text" if editor else "comment", "read_path": "/review" if editor else "/comments",
+                             "role": "editor" if editor else "reader"}
+        suffix = ":".join(expected_identity[k] for k in ("method", "source_path", "parameter", "read_path", "role"))
+        identity = f"proof-v3:{mode}:{suffix}"
         observation = {
-            "status": "completed", "ok": True, "proof": proof(positive), "wall": 0.1,
+            "status": "completed", "ok": True, "proof": proof(positive, mode), "wall": 0.1,
             "findings": [{"finding_id": identity, "evidence": "execution-observed", "canary_matched": True, "triage": "unreviewed"}] if positive else [],
             "fixture_observation": {"resource_callback_hits": {CID: 1} if mode == "resource-callback" else {}},
         }
@@ -53,7 +63,8 @@ def corpus():
         if mode == "resource-callback":
             observation.update(callback_observed=True, callback_count=1)
         rows.append({"id": "proof-" + mode, "expect": {}, "expected_ids": [identity] if positive else [],
-                     "observe_ms": 400, "expected_identity": {"method": "POST", "source_path": "/comments", "parameter": "comment", "read_path": "/comments", "role": "reader"},
+                     "observe_ms": 400, "expected_identity": expected_identity,
+                     "expected_frame_paths": ["/frame"] if mode == "iframe" else [expected_identity["read_path"]],
                      "oracle_rationale": "independent fixture label",
                      "results": {"dxaprove": {"observed": observation, "score": {"tp": int(positive), "fp": 0, "fn": 0, "evaluated": True}}}})
     return {"run_at": "2026-10-13T00:00:00+00:00",
@@ -64,14 +75,14 @@ def corpus():
                             "corpus_sha256": hashlib.sha256(json.dumps(runner.proof_corpus(), sort_keys=True).encode()).hexdigest()},
             "command": ["bench/run.py", "--proof-suite", "--no-history", "--out", "r4-proof.md"],
             "measurement": "correlated-browser-execution; not confirmed vulnerability accuracy",
-            "corpus_version": "loopback-proof/2", "scanners": ["dxaprove"], "rows": rows,
-            "totals": {"dxaprove": {"selected": 9, "completed": 9, "tp": 3, "fp": 0, "fn": 0,
-                                     "error": 0, "timeout": 0, "skipped": 0, "invalid": 0, "inconclusive": 0, "wall": 0.9}}}
+            "corpus_version": "loopback-proof/3", "scanners": ["dxaprove"], "rows": rows,
+            "totals": {"dxaprove": {"selected": 14, "completed": 14, "tp": 7, "fp": 0, "fn": 0,
+                                     "error": 0, "timeout": 0, "skipped": 0, "invalid": 0, "inconclusive": 0, "wall": 1.4}}}
 
 
 @pytest.fixture
 def artifacts(tmp_path):
-    suite = ET.Element("testsuite", tests="4", failures="0", errors="0", skipped="0")
+    suite = ET.Element("testsuite", tests=str(len(MODULES)), failures="0", errors="0", skipped="0")
     for module in MODULES:
         ET.SubElement(suite, "testcase", classname="tests." + module, name="test_acceptance")
     report = corpus()
@@ -182,7 +193,7 @@ def test_negative_fixture_false_positive_fails_even_with_zero_fp_total(artifacts
 
 
 def test_missing_callback_is_not_a_completed_callback_negative(artifacts):
-    observed = artifacts["corpus"]["rows"][-1]["results"]["dxaprove"]["observed"]
+    observed = next(row for row in artifacts["corpus"]["rows"] if row["id"] == "proof-resource-callback")["results"]["dxaprove"]["observed"]
     observed["fixture_observation"]["resource_callback_hits"] = {}
     assert invoke(artifacts).returncode == 1
 
@@ -202,7 +213,7 @@ def test_corpus_wrong_container_types_fail_cleanly(artifacts, field, value):
 
 @pytest.mark.parametrize("field,value", (("proof", None), ("proof", []), ("findings", {}), ("fixture_observation", None)))
 def test_wrong_nested_observation_types_fail_cleanly(artifacts, field, value):
-    observed = artifacts["corpus"]["rows"][-1]["results"]["dxaprove"]["observed"]
+    observed = next(row for row in artifacts["corpus"]["rows"] if row["id"] == "proof-resource-callback")["results"]["dxaprove"]["observed"]
     observed[field] = value
     assert invoke(artifacts).returncode == 1
 
@@ -224,14 +235,14 @@ def test_invalid_elapsed_time_fails(artifacts, value, location):
 def test_duplicate_testcase_does_not_supply_independent_coverage(artifacts):
     suite = artifacts["junit"]
     suite.append(copy.deepcopy(suite[0]))
-    suite.set("tests", "5")
+    suite.set("tests", str(len(MODULES) + 1))
     assert invoke(artifacts).returncode == 1
 
 
 def test_nested_junit_skip_cannot_hide_behind_clean_parent(artifacts):
     suite = artifacts["junit"]
     ET.SubElement(suite[0], "skipped")
-    root = ET.Element("testsuites", tests="4", failures="0", errors="0", skipped="0")
+    root = ET.Element("testsuites", tests=str(len(MODULES)), failures="0", errors="0", skipped="0")
     root.append(suite)
     artifacts["junit"] = root
     assert invoke(artifacts).returncode == 1
@@ -286,7 +297,7 @@ def test_wrong_corpus_command_provenance_fails(artifacts, command):
 def test_markdown_score_mismatch_fails(artifacts):
     assert invoke(artifacts).returncode == 0
     path = artifacts["path"] / "corpus-markdown.md"
-    content = path.read_text(encoding="utf-8").replace("| dxaprove | 3 | 0 | 0 |", "| dxaprove | 2 | 1 | 0 |")
+    content = path.read_text(encoding="utf-8").replace("| dxaprove | 7 | 0 | 0 |", "| dxaprove | 2 | 1 | 0 |")
     path.write_text(content, encoding="utf-8")
     result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
                              "--corpus", str(artifacts["path"] / "corpus.json"),
@@ -311,10 +322,40 @@ def test_markdown_missing_case_fails(artifacts):
 def test_markdown_identity_mismatch_fails(artifacts):
     assert invoke(artifacts).returncode == 0
     path = artifacts["path"] / "corpus-markdown.md"
-    content = path.read_text(encoding="utf-8").replace("proof-v2:raw:POST:/comments:comment:/comments:reader", "proof-v2:other:POST:/comments:comment:/comments:reader", 1)
+    content = path.read_text(encoding="utf-8").replace("proof-v3:raw:POST:/comments:comment:/comments:reader", "proof-v3:other:POST:/comments:comment:/comments:reader", 1)
     path.write_text(content, encoding="utf-8")
     result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
                              "--corpus", str(artifacts["path"] / "corpus.json"),
                              "--corpus-markdown", str(path), "--demo", str(artifacts["path"] / "demo.json")],
                             capture_output=True, text=True, timeout=20)
     assert result.returncode == 1
+
+@pytest.mark.parametrize("case_id,field,value", (
+    ("proof-editor-raw", "role", "reader"),
+    ("proof-editor-raw", "parameter", "comment"),
+    ("proof-editor-raw", "source", "http://127.0.0.1:49152/comments"),
+    ("proof-editor-raw", "read", "http://127.0.0.1:49152/comments"),
+    ("proof-iframe", "frame", "http://127.0.0.1:49152/unrelated"),
+    ("proof-raw", "frame", "http://127.0.0.1:49152/frame"),
+))
+def test_v3_nested_identity_mismatch_rejected_with_matching_markdown(artifacts, case_id, field, value):
+    row = next(r for r in artifacts["corpus"]["rows"] if r["id"] == case_id)
+    item = row["results"]["dxaprove"]["observed"]["proof"]
+    if field == "role":
+        item["session_role"] = value
+    elif field in ("source", "parameter"):
+        item["source"]["url" if field == "source" else "parameter"] = value
+    elif field == "read":
+        item["read_url"] = value
+    else:
+        item["proofs"][0]["frame_url"] = value
+    artifacts["markdown"] = runner.render_md(artifacts["corpus"])
+    assert invoke(artifacts).returncode == 1
+
+
+def test_v3_artifact_cannot_broaden_local_frame_allowlist(artifacts):
+    row = next(r for r in artifacts["corpus"]["rows"] if r["id"] == "proof-iframe")
+    row["expected_frame_paths"] = ["/unrelated"]
+    row["results"]["dxaprove"]["observed"]["proof"]["proofs"][0]["frame_url"] = "http://127.0.0.1:49152/unrelated"
+    artifacts["markdown"] = runner.render_md(artifacts["corpus"])
+    assert invoke(artifacts).returncode == 1

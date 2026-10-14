@@ -3,6 +3,21 @@
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
+## Aktif teslim — R4 corpus v3 yerel kabulü
+
+Başlangıç 61dde5c. Corpus 9→14 genişledi: escaped/raw birlikte, no-op
+sanitizer→DOM, editor notes raw/fixed ve aynı-origin iframe. Adapter artık
+source/parameter/read/role ve açık frame allowlist'ini doğruluyor.
+Koordinatör kabulü: **527 test geçti**, sıfır hata/skip; strict Chrome CLI
+**14/14, TP=7 FP=0 FN=0**. [Kanıt](audit/2026-10-14-r4-corpus-v3/README.md).
+CI gate yeni kimlik ve 14 vaka sözleşmesine bağlandı. Kapsam paydası raporda
+açık; [karşılaştırma protokolü](bench/COMPARISON-PROTOCOL.md) yazıldı.
+Engine ve QA kod/test katkısından sonra kullanım limitinde durdu; koordinatör
+eksikleri tamamlayıp doğruladı. Aktif uzman/arka plan işi yok.
+Docker kodu değişmedi ve ürün regresyonları geçti; canlı Docker tekrar edilmedi.
+Sırada bu teslimin commit/push, hosted CI ve indirilen artifact kabulü var.
+Genel R4, auth/CSRF ve blind/admin kapsamı ile kontrollü rakip kıyası açık.
+
 ## Son doğrulanan teslim — R4 strict corpus artifact gate ve QA follow-up
 
 14 Ekim: CI artifact gate JSON raporu ve JUnit'i doğruluyordu ama corpus
@@ -23,7 +38,7 @@ skip/error; corpus 9/9, TP=3 FP=0 FN=0; Python 3.12.15/Linux ve kaynak
 hashleri eşleşti. [Uzak kabul](audit/2026-10-14-r4-provenance-gate/runtime-remote-acceptance.json).
 Sıradaki R4 işi: mevcut tek reader/source/sink kimliğini genişleten corpus
 vakaları ve incomplete-run kapsam paydası; karşılaştırma yöntemi de açık.
-QA `r4_qa_audit`, Engine `r4_strict_corpus` tamamlandı; aktif uzman yok.
+Bu runtime teslimindeki QA/Engine görevleri tamamlandı; yeni corpus görevleri yukarıda.
 
 ## Önceki teslim — R4 runner ve canlı Bludit kabulü
 

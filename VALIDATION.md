@@ -1,5 +1,18 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim R4 corpus v3
+
+- Base 61dde5c; Windows/Python 3.10.11, pytest 9.1.1, zorunlu Chrome.
+- Bütün bench testleri + test_browser_proof.py + test_proof_cleanup.py:
+  **527 passed**, sıfır failure/error/skip.
+- BENCH_STRICT=1 gerçek CLI: **14/14, TP=7 FP=0 FN=0**, sıfır incomplete.
+  JSON/canonical Markdown eşleşti; önceki 9-vaka sayıları tarihsel kaldı.
+- Kaynak/çıktı hashleri, tam komut ve ortam
+  [acceptance.json](audit/2026-10-14-r4-corpus-v3/acceptance.json) içinde.
+- Docker kodu değişmedi; mevcut ürün kontrol regresyonları bu koşuya dahil.
+  Canlı Docker/Bludit tekrar edilmedi. Yeni uzak CI/artifact kabulü bekliyor.
+
+
 ## 14 Ekim R4 strict corpus artifact provenance gate
 
 - Başlangıç commit'i `7ce1927e9ac7c2f24e3bbeccd91c87e7d5a29d60`.
