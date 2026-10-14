@@ -5,13 +5,22 @@ Son auth/blind dar teslim birleşik regresyonu: **193 passed**, sıfır hata/ski
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
 [VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
 
+## R5/K01 aynı-host temiz venv tekrarı
+
+QA uzmanı yeni Python 3.10.11 venv + pinned Playwright 1.63.0 + kurulu
+Chrome ile K01 proof 5/5 tekrarladı. Koordinatör 12 kanıt üyesinin hashlerini
+ve vaka README diffini doğruladı. Beş geçici port kapandı, aynı payload/fix
+retest kaydedildi. [Kanıt](audit/2026-10-14-r5-k01-clean-repeat/README.md).
+İkinci kişi/farklı ortam kabulü henüz yok; genel R5 açık. QA görevi tamam,
+aktif uzman yok.
+
 ## Devam eden teslim — auth/CSRF ana runner entegrasyonu
 
 Engine ana runner kod/testini tamamladı. Koordinatör 215 birleşik regresyonu
 ve gerçek Chrome runner CLI 6/6 kontrolünü doğruladı; altı cleanup geçti,
 aday XSS skorları ayrı kaldı. [Yerel kabul](audit/2026-10-14-r4-auth-runner/README.md).
 Zorunlu browser CI yeni testleri ve gerçek kontrol adımını çalıştıracak;
-uzak sonuç henüz bekliyor. R5/K01 temiz ortam tekrarı QA uzmanında sürüyor.
+uzak sonuç henüz bekliyor. R5/K01 aynı-host tekrar kanıtı yukarıda; ikinci ortam açık.
 Blind/admin ve kontrollü araç kıyası sırada.
 
 ## Son çalışma — auth/CSRF ve blind/admin sınır kontrolleri

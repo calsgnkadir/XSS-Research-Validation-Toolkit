@@ -1,0 +1,1 @@
+<!doctype html><script>alert("ordinary application dialog")</script>

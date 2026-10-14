@@ -76,9 +76,10 @@ bırakma. Output dizini önceden varsa komut durur; önceki kanıtı ezmez.
 Browser/Playwright yoksa deney başarısız olur, geçmiş sayılmaz. Ağ dış hedefe
 yöneltilemez; browser istekleri fixture origin'iyle sınırlandırılır.
 
-Depodaki çalışmada mevcut Python/browser ortamı kullanıldı; yukarıdaki yeni venv
-kurulumu bağımsız bir ikinci kişi tarafından henüz denenmedi. Bu yüzden K01-min
-vaka teslimi tamam, tam R5 temiz-ortam kabulü ayrı doğrulama bekler.
+14 Ekim'de yeni Python venv'i ve sabit Playwright sürümü ile aynı Windows
+makinesinde kurulu Chrome kullanılarak 5/5 tekrarlandı. [Yeni koşu kanıtı](../../audit/2026-10-14-r5-k01-clean-repeat/README.md)
+ortamı, hash'leri ve fixture kapanışını kaydeder. Bağımsız ikinci kişi veya
+farklı işletim sistemi kabulü henüz yoktur; tam R5 maddesi açıktır.
 
 ## Kanıt dosyaları ve tekrar test
 

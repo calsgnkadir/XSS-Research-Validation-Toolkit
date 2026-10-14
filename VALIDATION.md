@@ -1,5 +1,13 @@
 ﻿# Doğrulama kaydı — 2026-10-14
 
+## 14 Ekim R5/K01 yeni venv tekrarı
+
+Ayrı QA agentı Python 3.10.11 yeni venv, Playwright 1.63.0 ve kurulu Chrome
+155.0.8059.79 ile disposable K01 proof CLI 5/5, exit 0 çalıştırdı.
+Koordinatör 12 dosya hashini ve README diffini kontrol etti; fixture portları
+5/5 kapalı. [Komut, ortam, hashler](audit/2026-10-14-r5-k01-clean-repeat/acceptance.json).
+Bu bir pytest koşusu veya ikinci işletim sistemi kabulü değildir; genel R5 açık.
+
 ## 14 Ekim R4 auth kontrol runner entegrasyonu
 
 Koordinatör birleşik etkilenen paket: 215 passed, sıfır failure/error/skip.

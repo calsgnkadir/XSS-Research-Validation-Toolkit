@@ -1,0 +1,88 @@
+{
+  "base_commit": "fed161026d4272468b856f309801b866144a2f0f",
+  "scope": "owned disposable 127.0.0.1 K01 fixture only",
+  "command": ".dxa/r5-k01-venv-20261014-a/Scripts/python.exe cases/k01-stored-comment/prove.py --browser <installed Chrome> --output .dxa/r5-k01-proof-20261014-a",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows",
+    "platform_release": "10",
+    "playwright": "1.63.0",
+    "browser": "Chrome",
+    "browser_version": "155.0.8059.79",
+    "venv": "fresh .dxa/r5-k01-venv-20261014-a",
+    "dependency_pin": "playwright==1.63.0",
+    "dependency_install": "pip install -r cases/k01-stored-comment/requirements-proof.txt"
+  },
+  "result": {
+    "exit_code": 0,
+    "passed": 5,
+    "total": 5,
+    "controls": [
+      {
+        "name": "vulnerable",
+        "expected_execution": true,
+        "observed_canary_matches": true,
+        "posts": 1,
+        "passed": true
+      },
+      {
+        "name": "javascript-disabled",
+        "expected_execution": false,
+        "observed_canary_matches": false,
+        "posts": 1,
+        "passed": true
+      },
+      {
+        "name": "fixed",
+        "expected_execution": false,
+        "observed_canary_matches": false,
+        "posts": 1,
+        "passed": true
+      },
+      {
+        "name": "json-only",
+        "expected_execution": false,
+        "observed_canary_matches": false,
+        "posts": 1,
+        "passed": true
+      },
+      {
+        "name": "normal-dialog",
+        "expected_execution": false,
+        "observed_canary_matches": false,
+        "posts": 1,
+        "passed": true
+      }
+    ],
+    "same_payload_across_controls": true,
+    "source_equals_base_commit": true,
+    "fix_diff_matches_renderers": true,
+    "fixture_ports_closed_after_run": true,
+    "fixture_ports_checked": 5
+  },
+  "source_sha256": {
+    "prove.py": "55b9ba58de66f0effc51a73477f5cf2035b815ad89901e24ddc35b8611056491",
+    "render_fixed.py": "99960d46babaa86700aabe2daba5a3052bdb4cb8d5c1a25da78a99b212c38aaa",
+    "render_vulnerable.py": "23a884fad172562171b808f0a8b1bf570140b557e5506073bc581e2e1ce8f4a5"
+  },
+  "proof_sha256": {
+    "fix.diff": "dfcd62d10721300feb9a2b724533b477b3c79e85e1460e95eea2cbe1c6980348",
+    "fixed-request.json": "b814243328d7570492618465b243618800f6bfbc05a5ba24a93f6e779a34f394",
+    "fixed-response.txt": "1f3f5c5725dcf4c23f0d0845de95d069b37ff45a497a168cec29adf16137e8d6",
+    "javascript-disabled-request.json": "b814243328d7570492618465b243618800f6bfbc05a5ba24a93f6e779a34f394",
+    "javascript-disabled-response.txt": "0ff4f7a69b7cd4e2fd917d7eae50496c4a87e8333b9477faab3bfb9d4f077d56",
+    "json-only-request.json": "d949e9f77d70c5ecac18aeaa1c1a453c7c2f6ab9b485dfe7f6fedffbea562195",
+    "json-only-response.txt": "6f3b45c5fe7488ad408748049546dc363f3cab0baa19b527990d03ce66e40c13",
+    "normal-dialog-request.json": "05df9db5894b8c93a82d9dcae1ace36254b720760479f8820ce53741288124da",
+    "normal-dialog-response.txt": "73cc2c86013250329161a55cb3460e917c807c5ac80dae51533558a8c4b1ef37",
+    "result.json": "9ca100507cf2c452f6f7858e2cdd0a4e96660e7cb861c2a7866127cb9a8c0f94",
+    "vulnerable-request.json": "b814243328d7570492618465b243618800f6bfbc05a5ba24a93f6e779a34f394",
+    "vulnerable-response.txt": "0ff4f7a69b7cd4e2fd917d7eae50496c4a87e8333b9477faab3bfb9d4f077d56"
+  },
+  "limitations": [
+    "Anonymous author and independent reader browser context, without two authenticated roles.",
+    "Case-specific browser observation; bot HTTP finding remains reflection/candidate.",
+    "Negative observations cover the synchronous fixture and 500 ms window.",
+    "Local clean venv repeat on the same Windows host, not an independent second person or OS."
+  ]
+}

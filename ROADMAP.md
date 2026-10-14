@@ -362,6 +362,10 @@ Kabul ölçütleri:
 ## R5 — Stajın devamı olan güçlü vaka
 
 **K01-min tamam:** [stored yorum vakası](cases/k01-stored-comment/README.md).
+14 Ekim aynı Windows hostunda yeni Python venv, pinned Playwright ve mevcut
+Chrome ile bağımsız agent tekrarında 5/5 kontrol ve 5/5 fixture teardown geçti.
+[Koşu kanıtı](audit/2026-10-14-r5-k01-clean-repeat/README.md).
+İkinci kişi/farklı ortam tekrarı henüz yok; aşağıdaki genel kabul açık.
 Kaydetme→ayrı okuyucu context'i→canary, aynı payload ile encoding sonrası retest,
 JS kapalı/JSON/normal dialog negatif kontrolleri; request/response, fix diff,
 ortam sürümleri ve kaynak hash'leri mevcut. Yeni CVE/gerçek ürün bulgusu değildir.
