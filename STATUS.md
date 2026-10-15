@@ -2,6 +2,14 @@
 
 ## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
 
+Kod/kanıt commit'i `157a4387a1c60fd4520c25cb5477ec266518835f`
+origin/main'e push edildi ve uzak ref hash'i doğrulandı.
+[Genel CI 38806623338](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38806623338)
+üç job success; required browser proof, ana test ve opt-in browser işi başarılı.
+[K01 Linux 38806623393](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38806623393)
+success. Bunlar workflow/job sonuçlarıdır; indirilen artifact içeriği ayrıca
+doğrulanmadı. K01 Linux koşusu ikinci insan tekrarı değildir.
+
 İki native uzman görevi tamamlandı; aktif uzman yok. R4 Engine, eski Git
 ağacındaki iki bekleyen gate dosyasını bu çalışma kopyasına kaynak karşılaştırmasıyla
 aktardı. v3 manifestinde dört kırmızı karşı örnek ortak/satır timeout,
@@ -33,7 +41,7 @@ kanıtı değiştirmemesi için dar `.gitattributes` kuralları doğrulandı.
 Bu OneDrive klasöründe `.git` kullanıcı isteğiyle sonradan kuruldu; yerel main
 `df967d5` ile origin/main eşleşti, mevcut dosyalar değiştirilmedi. Uzmanların
 test anında `.git` yoktu; test edilen kaynaklar SHA-256 manifestleriyle
-tanımlandı. Bu yerel teslim henüz commit/push edilmedi ve yeni uzak CI yok.
+tanımlandı. Kod/kanıt tesliminin Git ve CI sonucu en üstte ayrı kaydedildi.
 Önceki Git/CI kayıtları aşağıda tarihsel bağlamdır. Sıradaki uygulanabilir adım R4/R5'in
 ertelediğimiz insan kabulü dışında kalan teknik maddelerini ROADMAP sırasıyla
 seçmek; sürüm veya genel R4/R5 tamamlanma ilanı yapılmaz.

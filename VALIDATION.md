@@ -2,6 +2,16 @@
 
 ## 16 October local R4/R5 resume in the OneDrive copy
 
+Commit `157a4387a1c60fd4520c25cb5477ec266518835f` was pushed to
+origin/main and the remote ref hash verified equal. GitHub Actions
+[general CI 38806623338](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38806623338)
+completed successfully: required authenticated browser proof, main analyzer
+tests (including the R4 gate), and opt-in browser harness all passed.
+[K01 Linux 38806623393](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38806623393)
+also completed successfully. This is workflow/job status, not downloaded
+artifact-content verification or an independent human repeat. The final code
+SHA is the commit above; this status follow-up is documentation.
+
 After Git metadata restoration, the R4 specialist found three further red
 counterexamples (credential angle-value bypass and v3 Dalfox report alias);
 the focused gate suite passed **132/132** after fixes. Coordinator reran the
@@ -10,7 +20,8 @@ source. First run: **371 passed, 1 failed**, a Windows loopback
 `ConnectionAbortedError [WinError 10053]` in the fixture deadline test.
 That isolated test passed **1/1**. Repeated full run: **372 passed, zero
 failure/error/skip**, 51.68 seconds. The earlier 368 result below applies
-to the previous source revision. No remote CI was run for final source.
+to the previous source revision. Remote CI was checked afterward, as recorded
+above.
 
 R4 `review-acceptance.json` binds the final gate files to SHA-256 and base
 `df967d5`; both audit packages now preserve proof bytes under scoped

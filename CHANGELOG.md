@@ -2,6 +2,10 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
+- Code/evidence commit `157a438` was pushed and remote main hash verified.
+  General CI 38806623338 passed all three jobs; K01 Linux 38806623393 passed.
+  Artifact contents were not independently downloaded in this follow-up.
+
 - Final R4 review fixed two further v3 gate gaps (credential angle values and
   Dalfox canonical report shape). Three regressions failed first; focused
   tests passed 132/132 after correction. Coordinator final-source combined
@@ -18,8 +22,8 @@
 - Repeated K01 locally: 5/5 controls, five closed fixture ports and 22 focused
   tests passed. The independent second-person repeat remains deferred.
 - Source hashes and local evidence are under `audit/r4-local-acceptance-resume/`
-  and `audit/r5-local-closure-resume/`. No commit, push or hosted CI in this
-  working copy.
+  and `audit/r5-local-closure-resume/`. Git delivery and hosted CI are recorded
+  above, separately from the local test results.
 
 ## Unreleased — 2026-10-15
 
