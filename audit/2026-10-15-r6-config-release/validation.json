@@ -1,0 +1,42 @@
+{
+  "base_commit": "2abcd51",
+  "test_command": "py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadyn_config.py tools/dom-xss-analyzer/test_dxadyn_report_identity.py tools/dom-xss-analyzer/test_r6_cli_modes.py -q -p no:cacheprovider --tb=short --junitxml=audit/2026-10-15-r6-config-release/focused.xml",
+  "result": {
+    "tests": "101",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "2.894"
+  },
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "tools/dom-xss-analyzer/test_dxadyn_config.py": "9116c4e00aecf17626a7f2609234f7487c561457006e7ee2572093cc4ce6d34d",
+    "tools/dom-xss-analyzer/test_dxadyn_report_identity.py": "0ae14cd14e5c116e805a65ccc5d41ff666667441960112f6b2f87857b5e8b8a8",
+    "tools/dom-xss-analyzer/test_r6_cli_modes.py": "6da82223ba5982a0bb2bc15c9f40b082744aac5a8f6da494cf8538edb93039db",
+    "audit/2026-10-15-r6-config-release/smoke_installed.py": "44dc56cc19f248c679e772b6d3f45c616d601087da141ee2adf41973a1992031"
+  },
+  "wheel": {
+    "filename": "dxa_research_toolkit-0.0.0.dev0-py3-none-any.whl",
+    "sha256": "6324bea9970dc8cfd79875cfcb9630f55214658b0662f42614cfaab6541c437a",
+    "modules": [
+      "dxa.py",
+      "dxa2dyn.py",
+      "dxa_attempts.py",
+      "dxa_callback.py",
+      "dxa_evidence.py",
+      "dxa_proof_lab.py",
+      "dxadom.py",
+      "dxadyn.py",
+      "dxaprove.py"
+    ],
+    "build_interpreter": ".dxa/r6-package-venv/Scripts/python.exe",
+    "installed_into_fresh_venv": ".dxa/r6-resume-install-venv",
+    "note": "Wheel built before README usage paragraph was added; runtime sources match installed smoke. Not a release artifact."
+  },
+  "evidence_redaction": {
+    "file": "focused.xml",
+    "change": "Removed hostname attribute only; test results and timings unchanged. Raw original preserved in private .dxa directory.",
+    "original_sha256": "be6e908e519d1b8f629c14f0ff3387d123ba68c954580a513cf67bd33bebbcda",
+    "shared_sha256": "9d72bb392264186b4fadb32f628555946d6aeaceb5e604151021072aef31a11e"
+  }
+}

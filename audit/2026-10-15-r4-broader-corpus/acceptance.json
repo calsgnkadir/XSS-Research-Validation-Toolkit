@@ -1,0 +1,67 @@
+{
+  "base_commit": "2abcd51",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "pytest": {
+    "exit_code": 0,
+    "passed": 254,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 166.45,
+    "browser_required": true,
+    "modules": [
+      "bench/test_ci_acceptance.py",
+      "bench/test_proof_adapter.py",
+      "bench/test_proof_corpus.py",
+      "bench/test_proof_identity_matrix.py",
+      "tools/dom-xss-analyzer/test_browser_proof.py",
+      "tools/dom-xss-analyzer/test_proof_cleanup.py"
+    ]
+  },
+  "strict_cli": {
+    "exit_code": 0,
+    "BENCH_STRICT": "1",
+    "totals": {
+      "dxaprove": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0,
+        "wall": 56.85,
+        "selected": 17,
+        "completed": 17,
+        "skipped": 0,
+        "error": 0,
+        "timeout": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      }
+    },
+    "json_markdown_match": true
+  },
+  "source_sha256": {
+    "bench/run.py": "6b399eebc7a69f8812602f71ece4238168cee4b018aec45eb6892012962e8a31",
+    "bench/check_ci_acceptance.py": "76c1b12103918085eddeb87caf534d39522ecd4f3e2bb4a8dcaf3688955f1ce8",
+    "bench/test_ci_acceptance.py": "3e1fb1ad54954ec23c22b3b256005f00513f1d750db88cf05221563c94c35027",
+    "bench/test_proof_adapter.py": "e37644868a9e1d78e82f7dd3c64c4606850c6890b4321c381940987ee2de7246",
+    "bench/test_proof_corpus.py": "dd942936aaef8c26af6002242f39778ee14a58dd072fc3b931997edafcff6df2",
+    "bench/test_proof_identity_matrix.py": "77d43149c02d2ce0bc670bd7ccbbff4c1362d9b120645c9f99ca5afe333c0177",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "eb02afd69a394423d10be1b27a3d112c480bec4a7d916e386aefa8503f6ecd58",
+    "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01"
+  },
+  "artifact_sha256": {
+    "pytest.xml": "c7e7c36300484dffb00a36236e0ae1b9885f30afd88e2e2eff33a4da554c0eff",
+    "r4-proof.json": "8e157af56e0d33ab81a8f7f980f7067626b3f25c75e4196bb9af71fd9368b145",
+    "r4-proof.md": "7dad750646233f860d363fb32ee86a8ea7c707c4e88e4b6f44be4c7e3ef8e62e"
+  },
+  "limits": [
+    "Local Windows test, not Linux CI artifact acceptance",
+    "Single-account loopback fixture, not admin role boundary or vulnerability triage"
+  ],
+  "redactions": [
+    "Removed JUnit hostname attribute",
+    "Replaced local browser executable command argument with <local-chrome>; re-rendered Markdown"
+  ]
+}

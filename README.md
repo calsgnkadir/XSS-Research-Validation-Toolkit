@@ -99,6 +99,25 @@ Statik `dxa` CLI için isteğe bağlı JSON config örneği:
 `--min-confidence` > config > varsayılan `low` şeklindedir. Bu dar config
 sözleşmesi yalnız statik CLI için geçerlidir; dosyaya oturum bilgisi koymayın.
 
+Dynamic `dxadyn` has a separate, limited HTTP tuning config:
+
+```json
+{"schema_version": 1, "depth": 1, "parallel": 1, "rate": 0}
+```
+
+For an authorized local target, `dxadyn <local-url> --config http.json --depth 0`
+uses explicit CLI values before config, then defaults (`depth=0`, `parallel=1`,
+`rate=0`, unlimited). Depth applies to reflected mode, parallel to reflected/stored,
+and rate to HTTP modes. DOM rejects HTTP tuning. Worker count does not promise
+parallel HTTP throughput; shared-session HTTP transactions remain serialized.
+
+UTF-8 BOM is supported. Unknown/duplicate fields, invalid types/version, negative
+depth/rate, parallel below one, nonfinite rate and irrelevant mode settings return
+exit 2 before target/session/browser I/O. CLI overrides cannot hide invalid config.
+Targets, credentials and output paths are not config fields. `dxaprove --spec`
+retains its separate proof contract.
+[Config scope and validation](audit/2026-10-15-r6-config-release/README.md).
+
 ## Staj ve araştırma kayıtları
 
 - [11 tarihsel teknik yazı](writeups/README.md): XSS, SQLi, JWT, BOLA ve araç geliştirme.

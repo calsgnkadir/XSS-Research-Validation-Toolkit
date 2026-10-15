@@ -85,6 +85,9 @@ sistemini kapsadı. Bağımsız ikinci insan kabulü henüz yoktur; tam R5 madde
 
 ### Bağımsız kişiye teslim ve gate profilleri
 
+Uygulayıcı, koşusunu [bağımsız tekrar sonuç formuyla](INDEPENDENT-REPEAT.md)
+teslim edebilir. Şablon doldurulmamıştır; yeni bir kabul iddiası değildir.
+
 `--profile local`, rapordaki tam Python sürümünü ve işletim sistemini komutu
 çalıştıran ortamla eşleştirir. Varsayılan `--profile ci` Linux/Python 3.12 ister;
 hosted workflow bu varsayılanı kullanır. Her iki profil de Playwright 1.63.0,

@@ -28,6 +28,9 @@ IDENTITIES = {
     "proof-editor-raw": ("editor-raw", "/notes", "text", "/review", "editor", True, ("/review",)),
     "proof-editor-fixed": ("editor-fixed", "/notes", "text", "/review", "editor", False, ("/review",)),
     "proof-iframe": ("iframe", "/comments", "comment", "/comments", "reader", True, ("/frame",)),
+    "proof-comment": ("comment", "/comments", "comment", "/comments", "reader", False, ("/comments",)),
+    "proof-template": ("template", "/comments", "comment", "/comments", "reader", False, ("/comments",)),
+    "proof-template-activated": ("template-activated", "/comments", "comment", "/comments", "reader", True, ("/comments",)),
 }
 
 
@@ -66,16 +69,16 @@ def make_no_execution_proof(case_id):
     return proof
 
 
-def test_v3_identity_matrix_is_bound_to_independent_case_contract():
+def test_v4_identity_matrix_is_bound_to_independent_case_contract():
     targets = corpus_targets()
     assert set(targets) == set(IDENTITIES)
-    assert runner.proof_corpus()["corpus_version"] == "loopback-proof/3"
+    assert runner.proof_corpus()["corpus_version"] == "loopback-proof/4"
 
     for case_id, (mode, source_path, parameter, read_path, role, positive, frame_paths) in IDENTITIES.items():
         target = targets[case_id]
         identity = {"method": "POST", "source_path": source_path,
                     "parameter": parameter, "read_path": read_path, "role": role}
-        expected_id = f"proof-v3:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
+        expected_id = f"proof-v4:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
         assert target["case_id"] == expected_id
         assert target["expected_ids"] == ([expected_id] if positive else [])
         assert target["expected_identity"] == identity
@@ -186,7 +189,7 @@ def test_markdown_reports_proof_coverage_incomplete_denominator_and_frame_allowl
 
 
 def test_zero_selected_proof_rows_render_coverage_as_not_applicable():
-    report = runner.run_all({"corpus_version": "loopback-proof/3", "targets": []}, ["dxaprove"], None)
+    report = runner.run_all({"corpus_version": "loopback-proof/4", "targets": []}, ["dxaprove"], None)
     markdown = runner.render_md(report)
     assert report["totals"]["dxaprove"]["selected"] == 0
     assert "dxaprove completed/selected coverage ratio: n/a" in markdown

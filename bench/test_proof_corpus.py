@@ -36,6 +36,9 @@ EXPECTED = {
     "proof-editor-raw": True,
     "proof-editor-fixed": False,
     "proof-iframe": True,
+    "proof-comment": False,
+    "proof-template": False,
+    "proof-template-activated": True,
 }
 EDITOR_CASES = {"proof-editor-raw", "proof-editor-fixed"}
 EXPECTED_FRAME_PATHS = {"proof-iframe": ["/frame"]}
@@ -45,16 +48,16 @@ ORACLE_PAYLOAD = ORACLE_CID + '<img src="/__dxa_missing" onerror="window.__dxaPr
 
 def test_corpus_has_exact_independent_labels_and_identities():
     corpus = runner.proof_corpus()
-    assert corpus["corpus_version"] == "loopback-proof/3"
+    assert corpus["corpus_version"] == "loopback-proof/4"
     targets = {t["id"]: t for t in corpus["targets"]}
-    assert len(corpus["targets"]) == 14
+    assert len(corpus["targets"]) == 17
     assert targets.keys() == EXPECTED.keys()
     for case, positive in EXPECTED.items():
         mode = case.removeprefix("proof-")
         source_path, parameter, read_path, role = (
             ("/notes", "text", "/review", "editor") if case in EDITOR_CASES
             else ("/comments", "comment", "/comments", "reader"))
-        identity = f"proof-v3:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
+        identity = f"proof-v4:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
         assert targets[case]["case_id"] == identity
         assert targets[case]["expected_ids"] == ([identity] if positive else [])
         assert targets[case]["expected_identity"] == {
@@ -107,6 +110,12 @@ def test_fixture_content_and_state_independent_of_scanner(case):
             assert "ordinary application dialog" in body and value not in body
         elif mode in ("title", "textarea"):
             assert f"<{mode}>{value}</{mode}>" in body
+        elif mode == "comment":
+            assert '<!--' + value + '-->' in body
+        elif mode in ("template", "template-activated"):
+            assert '<template id="stored-template">' + value + '</template>' in body
+            assert ('document.importNode' in body) is (mode == "template-activated")
+            assert ('document.getElementById("sink").appendChild' in body) is (mode == "template-activated")
         elif mode == "delayed":
             assert "setTimeout" in body and "150" in body and json.dumps(value) in body
         elif mode == "eval":
@@ -176,8 +185,8 @@ def test_real_runner_matches_independent_case_oracle(browser_report, case, posit
 
 def test_real_runner_strict_totals(browser_report):
     totals = browser_report["totals"]["dxaprove"]
-    assert totals["selected"] == totals["completed"] == 14
-    assert (totals["tp"], totals["fp"], totals["fn"]) == (7, 0, 0)
+    assert totals["selected"] == totals["completed"] == 17
+    assert (totals["tp"], totals["fp"], totals["fn"]) == (8, 0, 0)
     assert all(totals[status] == 0 for status in ("error", "timeout", "skipped", "invalid", "inconclusive"))
     assert not runner.strict_failed(browser_report)
 
@@ -198,5 +207,30 @@ def test_resource_callback_occurs_with_javascript_disabled(browser_path):
                 page.goto(spec["read_url"], wait_until="networkidle")
                 assert state["resource_callback_hits"].get(ORACLE_CID, 0) >= 1
                 assert page.locator("img[onerror], script").count() == 0
+            finally:
+                browser.close()
+
+
+@pytest.mark.parametrize("mode,active_images,executes", [
+    ("comment", 0, False), ("template", 0, False), ("template-activated", 1, True),
+])
+def test_inert_to_active_context_independent_browser_oracle(browser_path, mode, active_images, executes):
+    """Inspect native DOM behavior without deriving truth from scanner results."""
+    from playwright.sync_api import sync_playwright
+    with lab(mode) as (spec, state):
+        submit_fixture(spec, ORACLE_PAYLOAD)
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True, executable_path=browser_path)
+            try:
+                context = browser.new_context()
+                page = context.new_page()
+                login = spec["auth_flow"]["steps"][0]
+                assert context.request.post(login["url"], form=login["body"]).status == 200
+                assert page.goto(spec["read_url"], wait_until="networkidle").status == 200
+                assert page.locator("img").count() == active_images
+                if mode.startswith("template"):
+                    assert page.evaluate("document.getElementById('stored-template').content.querySelectorAll('img').length") == 1
+                assert page.evaluate("window.__dxaProof || null") == (ORACLE_CID if executes else None)
+                assert state["posts"] == 1 and state["value"] == ORACLE_PAYLOAD
             finally:
                 browser.close()

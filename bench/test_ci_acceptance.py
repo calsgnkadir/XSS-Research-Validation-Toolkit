@@ -17,6 +17,7 @@ LABELS = {
     "delayed": True, "eval": True, "title": False, "textarea": False,
     "resource-callback": False, "sanitized-then-raw": True,
     "identity-sanitizer": True, "editor-raw": True, "editor-fixed": False, "iframe": True,
+    "comment": False, "template": False, "template-activated": True,
 }
 MODULES = ("test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus", "test_proof_identity_matrix")
 CID = "dxa0123456789abcdef0123456789abcdef"
@@ -52,7 +53,7 @@ def corpus():
                              "parameter": "text" if editor else "comment", "read_path": "/review" if editor else "/comments",
                              "role": "editor" if editor else "reader"}
         suffix = ":".join(expected_identity[k] for k in ("method", "source_path", "parameter", "read_path", "role"))
-        identity = f"proof-v3:{mode}:{suffix}"
+        identity = f"proof-v4:{mode}:{suffix}"
         observation = {
             "status": "completed", "ok": True, "proof": proof(positive, mode), "wall": 0.1,
             "findings": [{"finding_id": identity, "evidence": "execution-observed", "canary_matched": True, "triage": "unreviewed"}] if positive else [],
@@ -75,9 +76,9 @@ def corpus():
                             "corpus_sha256": hashlib.sha256(json.dumps(runner.proof_corpus(), sort_keys=True).encode()).hexdigest()},
             "command": ["bench/run.py", "--proof-suite", "--no-history", "--out", "r4-proof.md"],
             "measurement": "correlated-browser-execution; not confirmed vulnerability accuracy",
-            "corpus_version": "loopback-proof/3", "scanners": ["dxaprove"], "rows": rows,
-            "totals": {"dxaprove": {"selected": 14, "completed": 14, "tp": 7, "fp": 0, "fn": 0,
-                                     "error": 0, "timeout": 0, "skipped": 0, "invalid": 0, "inconclusive": 0, "wall": 1.4}}}
+            "corpus_version": "loopback-proof/4", "scanners": ["dxaprove"], "rows": rows,
+            "totals": {"dxaprove": {"selected": 17, "completed": 17, "tp": 8, "fp": 0, "fn": 0,
+                                     "error": 0, "timeout": 0, "skipped": 0, "invalid": 0, "inconclusive": 0, "wall": 1.7}}}
 
 
 @pytest.fixture
@@ -325,7 +326,7 @@ def test_wrong_corpus_command_provenance_fails(artifacts, command):
 def test_markdown_score_mismatch_fails(artifacts):
     assert invoke(artifacts).returncode == 0
     path = artifacts["path"] / "corpus-markdown.md"
-    content = path.read_text(encoding="utf-8").replace("| dxaprove | 7 | 0 | 0 |", "| dxaprove | 2 | 1 | 0 |")
+    content = path.read_text(encoding="utf-8").replace("| dxaprove | 8 | 0 | 0 |", "| dxaprove | 2 | 1 | 0 |")
     path.write_text(content, encoding="utf-8")
     result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
                              "--corpus", str(artifacts["path"] / "corpus.json"),
@@ -350,7 +351,7 @@ def test_markdown_missing_case_fails(artifacts):
 def test_markdown_identity_mismatch_fails(artifacts):
     assert invoke(artifacts).returncode == 0
     path = artifacts["path"] / "corpus-markdown.md"
-    content = path.read_text(encoding="utf-8").replace("proof-v3:raw:POST:/comments:comment:/comments:reader", "proof-v3:other:POST:/comments:comment:/comments:reader", 1)
+    content = path.read_text(encoding="utf-8").replace("proof-v4:raw:POST:/comments:comment:/comments:reader", "proof-v4:other:POST:/comments:comment:/comments:reader", 1)
     path.write_text(content, encoding="utf-8")
     result = subprocess.run([sys.executable, str(GATE), "--junit", str(artifacts["path"] / "junit.xml"),
                              "--corpus", str(artifacts["path"] / "corpus.json"),

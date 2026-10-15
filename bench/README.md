@@ -1,17 +1,19 @@
-# Current benchmark status — 14 October 2026
+# Current benchmark status - 15 October 2026
 
-The current proof benchmark is loopback-proof/3: 14 disposable loopback
-fixtures, seven execution-positive and seven bounded negative windows.
+The current proof benchmark is loopback-proof/4: 17 disposable loopback
+fixtures, eight execution-positive and nine bounded negative windows.
+The added cases distinguish inert HTML comments and template content from
+template content imported into the active document.
 Use --proof-suite --no-history; BENCH_STRICT=1 rejects FP/FN and incomplete
 outcomes. Candidate scanner counts and Bludit product controls are separate.
 
-[Current acceptance and limits](../audit/2026-10-14-r4-corpus-v3/README.md),
+[Current acceptance and limits](../audit/2026-10-15-r4-broader-corpus/README.md),
 [comparison/coverage protocol](COMPARISON-PROTOCOL.md),
 [main roadmap](../ROADMAP.md).
 
-Local acceptance: 527 benchmark/R3 tests; strict browser CLI 14/14,
-TP=7 FP=0 FN=0. New hosted acceptance is tracked in the linked audit.
+Validation results and source hashes are recorded in the linked audit.
 External CLI candidate parsers do not establish comparable execution accuracy.
+Separate admin accounts and controlled tool comparison remain open.
 
 ---
 

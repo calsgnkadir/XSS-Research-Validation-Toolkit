@@ -2305,10 +2305,52 @@ def clear_auth_header(name):
     EXTRA_HEADERS.pop(name, None)
 
 
+def _load_cli_config(path, parser):
+    """Load only non-secret HTTP tuning; never echo file contents on errors."""
+    if path is None:
+        return {}
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate config key")
+            result[key] = value
+        return result
+
+    try:
+        with open(path, encoding="utf-8-sig") as stream:
+            config = json.load(stream, object_pairs_hook=unique_object)
+    except (OSError, UnicodeError, ValueError):
+        parser.error("config must be a readable UTF-8 JSON object with unique keys")
+    if not isinstance(config, dict):
+        parser.error("config must be a JSON object")
+    if type(config.get("schema_version")) is not int or config["schema_version"] != 1:
+        parser.error("config schema_version must be integer 1")
+    if set(config) - {"schema_version", "depth", "parallel", "rate"}:
+        parser.error("config supports only schema_version, depth, parallel, rate")
+    for key, minimum in (("depth", 0), ("parallel", 1)):
+        if key in config and (type(config[key]) is not int or config[key] < minimum):
+            parser.error(f"config {key} must be an integer >= {minimum}")
+    if "rate" in config:
+        value = config["rate"]
+        try:
+            valid = type(value) in (int, float) and math.isfinite(value) and value >= 0
+        except OverflowError:
+            valid = False
+        if not valid:
+            parser.error("config rate must be finite and >= 0; 0 means unlimited")
+    return config
+
+
 def main():
     ap = argparse.ArgumentParser(description="dynamic reflection verifier (companion to dxa)")
     ap.add_argument("url", nargs="?", help="target URL for reflected mode (authorized/local only)")
-    ap.add_argument("--depth", type=int, default=0,
+    ap.add_argument("--config", metavar="FILE",
+                    help="UTF-8 JSON schema_version=1: depth (reflected), parallel "
+                         "(reflected/stored), rate (HTTP). CLI > config > defaults; "
+                         "targets, credentials and output paths are not supported.")
+    ap.add_argument("--depth", type=int,
                     help="reflected mode: follow same-host links this many hops (default 0)")
     ap.add_argument("--probe-headers", default="",
                     help="reflected mode: comma-separated header names to inject "
@@ -2389,14 +2431,13 @@ def main():
                          "--header 'X-CSRF-Token: abc'")
 
     # Phase 1.1: concurrency + rate limit + jitter
-    ap.add_argument("--parallel", type=int, default=1, metavar="N",
-                    help="run up to N submits in parallel (ThreadPoolExecutor). "
-                         "Default 1 = sequential (historical behaviour). "
-                         "10 is a sensible upper bound for a friendly local target; "
-                         "combine with --rate to stay polite. Fan-out paths that "
-                         "benefit most: --variants all --waf-bypass (25 shapes -> "
-                         "one round-trip's worth of wall-clock with N=10).")
-    ap.add_argument("--rate", type=float, default=0, metavar="RPS",
+    ap.add_argument("--parallel", type=int, metavar="N",
+                    help="reflected/stored modes: schedule probe jobs with up to N "
+                         "workers (integer >= 1; default 1 = sequential). "
+                         "Shared-session HTTP transactions remain serialized; "
+                         "worker count does not promise parallel HTTP throughput. "
+                         "Combine with --rate to limit request rate.")
+    ap.add_argument("--rate", type=float, metavar="RPS",
                     help="token-bucket rate limit in requests per second across "
                          "all workers. 0 = unlimited (default); negative/nonfinite "
                          "values are errors. Capacity=max(1, rate), then sustained "
@@ -2498,6 +2539,12 @@ def main():
                     help="versioned HTTP/DOM findings and operational events")
     ap.add_argument("--auth-check", metavar="JSON", help="Target-specific session check file: url and expect JSONPath/value map; mismatch stops scanning")
     args = ap.parse_args()
+    config = _load_cli_config(args.config, ap)
+    tuning = {key for key in ("depth", "parallel", "rate")
+              if getattr(args, key) is not None or key in config}
+    for key, default in (("depth", 0), ("parallel", 1), ("rate", 0)):
+        if getattr(args, key) is None:
+            setattr(args, key, config.get(key, default))
     # Validate mode selection before browser discovery, session setup or I/O.
     if sum(bool(mode) for mode in (args.dom, args.stored, args.flow)) > 1:
         ap.error("choose only one of --dom, --stored, or --flow")
@@ -2508,6 +2555,17 @@ def main():
     if args.dom and any((args.auth_flow, args.login, args.cookie, args.header,
                          args.csrf_refresh, args.csrf_header)):
         ap.error("--dom does not support HTTP session options (--auth-flow, --login, --cookie, --header, --csrf-refresh, --csrf-header)")
+    reflected = bool(args.url) and not any((args.dom, args.stored, args.flow))
+    if "depth" in tuning and not reflected:
+        ap.error("depth tuning requires reflected mode with a positional URL")
+    if "parallel" in tuning and not (reflected or args.stored):
+        ap.error("parallel tuning requires reflected or stored mode")
+    if "rate" in tuning and args.dom:
+        ap.error("rate tuning applies to HTTP modes; --dom is unsupported")
+    if args.depth < 0:
+        ap.error("--depth must be >= 0")
+    if args.parallel < 1:
+        ap.error("--parallel must be >= 1")
     if (args.stored and not args.json_body and not args.header_target
             and args.csrf_field and args.csrf_header):
         ap.error("choose form CSRF or header CSRF for stored submission; use --csrf-field '' for header mode")

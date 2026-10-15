@@ -1,0 +1,33 @@
+{
+  "base_commit": "2abcd51d23640b15d5a2cf841bc01bfce1e6636e",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "command": "py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadyn.py tools/dom-xss-analyzer/test_dxadyn_config.py tools/dom-xss-analyzer/test_dxadyn_report_identity.py tools/dom-xss-analyzer/test_r6_cli_modes.py tools/dom-xss-analyzer/test_auth_guards.py tools/dom-xss-analyzer/test_r2_contract.py tools/dom-xss-analyzer/test_http_evidence.py bench/test_bench.py bench/test_ci_acceptance.py cases/k01-stored-comment/test_fixture.py cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short --junitxml=.dxa/resume-20261015-integration.xml",
+  "exit_code": 0,
+  "junit": {
+    "tests": 503,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "bench/check_ci_acceptance.py": "76c1b12103918085eddeb87caf534d39522ecd4f3e2bb4a8dcaf3688955f1ce8",
+    "bench/run.py": "6b399eebc7a69f8812602f71ece4238168cee4b018aec45eb6892012962e8a31",
+    "bench/test_ci_acceptance.py": "3e1fb1ad54954ec23c22b3b256005f00513f1d750db88cf05221563c94c35027",
+    "bench/test_proof_adapter.py": "e37644868a9e1d78e82f7dd3c64c4606850c6890b4321c381940987ee2de7246",
+    "bench/test_proof_corpus.py": "dd942936aaef8c26af6002242f39778ee14a58dd072fc3b931997edafcff6df2",
+    "bench/test_proof_identity_matrix.py": "77d43149c02d2ce0bc670bd7ccbbff4c1362d9b120645c9f99ca5afe333c0177",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "eb02afd69a394423d10be1b27a3d112c480bec4a7d916e386aefa8503f6ecd58",
+    "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "tools/dom-xss-analyzer/test_dxadyn_config.py": "9116c4e00aecf17626a7f2609234f7487c561457006e7ee2572093cc4ce6d34d"
+  },
+  "junit_share_copy": "hostname removed; test results unchanged",
+  "limitations": [
+    "No independent human repeat supplied",
+    "Browser corpus is separately validated by native Engine",
+    "No release tag or external target test",
+    "Remote CI pending push"
+  ]
+}

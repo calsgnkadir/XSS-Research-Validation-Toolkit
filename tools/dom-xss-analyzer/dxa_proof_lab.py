@@ -89,6 +89,16 @@ def lab(mode="raw"):
             elif mode in ("title", "textarea"):
                 # The image payload has no closing title/textarea tag: it is inert RCDATA.
                 body = '<' + mode + '>' + value + '</' + mode + '>'
+            elif mode == "comment":
+                # The submitted image has no comment terminator and stays inert.
+                body = '<!--' + value + '-->'
+            elif mode in ("template", "template-activated"):
+                # Template content is inert until the application imports it into
+                # the active document. The fixture never assigns the canary.
+                body = '<template id="stored-template">' + value + '</template><div id="sink"></div>'
+                if mode == "template-activated":
+                    body += ('<script>document.getElementById("sink").appendChild('
+                             'document.importNode(document.getElementById("stored-template").content,true));</script>')
             elif mode == "resource-callback":
                 # Preserve submitted text inertly; a separate handler-free image makes
                 # a CID-correlated HTTP request, never a JavaScript canary assignment.

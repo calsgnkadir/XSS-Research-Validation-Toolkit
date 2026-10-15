@@ -1,5 +1,22 @@
 # Güncel devam noktası — 15 Ekim 2026
 
+## Latest resumed delivery - 15 October 2026
+
+R4 corpus v4 accepted locally: 17/17, TP8 FP0 FN0, 254 required-Chrome tests.
+R6 dynamic config accepted: 101 focused tests and fresh-venv installed wheel
+smoke 6/6. Coordinator integration: 503 passed, zero failures/errors/skips.
+These suites overlap; counts are not added. Two native specialists completed
+implementation review/testing; no background agent task remains.
+[Commands, source hashes and limits](audit/2026-10-15-resumed-delivery/README.md).
+R5 human-repeat form reviewed and linked; independent human evidence has not
+been supplied, so acceptance remains open. No release tag created.
+Git delivery and remote CI are pending at this local acceptance snapshot.
+Next: remote artifact acceptance, then R4 separate admin fixture/controlled
+comparison and R6 remaining overall config/release criteria. R5 needs a real
+participant's fresh checkout/venv run; another AI or CI run cannot replace it.
+
+## Previous completed delivery
+
 Yerel teslim tamam: Engine R4 callback özetini fixture kanıtına bağlayan gate'i,
 QA R5 taşınabilir tekrar komutunu tamamladı. Koordinatör R6 mod çakışmalarını
 işlem öncesi reddetti; yedi rapor dalının JSON/HTML matrisi eklendi.

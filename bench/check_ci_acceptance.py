@@ -22,10 +22,10 @@ REQUIRED_MODULES = {
     "test_proof_identity_matrix",
 }
 POSITIVE = {"proof-raw", "proof-delayed", "proof-eval", "proof-sanitized-then-raw",
-            "proof-identity-sanitizer", "proof-editor-raw", "proof-iframe"}
+            "proof-identity-sanitizer", "proof-editor-raw", "proof-iframe", "proof-template-activated"}
 CASE_IDS = POSITIVE | {
     "proof-fixed", "proof-json", "proof-dialog", "proof-title", "proof-textarea",
-    "proof-resource-callback", "proof-editor-fixed",
+    "proof-resource-callback", "proof-editor-fixed", "proof-comment", "proof-template",
 }
 
 
@@ -67,7 +67,7 @@ def proof_origin(proof, expected_read_path="/comments"):
 
 
 def check_corpus(report):
-    require(report["corpus_version"] == "loopback-proof/3"
+    require(report["corpus_version"] == "loopback-proof/4"
             and report["scanners"] == ["dxaprove"], "unexpected corpus or scanner")
     rows = report["rows"]
     require(isinstance(rows, list) and len(rows) == len(CASE_IDS)

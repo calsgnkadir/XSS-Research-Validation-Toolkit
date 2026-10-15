@@ -380,9 +380,12 @@ def proof_corpus(browser_path=None):
         ("editor-raw", True, "The editor-role fixture renders the submitted note as raw HTML.", "/notes", "text", "/review", "editor", None),
         ("editor-fixed", False, "The editor-role fixture HTML-encodes the submitted note.", "/notes", "text", "/review", "editor", None),
         ("iframe", True, "The submitted canary executes in the fixture's explicitly expected same-origin /frame.", "/comments", "comment", "/comments", "reader", ["/frame"]),
+        ("comment", False, "The submitted image remains inside an HTML comment without a comment terminator.", "/comments", "comment", "/comments", "reader", None),
+        ("template", False, "The submitted image remains in inert template content outside the active document.", "/comments", "comment", "/comments", "reader", None),
+        ("template-activated", True, "The application imports the submitted image from inert template content into the active document.", "/comments", "comment", "/comments", "reader", None),
     )
     for mode, executes, rationale, source_path, parameter, read_path, role, frame_paths in cases:
-        identity = f"proof-v3:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
+        identity = f"proof-v4:{mode}:POST:{source_path}:{parameter}:{read_path}:{role}"
         expected_frame_paths = frame_paths if frame_paths is not None else [read_path]
         targets.append({"id": "proof-" + mode, "kind": "proof-lab", "mode": mode,
                         "case_id": identity, "expected_ids": [identity] if executes else [],
@@ -391,7 +394,7 @@ def proof_corpus(browser_path=None):
                         "expected_frame_paths": expected_frame_paths,
                         "oracle_rationale": rationale, "observe_ms": 400,
                         "expect": {}, "browser_path": browser_path, "budget_seconds": 30})
-    return {"corpus_version": "loopback-proof/3", "targets": targets}
+    return {"corpus_version": "loopback-proof/4", "targets": targets}
 
 
 def adapt_proof(target, proof, base_url, fixture_observation=None):

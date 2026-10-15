@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-10-15
 
+- R4 corpus v4 adds inert comment/template and activated-template controls;
+  stable identities, independent browser oracle and CI gate cover 17 cases.
+- R6 dynamic CLI accepts strict versioned HTTP tuning config, preserves CLI
+  precedence and rejects irrelevant settings before I/O. Installed smoke helper
+  uses separate config/report filenames. No release tag is created.
+- R5 independent-human result form is available; acceptance remains pending.
+
 - R4 gate, callback özetini fixture gözlemiyle eşleştirir.
 - R5 K01 gate yerel runtime profili ve browser seçeneğiyle çalışır;
   optimize Python'u reddeder, varsayılan CI şartları korunur.

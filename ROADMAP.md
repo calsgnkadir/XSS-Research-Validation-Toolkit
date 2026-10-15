@@ -289,6 +289,12 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
+15 October resumed delivery: corpus v4 adds comment/template negatives and
+activated-template positive. Required Chrome suite 254 passed; strict CLI
+17/17, TP8 FP0 FN0. General admin/controlled-comparison criteria remain open.
+[Acceptance](audit/2026-10-15-r4-broader-corpus/README.md).
+
+
 14 Ekim corpus v3: 14 vaka; önceki dokuza sanitized+raw, no-op sanitizer→DOM,
 alternatif editor/source/sink için raw/fixed ve açık same-origin iframe eklendi.
 Kimlik/frame adapter ve CI gate buna bağlandı. Yerel 527 birleşik test ve
@@ -402,6 +408,11 @@ kanıtıyla türü dahil eşleştiriyor. Sekiz yanlış JSON/Markdown çifti ön
 
 ## R5 — Stajın devamı olan güçlü vaka
 
+15 October human handoff: [independent-repeat form](cases/k01-stored-comment/INDEPENDENT-REPEAT.md)
+is ready and explicitly unfilled. Coordinator reviewed the handoff; no new
+human execution evidence was supplied. The independent-person criterion stays open.
+
+
 15 Ekim: `check_repro.py --profile local --browser ...` taşınabilir kabul
 komutu eklendi; varsayılan CI Linux/Python 3.12 şartını koruyor. Her iki profil
 tam runtime beyanını kontrol eder; optimize Python reddedilir. Yeni yerel
@@ -434,6 +445,14 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 - [x] Writeup 01/10/11'e güncel vaka bağlantısı eklendi; eski rapor değiştirilmedi. Yazıların bütün C düzeltmeleri tamamlandı sayılmaz.
 
 ## R6 — Kullanılabilir ilk sürüm
+
+15 October resumed delivery: dynamic config supports depth/parallel/rate with
+CLI > config > defaults, strict validation and per-mode applicability. Focused
+101 tests and fresh-venv installed smoke 6/6 passed; coordinator integration
+503 passed. Counts overlap. The installed-smoke helper filename collision was
+fixed and the smoke rerun. No release tag; broader R4/R5 dependencies stay open.
+[Acceptance and limits](audit/2026-10-15-r6-config-release/README.md).
+
 
 15 Ekim: dinamik CLI ana mod çakışmaları ve DOM ile HTTP oturum seçenekleri
 işlem öncesinde reddedilir. Yedi rapor dalında JSON/HTML tek belge matrisi

@@ -78,8 +78,8 @@ def test_completed_window_status_does_not_depend_on_expected_label(monkeypatch):
                                   {"resource_callback_hits": {"attempt-123": 1}})
     monkeypatch.setattr(runner, "run_dxaprove", completed_negative)
     report = runner.run_all(runner.proof_corpus(), ["dxaprove"], None)
-    assert report["totals"]["dxaprove"]["fn"] == 7
-    assert report["totals"]["dxaprove"]["completed"] == 14
+    assert report["totals"]["dxaprove"]["fn"] == 8
+    assert report["totals"]["dxaprove"]["completed"] == 17
     assert runner.strict_failed(report)
 
 
@@ -93,7 +93,7 @@ def test_incomplete_proof_rows_fail_gate_and_are_not_scored(monkeypatch, status)
     monkeypatch.setattr(runner, "run_dxaprove", lambda target: {
         "status": status, "findings": [], "ok": False})
     report = runner.run_all(runner.proof_corpus(), ["dxaprove"], None)
-    assert report["totals"]["dxaprove"][status] == 14
+    assert report["totals"]["dxaprove"][status] == 17
     assert report["totals"]["dxaprove"]["completed"] == 0
     assert all(not row["results"]["dxaprove"]["score"]["evaluated"] for row in report["rows"])
     assert runner.strict_failed(report)

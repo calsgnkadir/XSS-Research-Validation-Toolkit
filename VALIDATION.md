@@ -1,5 +1,20 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 15 October resumed corpus/config acceptance
+
+Coordinator Windows/Python 3.10.11 integration: **503 passed**, zero
+failure/error/skip. Native Engine required Chrome suite: **254 passed**;
+separate strict corpus **17/17, TP8 FP0 FN0**, zero incomplete outcomes.
+Native Report focused config/report/modes: **101 passed**; fresh wheel/venv
+installed CLI smoke **6/6**. Installed dxadyn hash matches tested source.
+Counts overlap, not summed. R5 human handoff was reviewed only; automated
+K01 regression in integration is not a second-human reproduction.
+[Commands, JUnit and source hashes](audit/2026-10-15-resumed-delivery/README.md),
+[R4](audit/2026-10-15-r4-broader-corpus/acceptance.json),
+[R6](audit/2026-10-15-r6-config-release/validation.json).
+Remote CI pending code push; no release tag or external target test.
+
+
 ## 15 Ekim R4/R5/R6 devam kabulü
 
 Başlangıç `8dd50acb80ed41bb2e44d4f1ab9defa9f1deca09`, Windows/Python 3.10.11.

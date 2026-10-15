@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "python": "3.10.11",
+  "platform": "Windows",
+  "results": {
+    "dxa_help": {
+      "exit_code": 0
+    },
+    "dxadyn_help": {
+      "exit_code": 0
+    },
+    "dxaprove_help": {
+      "exit_code": 0
+    },
+    "config": {
+      "exit_code": 0,
+      "depth": 1,
+      "observed_routes": [
+        "/",
+        "/child",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "cli_override": {
+      "exit_code": 0,
+      "depth": 0,
+      "observed_routes": [
+        "/",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "invalid_config": {
+      "exit_code": 2,
+      "secret_not_echoed": true
+    }
+  },
+  "installed_module": {
+    "sha256": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "under_venv": true,
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497"
+  },
+  "limits": [
+    "No browser execution claimed",
+    "No release tag created",
+    "Loopback fixture only; not a vulnerability result"
+  ]
+}
