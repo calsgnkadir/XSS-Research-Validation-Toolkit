@@ -62,7 +62,7 @@
       "dxadyn_exit_1_contract": "candidate findings; source-reviewed after run, paired with non-empty structured findings",
       "final_adapter_sha256": "dd339be67b7fa073651faf7079c5e1ad2c7cdc3b105c965600f344527cbd278f",
       "final_accounting_test_sha256": "18a54e94d99390e35dd1ee5692318c60a39e949c008dab38e775ba2d15c21935",
-      "final_fixture_oracle_test_sha256": "e5d50100ba9d989d9d7fc0acfe7b2f2e38df3ee7df19d0da12c9e8a97032f975"
+      "final_fixture_oracle_test_sha256": "696acbfc37b5ae945132d274cd77e581e78bd6c262d8d6b7de142870359e308f"
     }
   },
   "results": [

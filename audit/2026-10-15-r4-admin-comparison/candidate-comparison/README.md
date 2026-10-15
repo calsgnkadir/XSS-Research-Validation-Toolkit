@@ -67,3 +67,13 @@ exceeded the attempt budget and timed out. Do not publish a winner or scanner
 accuracy claim from these records. The two-account fixture and its browser
 oracle remain separate evidence; R5's independent-human repeat remains
 deferred as requested.
+
+## CI follow-up
+
+The first push's required browser workflow failed because this new oracle only
+accepted `DXA_BROWSER`, while hosted Linux CI provides Playwright's installed
+Chromium without that variable. The test now uses the explicit local browser
+when configured and otherwise launches Playwright Chromium. The fallback passed
+locally without `DXA_BROWSER`; the focused R4/CI-gate suite passed 119/119.
+The first remote run is recorded separately and a new push run is required to
+verify the workflow fix.

@@ -30,8 +30,6 @@ def _request(origin, method="GET", path="/", cookie=None, fields=None):
 @pytest.mark.parametrize("escaped,expected", [(False, True), (True, False)])
 def test_brokered_writer_submission_and_reader_admin_browser_oracle(escaped, expected):
     browser_path = os.environ.get("DXA_BROWSER")
-    if not browser_path:
-        pytest.fail("DXA_BROWSER must identify the installed local browser")
     with R4ComparisonFixture(escaped=escaped) as fixture:
         cookie = fixture.state.broker_cookie()
         assert _request(fixture.origin, path="/comments")[0] == 401
@@ -46,7 +44,10 @@ def test_brokered_writer_submission_and_reader_admin_browser_oracle(escaped, exp
 
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True, executable_path=browser_path)
+            launch_options = {"headless": True}
+            if browser_path:
+                launch_options["executable_path"] = browser_path
+            browser = pw.chromium.launch(**launch_options)
             try:
                 context = browser.new_context()
                 context.add_cookies([{"name": "bridge", "value": cookie, "url": fixture.origin,
