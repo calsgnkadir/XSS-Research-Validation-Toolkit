@@ -1,22 +1,17 @@
 # Güncel devam noktası — 15 Ekim 2026
 
-## Latest resumed delivery - 15 October 2026
+## Latest R4/R6 follow-up - 15 October 2026
 
-R4 corpus v4 accepted locally: 17/17, TP8 FP0 FN0, 254 required-Chrome tests.
-R6 dynamic config accepted: 101 focused tests and fresh-venv installed wheel
-smoke 6/6. Coordinator integration: 503 passed, zero failures/errors/skips.
-These suites overlap; counts are not added. Two native specialists completed
-implementation review/testing; no background agent task remains.
-[Commands, source hashes and limits](audit/2026-10-15-resumed-delivery/README.md).
-R5 human-repeat form reviewed and linked; independent human evidence has not
-been supplied, so acceptance remains open. No release tag created.
-Code `0261baa` pushed; remote main matched. General CI 38706882024 3/3 and
-K01 Linux 38706882018 succeeded. Downloaded R4 artifact:179 tests, corpus17/17
-TP8/FP0/FN0, auth6/6. K01 artifact:22 tests/proof5/5. Archive/source/proof hashes
-matched. Remote acceptance records are linked in the resumed delivery audit.
-Next: R4 separate admin fixture/controlled
-comparison and R6 remaining overall config/release criteria. R5 needs a real
-participant's fresh checkout/venv run; another AI or CI run cannot replace it.
+R4 separate writer/reader-admin loopback fixture, blind submission, exact-CID
+Chrome proof and escaped control passed 3/3 in the specialist run and coordinator
+rerun. Comparator inventory found none locally, so equal-budget comparison stays
+open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
+R6 rebuilt 0.0.0.dev0 wheel passed local installed readiness matrix and 109
+focused tests (zero failure/error/skip). All three CLI help/config contracts,
+docs, optional browser metadata and packaged loopback demo were checked.
+Overall R6 remains open. [R6 evidence](audit/2026-10-15-r6-release-matrix/README.md).
+R5 human repeat is explicitly deferred and remains open. No tag/publication.
+[Combined follow-up](audit/2026-10-15-r4-r6-followup/README.md).
 
 ## Previous completed delivery
 

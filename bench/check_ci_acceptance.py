@@ -19,7 +19,7 @@ import run as runner
 
 REQUIRED_MODULES = {
     "test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus",
-    "test_proof_identity_matrix",
+    "test_proof_identity_matrix", "test_r4_two_account_fixture",
 }
 POSITIVE = {"proof-raw", "proof-delayed", "proof-eval", "proof-sanitized-then-raw",
             "proof-identity-sanitizer", "proof-editor-raw", "proof-iframe", "proof-template-activated"}

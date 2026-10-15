@@ -89,6 +89,15 @@ Chrome yolu açıkça verilir. Paket adı dxa-research-toolkit, geliştirici sü
 kabulü yapılmadı. Eski doğrudan Python komutları çalışmayı sürdürür.
 Tarama örneklerini kendi yerel fixture'ların veya açıkça yetkili hedeflerin üzerinde çalıştır.
 
+Kurulumdan sonra paketlenmiş loopback demo şu şekilde çalıştırılabilir:
+
+    dxaprove --demo --browser "<chrome-yolu>" --output <yeni-kanit-dizini>
+
+Demo kendi disposable loopback fixture'ını açıp kapatır. `execution-observed`
+yalnızca fixture'daki canary gözlemidir; vulnerability triage sonucu değildir.
+Başka bir izinli loopback lab için `dxaprove --spec <yerel-json>` kullanılır;
+bu proof sözleşmesi `dxa` ve `dxadyn` tarama config'lerinden ayrıdır.
+
 Statik `dxa` CLI için isteğe bağlı JSON config örneği:
 
 ```json

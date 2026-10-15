@@ -88,3 +88,19 @@ unrelated rendering mismatch cannot make a broken rule appear tested.
 A publication requires the frozen manifest, all attempt outcomes, coverage,
 common evidence adapter, independent labels and human review. This protocol
 alone closes no general R4 coverage or competitor-result checkbox.
+
+## Local inventory and R4 admin fixture (2026-10-15)
+
+The local Windows inventory checked the PATH for `xsstrike`, `dalfox`, `wapiti`,
+`nikto`, `jaeles`, and `arjun`; none was available. The installed Python package
+inventory contained Playwright and Requests for fixture/browser support, but no
+competitor scanner package. No tool was downloaded or installed. Therefore no
+competitor run, equal-budget manifest, or comparative result exists; the R4
+comparison criterion remains open. The detailed inventory and role-boundary
+acceptance are in [the 15 October R4 audit](../audit/2026-10-15-r4-admin-comparison/README.md).
+
+The audit adds a disposable 127.0.0.1 fixture with independent writer and
+reader-admin sessions, blind POST acknowledgment, read authorization controls,
+CID-matched browser execution, escaped negative control, and server-thread
+cleanup. It establishes fixture behavior only. It is not a scanner comparison,
+product vulnerability, or general authorization finding.

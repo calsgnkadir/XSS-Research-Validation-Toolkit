@@ -8,6 +8,11 @@
   precedence and rejects irrelevant settings before I/O. Installed smoke helper
   uses separate config/report filenames. No release tag is created.
 - R5 independent-human result form is available; acceptance remains pending.
+- R4 adds a two-account blind stored loopback fixture with CID browser oracle;
+  local equal-budget comparator run remains open because no tool is installed.
+- R6 installed-wheel readiness matrix covers all three CLI help contracts,
+  static/dynamic config behavior, and the packaged loopback proof demo. The
+  version remains a developer build; R4/R5 prerequisites and release gate stay open.
 
 - R4 gate, callback özetini fixture gözlemiyle eşleştirir.
 - R5 K01 gate yerel runtime profili ve browser seçeneğiyle çalışır;

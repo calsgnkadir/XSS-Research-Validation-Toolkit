@@ -293,6 +293,10 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 activated-template positive. Required Chrome suite 254 passed; strict CLI
 17/17, TP8 FP0 FN0. General admin/controlled-comparison criteria remain open.
 [Acceptance](audit/2026-10-15-r4-broader-corpus/README.md).
+15 October follow-up: separate writer and reader-admin accounts, blind submission,
+CID-matched Chrome proof and escaped control passed 3/3, repeated by coordinator.
+This validates only the fixture. No local competitor was available, so equal-budget
+comparison remains open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
 Code 0261baa remote CI 38706882024 and downloaded artifact accepted corpus17/17
 and 179 zero-skip tests; [remote record](audit/2026-10-15-resumed-delivery/remote-r4-acceptance.json).
 This does not close the broader R4 criteria.
@@ -455,6 +459,11 @@ CLI > config > defaults, strict validation and per-mode applicability. Focused
 503 passed. Counts overlap. The installed-smoke helper filename collision was
 fixed and the smoke rerun. No release tag; broader R4/R5 dependencies stay open.
 [Acceptance and limits](audit/2026-10-15-r6-config-release/README.md).
+15 October release-readiness matrix: rebuilt wheel installed into fresh offline
+venvs. All CLI help/config, docs, metadata/browser-extra and packaged loopback
+demo checks passed; focused suite 109/109. Wheel remains 0.0.0.dev0, demo triage
+unreviewed. Overall R6 stays open for R4 comparison and deferred R5 human repeat.
+No tag/publication. [Matrix](audit/2026-10-15-r6-release-matrix/README.md).
 
 
 15 Ekim: dinamik CLI ana mod çakışmaları ve DOM ile HTTP oturum seçenekleri

@@ -19,7 +19,7 @@ LABELS = {
     "identity-sanitizer": True, "editor-raw": True, "editor-fixed": False, "iframe": True,
     "comment": False, "template": False, "template-activated": True,
 }
-MODULES = ("test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus", "test_proof_identity_matrix")
+MODULES = ("test_browser_proof", "test_proof_cleanup", "test_proof_adapter", "test_proof_corpus", "test_proof_identity_matrix", "test_r4_two_account_fixture")
 CID = "dxa0123456789abcdef0123456789abcdef"
 URL = "http://127.0.0.1:49152/comments"
 

@@ -1,0 +1,30 @@
+{
+  "base_commit": "f12a7dd14dd29f02eff3fc9a018ddd6f41d98b49",
+  "current_head": "f12a7dd14dd29f02eff3fc9a018ddd6f41d98b49",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "R4": {
+    "admin_fixture": "3 passed by specialist; 3 passed in coordinator rerun",
+    "comparison": "blocked-no-local-competitor; no comparator downloaded or installed; equal-budget run not made",
+    "limitations": "Fixture only; no product vulnerability or superiority claim",
+    "audit": "../2026-10-15-r4-admin-comparison/README.md"
+  },
+  "R6": {
+    "matrix": "passed",
+    "focused_tests": 109,
+    "failure": 0,
+    "error": 0,
+    "skipped": 0,
+    "wheel_sha256": "929b8dd013eaec818c56e5ee89e40b5d076360b50e70984c60dd7ac880b5ac03",
+    "wheel_version": "0.0.0.dev0",
+    "demo_status": "execution-observed",
+    "triage": "unreviewed",
+    "audit": "../2026-10-15-r6-release-matrix/README.md"
+  },
+  "deferred": {
+    "R5": "User explicitly deferred independent human repeat; remains open."
+  },
+  "release_status": "Local R6 readiness passed; overall release gate open. No tag or publication."
+}

@@ -1,5 +1,18 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 15 October R4 admin fixture and R6 readiness
+
+R4 separate-account loopback fixture/browser oracle: specialist 3 passed and
+coordinator rerun 3 passed, no failures/errors/skips. Comparator unavailable
+locally, so no equal-budget run. R6 config/report/help suite: 109 passed, no
+failure/error/skip. Fresh installed 0.0.0.dev0 wheel passed all three CLI help
+checks, config behavior, package metadata/docs and loopback demo. Demo triage is
+unreviewed. [Combined record](audit/2026-10-15-r4-r6-followup/README.md),
+[R4](audit/2026-10-15-r4-admin-comparison/acceptance.json),
+[R6](audit/2026-10-15-r6-release-matrix/acceptance-final.json).
+R5 human repeat was deferred and remains open; no release tag.
+
+
 ## 15 October resumed corpus/config acceptance
 
 Coordinator Windows/Python 3.10.11 integration: **503 passed**, zero

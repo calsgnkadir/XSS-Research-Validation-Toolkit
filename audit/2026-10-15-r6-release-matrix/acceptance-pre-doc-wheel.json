@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "commit": "f12a7dd14dd29f02eff3fc9a018ddd6f41d98b49",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "package_version": "0.0.0.dev0",
+  "wheel_sha256": "981f4314018db47dbb41515e54969edee94d51661df53bde995687d912a72d80",
+  "wheel_modules": [
+    "dxa.py",
+    "dxa2dyn.py",
+    "dxa_attempts.py",
+    "dxa_callback.py",
+    "dxa_evidence.py",
+    "dxa_proof_lab.py",
+    "dxadom.py",
+    "dxadyn.py",
+    "dxaprove.py"
+  ],
+  "source_sha256": {
+    "dxa": "59dbb07252851e52502119b1afdc0b9175b6cf9f10a3ad75dca34124ae86f5c6",
+    "dxadyn": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01"
+  },
+  "cli_help": {
+    "dxa": {
+      "exit_code": 0,
+      "has_usage": true
+    },
+    "dxadyn": {
+      "exit_code": 0,
+      "has_usage": true
+    },
+    "dxaprove": {
+      "exit_code": 0,
+      "has_usage": true
+    }
+  },
+  "docs": {
+    "install_and_config_examples_match": true,
+    "proof_spec_and_demo_docs_match_help": true,
+    "changelog_has_unreleased_entry": true
+  },
+  "static_config": {
+    "config_exit": 1,
+    "config_findings": 1,
+    "config_confidence": "high",
+    "cli_override_findings": 2,
+    "precedence": "CLI > config > default"
+  },
+  "dynamic_config": {
+    "schema_version": 1,
+    "python": "3.10.11",
+    "platform": "Windows",
+    "results": {
+      "dxa_help": {
+        "exit_code": 0
+      },
+      "dxadyn_help": {
+        "exit_code": 0
+      },
+      "dxaprove_help": {
+        "exit_code": 0
+      },
+      "config": {
+        "exit_code": 0,
+        "depth": 1,
+        "observed_routes": [
+          "/",
+          "/child",
+          "/child?<query>"
+        ],
+        "html_json_depth_match": true,
+        "fixture_thread_closed": true
+      },
+      "cli_override": {
+        "exit_code": 0,
+        "depth": 0,
+        "observed_routes": [
+          "/",
+          "/child?<query>"
+        ],
+        "html_json_depth_match": true,
+        "fixture_thread_closed": true
+      },
+      "invalid_config": {
+        "exit_code": 2,
+        "secret_not_echoed": true
+      }
+    },
+    "installed_module": {
+      "sha256": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+      "under_venv": true,
+      "python": "3.10.11",
+      "platform": "Windows"
+    },
+    "source_sha256": {
+      "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497"
+    },
+    "limits": [
+      "No browser execution claimed",
+      "No release tag created",
+      "Loopback fixture only; not a vulnerability result"
+    ]
+  },
+  "proof_demo": {
+    "exit_code": 0,
+    "status": "execution-observed",
+    "execution_observed": true,
+    "proof_count": 1,
+    "triage": "unreviewed",
+    "scope": "built-in disposable single-origin loopback fixture"
+  },
+  "limits": [
+    "0.0.0.dev0 is a developer version; no release tag/publication",
+    "dxaprove --spec has a separate proof contract, not a general configuration schema",
+    "R4 broad admin/comparison and R5 independent-human prerequisites remain open",
+    "demo execution is not vulnerability confirmation"
+  ]
+}

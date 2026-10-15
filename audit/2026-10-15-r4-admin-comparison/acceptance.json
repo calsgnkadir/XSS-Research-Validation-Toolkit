@@ -1,0 +1,74 @@
+{
+  "schema": "r4-admin-fixture-acceptance/1",
+  "base_commit": "f12a7dd14dd29f02eff3fc9a018ddd6f41d98b49",
+  "branch": "main",
+  "environment": {
+    "os": "Windows 10.0.26200.0",
+    "python": "3.10.11",
+    "playwright": "1.63.0",
+    "browser": "Chrome 155.0.8059.79",
+    "scope": "127.0.0.1 disposable fixture"
+  },
+  "command": "$env:DXA_BROWSER='<installed-local-chrome>'; py -3.10 -m pytest bench/test_r4_two_account_fixture.py -q -p no:cacheprovider --tb=short --junitxml=audit/2026-10-15-r4-admin-comparison/pytest.xml",
+  "result": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 4.387,
+    "junit_sha256": "A8AF6EEE1AF709AD3038C9F5D936D5F6862BA07CB7EE11F87036DF812EAA7E61"
+  },
+  "sha256": {
+    "bench/r4_admin_fixture.py": "4CA9E9EC61FE9551280DE3643B6988113A298900E2F99FC7696B898035A8CA31",
+    "bench/test_r4_two_account_fixture.py": "6803E7906E086F4D91BCDADE720005C80FCA54D832B1F69F3859A322EB1735AD",
+    "bench/COMPARISON-PROTOCOL.md": "4D706DBACBA4DF15CF98E6EF4F42A31A01018034934299E9ABA956FBEF7843E6"
+  },
+  "comparison": {
+    "status": "blocked-no-local-competitor",
+    "checked_path_names": [
+      "xsstrike",
+      "dalfox",
+      "wapiti",
+      "nikto",
+      "jaeles",
+      "arjun"
+    ],
+    "competitors_found": [],
+    "downloaded_or_installed": false,
+    "equal_budget_run": false
+  },
+  "limitations": [
+    "Fixture proves only its own role policy and browser behavior.",
+    "No real-product vulnerability, scanner accuracy, or superiority claim.",
+    "R4 controlled comparison remains open; no common competitor proof adapter or budget parity was tested."
+  ],
+  "coordinator_rerun": {
+    "command": "py -3.10 -m pytest bench/test_r4_two_account_fixture.py -q -p no:cacheprovider --tb=short --junitxml=.dxa/coordinator-r4-admin-ci.xml",
+    "result": "3 passed in 4.74s, zero failures/errors/skips",
+    "scope": "127.0.0.1 disposable fixture with installed Chrome",
+    "junit_sha256": "34423e9723fa63c79507b142c19aa212cb7a363154d12e4ba023f8d91bfd30dd",
+    "source_sha256": {
+      "bench/r4_admin_fixture.py": "4CA9E9EC61FE9551280DE3643B6988113A298900E2F99FC7696B898035A8CA31",
+      "bench/test_r4_two_account_fixture.py": "6803E7906E086F4D91BCDADE720005C80FCA54D832B1F69F3859A322EB1735AD"
+    }
+  },
+  "ci": {
+    "workflow": ".github/workflows/ci.yml",
+    "job": "Required local authenticated browser proof",
+    "included_test": "bench/test_r4_two_account_fixture.py",
+    "status": "pending push"
+  },
+  "ci_gate": {
+    "required_module_added": true,
+    "files": [
+      "bench/check_ci_acceptance.py",
+      "bench/test_ci_acceptance.py"
+    ],
+    "gate_regression": "110 passed in 22.99s, zero failure/error/skip",
+    "source_sha256": {
+      "bench/check_ci_acceptance.py": "A06D96830F5D4E44FE14EF29C5D24FF95FCB5457958623BB7CBCE6027FD587E5",
+      "bench/test_ci_acceptance.py": "FB2BA200C6C4AAFB57B6831C93E279F2262A33B48EE83056292FDC460264D070"
+    }
+  }
+}
