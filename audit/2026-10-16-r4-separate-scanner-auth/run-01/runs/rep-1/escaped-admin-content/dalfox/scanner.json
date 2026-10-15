@@ -1,0 +1,42 @@
+{
+  "findings": [
+    {
+      "confidence": "low",
+      "confidence_reason": "payload echoed in the response; no executable position confirmed",
+      "cwe": "CWE-79",
+      "data": "http://127.0.0.1:<ephemeral-port>/comments",
+      "detection_method": "reflection",
+      "evidence": "Reflected XSS detected for param comment (reflected)",
+      "inject_type": "sxss-inHTML",
+      "location": "Body",
+      "message_id": 606,
+      "message_str": "[R] Triggered XSS Payload (reflected): comment=onabort=alert(1)",
+      "method": "POST",
+      "param": "comment",
+      "payload": "onabort=alert(1)",
+      "severity": "Info",
+      "type": "R",
+      "type_description": "Reflected - payload appears in the response, but its position was not confirmed exploitable; confirm manually"
+    }
+  ],
+  "meta": {
+    "dalfox_version": "3.2.4",
+    "dedup_mode": "exact",
+    "failed_requests": 0,
+    "findings_count": 1,
+    "incomplete": false,
+    "scan_duration_ms": 11048,
+    "target_summary": [
+      {
+        "findings_count": 1,
+        "status": "findings",
+        "target": "http://127.0.0.1:<ephemeral-port>/comments"
+      }
+    ],
+    "targets": [
+      "http://127.0.0.1:<ephemeral-port>/comments"
+    ],
+    "targets_deduplicated": 0,
+    "total_requests": 23
+  }
+}

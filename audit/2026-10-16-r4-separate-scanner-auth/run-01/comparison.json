@@ -1,0 +1,1344 @@
+{
+  "schema": "r4-local-comparison/3",
+  "status": "partial-candidate-comparison",
+  "summary": {
+    "selected": 8,
+    "completed": 8,
+    "error": 0,
+    "timeout": 0,
+    "incomplete": 0
+  },
+  "corpus_version": "r4-admin-stored-candidate/1",
+  "cases": [
+    {
+      "id": "r4-admin-stored/raw-admin-content",
+      "escaped": false,
+      "expected_execution": true
+    },
+    {
+      "id": "r4-admin-stored/escaped-admin-content",
+      "escaped": true,
+      "expected_execution": false
+    }
+  ],
+  "repetitions": 2,
+  "order": {
+    "rep-1": [
+      "dxadyn",
+      "dalfox"
+    ],
+    "rep-2": [
+      "dalfox",
+      "dxadyn"
+    ]
+  },
+  "identity": {
+    "method": "POST",
+    "source_path": "/comments",
+    "parameter": "comment",
+    "read_path": "/admin/comments",
+    "role": "writer-to-reader-admin",
+    "role_verification": "separate fixture principals checked before and after each scan"
+  },
+  "auth": {
+    "scanner_input": "separate per-run writer and reader-admin login sessions",
+    "endpoint_role_binding": {
+      "POST /comments": "writer_session",
+      "GET /admin/comments": "admin_session"
+    },
+    "pre_and_post_identity_checks": true,
+    "cookie_values_recorded": false,
+    "preflight_requests_counted_in_same_fixture_budget": true
+  },
+  "budgets": {
+    "requests_per_run": 200,
+    "rate_rps": 2,
+    "concurrency": 1,
+    "wall_seconds": 120,
+    "outer_process_seconds": 120,
+    "dalfox_per_request_seconds": 15,
+    "dxadyn_per_request_seconds": 15
+  },
+  "runtime": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "dalfox_version": "3.2.4",
+    "dalfox_version_output": "dalfox 3.2.4",
+    "dalfox_sha256": "5a48b938792c81ed610a2bcfde36827dcbc6c41cc2292c60fcc06c13a4b2ad3f",
+    "dxadyn_sha256": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "adapter_sha256": "da5958cce49c057980f68068ff3ead5ac5fff2efeabcf63c02527af2a6e3844e",
+    "test_sha256": "9a9ca2913603f8e0c823696e0eb54239c0198292bea1072c664e941624e7f294",
+    "fixture_sha256": "9657633f2e7ea82a6e67ab481f8ee1fe75c4ce0cd97c89ed47550bf75cf442fe"
+  },
+  "results": [
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/stdout.txt",
+          "sha256": "9611933e804206dbe53f5726396891765f01e9d333180b3f5a0bb0271cec1f1b"
+        },
+        "stderr": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/scanner-report.json",
+          "sha256": "aec8214ba4c0177cd3b24a709f91ca8f5708112111bd7de5b3adb98a4060adb4"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 1,
+      "order_index": 0,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.718,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-1/raw-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxad324963a\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/stdout.txt",
+          "sha256": "7c2a83d58c9648bc43ce93a413ac239f92c6d2ecf5b25316e56181d6fbefac2e"
+        },
+        "stderr": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/scanner.json",
+          "sha256": "7715f1734ddbf97c843f49d62bf81d53ebdceb7b9c840fe9d98c01ea9bd2206b"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 1,
+      "order_index": 1,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 24,
+      "forwarded_requests": 24,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 7.656,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-1/raw-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx7a55e920dlxmid8daf8f72xld8962b544",
+        "dlx7a55e920/\\'{`<>\"();=|}[.:]+,$-xld8962b544",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx7a55e920/\\'{`<>\"();=|}[.:]+,$-xld8962b544",
+        "dlx7a55e920dlxmid8daf8f72xld8962b544",
+        "dlx7a55e920dlxmid8daf8f72xld8962b544",
+        "'><IMG src=x onerror=alert(1) ClAss=dlxcf89a63f>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 14,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/stdout.txt",
+          "sha256": "8e4ccebf98707aa7efa33ef81667c29202010d77db41ded9642f5ec3679e17c9"
+        },
+        "stderr": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/scanner-report.json",
+          "sha256": "890073626c25ae7dcdfc2da55f2e456ec04040a6eeb530c87d17420c00e13323"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 1,
+      "order_index": 0,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 0,
+      "candidate_observed": false,
+      "return_code": 0,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.406,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-1/escaped-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxa79ae9423\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/stdout.txt",
+          "sha256": "0287c22ff0186f7f69faf9977b374c52f903d1769b5b271f5a96bcee4fcd6e8d"
+        },
+        "stderr": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/scanner.json",
+          "sha256": "8b1722d8b5be7e2eb491da61df248c6cf3e945a507290307c51928ed8b2fa736"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 1,
+      "order_index": 1,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 33,
+      "forwarded_requests": 33,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 12.046,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-1/escaped-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx5e6dd2cadlxmid0f624b09xldaf86e89d",
+        "dlx5e6dd2ca/\\'{`<>\"();=|}[.:]+,$-xldaf86e89d",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx5e6dd2ca/\\'{`<>\"();=|}[.:]+,$-xldaf86e89d",
+        "dlx5e6dd2cadlxmid0f624b09xldaf86e89d",
+        "dlx5e6dd2cadlxmid0f624b09xldaf86e89d",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx789e8c12>",
+        "onabort=alert(1)",
+        "alert(document.domain)//",
+        ";alert(1)//"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 23,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/stdout.txt",
+          "sha256": "2a92ed9ee267ee23ce9ea4892eac548b2f96ba113615e2ba402e0ed45157b5ba"
+        },
+        "stderr": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/scanner.json",
+          "sha256": "2c955e49a9835c61c6344e8c1e51de4d76aa41b1cb09e748c464a12f01f380e5"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 2,
+      "order_index": 0,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 24,
+      "forwarded_requests": 24,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 7.0,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-2/raw-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx0593c028dlxmida51d1254xld747ce20b",
+        "dlx0593c028/\\'{`<>\"();=|}[.:]+,$-xld747ce20b",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx0593c028/\\'{`<>\"();=|}[.:]+,$-xld747ce20b",
+        "dlx0593c028dlxmida51d1254xld747ce20b",
+        "dlx0593c028dlxmida51d1254xld747ce20b",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx508cd822>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 14,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/stdout.txt",
+          "sha256": "ddf22ac154e9c760058e7d8d6b9fd297d16e0cfcfc3c63b8d6123cb9856e746a"
+        },
+        "stderr": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/scanner-report.json",
+          "sha256": "85bc871ca0b76573b69bb74d375165fab2e825c48abd3bd7231d7954204a131c"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 2,
+      "order_index": 1,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.125,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-2/raw-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxa2bdfa546\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/stdout.txt",
+          "sha256": "7d3cd72a87dd41d9fcd17253598d2fe67c63b469105e16db39b52b68bd295f0f"
+        },
+        "stderr": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/scanner.json",
+          "sha256": "68340aed88f7f4190306c2c2d8a25dd7700b198e225090d785659c580d7149cd"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 2,
+      "order_index": 0,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 33,
+      "forwarded_requests": 33,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 11.532,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-2/escaped-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx4c3b3934dlxmide8cfe0b4xlddda25536",
+        "dlx4c3b3934/\\'{`<>\"();=|}[.:]+,$-xlddda25536",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx4c3b3934/\\'{`<>\"();=|}[.:]+,$-xlddda25536",
+        "dlx4c3b3934dlxmide8cfe0b4xlddda25536",
+        "dlx4c3b3934dlxmide8cfe0b4xlddda25536",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx90b845eb>",
+        "onabort=alert(1)",
+        "alert(document.domain)//",
+        ";alert(1)//"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 23,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/stdout.txt",
+          "sha256": "e0e8991cf456707c2a3513a2dc8acf620ce544622de232746fbf09dbbe489adb"
+        },
+        "stderr": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/scanner-report.json",
+          "sha256": "0dd5c8ddbdf2fd85243ebd27d244d4315bb8b4febcd135eb81ada9dab78a4f5c"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 2,
+      "order_index": 1,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 0,
+      "candidate_observed": false,
+      "return_code": 0,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.047,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-2/escaped-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxace6c2e9b\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    }
+  ],
+  "interpretation": {
+    "candidate_only": true,
+    "browser_execution_oracle": "reported separately by test_r4_comparison_fixture.py",
+    "ranking": false,
+    "coverage_gaps": [
+      "candidate rows are not correlated to scanner-generated CIDs and must not be scored as execution TP/FP/FN",
+      "dxaprove execution proof is not a scanner candidate parser and is not ranked against either candidate scanner"
+    ]
+  }
+}

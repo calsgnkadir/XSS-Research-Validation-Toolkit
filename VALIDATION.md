@@ -1,5 +1,31 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 16 October R4 separate scanner sessions and coordinator triage
+
+On the local Windows/Python 3.10.11 worktree based on remote `1850836`, the
+coordinator reran `bench/test_r4_cid_oracle.py`: **27 passed**, zero
+failures/errors/skips. The integrated auth/fixture/comparator command
+`py -3.10 -m pytest bench/test_r4_scanner_sessions.py bench/test_r4_comparison_fixture.py bench/test_r4_compare_local.py -q -p no:cacheprovider --tb=short`
+also passed **30 tests**, zero failures/errors/skips.
+
+The loopback candidate comparison selected/completed **8/8**, with zero
+errors/timeouts/incomplete; all pre/post role checks and four cross-role
+controls passed. The coordinator recomputed the run manifest and every
+referenced log/report hash; all matched, and shared artifacts contained no
+session-token pattern. Scanner payloads did not carry the oracle's exact-CID
+JavaScript proof contract, so execution and TP/FP/FN remain inconclusive. The
+general R4 comparison gate remains open.
+[Run evidence](audit/2026-10-16-r4-separate-scanner-auth/README.md),
+[coordinator triage](audit/2026-10-16-r4-review/README.md).
+
+Final combined rerun including both suites:
+`py -3.10 -m pytest bench/test_r4_cid_oracle.py bench/test_r4_scanner_sessions.py bench/test_r4_comparison_fixture.py bench/test_r4_compare_local.py -q -p no:cacheprovider --tb=short`
+resulted in **57 passed**, zero failures/errors/skips. The 27- and 30-test
+focused runs overlap and must not be added to the combined count.
+
+These are local results against the worktree based on `1850836`; no hosted CI result
+is claimed.
+
 ## R6 installed wheel CI gate
 
 Coordinator rebuilt a wheel and installed it offline into a fresh Python

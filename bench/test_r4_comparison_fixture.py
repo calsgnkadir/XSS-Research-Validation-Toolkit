@@ -13,11 +13,12 @@ import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from r4_comparison_fixture import R4ComparisonFixture
+from r4_scanner_sessions import check_scanner_sessions, provision_scanner_sessions
 
 
 def _request(origin, method="GET", path="/", cookie=None, fields=None):
     body = urllib.parse.urlencode(fields).encode() if fields is not None else None
-    headers = {"Cookie": "bridge=" + cookie} if cookie else {}
+    headers = {"Cookie": cookie} if cookie else {}
     request = urllib.request.Request(origin + path, data=body, headers=headers, method=method)
     try:
         response = urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request, timeout=3)
@@ -28,19 +29,24 @@ def _request(origin, method="GET", path="/", cookie=None, fields=None):
 
 
 @pytest.mark.parametrize("escaped,expected", [(False, True), (True, False)])
-def test_brokered_writer_submission_and_reader_admin_browser_oracle(escaped, expected):
+def test_separate_writer_submission_and_reader_admin_browser_oracle(escaped, expected):
     browser_path = os.environ.get("DXA_BROWSER")
     with R4ComparisonFixture(escaped=escaped) as fixture:
-        cookie = fixture.state.broker_cookie()
+        sessions = provision_scanner_sessions(fixture)
+        checks = check_scanner_sessions(fixture, sessions, "pre")
+        assert all(row["passed"] for row in checks.values())
         assert _request(fixture.origin, path="/comments")[0] == 401
         cid = "cmp-" + secrets.token_hex(12)
         payload = f'<img src="/missing?cid={cid}" onerror="window.__dxaProof=\'{cid}\'">'
-        status, ack = _request(fixture.origin, "POST", "/comments", cookie, {"comment": payload})
+        status, ack = _request(fixture.origin, "POST", "/comments",
+                               f"writer_session={sessions.writer_token}", {"comment": payload})
         assert (status, ack) == (200, "accepted")
         assert cid not in ack
-        status, body = _request(fixture.origin, path="/admin/comments", cookie=cookie)
+        status, body = _request(fixture.origin, path="/admin/comments",
+                                cookie=f"admin_session={sessions.admin_token}")
         assert status == 200 and cid in body
-        assert fixture.state.sessions[cookie] == ("writer", "reader-admin")
+        checks.update(check_scanner_sessions(fixture, sessions, "post"))
+        assert all(row["passed"] for row in checks.values())
 
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
@@ -50,8 +56,8 @@ def test_brokered_writer_submission_and_reader_admin_browser_oracle(escaped, exp
             browser = pw.chromium.launch(**launch_options)
             try:
                 context = browser.new_context()
-                context.add_cookies([{"name": "bridge", "value": cookie, "url": fixture.origin,
-                                      "httpOnly": True, "sameSite": "Strict"}])
+                context.add_cookies([{"name": "admin_session", "value": sessions.admin_token,
+                                      "url": fixture.origin, "httpOnly": True, "sameSite": "Strict"}])
                 page = context.new_page()
                 response = page.goto(fixture.origin + "/admin/comments", wait_until="load", timeout=5000)
                 assert response and response.status == 200
@@ -63,20 +69,28 @@ def test_brokered_writer_submission_and_reader_admin_browser_oracle(escaped, exp
 
 
 def test_server_budget_serializes_and_caps_requests():
-    with R4ComparisonFixture(escaped=False, request_limit=1, rate_limit=100,
+    with R4ComparisonFixture(escaped=False, request_limit=3, rate_limit=100,
                              wall_limit=3) as fixture:
-        cookie = fixture.state.broker_cookie()
-        assert _request(fixture.origin, path="/comments", cookie=cookie)[0] == 200
-        assert _request(fixture.origin, path="/admin/comments", cookie=cookie)[0] == 429
+        _, writer = fixture.login("writer")
+        _, admin = fixture.login("reader-admin")
+        assert _request(fixture.origin, path="/comments",
+                        cookie=f"writer_session={writer}")[0] == 200
+        assert _request(fixture.origin, path="/admin/comments",
+                        cookie=f"admin_session={admin}")[0] == 429
         assert fixture.state.budget_exceeded is True
         assert fixture.state.max_inflight == 1
 
 
 def test_rate_wait_cannot_forward_after_wall_deadline():
-    with R4ComparisonFixture(escaped=False, request_limit=10, rate_limit=2,
+    with R4ComparisonFixture(escaped=False, request_limit=10, rate_limit=100,
                              wall_limit=0.2) as fixture:
-        cookie = fixture.state.broker_cookie()
-        assert _request(fixture.origin, path="/comments", cookie=cookie)[0] == 200
-        assert _request(fixture.origin, "POST", "/comments", cookie, {"comment": "late"})[0] == 429
+        _, writer = fixture.login("writer")
+        _, admin = fixture.login("reader-admin")
+        assert _request(fixture.origin, path="/comments",
+                        cookie=f"writer_session={writer}")[0] == 200
+        import time
+        time.sleep(0.21)
+        assert _request(fixture.origin, "POST", "/comments",
+                        f"writer_session={writer}", {"comment": "late"})[0] == 429
         assert fixture.state.comments == []
         assert fixture.state.budget_exceeded

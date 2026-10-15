@@ -1,4 +1,27 @@
-# Güncel devam noktası — 15 Ekim 2026
+# Güncel devam noktası — 16 Ekim 2026
+
+## Son doğrulanmış iş — R4 ayrı oturum ve CID/browser incelemesi, 16 Ekim
+
+Engine teslimi her scanner koşusunda ayrı writer ve reader-admin login,
+ön/son principal doğrulaması ve dört çapraz-rol negatif kontrolü ekledi.
+Yerel loopback koşusu 8/8 tamamlandı; hata/timeout/incomplete yok. Koordinatör
+manifest ile stdout/stderr/rapor hashlerini tekrar hesapladı: hepsi eşleşti;
+paylaşılan artifact'lerde oturum token'ı bulunmadı. Her satırda 8 setup ve 2
+postcheck isteği aynı bütçeye dahil edildi; toplam istek 12–33 aralığında.
+QA CID oracle 27, auth/fixture/comparator 30 odaklı test geçti; birlikte
+yeniden çalıştırılan etkilenen paket 57/57 geçti (odaklı sayımlar örtüşür).
+Tarayıcı oracle gerçek scanner payload'larının hiçbiri için
+`?cid=` ile çalışan `window.__dxaProof` bağını bulmuyor. Bu nedenle scanner
+adayları execution açısından inconclusive; TP/FP/FN, sıralama veya açık
+vulnerability iddiası yok. Genel R4 ve insan triage kabulü açık. Ayrıntılar:
+[auth koşusu](audit/2026-10-16-r4-separate-scanner-auth/README.md),
+[CID oracle](audit/2026-10-16-r4-cid-browser-oracle/README.md),
+[koordinatör incelemesi](audit/2026-10-16-r4-review/README.md).
+R5'in bağımsız ikinci insan tekrarı kullanıcı isteğiyle ertelendi ve açık.
+
+Başlangıçtaki doğrulanmış uzak HEAD `1850836` idi. Bu kayıt yerel test ve run
+kanıtını kapsar; push sonrası uzak commit ve CI sonucu ayrıca doğrulanıp buraya
+eklenecek.
 
 ## Son tamamlanan üç ajanlı R4/R6 turu
 

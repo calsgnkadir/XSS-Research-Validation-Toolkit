@@ -13,6 +13,7 @@ import sys
 import time
 
 from r4_comparison_fixture import R4ComparisonFixture
+from r4_scanner_sessions import check_role_boundaries, check_scanner_sessions, provision_scanner_sessions
 
 
 CASES = (
@@ -27,7 +28,8 @@ COMMAND_TIMEOUT = 120
 CLIENT_TIMEOUT = 15
 DALFOX_VERSION = "3.2.4"
 IDENTITY = {"method": "POST", "source_path": "/comments", "parameter": "comment",
-            "read_path": "/admin/comments", "role": "writer-to-reader-admin fixture broker"}
+            "read_path": "/admin/comments", "role": "writer-to-reader-admin",
+            "role_verification": "separate fixture principals checked before and after each scan"}
 DXADYN = Path(__file__).resolve().parents[1] / "tools/dom-xss-analyzer/dxadyn.py"
 REPO = Path(__file__).resolve().parents[1]
 
@@ -40,6 +42,18 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _redact_auth_text(value: str, origin: str, sessions) -> str:
+    for secret, replacement in (
+        (f"writer_session={sessions.writer_token}; admin_session={sessions.admin_token}",
+         "<independent-writer-admin-session-pair>"),
+        (sessions.writer_token, "<writer-session>"),
+        (sessions.admin_token, "<reader-admin-session>"),
+        (origin, "http://127.0.0.1:<ephemeral-port>"),
+    ):
+        value = value.replace(secret, replacement)
+    return value
+
+
 def _command(tool, origin, cookie, report_path, dalfox_path):
     target = origin + "/comments"
     read = origin + "/admin/comments"
@@ -47,11 +61,11 @@ def _command(tool, origin, cookie, report_path, dalfox_path):
         return [sys.executable, str(DXADYN), "--stored", "--target", target,
                 "--target-field", "comment", "--check", read, "--csrf-field", "",
                 "--variants", "body", "--parallel", "1", "--rate", str(RATE_LIMIT),
-                "--cookie", "bridge=" + cookie, "--json-out", str(report_path)]
+                "--cookie", cookie, "--json-out", str(report_path)]
     return [dalfox_path, "scan", target, "-X", "POST", "-d", "comment=seed",
             "-p", "comment:body", "--sxss", "--sxss-url", read,
             "--sxss-method", "GET", "--sxss-retries", "1",
-            "--cookies", "bridge=" + cookie, "--max-payloads-per-param", "2",
+            "--cookies", cookie, "--max-payloads-per-param", "2",
             "--workers", "1", "--rate-limit", str(RATE_LIMIT),
             "--timeout", str(CLIENT_TIMEOUT), "--scan-timeout", str(WALL_LIMIT), "--skip-mining",
             "--skip-discovery", "--encoders", "none",
@@ -116,23 +130,27 @@ def run_comparison(dalfox_path: Path, output: Path):
         tool_order = order if repetition == 1 else tuple(reversed(order))
         for case in CASES:
             for tool in tool_order:
-                # A new identical fixture per tool/case/repetition keeps the
-                # scanner's writes and budgets isolated and repeatable.
                 with R4ComparisonFixture(escaped=case["escaped"], request_limit=REQUEST_LIMIT,
                                          rate_limit=RATE_LIMIT, wall_limit=WALL_LIMIT) as fixture:
-                    cookie = fixture.state.broker_cookie()
+                    sessions = provision_scanner_sessions(fixture)
+                    session_checks = check_scanner_sessions(fixture, sessions, "pre")
+                    boundary_checks = check_role_boundaries(fixture, sessions)
+                    if (not all(row["passed"] for row in session_checks.values())
+                            or not all(row["passed"] for row in boundary_checks.values())):
+                        raise RuntimeError("fixture session preflight failed")
+                    preflight_request_count = len(fixture.state.requests)
+                    cookie = sessions.cookie_header
                     run_dir = output / "runs" / f"rep-{repetition}" / case["id"].rsplit("/", 1)[-1] / tool
                     run_dir.mkdir(parents=True, exist_ok=True)
                     report_path = run_dir / ("scanner.json" if tool == "dalfox" else "scanner-report.json")
-                    argv = _command(tool, fixture.origin, cookie, report_path,
-                                    str(dalfox_path))
-                    # Credentials and ephemeral ports are deliberately omitted
-                    # from the shareable command manifest.
+                    argv = _command(tool, fixture.origin, cookie, report_path, str(dalfox_path))
                     safe_argv = ["<output>/" + report_path.relative_to(output).as_posix() if x == str(report_path) else
                                  "<dalfox-v3.2.4>" if x == str(dalfox_path) else
                                  "<python-3.10>" if x == sys.executable else
                                  "<repo>/tools/dom-xss-analyzer/dxadyn.py" if x == str(DXADYN) else
-                                 x.replace("bridge=" + cookie, "bridge=<fixture-token>")
+                                 x.replace(cookie, "<independent-writer-admin-session-pair>")
+                                 .replace(sessions.writer_token, "<writer-session>")
+                                 .replace(sessions.admin_token, "<reader-admin-session>")
                                  .replace(fixture.origin, "http://127.0.0.1:<ephemeral-port>")
                                  for x in argv]
                     env = os.environ.copy()
@@ -154,19 +172,20 @@ def run_comparison(dalfox_path: Path, output: Path):
                         stderr = (exc.stderr or b"").decode("utf-8", "replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
                     wall = round(time.monotonic() - started, 3)
                     findings = _parse_findings(tool, report_path)
-                    redactions = ((fixture.origin, "http://127.0.0.1:<ephemeral-port>"),
-                                  (cookie, "<fixture-token>"))
+                    scanner_request_rows = list(fixture.state.requests[preflight_request_count:])
+                    session_checks.update(check_scanner_sessions(fixture, sessions, "post"))
+                    session_ok = all(row.get("passed") for row in session_checks.values())
                     for name, contents in (("stdout.txt", stdout), ("stderr.txt", stderr)):
-                        for secret, replacement in redactions:
-                            contents = contents.replace(secret, replacement)
+                        contents = _redact_auth_text(contents, fixture.origin, sessions)
                         (run_dir / name).write_text(contents, encoding="utf-8")
                     if report_path.is_file():
                         report_text = report_path.read_text(encoding="utf-8", errors="replace")
-                        for secret, replacement in redactions:
-                            report_text = report_text.replace(secret, replacement)
+                        report_text = _redact_auth_text(report_text, fixture.origin, sessions)
                         report_path.write_text(report_text, encoding="utf-8")
                     exhausted = fixture.state.budget_exceeded
                     outcome = _classify_run(returncode, timed_out, exhausted, findings, wall, tool=tool)
+                    if not session_ok and outcome == "completed":
+                        outcome = "incomplete"
                     statuses = [row["status"] for row in fixture.state.requests]
                     rejected = sum(1 for row in fixture.state.requests if row.get("budget_rejected"))
                     artifacts = {}
@@ -189,22 +208,43 @@ def run_comparison(dalfox_path: Path, output: Path):
                         "forwarded_requests": len(fixture.state.requests) - rejected,
                         "budget_rejected_requests": rejected,
                         "request_limit": REQUEST_LIMIT, "max_inflight": fixture.state.max_inflight,
-                        "rate_limit_rps": RATE_LIMIT, "per_request_timeout_seconds": CLIENT_TIMEOUT, "wall_seconds": wall,
-                        "wall_limit_seconds": WALL_LIMIT, "command_timeout_seconds": COMMAND_TIMEOUT,
-                        "safe_command": safe_argv,
-                        "http_statuses": statuses,
+                        "rate_limit_rps": RATE_LIMIT, "per_request_timeout_seconds": CLIENT_TIMEOUT,
+                        "wall_seconds": wall, "wall_limit_seconds": WALL_LIMIT,
+                        "command_timeout_seconds": COMMAND_TIMEOUT,
+                        "safe_command": safe_argv, "http_statuses": statuses,
+                        "request_trace": [
+                            {"method": row["method"], "path": row["path"], "status": row["status"],
+                             "budget_rejected": row.get("budget_rejected", False)}
+                            for row in fixture.state.requests],
+                        "scanner_requests_by_path": {
+                            path: sum(row["path"] == path for row in scanner_request_rows)
+                            for path in ("/comments", "/admin/comments")},
+                        "session_checks": sessions.public_record(session_checks),
+                        "session_verified": session_ok,
+                        "role_boundary_checks": boundary_checks,
+                        "stored_payloads": fixture.stored_comments(),
+                        "fixture_request_counts": {
+                            "login": sum(row["path"] == "/login" for row in fixture.state.requests),
+                            "role_checks": sum(row["path"].startswith("/session/") for row in fixture.state.requests),
+                            "cross_role_controls": len(boundary_checks),
+                            "preflight_total": preflight_request_count,
+                            "scanner_requests": len(scanner_request_rows),
+                            "postflight_role_checks": 2},
                     })
     counts = {name: sum(1 for row in records if row["status"] == name)
               for name in ("completed", "error", "timeout", "incomplete")}
     return {
-        "schema": "r4-local-comparison/2", "status": "partial-candidate-comparison",
+        "schema": "r4-local-comparison/3", "status": "partial-candidate-comparison",
         "summary": {"selected": len(records), **counts},
         "corpus_version": "r4-admin-stored-candidate/1",
         "cases": list(CASES), "repetitions": REPETITIONS,
         "order": {"rep-1": ["dxadyn", "dalfox"], "rep-2": ["dalfox", "dxadyn"]},
         "identity": dict(IDENTITY),
-        "auth": {"scanner_input": "same ephemeral bridge cookie", "brokered_roles": ["writer", "reader-admin"],
-                 "real_login_coverage": False},
+        "auth": {"scanner_input": "separate per-run writer and reader-admin login sessions",
+                 "endpoint_role_binding": {"POST /comments": "writer_session",
+                                           "GET /admin/comments": "admin_session"},
+                 "pre_and_post_identity_checks": True, "cookie_values_recorded": False,
+                 "preflight_requests_counted_in_same_fixture_budget": True},
         "budgets": {"requests_per_run": REQUEST_LIMIT, "rate_rps": RATE_LIMIT,
                     "concurrency": 1, "wall_seconds": WALL_LIMIT,
                     "outer_process_seconds": COMMAND_TIMEOUT, "dalfox_per_request_seconds": CLIENT_TIMEOUT,
@@ -220,7 +260,6 @@ def run_comparison(dalfox_path: Path, output: Path):
             "browser_execution_oracle": "reported separately by test_r4_comparison_fixture.py",
             "ranking": False,
             "coverage_gaps": [
-                "scanner accounts are not independently authenticated; local broker maps one test cookie to distinct writer and reader-admin fixture roles",
                 "candidate rows are not correlated to scanner-generated CIDs and must not be scored as execution TP/FP/FN",
                 "dxaprove execution proof is not a scanner candidate parser and is not ranked against either candidate scanner"
             ]
