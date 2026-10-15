@@ -8,6 +8,10 @@ A pinned Dalfox 3.2.4 vs dxadyn loopback attempt was inconclusive: 8 selected,
 4 completed, 0 errors, 4 timeouts. Completed raw dxadyn outputs are candidates,
 not execution proof; all Dalfox runs timed out. No ranking or accuracy score;
 competitor acceptance remains open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
+The first CI push exposed and fixed the hosted-browser path assumption. Fix
+commit `ddb0ecf` remote CI 38748348608 passed 3/3; artifact gate accepted 185
+zero-skip/error tests and corpus 17/17 TP8/FP0/FN0. K01 38748348674 succeeded,
+but is not R5's independent-human repeat. [Remote result](audit/2026-10-15-r4-admin-comparison/candidate-comparison/remote-ci.json).
 R6 rebuilt 0.0.0.dev0 wheel passed local installed readiness matrix and 109
 focused tests (zero failure/error/skip). All three CLI help/config contracts,
 docs, optional browser metadata and packaged loopback demo were checked.

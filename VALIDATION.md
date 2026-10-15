@@ -12,6 +12,12 @@ tests passed 9/9; the CI gate unit module passed within the 119-test suite.
 This is inconclusive, not an accuracy score or tool ranking. R4 competitor
 acceptance remains open.
 [Run record](audit/2026-10-15-r4-admin-comparison/candidate-comparison/README.md).
+Fix commit `ddb0ecf` remote CI run 38748348608 passed all 3 jobs. Required browser
+gate accepted 185 tests with zero skips/errors, corpus17/17 TP8/FP0/FN0, and the
+R4 fixture/browser module. Artifact SHA256 was
+`3e4ffc1698f564d3fc845d99d0c854c328dc17656f247f1854d8430120bdb79c`.
+K01 workflow 38748348674 succeeded but is not a human R5 repeat.
+[Remote record](audit/2026-10-15-r4-admin-comparison/candidate-comparison/remote-ci.json).
 
 ## 15 October R4 admin fixture and R6 readiness
 

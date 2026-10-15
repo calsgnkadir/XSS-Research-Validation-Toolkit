@@ -75,5 +75,10 @@ accepted `DXA_BROWSER`, while hosted Linux CI provides Playwright's installed
 Chromium without that variable. The test now uses the explicit local browser
 when configured and otherwise launches Playwright Chromium. The fallback passed
 locally without `DXA_BROWSER`; the focused R4/CI-gate suite passed 119/119.
-The first remote run is recorded separately and a new push run is required to
-verify the workflow fix.
+The first remote run (38747618856) failed for that missing variable. The fix
+was pushed as `ddb0ecfdf5060620c059c8dca041c632b86212cf`; CI run 38748348608
+then passed all three jobs. The required browser artifact gate accepted 185
+JUnit cases with zero skips/errors and corpus 17/17 (TP=8, FP=0, FN=0). Its
+uploaded artifact digest and the successful K01 workflow run are recorded in
+[`remote-ci.json`](remote-ci.json). K01 CI is automated validation, not the
+deferred independent-human R5 repeat.

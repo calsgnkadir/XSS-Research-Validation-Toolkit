@@ -1,0 +1,36 @@
+{
+  "commit": "ddb0ecfdf5060620c059c8dca041c632b86212cf",
+  "remote_main_sha": "ddb0ecfdf5060620c059c8dca041c632b86212cf",
+  "first_push_ci": {
+    "run_id": 38747618856,
+    "conclusion": "failure",
+    "reason": "new browser oracle required DXA_BROWSER, which hosted Linux CI does not set"
+  },
+  "fix": "browser oracle uses explicit DXA_BROWSER when configured and Playwright Chromium otherwise",
+  "ci": {
+    "run_id": 38748348608,
+    "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38748348608",
+    "conclusion": "success",
+    "jobs": 3,
+    "required_browser_tests": 185,
+    "skipped": 0,
+    "errors": 0,
+    "corpus": {"selected": 17, "completed": 17, "tp": 8, "fp": 0, "fn": 0},
+    "artifact": {
+      "id": 11979782929,
+      "name": "r3-browser-proof",
+      "size_bytes": 13485,
+      "sha256": "3e4ffc1698f564d3fc845d99d0c854c328dc17656f247f1854d8430120bdb79c"
+    }
+  },
+  "k01_workflow": {
+    "run_id": 38748348674,
+    "conclusion": "success",
+    "human_repeat": false
+  },
+  "limits": [
+    "hosted Bludit Docker lifecycle was not run",
+    "CI proof corpus does not make the local Dalfox comparator experiment conclusive",
+    "R5 independent-human repeat remains deferred"
+  ]
+}

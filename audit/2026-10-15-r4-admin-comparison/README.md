@@ -80,6 +80,13 @@ browser execution oracle, so there is no TP/FP/FN score or tool ranking. The
 browser oracle remains separate from these candidate rows. ROADMAP R4's
 competitor-comparison acceptance remains open.
 
+The first push's browser workflow failed because hosted CI lacks `DXA_BROWSER`;
+the oracle was updated to use Playwright Chromium by default. The fix commit's
+required browser workflow passed 3/3 jobs; 185 JUnit cases had zero skips/errors
+and the artifact gate accepted corpus 17/17 (TP=8, FP=0, FN=0). [Remote CI and
+artifact record](candidate-comparison/remote-ci.json). This automated CI result
+does not replace R5's deferred independent-human repeat.
+
 ## Scope mapping
 
 - ROADMAP R4: separate authenticated accounts, writer-to-admin blind stored
