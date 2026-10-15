@@ -1,0 +1,49 @@
+{
+  "recorded_at_utc": "2026-10-15T20:37:07.634083+00:00",
+  "working_copy": "user-selected OneDrive copy",
+  "git_commit": null,
+  "git_limitation": "No .git in active copy; source hashes identify tested files",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows",
+    "playwright": "1.63.0",
+    "browser_version": "155.0.8059.79"
+  },
+  "live_gate": {
+    "exit_code": 0,
+    "passed": 5,
+    "total": 5,
+    "fixture_ports_closed": 5,
+    "distinct_fixture_ports": 5
+  },
+  "pytest": {
+    "exit_code": 0,
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "console_duration_seconds": 13.4
+  },
+  "source_sha256": {
+    "cases/k01-stored-comment/check_repro.py": "de4a5e427686587629f1b8c30944abe03a27ae6bccd9565259f7c4b9076c51a8",
+    "cases/k01-stored-comment/prove.py": "55b9ba58de66f0effc51a73477f5cf2035b815ad89901e24ddc35b8611056491",
+    "cases/k01-stored-comment/render_fixed.py": "99960d46babaa86700aabe2daba5a3052bdb4cb8d5c1a25da78a99b212c38aaa",
+    "cases/k01-stored-comment/render_vulnerable.py": "23a884fad172562171b808f0a8b1bf570140b557e5506073bc581e2e1ce8f4a5",
+    "cases/k01-stored-comment/test_fixture.py": "e60a4437b053938e255c67f1079f192345f9c9bcb50cf22e82488b90cc926bb5",
+    "cases/k01-stored-comment/test_repro_gate.py": "fd5d29176769d047018df9f5e097f321046f89dbc774d58199e259bf36d18dfe",
+    "cases/k01-stored-comment/requirements-proof.txt": "852008c6c134845926625892a248563fe02a96a91e769e6735af1bad49ab2cef",
+    "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "tools/dom-xss-analyzer/dxa_evidence.py": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "tools/dom-xss-analyzer/dxa_attempts.py": "885608e18e797f6524c2be1fcae710521fa39c668c8d80c1ee584b4f5788cf3a"
+  },
+  "artifact_sha256": {
+    "regression.xml": "611852413647c99989e96155c1996560fac324259b41bbab5f8129bff1875270",
+    "proof/acceptance.json": "f7c6992d1fa55ca9e1f9a0b4641f3767d87dd2d306c6f9929e2be6ab94ee7acb"
+  },
+  "postrun_hash_checks": "12 proof members, three fixture sources and gate matched",
+  "junit_share_edit": "Removed hostname attribute; test results preserved",
+  "human_repeat": "open-deferred; unfilled form",
+  "remote_ci": "not run or verified in this task",
+  "commands_reference": "README.md current run",
+  "manifest_generation_note": "First manifest attempt referenced nonexistent dxa_config.py and failed before writing validation.json; corrected to actual imported modules. This did not rerun or alter the proof."
+}

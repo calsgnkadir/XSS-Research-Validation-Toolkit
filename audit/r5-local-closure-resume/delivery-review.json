@@ -1,0 +1,35 @@
+{
+  "reviewed_at_utc": "2026-10-15T20:50:27.428834+00:00",
+  "head_at_later_review": "df967d506e8c37033ed6aa2c2e367a7aa0ec20dc",
+  "new_tests_run": false,
+  "source_hashes_matched": 10,
+  "proof_member_hashes_matched": 12,
+  "validation_artifact_hashes_matched": 2,
+  "autocrlf": "true",
+  "before_attributes_result_json_blob": {
+    "raw": "9a52b2a8256eea0a9d23f8ab46f2f271305509d2",
+    "git_filtered": "30c17e7751e2cf540cf34724dc67da9d5de9a7a9"
+  },
+  "after_attributes_raw_equals_git_filtered": {
+    "audit/r5-local-closure-resume/.gitattributes": true,
+    "audit/r5-local-closure-resume/README.md": true,
+    "audit/r5-local-closure-resume/regression.xml": true,
+    "audit/r5-local-closure-resume/validation.json": true,
+    "audit/r5-local-closure-resume/proof/acceptance.json": true,
+    "audit/r5-local-closure-resume/proof/fix.diff": true,
+    "audit/r5-local-closure-resume/proof/fixed-request.json": true,
+    "audit/r5-local-closure-resume/proof/fixed-response.txt": true,
+    "audit/r5-local-closure-resume/proof/javascript-disabled-request.json": true,
+    "audit/r5-local-closure-resume/proof/javascript-disabled-response.txt": true,
+    "audit/r5-local-closure-resume/proof/json-only-request.json": true,
+    "audit/r5-local-closure-resume/proof/json-only-response.txt": true,
+    "audit/r5-local-closure-resume/proof/normal-dialog-request.json": true,
+    "audit/r5-local-closure-resume/proof/normal-dialog-response.txt": true,
+    "audit/r5-local-closure-resume/proof/result.json": true,
+    "audit/r5-local-closure-resume/proof/vulnerable-request.json": true,
+    "audit/r5-local-closure-resume/proof/vulnerable-response.txt": true
+  },
+  "workflow_source_review": "No code changes required; no new hosted execution claimed",
+  "deferred": "Independent second-human clean reproduction",
+  "share_review": "Synthetic proof only; no credentials or personal user paths; JUnit hostname removed"
+}

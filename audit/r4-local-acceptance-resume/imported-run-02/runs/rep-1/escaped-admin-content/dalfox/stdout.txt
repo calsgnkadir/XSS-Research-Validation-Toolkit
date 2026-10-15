@@ -1,0 +1,1 @@
+Results written to audit\2026-10-16-r4-auth-gate\run-02\runs\rep-1\escaped-admin-content\dalfox\scanner.json

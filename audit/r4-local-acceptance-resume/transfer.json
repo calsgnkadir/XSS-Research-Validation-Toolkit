@@ -1,0 +1,119 @@
+{
+  "baseline_commit": "df967d506e8c37033ed6aa2c2e367a7aa0ec20dc",
+  "files": [
+    {
+      "path": "bench/r4_comparison_acceptance.py",
+      "before_sha256": "82392d078300737b5cab580fd8ed44dfdc5990beafd26e0a1a7f8dcef5373b9a",
+      "imported_sha256": "70dcecbd32f9adc3093035837c3bc0544c2a7ae289c4e329abfa07aaff420e51",
+      "matches_git_baseline_text": true
+    },
+    {
+      "path": "bench/test_r4_comparison_acceptance.py",
+      "before_sha256": "6f0c94c125981e73b33cf073f4b5cc4ab7b935a5e0ddab050cc72817207e71fe",
+      "imported_sha256": "9f21670d7035c73fb31c52e6f444f28073ff04a804adb0b2c31c28f641bbd883",
+      "matches_git_baseline_text": true
+    }
+  ],
+  "imported_historical_artifacts": [
+    {
+      "path": "comparison.json",
+      "sha256": "b03aadbab9806ae93fdd6cd22359af0561cccda6b435271f0b699efc61b6ca10"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dalfox/scanner.json",
+      "sha256": "06b7928254928d27a6fd3749bb730366f92a3d1083730719228c93ad3ce46ace"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dalfox/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dalfox/stdout.txt",
+      "sha256": "00786df6b0469710b25a7c49254a214373708232e0cca34976e3114def0c1a17"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dxadyn/scanner-report.json",
+      "sha256": "624bad64458c9af35c12198c03cc1682b7118519cd32c1897620cc1a157496e9"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dxadyn/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-1/escaped-admin-content/dxadyn/stdout.txt",
+      "sha256": "2192110cbb79f54f49fb30dc83569f85789ca2b14ee71a74f9e8e325ab997cd5"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dalfox/scanner.json",
+      "sha256": "3026cc1acf3bb48b9552b0ae385725d8516a1040c0ab973890f7f6df7a29a518"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dalfox/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dalfox/stdout.txt",
+      "sha256": "bc0d3ea4c7993c696328be7660e9c7c28782b7388ebd3fef9a3b592af5b757b2"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dxadyn/scanner-report.json",
+      "sha256": "38706a2109820f5e21be5f6c4f50e7878259a6cd9aef9dc88a8608bb850843ea"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dxadyn/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-1/raw-admin-content/dxadyn/stdout.txt",
+      "sha256": "8bcaf03b0f9b1e6e05155c85d128573692edf312ac44601d0fde44ecfca0697f"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dalfox/scanner.json",
+      "sha256": "37284ecfdb20c24ddbcb6d4452b14849ddedfeb4c1113feb04e020ce7eb9eeac"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dalfox/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dalfox/stdout.txt",
+      "sha256": "aa9abbb3391e362d60cebe9332d5e1d0ee5946d449b49be3b220baac60b19d4d"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dxadyn/scanner-report.json",
+      "sha256": "1c9ed534abf876fb9746c40fecaff0c98644c1135fac5f8b43d1f27514142fea"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dxadyn/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-2/escaped-admin-content/dxadyn/stdout.txt",
+      "sha256": "46f78872a0384a74a2550aa062ce7adc3827ba1de82d71cb9d206251b893450a"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dalfox/scanner.json",
+      "sha256": "f3ff7a9fefd32d9dd6bcd6c5645113a8c5f85d910680e0776b62dd3899dd3baf"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dalfox/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dalfox/stdout.txt",
+      "sha256": "8e211bcef83fbd7924770dc5708ffa57527ed01608a42eb4afacd3d16bc397a7"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dxadyn/scanner-report.json",
+      "sha256": "b9f3e0434cc315284cca827ee5727f9aaffc0bbab9d2443a5649d862d7058d0e"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dxadyn/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runs/rep-2/raw-admin-content/dxadyn/stdout.txt",
+      "sha256": "03b57617feb6c7599da2c7b1ad87628cfe8621aa3669a64d3d519d7a3d21d8b6"
+    }
+  ]
+}

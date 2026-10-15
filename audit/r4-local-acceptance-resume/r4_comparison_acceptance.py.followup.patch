@@ -1,0 +1,38 @@
+diff --git "a/C:\\xss\\xss-github\\bench\\r4_comparison_acceptance.py" "b/C:\\Users\\user\\OneDrive\\Desktop\\xss-ss\\XSS-Research-Validation-Toolkit-main (1)\\XSS-Research-Validation-Toolkit-main\\bench\\r4_comparison_acceptance.py"
+index d72290a..c941818 100644
+--- "a/C:\\xss\\xss-github\\bench\\r4_comparison_acceptance.py"
++++ "b/C:\\Users\\user\\OneDrive\\Desktop\\xss-ss\\XSS-Research-Validation-Toolkit-main (1)\\XSS-Research-Validation-Toolkit-main\\bench\\r4_comparison_acceptance.py"	
+@@ -190,6 +190,7 @@ def validate_comparison(document, artifact_root=None):
+         require(artifact_root is not None, "v2 requires artifact verification")
+     if schema == "r4-local-comparison/3":
+         require(artifact_root is not None, "v3 requires artifact verification")
++        _require_redacted_auth(json.dumps(document, sort_keys=True))
+     require(document.get("corpus_version") == "r4-admin-stored-candidate/1", "wrong corpus")
+     expected_identity = IDENTITY_V3 if schema.endswith("/3") else IDENTITY
+     require(document.get("identity") == expected_identity, "identity mismatch")
+@@ -229,7 +230,7 @@ def validate_comparison(document, artifact_root=None):
+     for key in (*mapping.values(), "concurrency", "dalfox_per_request_seconds", "dxadyn_per_request_seconds"):
+         number(budgets.get(key), key, positive=True)
+     require(budgets["concurrency"] == 1, "serial comparison required")
+-    if schema.endswith("/2"):
++    if schema.endswith(("/2", "/3")):
+         require(budgets["dalfox_per_request_seconds"] == budgets["dxadyn_per_request_seconds"],
+                 "client timeout mismatch")
+     runtime = document.get("runtime", {})
+@@ -265,7 +266,7 @@ def validate_comparison(document, artifact_root=None):
+         for key, budget in mapping.items():
+             number(row.get(key), key, positive=True)
+             require(row[key] == budgets[budget], "row budget mismatch")
+-        if schema.endswith("/2"):
++        if schema.endswith(("/2", "/3")):
+             number(row.get("per_request_timeout_seconds"), "per_request_timeout_seconds", positive=True)
+             require(row["per_request_timeout_seconds"] == budgets[identity[2] + "_per_request_seconds"],
+                     "row client timeout mismatch")
+@@ -306,6 +307,7 @@ def validate_comparison(document, artifact_root=None):
+         if schema.endswith("/3"):
+             cookie_option = "--cookie" if identity[2] == "dxadyn" else "--cookies"
+             require(row["safe_command"].count(cookie_option) == 1
++                    and row["safe_command"].index(cookie_option) + 1 < len(row["safe_command"])
+                     and row["safe_command"][row["safe_command"].index(cookie_option) + 1]
+                     == "<independent-writer-admin-session-pair>",
+                     "scanner command does not contain only the redacted independent session pair")

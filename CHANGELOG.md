@@ -1,5 +1,26 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-16 local R4/R5 follow-up
+
+- Final R4 review fixed two further v3 gate gaps (credential angle values and
+  Dalfox canonical report shape). Three regressions failed first; focused
+  tests passed 132/132 after correction. Coordinator final-source combined
+  rerun passed 372/372 after an initial Windows loopback connection abort.
+- Scoped `.gitattributes` rules preserve byte-bound R4/R5 proof artifacts
+  through Git's Windows newline filtering.
+
+- Imported the pending R4 comparison acceptance gate into the user-selected
+  OneDrive copy. Fixed v3 timeout, credential metadata and missing cookie
+  argument validation after four counterexamples reproduced the defects.
+- Verified the affected R4 suite with required Chrome: 368 passed, zero
+  failure/error/skip. Revalidated 8/8 historical candidate artifacts; no
+  fresh scanner execution or candidate browser proof was established.
+- Repeated K01 locally: 5/5 controls, five closed fixture ports and 22 focused
+  tests passed. The independent second-person repeat remains deferred.
+- Source hashes and local evidence are under `audit/r4-local-acceptance-resume/`
+  and `audit/r5-local-closure-resume/`. No commit, push or hosted CI in this
+  working copy.
+
 ## Unreleased — 2026-10-15
 
 - R4 bounded candidate comparison now completes eight runs with equal limits;

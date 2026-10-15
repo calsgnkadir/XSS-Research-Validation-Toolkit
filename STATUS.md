@@ -1,5 +1,86 @@
 # Güncel devam noktası — 16 Ekim 2026
 
+## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
+
+İki native uzman görevi tamamlandı; aktif uzman yok. R4 Engine, eski Git
+ağacındaki iki bekleyen gate dosyasını bu çalışma kopyasına kaynak karşılaştırmasıyla
+aktardı. v3 manifestinde dört kırmızı karşı örnek ortak/satır timeout,
+üst metadata credential ve eksik cookie argümanı kontrollerindeki kusurları
+gösterdi; düzeltme sonrası zorunlu Chrome içeren birleşik paket **368/368**,
+sıfır failure/error/skip geçti. Önceki run-02'nin 25 artifact'i hashle
+korunup güncel kapıdan 8/8 geçti; **yeni scanner koşusu değil**. Bu kopyadaki
+tarihsel run-01 artifact hash uyuşmazlığı korunmuş ve test bağımlılığı sağlam
+run-02 mutasyonuna taşınmıştır. [R4 kanıtı](audit/r4-local-acceptance-resume/README.md).
+
+R5 QA, bu kopyadan yeni izinli loopback Chrome tekrarında **5/5** kontrol ve
+**5/5** ayrı port kapanışı, ayrıca **22/22** regresyon doğruladı. Kod kusuru
+bulunmadığından K01 uygulaması değişmedi. [R5 kanıtı](audit/r5-local-closure-resume/README.md).
+R5'in ikinci bağımsız insan tekrarı kullanıcı yönlendirmesiyle açık-ertelendi;
+form boş. R4'te scanner CID/browser execution korelasyonu, insan triage'ı ve
+genel araç karşılaştırması açık-ertelendi; TP/FP/FN veya üstünlük iddiası yok.
+ROADMAP'teki dört yerel R4 ölçüm maddesi bu dar kanıtla işaretlendi.
+
+Git kurulumu sonrası R4 son inceleme iki ek v3 gate kusuru buldu: `<...>`
+biçimli credential atlatması ve Dalfox raporunda canonical `findings`
+zorunluluğunun atlanması. Üç karşı örnek önce kırmızı, düzeltmeden sonra
+132/132 odaklı test geçti. Koordinatör son kaynakla birleşik paketi yeniden
+koştu: ilk koşuda 371 geçti, bir loopback isteği Windows bağlantı iptali
+verdi; test tek başına geçti ve ikinci birleşik koşu **372/372** geçti.
+İlk başarısız koşu da [R4 kaydında](audit/r4-local-acceptance-resume/README.md)
+korunur. R4 ve R5 audit paketlerinde Git satır sonu dönüşümünün hash bağlı
+kanıtı değiştirmemesi için dar `.gitattributes` kuralları doğrulandı.
+
+Bu OneDrive klasöründe `.git` kullanıcı isteğiyle sonradan kuruldu; yerel main
+`df967d5` ile origin/main eşleşti, mevcut dosyalar değiştirilmedi. Uzmanların
+test anında `.git` yoktu; test edilen kaynaklar SHA-256 manifestleriyle
+tanımlandı. Bu yerel teslim henüz commit/push edilmedi ve yeni uzak CI yok.
+Önceki Git/CI kayıtları aşağıda tarihsel bağlamdır. Sıradaki uygulanabilir adım R4/R5'in
+ertelediğimiz insan kabulü dışında kalan teknik maddelerini ROADMAP sırasıyla
+seçmek; sürüm veya genel R4/R5 tamamlanma ilanı yapılmaz.
+
+## Güncel kullanıcı yönlendirmesi — 15 Ekim 2026, devam yeri kontrolü
+
+### Bu sohbetin uzman atamaları
+
+Kullanıcının açık isteğiyle iki native rol çağrısı başarılı oldu:
+
+- `/root/r4_local_acceptance` — `scanner_engine_specialist`: eski klasördeki
+  bekleyen R4 gate değişikliklerini karşılaştırıp bu köke kayıpsız bütünleştirme;
+  bench gate/comparator dosyaları ve kendi audit kaydı; odaklı regresyon ve
+  R4 kabul kriteri/kanıt matrisi. İnsan triage'ı ertelenmiş durumda.
+- `/root/r5_local_closure` — `qa_security_lab_specialist`: cases/K01 içindeki
+  uygulanabilir R5 eksikleri, yerel tekrar/fix/negatif/cleanup kabulü ve kendi
+  audit kaydı. Bağımsız ikinci insan kriteri ertelenmiştir; agent koşusu bunu
+  karşılamaz.
+
+Atama sonrasında iki görev tamamlandı; sonuçlar en üstteki teslimde kayıtlıdır.
+Koordinatör ortak belgeler, diff/oracle incelemesi ve birleşik kabulden sorumlu.
+Uzmanlar eski C:\xss kökünü değiştirmez, commit/push yapmaz. Atama kaydı
+kalıcı bir arka plan servisi veya tamamlanmış teslim kanıtı değildir.
+
+Bu sohbetin çalışma kaynağı kullanıcı seçimiyle bu OneDrive klasörüdür.
+Aşağıdaki eski C:\xss\xss-github yönlendirmesi tarihsel taşıma kaydıdır;
+güncel çalışma yeri talimatı değildir. İlk denetimde bu klasörde `.git` yoktu;
+kullanıcı isteğiyle sonradan oluşturuldu.
+Eski klasör silinmemelidir: orada henüz commit edilmemiş R4 işi vardır.
+
+Salt okunur Git kontrolü ve fetch sonrası C:\xss\xss-github main HEAD'i
+`df967d5`, upstream farkı 0/0. Son bir saatte `ca83bf2` (15 Ekim 22:35 +03)
+ve `df967d5` (22:44 +03) bulundu. Eski çalışma ağacında değişmiş
+`bench/r4_comparison_acceptance.py`, `bench/test_r4_comparison_acceptance.py`
+ve izlenmeyen `audit/2026-10-16-r4-acceptance-gate/`,
+`audit/2026-10-16-r4-auth-gate/` bulunuyor. İki kod dosyasının SHA-256'ları
+bu OneDrive kopyasıyla farklı; henüz buraya aktarılmadı. Acceptance-gate
+README'sindeki 98-test sonucu önceki çalışmanın kaydıdır; bu sohbette
+test koşulmadı. Diğer sohbetlerin içeriğine erişim sağlanmadı.
+
+Sıradaki adım: commit edilmemiş R4 teslimini mevcut kopyayla karşılaştırıp
+kayıpsız bütünleştirmek, ardından izinli yerel kabul testleriyle R4/R5
+kapanış matrisini tamamlamak. Kullanıcı insan tekrarı/triage bekleyen ve
+izinli test kapsamı dışındaki işleri şimdilik erteledi. Ertelenen kabul
+başarılı sayılmaz; genel R4/R5 yerine doğrulanmış yerel kapsam ayrı belirtilir.
+R6 paket/CI ilerlemesi korunur; yeni sürüm yayını yapılmadı.
+
 ## Son doğrulanmış iş — R4 ayrı oturum ve CID/browser incelemesi, 16 Ekim
 
 Engine teslimi her scanner koşusunda ayrı writer ve reader-admin login,
@@ -231,11 +312,11 @@ Eski tek-container internal ağda Docker host portu oluşmadığı için kurulum
 
 ## Aktif çalışma yeri
 
-Aktif depo **C:\xss\xss-github**. Kullanıcı bu yeni hedefi açıkça seçti.
+Tarihsel taşıma hedefi **C:\xss\xss-github** idi; güncel seçim yukarıdadır.
 1076 erişilebilir dosya SHA-256 eşleşmesi, HEAD/çalışma ağacı eşitliği ve yeni
 konumda **95 passed** doğrulandı. Eski OneDrive kökü işlem kilidi nedeniyle
 silinmedi; erişilemeyen .pytest_cache yalnız eski kopyada korundu. Eski kopyada
-geliştirme sürdürülmez; sonraki Codex oturumu yeni kökten açılmalıdır.
+geliştirme sürdürülmemesi o oturumdaki karardı; güncel talimat bunu değiştirdi.
 [Taşıma kontrolü ve sınır](audit/2026-10-12-relocation/README.md).
 
 ## Son doğrulanan teslimler ve yetki
@@ -283,5 +364,5 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
   birleşik kabul işleri açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
 - R5 bağımsız temiz ortam tekrarı, R6 paketleme ve C/K/P/S/A işleri ROADMAP'te.
-- Eski kilitli OneDrive kopyası, onu kullanan işlem kapandıktan sonra ayrı
-  doğrulamayla kaldırılabilir. Yeni geliştirme yalnız C:\xss\xss-github içinde.
+- Çalışma yeri için en üstteki güncel kullanıcı yönlendirmesi geçerlidir.
+  C:\xss\xss-github içindeki commit edilmemiş işler korunmalıdır.

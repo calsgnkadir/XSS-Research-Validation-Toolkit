@@ -1,0 +1,2364 @@
+{
+  "schema": "r4-local-comparison/3",
+  "status": "partial-candidate-comparison",
+  "summary": {
+    "selected": 8,
+    "completed": 8,
+    "error": 0,
+    "timeout": 0,
+    "incomplete": 0
+  },
+  "corpus_version": "r4-admin-stored-candidate/1",
+  "cases": [
+    {
+      "id": "r4-admin-stored/raw-admin-content",
+      "escaped": false,
+      "expected_execution": true
+    },
+    {
+      "id": "r4-admin-stored/escaped-admin-content",
+      "escaped": true,
+      "expected_execution": false
+    }
+  ],
+  "repetitions": 2,
+  "order": {
+    "rep-1": [
+      "dxadyn",
+      "dalfox"
+    ],
+    "rep-2": [
+      "dalfox",
+      "dxadyn"
+    ]
+  },
+  "identity": {
+    "method": "POST",
+    "source_path": "/comments",
+    "parameter": "comment",
+    "read_path": "/admin/comments",
+    "role": "writer-to-reader-admin",
+    "role_verification": "separate fixture principals checked before and after each scan"
+  },
+  "auth": {
+    "scanner_input": "separate per-run writer and reader-admin login sessions",
+    "endpoint_role_binding": {
+      "POST /comments": "writer_session",
+      "GET /admin/comments": "admin_session"
+    },
+    "pre_and_post_identity_checks": true,
+    "cookie_values_recorded": false,
+    "preflight_requests_counted_in_same_fixture_budget": true
+  },
+  "budgets": {
+    "requests_per_run": 200,
+    "rate_rps": 2,
+    "concurrency": 1,
+    "wall_seconds": 120,
+    "outer_process_seconds": 120,
+    "dalfox_per_request_seconds": 15,
+    "dxadyn_per_request_seconds": 15
+  },
+  "runtime": {
+    "python": "3.10.11",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "dalfox_version": "3.2.4",
+    "dalfox_version_output": "dalfox 3.2.4",
+    "dalfox_sha256": "5a48b938792c81ed610a2bcfde36827dcbc6c41cc2292c60fcc06c13a4b2ad3f",
+    "dxadyn_sha256": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
+    "adapter_sha256": "e56f46f7af860c85cda768cfa255894d21c1803fb2ef2ac1f4d8e02fdea8fed4",
+    "test_sha256": "9a9ca2913603f8e0c823696e0eb54239c0198292bea1072c664e941624e7f294",
+    "fixture_sha256": "9657633f2e7ea82a6e67ab481f8ee1fe75c4ce0cd97c89ed47550bf75cf442fe"
+  },
+  "results": [
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/stdout.txt",
+          "sha256": "8bcaf03b0f9b1e6e05155c85d128573692edf312ac44601d0fde44ecfca0697f"
+        },
+        "stderr": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/raw-admin-content/dxadyn/scanner-report.json",
+          "sha256": "38706a2109820f5e21be5f6c4f50e7878259a6cd9aef9dc88a8608bb850843ea"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 1,
+      "order_index": 0,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.016,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-1/raw-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 1,
+        "/admin/comments": 1
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxa2a261b3e\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/stdout.txt",
+          "sha256": "bc0d3ea4c7993c696328be7660e9c7c28782b7388ebd3fef9a3b592af5b757b2"
+        },
+        "stderr": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/raw-admin-content/dalfox/scanner.json",
+          "sha256": "3026cc1acf3bb48b9552b0ae385725d8516a1040c0ab973890f7f6df7a29a518"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 1,
+      "order_index": 1,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 24,
+      "forwarded_requests": 24,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 7.0,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-1/raw-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "HEAD",
+          "path": "/comments",
+          "status": 404,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 10,
+        "/admin/comments": 4
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx2f2737d6dlxmid66f5fb5exldf829a17c",
+        "dlx2f2737d6/\\'{`<>\"();=|}[.:]+,$-xldf829a17c",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx2f2737d6/\\'{`<>\"();=|}[.:]+,$-xldf829a17c",
+        "dlx2f2737d6dlxmid66f5fb5exldf829a17c",
+        "dlx2f2737d6dlxmid66f5fb5exldf829a17c",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx15ee421e>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 14,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/stdout.txt",
+          "sha256": "2192110cbb79f54f49fb30dc83569f85789ca2b14ee71a74f9e8e325ab997cd5"
+        },
+        "stderr": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/escaped-admin-content/dxadyn/scanner-report.json",
+          "sha256": "624bad64458c9af35c12198c03cc1682b7118519cd32c1897620cc1a157496e9"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 1,
+      "order_index": 0,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 0,
+      "candidate_observed": false,
+      "return_code": 0,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.031,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-1/escaped-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 1,
+        "/admin/comments": 1
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxae8b1196b\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/stdout.txt",
+          "sha256": "00786df6b0469710b25a7c49254a214373708232e0cca34976e3114def0c1a17"
+        },
+        "stderr": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-1/escaped-admin-content/dalfox/scanner.json",
+          "sha256": "06b7928254928d27a6fd3749bb730366f92a3d1083730719228c93ad3ce46ace"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 1,
+      "order_index": 1,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 33,
+      "forwarded_requests": 33,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 11.5,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-1/escaped-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "HEAD",
+          "path": "/comments",
+          "status": 404,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 16,
+        "/admin/comments": 7
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx1b71e021dlxmida2d8aebfxld785ec4fe",
+        "dlx1b71e021/\\'{`<>\"();=|}[.:]+,$-xld785ec4fe",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx1b71e021/\\'{`<>\"();=|}[.:]+,$-xld785ec4fe",
+        "dlx1b71e021dlxmida2d8aebfxld785ec4fe",
+        "dlx1b71e021dlxmida2d8aebfxld785ec4fe",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx75602eba>",
+        "onabort=alert(1)",
+        "alert(document.domain)//",
+        ";alert(1)//"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 23,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/stdout.txt",
+          "sha256": "8e211bcef83fbd7924770dc5708ffa57527ed01608a42eb4afacd3d16bc397a7"
+        },
+        "stderr": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/raw-admin-content/dalfox/scanner.json",
+          "sha256": "f3ff7a9fefd32d9dd6bcd6c5645113a8c5f85d910680e0776b62dd3899dd3baf"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 2,
+      "order_index": 0,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 24,
+      "forwarded_requests": 24,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 7.015,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-2/raw-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "HEAD",
+          "path": "/comments",
+          "status": 404,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 10,
+        "/admin/comments": 4
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx8119882edlxmid054ca383xldedca9f47",
+        "dlx8119882e/\\'{`<>\"();=|}[.:]+,$-xldedca9f47",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx8119882e/\\'{`<>\"();=|}[.:]+,$-xldedca9f47",
+        "dlx8119882edlxmid054ca383xldedca9f47",
+        "dlx8119882edlxmid054ca383xldedca9f47",
+        "'><IMG src=x onerror=alert(1) ClAss=dlxa1d76839>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 14,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/stdout.txt",
+          "sha256": "03b57617feb6c7599da2c7b1ad87628cfe8621aa3669a64d3d519d7a3d21d8b6"
+        },
+        "stderr": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/raw-admin-content/dxadyn/scanner-report.json",
+          "sha256": "b9f3e0434cc315284cca827ee5727f9aaffc0bbab9d2443a5649d862d7058d0e"
+        }
+      },
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "expected_execution": true,
+      "repetition": 2,
+      "order_index": 1,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.016,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-2/raw-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 1,
+        "/admin/comments": 1
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxa9410eeb6\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/stdout.txt",
+          "sha256": "aa9abbb3391e362d60cebe9332d5e1d0ee5946d449b49be3b220baac60b19d4d"
+        },
+        "stderr": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/escaped-admin-content/dalfox/scanner.json",
+          "sha256": "37284ecfdb20c24ddbcb6d4452b14849ddedfeb4c1113feb04e020ce7eb9eeac"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 2,
+      "order_index": 0,
+      "tool": "dalfox",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 1,
+      "candidate_observed": true,
+      "return_code": 1,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 33,
+      "forwarded_requests": 33,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 11.5,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<dalfox-v3.2.4>",
+        "scan",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "-X",
+        "POST",
+        "-d",
+        "comment=seed",
+        "-p",
+        "comment:body",
+        "--sxss",
+        "--sxss-url",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--sxss-method",
+        "GET",
+        "--sxss-retries",
+        "1",
+        "--cookies",
+        "<independent-writer-admin-session-pair>",
+        "--max-payloads-per-param",
+        "2",
+        "--workers",
+        "1",
+        "--rate-limit",
+        "2",
+        "--timeout",
+        "15",
+        "--scan-timeout",
+        "120",
+        "--skip-mining",
+        "--skip-discovery",
+        "--encoders",
+        "none",
+        "--skip-ast-analysis",
+        "--skip-waf-probe",
+        "--waf-bypass",
+        "off",
+        "--no-color",
+        "--format",
+        "json",
+        "--output",
+        "<output>/runs/rep-2/escaped-admin-content/dalfox/scanner.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "HEAD",
+          "path": "/comments",
+          "status": 404,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 16,
+        "/admin/comments": 7
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dlx9d3cc3ecdlxmid0d82b42exld54c72784",
+        "dlx9d3cc3ec/\\'{`<>\"();=|}[.:]+,$-xld54c72784",
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdlx9d3cc3ec/\\'{`<>\"();=|}[.:]+,$-xld54c72784",
+        "dlx9d3cc3ecdlxmid0d82b42exld54c72784",
+        "dlx9d3cc3ecdlxmid0d82b42exld54c72784",
+        "'><IMG src=x onerror=alert(1) ClAss=dlx8a9545be>",
+        "onabort=alert(1)",
+        "alert(document.domain)//",
+        ";alert(1)//"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 23,
+        "postflight_role_checks": 2
+      }
+    },
+    {
+      "identity": {
+        "method": "POST",
+        "source_path": "/comments",
+        "parameter": "comment",
+        "read_path": "/admin/comments",
+        "role": "writer-to-reader-admin",
+        "role_verification": "separate fixture principals checked before and after each scan"
+      },
+      "artifacts": {
+        "stdout": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/stdout.txt",
+          "sha256": "46f78872a0384a74a2550aa062ce7adc3827ba1de82d71cb9d206251b893450a"
+        },
+        "stderr": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "report": {
+          "path": "runs/rep-2/escaped-admin-content/dxadyn/scanner-report.json",
+          "sha256": "1c9ed534abf876fb9746c40fecaff0c98644c1135fac5f8b43d1f27514142fea"
+        }
+      },
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "expected_execution": false,
+      "repetition": 2,
+      "order_index": 1,
+      "tool": "dxadyn",
+      "status": "completed",
+      "selected": 1,
+      "completed": true,
+      "error": false,
+      "timeout": false,
+      "candidate_count": 0,
+      "candidate_observed": false,
+      "return_code": 0,
+      "timed_out": false,
+      "budget_exceeded": false,
+      "request_attempts": 12,
+      "forwarded_requests": 12,
+      "budget_rejected_requests": 0,
+      "request_limit": 200,
+      "max_inflight": 1,
+      "rate_limit_rps": 2,
+      "per_request_timeout_seconds": 15,
+      "wall_seconds": 1.016,
+      "wall_limit_seconds": 120,
+      "command_timeout_seconds": 120,
+      "safe_command": [
+        "<python-3.10>",
+        "<repo>/tools/dom-xss-analyzer/dxadyn.py",
+        "--stored",
+        "--target",
+        "http://127.0.0.1:<ephemeral-port>/comments",
+        "--target-field",
+        "comment",
+        "--check",
+        "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "--csrf-field",
+        "",
+        "--variants",
+        "body",
+        "--parallel",
+        "1",
+        "--rate",
+        "2",
+        "--cookie",
+        "<independent-writer-admin-session-pair>",
+        "--json-out",
+        "<output>/runs/rep-2/escaped-admin-content/dxadyn/scanner-report.json"
+      ],
+      "http_statuses": [
+        200,
+        200,
+        200,
+        200,
+        401,
+        401,
+        403,
+        403,
+        200,
+        200,
+        200,
+        200
+      ],
+      "request_trace": [
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 401,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 403,
+          "budget_rejected": false
+        },
+        {
+          "method": "POST",
+          "path": "/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/admin/comments",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/writer",
+          "status": 200,
+          "budget_rejected": false
+        },
+        {
+          "method": "GET",
+          "path": "/session/reader-admin",
+          "status": 200,
+          "budget_rejected": false
+        }
+      ],
+      "scanner_requests_by_path": {
+        "/comments": 1,
+        "/admin/comments": 1
+      },
+      "session_checks": {
+        "writer": {
+          "principal_sha256": "b93006774cbdd4b299389a03ac3d88c3a76b460d538795bc12718011a909fba5",
+          "role": "writer",
+          "pre": true,
+          "post": true
+        },
+        "reader_admin": {
+          "principal_sha256": "e0d53daea50167a3f7551261fd459e512718c0c9b0dbdd0e96b9a8a527603d48",
+          "role": "reader-admin",
+          "pre": true,
+          "post": true
+        },
+        "independent_tokens": true,
+        "cookie_values_recorded": false
+      },
+      "session_verified": true,
+      "role_boundary_checks": {
+        "writer_cannot_read_admin": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "reader_admin_cannot_submit": {
+          "status": 401,
+          "passed": true,
+          "expected_status": 401
+        },
+        "admin_token_rejected_as_writer": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        },
+        "writer_token_rejected_as_admin": {
+          "status": 403,
+          "passed": true,
+          "expected_status": 403
+        }
+      },
+      "stored_payloads": [
+        "dxacd6d78a5\"<dXsS>"
+      ],
+      "fixture_request_counts": {
+        "login": 2,
+        "role_checks": 6,
+        "cross_role_controls": 4,
+        "preflight_total": 8,
+        "scanner_requests": 2,
+        "postflight_role_checks": 2
+      }
+    }
+  ],
+  "interpretation": {
+    "candidate_only": true,
+    "browser_execution_oracle": "reported separately by test_r4_comparison_fixture.py",
+    "ranking": false,
+    "coverage_gaps": [
+      "candidate rows are not correlated to scanner-generated CIDs and must not be scored as execution TP/FP/FN",
+      "dxaprove execution proof is not a scanner candidate parser and is not ranked against either candidate scanner"
+    ]
+  }
+}

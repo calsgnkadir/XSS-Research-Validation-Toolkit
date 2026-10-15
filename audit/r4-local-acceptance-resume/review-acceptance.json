@@ -1,0 +1,20 @@
+{
+  "base_commit": "df967d506e8c37033ed6aa2c2e367a7aa0ec20dc",
+  "junit": {
+    "tests": 132,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "bench/r4_comparison_acceptance.py": "7ee9021c7005c409630f5269d5136ba77115b989fc13e152853e77439e85afce",
+    "bench/test_r4_comparison_acceptance.py": "b612e99ec43a4dccb54edf9fe9c020f6fbd34203451b789414d2c0a7d3949b71",
+    "bench/r4_compare_local.py": "8e393273e385209f76bfa1e2d3038f068d59b968174ddb9f1bc3abbc7d88dd52",
+    "bench/test_r4_compare_local.py": "c262d413dca8fdec6784596eae701c14a67aa7b8ac1483ff2a9e9f872d694d28",
+    "bench/test_r4_scanner_sessions.py": "ae97cd0b877dcefe5f2526b86e3914e634959b6ab0e5fad9e4e7774dfa3fc9cf",
+    ".github/workflows/ci.yml": "39a51a79c5d1015ab4ce68bbe3d72140fb889eb3677123ade08fe10f9e3bf3d0",
+    "audit/r4-local-acceptance-resume/.gitattributes": "c9138069e5bf1e042d28bfdda266ef58c09b7360454952ca610213734d8cf816"
+  },
+  "hosted_ci_run": false,
+  "fresh_scanner_comparison": false
+}

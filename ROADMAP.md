@@ -410,10 +410,10 @@ R3'ten devreden doğrulama işleri:
 
 Kabul ölçütleri:
 
-- [ ] Bulgu kimliği bazlı eşleme; beklenen 3, bulunan doğru 1 için TP=1/FN=2.
-- [ ] Crash/timeout/skipped `ok` veya true negative sayılmaz; kapsama paydası açıklanır.
-- [ ] JSON-only ve sadece resource-callback, doğrulanmış XSS TP'sine katılmaz.
-- [ ] Bilinen negatif fixture'da FP, zorunlu pozitif fixture'da FN CI'ı düşürür.
+- [x] Yerel scorer kabulü: bulgu kimliği bazlı eşleme; beklenen 3, bulunan doğru 1 için TP=1/FN=2. [16 Ekim kanıtı](audit/r4-local-acceptance-resume/README.md). Gerçek scanner adayı execution eşlemesi değildir.
+- [x] Yerel scorer kabulü: crash/timeout/skipped `ok` veya true negative sayılmaz; kapsama paydası açıklanır. [16 Ekim kanıtı](audit/r4-local-acceptance-resume/README.md).
+- [x] Yerel scorer kabulü: JSON-only ve sadece resource-callback, doğrulanmış XSS TP'sine katılmaz. [16 Ekim kanıtı](audit/r4-local-acceptance-resume/README.md).
+- [x] Yerel gate kabulü: bilinen negatif fixture'da FP, zorunlu pozitif fixture'da FN CI kapısını düşürür. [16 Ekim kanıtı](audit/r4-local-acceptance-resume/README.md). Bu turda uzak CI yeniden çalıştırılmadı.
 - [x] Gerekli browser işi continue-on-error değildir; uzak JUnit sıfır skip ile gate'ten geçti (14 Ekim).
 - [x] Sabit uygulama digest'i, bootstrap/login ve endpoint'ler; disposable teardown doğrulandı (13 Ekim Bludit lifecycle kabulü). Bu, scorer entegrasyonunu veya genel R4'ü kapatmaz.
 - [x] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır ve indirilen içerik gate'ten geçti (14 Ekim).

@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from r4_comparison_acceptance import validate_comparison
 
 HISTORICAL = Path(__file__).resolve().parents[1] / "audit/2026-10-15-r4-admin-comparison/candidate-comparison/comparison.json"
+AUTH_RUN = Path(__file__).resolve().parents[1] / "audit/r4-local-acceptance-resume/imported-run-02"
 
 
 @pytest.fixture
@@ -18,12 +19,162 @@ def manifest():
     return json.loads(HISTORICAL.read_text(encoding="utf-8"))
 
 
+@pytest.fixture
+def authenticated_run():
+    return json.loads((AUTH_RUN / "comparison.json").read_text(encoding="utf-8"))
+
+
+def test_authenticated_v3_run_passes_independent_artifact_gate(authenticated_run):
+    result = validate_comparison(authenticated_run, AUTH_RUN)
+    assert result == {"selected": 8, "completed": 8, "error": 0, "timeout": 0,
+                      "incomplete": 0, "skipped": 0, "candidate_only": True,
+                      "ranking": False, "artifacts_verified": True,
+                      "equal_client_timeouts": True,
+                      "authenticated_sessions_verified": True,
+                      "request_traces_verified": True}
+
+
+def test_authenticated_run_without_request_trace_is_rejected(authenticated_run):
+    authenticated_run["results"][0].pop("request_trace")
+    with pytest.raises(ValueError, match="request trace missing"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda row: row["session_checks"]["writer"].update(pre=False),
+    lambda row: row["session_checks"]["reader_admin"].update(post=False),
+    lambda row: row["session_checks"].update(independent_tokens=False),
+    lambda row: row["session_checks"].update(cookie_values_recorded=True),
+    lambda row: row["role_boundary_checks"]["writer_cannot_read_admin"].update(passed=False),
+    lambda row: row["role_boundary_checks"]["reader_admin_cannot_submit"].update(status=200),
+    lambda row: row["role_boundary_checks"]["admin_token_rejected_as_writer"].update(expected_status=401),
+    lambda row: row["role_boundary_checks"]["writer_token_rejected_as_admin"].update(passed=False),
+])
+def test_authenticated_role_evidence_mutations_are_rejected(authenticated_run, mutation):
+    mutation(authenticated_run["results"][0])
+    with pytest.raises(ValueError):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda row: row.pop("request_trace"),
+    lambda row: row["request_trace"][0].update(path="/outside"),
+    lambda row: row["request_trace"][0].update(status=403),
+    lambda row: row["request_trace"][0].update(cookie="secret"),
+    lambda row: row["request_trace"].pop(),
+    lambda row: row["fixture_request_counts"].update(scanner_requests=999),
+    lambda row: row["scanner_requests_by_path"].update({"/comments": 999}),
+])
+def test_authenticated_request_trace_and_budget_mutations_are_rejected(authenticated_run, mutation):
+    mutation(authenticated_run["results"][0])
+    with pytest.raises(ValueError):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda d: d["results"].pop(),
+    lambda d: d["summary"].update(selected=7),
+    lambda d: d["summary"].update(completed=7),
+    lambda d: d["results"][0].update(status="timeout", timeout=True, completed=False),
+    lambda d: d["results"][0].update(status="skipped", timeout=False, completed=False,
+                                     candidate_count=None, candidate_observed=None),
+    lambda d: d["results"][0].update(tp=1),
+])
+def test_authenticated_coverage_or_candidate_score_mutations_are_rejected(authenticated_run, mutation):
+    mutation(authenticated_run)
+    with pytest.raises(ValueError):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+def test_authenticated_manifest_rejects_raw_cookie_pattern(authenticated_run):
+    authenticated_run["results"][0]["stored_payloads"].append("admin_session=not-a-real-secret")
+    with pytest.raises(ValueError, match="unredacted credential"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+def test_authenticated_artifact_rejects_raw_cookie_pattern_after_rehash(authenticated_run, tmp_path):
+    import shutil
+    import hashlib
+
+    copied = tmp_path / "run"
+    shutil.copytree(AUTH_RUN, copied)
+    row = authenticated_run["results"][0]
+    entry = row["artifacts"]["stdout"]
+    target = copied / entry["path"]
+    target.write_text("admin_session=synthetic-secret", encoding="utf-8")
+    entry["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match="unredacted credential"):
+        validate_comparison(authenticated_run, copied)
+
+
+def test_authenticated_report_hash_is_verified(authenticated_run):
+    authenticated_run["results"][0]["artifacts"]["stdout"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="artifact hash mismatch"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+def test_authenticated_document_metadata_rejects_raw_cookie(authenticated_run):
+    authenticated_run["runtime"]["note"] = "admin_session=synthetic-secret"
+    with pytest.raises(ValueError, match="unredacted credential"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+def test_authenticated_missing_cookie_argument_fails_cleanly(authenticated_run):
+    command = authenticated_run["results"][0]["safe_command"]
+    option = "--cookie" if authenticated_run["results"][0]["tool"] == "dxadyn" else "--cookies"
+    index = command.index(option)
+    del command[index:index + 2]
+    command.append(option)
+    with pytest.raises(ValueError, match="redacted independent session pair"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+@pytest.mark.parametrize("level", ["common", "row"])
+def test_authenticated_client_timeout_drift_is_rejected(authenticated_run, level):
+    if level == "common":
+        authenticated_run["budgets"]["dalfox_per_request_seconds"] = 16
+    else:
+        authenticated_run["results"][0]["per_request_timeout_seconds"] = 16
+    with pytest.raises(ValueError, match="client timeout mismatch"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+@pytest.mark.parametrize("value", ["<synthetic-secret>", "<writer-session>suffix"])
+def test_authenticated_unknown_angle_cookie_is_rejected(authenticated_run, value):
+    authenticated_run["runtime"]["note"] = "admin_session=" + value
+    with pytest.raises(ValueError, match="unredacted credential"):
+        validate_comparison(authenticated_run, AUTH_RUN)
+
+
+def test_authenticated_known_redacted_cookie_marker_is_allowed(authenticated_run):
+    authenticated_run["runtime"]["note"] = "admin_session=<reader-admin-session>"
+    assert validate_comparison(authenticated_run, AUTH_RUN)["candidate_only"]
+
+
+def test_authenticated_dalfox_canonical_findings_cannot_be_replaced(authenticated_run, tmp_path):
+    import shutil
+
+    copied = tmp_path / "run"
+    shutil.copytree(AUTH_RUN, copied)
+    row = next(row for row in authenticated_run["results"] if row["tool"] == "dalfox")
+    entry = row["artifacts"]["report"]
+    target = copied / entry["path"]
+    report = json.loads(target.read_text(encoding="utf-8"))
+    report["data"] = report.pop("findings")
+    target.write_text(json.dumps(report), encoding="utf-8")
+    entry["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match="artifact candidate count mismatch"):
+        validate_comparison(authenticated_run, copied)
+
+
 def test_historical_incomplete_run_is_not_accuracy(manifest):
     result = validate_comparison(manifest)
     assert result == {"selected": 8, "completed": 4, "error": 0, "timeout": 4,
                       "incomplete": 0, "skipped": 0, "candidate_only": True,
                       "ranking": False, "artifacts_verified": False,
-                      "equal_client_timeouts": False}
+                      "equal_client_timeouts": False,
+                      "authenticated_sessions_verified": False,
+                      "request_traces_verified": False}
 
 
 @pytest.mark.parametrize("key,value", [

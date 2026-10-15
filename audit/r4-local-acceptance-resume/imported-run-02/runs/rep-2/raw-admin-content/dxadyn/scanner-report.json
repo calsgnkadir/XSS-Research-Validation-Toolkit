@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "mode": "stored",
+  "findings": [
+    {
+      "url": "http://127.0.0.1:<ephemeral-port>/admin/comments",
+      "method": "GET",
+      "param": "comment",
+      "reflection": "unencoded",
+      "confidence": "high",
+      "status": 200,
+      "context": "body",
+      "severity": "html-reflection",
+      "canary_id": "dxa9410eeb6",
+      "content_type": "text/html; charset=utf-8",
+      "variant": "body",
+      "schema_version": 1,
+      "finding_id": "4f5a744c3857a86da675a5d678d446c8",
+      "triage": "unreviewed",
+      "session_role": "unspecified",
+      "attempt_id": "dxa9410eeb6",
+      "evidence_links": [],
+      "evidence_level": "reflection",
+      "blind_callback_hit": false,
+      "hit_at": null,
+      "hit_from_ua": null,
+      "hit_from_ip": null,
+      "hit_from_referer": null,
+      "target": "http://127.0.0.1:<ephemeral-port>/comments",
+      "field": "comment",
+      "check_url": "http://127.0.0.1:<ephemeral-port>/admin/comments",
+      "sub_status": 200,
+      "check_status": 200,
+      "submission_method": "POST",
+      "source": {
+        "url": "http://127.0.0.1:<ephemeral-port>/comments",
+        "method": "POST",
+        "parameter": "comment"
+      },
+      "sink": {
+        "url": "http://127.0.0.1:<ephemeral-port>/admin/comments",
+        "identity": "unknown"
+      },
+      "role_verified": false,
+      "observations": [
+        {
+          "url": "http://127.0.0.1:<ephemeral-port>/admin/comments",
+          "method": "GET",
+          "param": "comment",
+          "reflection": "unencoded",
+          "confidence": "high",
+          "status": 200,
+          "context": "body",
+          "severity": "html-reflection",
+          "canary_id": "dxa9410eeb6",
+          "content_type": "text/html; charset=utf-8",
+          "variant": "body",
+          "schema_version": 1,
+          "finding_id": "4f5a744c3857a86da675a5d678d446c8",
+          "triage": "unreviewed",
+          "session_role": "unspecified",
+          "attempt_id": "dxa9410eeb6",
+          "evidence_links": [],
+          "evidence_level": "reflection",
+          "blind_callback_hit": false,
+          "hit_at": null,
+          "hit_from_ua": null,
+          "hit_from_ip": null,
+          "hit_from_referer": null,
+          "target": "http://127.0.0.1:<ephemeral-port>/comments",
+          "field": "comment",
+          "check_url": "http://127.0.0.1:<ephemeral-port>/admin/comments",
+          "sub_status": 200,
+          "check_status": 200,
+          "submission_method": "POST"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "meta": {
+    "target": "http://127.0.0.1:<ephemeral-port>/comments",
+    "shape": "field='comment'",
+    "canary_id": "dxa9410eeb6",
+    "session_check": "not-requested",
+    "session_role": "unspecified"
+  },
+  "skipped_submits": 0
+}

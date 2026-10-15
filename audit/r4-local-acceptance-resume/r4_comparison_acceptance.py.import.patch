@@ -1,0 +1,221 @@
+diff --git "a/C:\\Users\\user\\OneDrive\\Desktop\\xss-ss\\XSS-Research-Validation-Toolkit-main (1)\\XSS-Research-Validation-Toolkit-main\\bench\\r4_comparison_acceptance.py" "b/C:\\xss\\xss-github\\bench\\r4_comparison_acceptance.py"
+index b476257..d72290a 100644
+--- "a/C:\\Users\\user\\OneDrive\\Desktop\\xss-ss\\XSS-Research-Validation-Toolkit-main (1)\\XSS-Research-Validation-Toolkit-main\\bench\\r4_comparison_acceptance.py"	
++++ "b/C:\\xss\\xss-github\\bench\\r4_comparison_acceptance.py"
+@@ -13,7 +13,12 @@ CASES = {"r4-admin-stored/raw-admin-content": (False, True),
+          "r4-admin-stored/escaped-admin-content": (True, False)}
+ IDENTITY = {"method": "POST", "source_path": "/comments", "parameter": "comment",
+             "read_path": "/admin/comments", "role": "writer-to-reader-admin fixture broker"}
++IDENTITY_V3 = {"method": "POST", "source_path": "/comments", "parameter": "comment",
++               "read_path": "/admin/comments", "role": "writer-to-reader-admin",
++               "role_verification": "separate fixture principals checked before and after each scan"}
+ STATES = ("completed", "error", "timeout", "incomplete", "skipped")
++REDACTED_AUTH_MARKERS = {"<independent-writer-admin-session-pair>", "<writer-session>",
++                         "<reader-admin-session>"}
+ 
+ 
+ def require(condition, message):
+@@ -74,6 +79,101 @@ def _command_identity(command, tool):
+                 option("--sxss-method") == "GET", "command identity mismatch")
+ 
+ 
++def _validate_v3_session_evidence(row):
++    checks = row.get("session_checks")
++    require(isinstance(checks, dict) and set(checks) == {"writer", "reader_admin",
++                                                        "independent_tokens", "cookie_values_recorded"},
++            "session evidence missing or malformed")
++    require(checks.get("independent_tokens") is True and checks.get("cookie_values_recorded") is False,
++            "independent credential evidence or redaction failed")
++    for key, role in (("writer", "writer"), ("reader_admin", "reader-admin")):
++        principal = checks[key]
++        require(isinstance(principal, dict) and principal.get("role") == role
++                and principal.get("pre") is True and principal.get("post") is True
++                and isinstance(principal.get("principal_sha256"), str)
++                and re.fullmatch(r"[0-9a-f]{64}", principal["principal_sha256"]),
++                "pre/post role identity check failed")
++    require(checks["writer"]["principal_sha256"] != checks["reader_admin"]["principal_sha256"],
++            "writer and admin principal identities must be distinct")
++    require(row.get("session_verified") is True, "scanner session was not verified")
++
++    boundaries = row.get("role_boundary_checks")
++    expected = {"writer_cannot_read_admin": (401, "GET", "/admin/comments"),
++                "reader_admin_cannot_submit": (401, "POST", "/comments"),
++                "admin_token_rejected_as_writer": (403, "GET", "/session/writer"),
++                "writer_token_rejected_as_admin": (403, "GET", "/session/reader-admin")}
++    require(isinstance(boundaries, dict) and set(boundaries) == set(expected),
++            "four cross-role controls required")
++    for name, (status, _method, _path) in expected.items():
++        item = boundaries[name]
++        require(isinstance(item, dict) and item.get("status") == status
++                and item.get("expected_status") == status and item.get("passed") is True,
++                "cross-role control did not pass: " + name)
++
++
++def _validate_v3_request_trace(row, budgets):
++    trace = row.get("request_trace")
++    require(isinstance(trace, list), "schema v3 request trace missing")
++    for item in trace:
++        require(isinstance(item, dict)
++                and set(item) == {"method", "path", "status", "budget_rejected"}
++                and item.get("method") in {"GET", "POST", "HEAD"}
++                and item.get("path") in {"/login", "/session/writer", "/session/reader-admin",
++                                         "/comments", "/admin/comments"}
++                and type(item.get("status")) is int and 100 <= item["status"] <= 599
++                and type(item.get("budget_rejected")) is bool,
++                "request trace contains invalid or sensitive fields")
++    require(len(trace) == row.get("request_attempts"), "request trace length mismatch")
++    statuses = [item["status"] for item in trace]
++    require(statuses == row.get("http_statuses"), "request trace status mismatch")
++    rejected = sum(item["budget_rejected"] for item in trace)
++    require(rejected == row.get("budget_rejected_requests")
++            and len(trace) - rejected == row.get("forwarded_requests"),
++            "request trace budget accounting mismatch")
++    require(len(trace) <= budgets["requests_per_run"]
++            and row.get("request_attempts") == row.get("forwarded_requests") + rejected,
++            "auth setup and scanner requests exceed common budget")
++    require(not any(item["budget_rejected"] for item in trace)
++            or row.get("budget_exceeded") is True, "budget rejection is not reflected in outcome")
++
++    counts = row.get("fixture_request_counts")
++    require(isinstance(counts, dict) and counts == {
++        "login": 2,
++        "role_checks": sum(item["path"].startswith("/session/") for item in trace),
++        "cross_role_controls": 4,
++        "preflight_total": 8,
++        "scanner_requests": len(trace) - 10,
++        "postflight_role_checks": 2,
++    }, "fixture request category totals disagree with trace")
++    require(len(trace) >= 10 and counts["scanner_requests"] >= 0,
++            "request trace omits setup or postflight requests")
++    preflight = trace[:8]
++    expected_prefix = [("POST", "/login", 200), ("POST", "/login", 200),
++                       ("GET", "/session/writer", 200), ("GET", "/session/reader-admin", 200),
++                       ("GET", "/admin/comments", 401), ("POST", "/comments", 401),
++                       ("GET", "/session/writer", 403), ("GET", "/session/reader-admin", 403)]
++    require([(x["method"], x["path"], x["status"]) for x in preflight] == expected_prefix,
++            "preflight role-control request trace mismatch")
++    postflight = trace[-2:]
++    require([(x["method"], x["path"], x["status"]) for x in postflight] == [
++        ("GET", "/session/writer", 200), ("GET", "/session/reader-admin", 200)],
++        "postflight identity request trace mismatch")
++    scanner_trace = trace[8:-2]
++    require(all(item["path"] in {"/comments", "/admin/comments"} for item in scanner_trace),
++            "scanner request escaped the fixture endpoints")
++    by_path = {path: sum(item["path"] == path for item in scanner_trace)
++               for path in ("/comments", "/admin/comments")}
++    require(row.get("scanner_requests_by_path") == by_path,
++            "scanner endpoint counts disagree with request trace")
++
++
++def _require_redacted_auth(text):
++    for name in ("writer_session", "admin_session", "bridge"):
++        for match in re.finditer(re.escape(name) + r"=([^\s;,'\"<>]+)", text, re.I):
++            require(match.group(1) in REDACTED_AUTH_MARKERS,
++                    "unredacted credential found in command, manifest or artifact")
++
++
+ def validate_comparison(document, artifact_root=None):
+     """Return coverage, rejecting inconsistent claims. Files required only in artifact mode.
+ 
+@@ -84,11 +184,15 @@ def validate_comparison(document, artifact_root=None):
+     require(isinstance(document, dict), "manifest must be an object")
+     no_scores(document)
+     schema = document.get("schema")
+-    require(schema in ("r4-local-comparison/1", "r4-local-comparison/2"), "unsupported schema")
++    require(schema in ("r4-local-comparison/1", "r4-local-comparison/2", "r4-local-comparison/3"),
++            "unsupported schema")
+     if schema == "r4-local-comparison/2":
+         require(artifact_root is not None, "v2 requires artifact verification")
++    if schema == "r4-local-comparison/3":
++        require(artifact_root is not None, "v3 requires artifact verification")
+     require(document.get("corpus_version") == "r4-admin-stored-candidate/1", "wrong corpus")
+-    require(document.get("identity") == IDENTITY, "identity mismatch")
++    expected_identity = IDENTITY_V3 if schema.endswith("/3") else IDENTITY
++    require(document.get("identity") == expected_identity, "identity mismatch")
+     cases = document.get("cases")
+     require(isinstance(cases, list) and len(cases) == len(CASES), "case coverage mismatch")
+     require(all(isinstance(c, dict) for c in cases), "invalid case object")
+@@ -107,8 +211,17 @@ def validate_comparison(document, artifact_root=None):
+             "candidate-only interpretation required")
+     auth = document.get("auth", {})
+     require(isinstance(auth, dict), "invalid auth")
+-    require(auth.get("real_login_coverage") is False and
+-            auth.get("brokered_roles") == ["writer", "reader-admin"], "broker auth overstated")
++    if schema.endswith("/3"):
++        require(auth.get("scanner_input") == "separate per-run writer and reader-admin login sessions"
++                and auth.get("endpoint_role_binding") == {"POST /comments": "writer_session",
++                                                            "GET /admin/comments": "admin_session"}
++                and auth.get("pre_and_post_identity_checks") is True
++                and auth.get("cookie_values_recorded") is False
++                and auth.get("preflight_requests_counted_in_same_fixture_budget") is True,
++                "authenticated scanner session contract overstated")
++    else:
++        require(auth.get("real_login_coverage") is False and
++                auth.get("brokered_roles") == ["writer", "reader-admin"], "broker auth overstated")
+     budgets = document.get("budgets", {})
+     require(isinstance(budgets, dict), "invalid budgets")
+     mapping = {"request_limit": "requests_per_run", "rate_limit_rps": "rate_rps",
+@@ -137,7 +250,7 @@ def validate_comparison(document, artifact_root=None):
+         require(identity[0] in CASES and type(identity[1]) is int and identity[1] in (1, 2)
+                 and identity[2] in TOOLS and identity not in seen, "duplicate or unknown run identity")
+         seen.add(identity)
+-        require(row.get("identity", IDENTITY if schema.endswith("/1") else None) == IDENTITY,
++        require(row.get("identity", expected_identity if schema.endswith("/1") else None) == expected_identity,
+                 "row identity mismatch")
+         require(row.get("expected_execution") is CASES[identity[0]][1], "row oracle mismatch")
+         require(type(row.get("order_index")) is int and
+@@ -174,7 +287,10 @@ def validate_comparison(document, artifact_root=None):
+                 "candidate count mismatch")
+         code = row.get("return_code")
+         require(code is None or type(code) is int, "invalid return code")
+-        if state == "skipped":
++        if state == "skipped" and schema.endswith("/3"):
++            require(code is None and not row["timed_out"] and count is None
++                    and row.get("skip_reason"), "invalid skipped run")
++        elif state == "skipped":
+             require(code is None and not row["timed_out"] and count is None and
+                     row["request_attempts"] == 0 and row.get("skip_reason"), "invalid skipped run")
+         else:
+@@ -187,6 +303,12 @@ def validate_comparison(document, artifact_root=None):
+         require(isinstance(row.get("safe_command"), list) and row["safe_command"] and
+                 all(isinstance(x, str) for x in row["safe_command"]), "command provenance missing")
+         _command_identity(row["safe_command"], identity[2])
++        if schema.endswith("/3"):
++            cookie_option = "--cookie" if identity[2] == "dxadyn" else "--cookies"
++            require(row["safe_command"].count(cookie_option) == 1
++                    and row["safe_command"][row["safe_command"].index(cookie_option) + 1]
++                    == "<independent-writer-admin-session-pair>",
++                    "scanner command does not contain only the redacted independent session pair")
+         if artifact_root is not None:
+             evidence = row.get("artifacts", {})
+             require(isinstance(evidence, dict), "invalid artifact bindings")
+@@ -227,6 +349,18 @@ def validate_comparison(document, artifact_root=None):
+                 if findings is not None and not all(isinstance(finding, dict) for finding in findings):
+                     findings = None
+                 require(count == (len(findings) if findings is not None else None), "artifact candidate count mismatch")
++            if schema.endswith("/3"):
++                for label, entry in evidence.items():
++                    if entry is not None:
++                        raw = _artifact(entry, Path(artifact_root))
++                        _require_redacted_auth(raw.decode("utf-8", "replace"))
++                _validate_v3_session_evidence(row)
++                _validate_v3_request_trace(row, budgets)
++        elif schema.endswith("/3"):
++            _validate_v3_session_evidence(row)
++            _validate_v3_request_trace(row, budgets)
++        if schema.endswith("/3"):
++            _require_redacted_auth(json.dumps(row, sort_keys=True))
+         counts[state] += 1
+     require(len(seen) == 8, "selected coverage incomplete")
+     summary = document.get("summary", {})
+@@ -237,7 +371,9 @@ def validate_comparison(document, artifact_root=None):
+         require(type(observed) is int and observed == value, "summary total mismatch: " + state)
+     return {"selected": len(seen), **counts, "candidate_only": True, "ranking": False,
+             "artifacts_verified": artifact_root is not None,
+-            "equal_client_timeouts": budgets["dalfox_per_request_seconds"] == budgets["dxadyn_per_request_seconds"]}
++            "equal_client_timeouts": budgets["dalfox_per_request_seconds"] == budgets["dxadyn_per_request_seconds"],
++            "authenticated_sessions_verified": schema.endswith("/3"),
++            "request_traces_verified": schema.endswith("/3")}
+ 
+ 
+ def main():

@@ -1,5 +1,42 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 16 October local R4/R5 resume in the OneDrive copy
+
+After Git metadata restoration, the R4 specialist found three further red
+counterexamples (credential angle-value bypass and v3 Dalfox report alias);
+the focused gate suite passed **132/132** after fixes. Coordinator reran the
+eight-module Chrome-required command from the R4 audit against the final
+source. First run: **371 passed, 1 failed**, a Windows loopback
+`ConnectionAbortedError [WinError 10053]` in the fixture deadline test.
+That isolated test passed **1/1**. Repeated full run: **372 passed, zero
+failure/error/skip**, 51.68 seconds. The earlier 368 result below applies
+to the previous source revision. No remote CI was run for final source.
+
+R4 `review-acceptance.json` binds the final gate files to SHA-256 and base
+`df967d5`; both audit packages now preserve proof bytes under scoped
+`.gitattributes` rules. Final commit/push status is recorded in STATUS.
+
+At test time the active copy had no `.git`; tested source bytes are bound by SHA-256
+manifests in [R4 acceptance](audit/r4-local-acceptance-resume/acceptance.json)
+and [R5 validation](audit/r5-local-closure-resume/validation.json). Previous
+Git base was `df967d5`, but no commit identity is claimed for this delivery.
+
+R4 command and runtime are in [R4 audit](audit/r4-local-acceptance-resume/README.md).
+Windows Python 3.10 with installed Chrome and `DXA_REQUIRE_BROWSER=1`:
+**368 passed, 0 failure/error/skip**. Four new counterexamples first failed
+on the imported v3 gate, then passed after correction. Historical run-02
+validation returned selected/completed **8/8**, hashes, sessions and request
+traces verified. This is prior artifact validation, not a fresh scanner run
+or candidate browser execution. The run-01 hash mismatch was preserved.
+
+R5 command and runtime are in [R5 audit](audit/r5-local-closure-resume/README.md).
+Windows Python 3.10.11, Playwright 1.63.0 and Chrome 155.0.8059.79:
+live K01 gate **5/5** controls and **5/5** distinct fixture ports closed;
+focused pytest **22 passed, 0 failure/error/skip**. No fresh venv was made.
+The independent second-person repeat is open-deferred. The two suite counts
+are reported separately. Neither is overall R4/R5 acceptance. No new remote
+CI result exists for this local delivery.
+
 ## 16 October R4 separate scanner sessions and coordinator triage
 
 On the local Windows/Python 3.10.11 worktree based on remote `1850836`, the

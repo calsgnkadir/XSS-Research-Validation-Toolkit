@@ -1,0 +1,43 @@
+{
+  "recorded_at_utc": "2026-10-15T20:37:28.978327+00:00",
+  "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "browser": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "junit": {
+    "tests": 368,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "bench/r4_comparison_acceptance.py": "eabd40dee0d5da32d1538cfb60b44a0e45e535ad4621a6ef0b659d61a53c8cb0",
+    "bench/test_r4_comparison_acceptance.py": "006e8561b2fa0a2b7e1c30c1b516b538b4bce650382959c491e84bfd6175b06f",
+    "bench/r4_compare_local.py": "8e393273e385209f76bfa1e2d3038f068d59b968174ddb9f1bc3abbc7d88dd52",
+    "bench/test_r4_compare_local.py": "c262d413dca8fdec6784596eae701c14a67aa7b8ac1483ff2a9e9f872d694d28",
+    "bench/run.py": "398afb3271542828ec7d29020b37d2d933938d63fea556e314d4d74f0021e495",
+    "bench/test_bench.py": "3ceb2c238090ed1c24c38f8a49d630f176183ecbf43b91c131ac5c8794f3c4a7",
+    "bench/test_proof_adapter.py": "b9ffa4be52a67d950cd14fd1e7d96254ea5ccf866c201785dfae26d2ab42dbd1",
+    "bench/check_ci_acceptance.py": "2756a134a1cf3454a9942161eda8423e7049e1c848fe50c208f55d0fe23c682d",
+    "bench/test_ci_acceptance.py": "a707b546a64c11a1483a3afdffda85a5ede72fed54a07aead0cc7b99fb8e3d3d",
+    "bench/test_r4_scanner_sessions.py": "ae97cd0b877dcefe5f2526b86e3914e634959b6ab0e5fad9e4e7774dfa3fc9cf",
+    "bench/test_r4_comparison_fixture.py": "e07131e5db7234b6b550e4ed0e3152e599e7bec5fd2f7c4c8d5c373bbeb4cd8e",
+    "bench/test_r4_cid_oracle.py": "e13805b07cea3ebd7ee80da2ed9f2f51a8d1fd318465a6734a2ff954a8be4eae"
+  },
+  "historical_artifacts_revalidated": true,
+  "fresh_scanner_comparison": false,
+  "hosted_ci_run": false,
+  "historical_artifact_gate": {
+    "artifacts_verified": true,
+    "authenticated_sessions_verified": true,
+    "candidate_only": true,
+    "completed": 8,
+    "equal_client_timeouts": true,
+    "error": 0,
+    "incomplete": 0,
+    "ranking": false,
+    "request_traces_verified": true,
+    "selected": 8,
+    "skipped": 0,
+    "timeout": 0
+  }
+}
