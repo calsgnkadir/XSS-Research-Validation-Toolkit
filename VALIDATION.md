@@ -24,7 +24,13 @@ resulted in **57 passed**, zero failures/errors/skips. The 27- and 30-test
 focused runs overlap and must not be added to the combined count.
 
 These are local results against the worktree based on `1850836`; no hosted CI result
-is claimed.
+is claimed by this local-result statement.
+
+Code commit `ca83bf2` was pushed to `origin/main`; remote CI run `38795736800`
+completed successfully with all 3 jobs, including the required browser proof
+job. K01 Linux run `38795736790` also succeeded but is not independent-human
+R5 evidence. This records workflow status; no downloaded artifact-content
+acceptance is claimed here.
 
 ## R6 installed wheel CI gate
 

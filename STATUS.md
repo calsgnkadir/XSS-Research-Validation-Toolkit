@@ -19,9 +19,12 @@ vulnerability iddiası yok. Genel R4 ve insan triage kabulü açık. Ayrıntıla
 [koordinatör incelemesi](audit/2026-10-16-r4-review/README.md).
 R5'in bağımsız ikinci insan tekrarı kullanıcı isteğiyle ertelendi ve açık.
 
-Başlangıçtaki doğrulanmış uzak HEAD `1850836` idi. Bu kayıt yerel test ve run
-kanıtını kapsar; push sonrası uzak commit ve CI sonucu ayrıca doğrulanıp buraya
-eklenecek.
+Başlangıçtaki doğrulanmış uzak HEAD `1850836` idi. Kod commit'i `ca83bf2`
+origin/main'e push edildi ve birebir eşleşiyor. Genel CI run
+[38795736800](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38795736800)
+3/3 job başarılı; zorunlu browser proof ve R4 oracle testleri geçti. K01 run
+[38795736790](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38795736790)
+başarılı ama R5 ikinci insan tekrarı değildir. Çalışma ağacı temiz.
 
 ## Son tamamlanan üç ajanlı R4/R6 turu
 
