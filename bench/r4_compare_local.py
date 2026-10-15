@@ -20,10 +20,14 @@ CASES = (
     {"id": "r4-admin-stored/escaped-admin-content", "escaped": True, "expected_execution": False},
 )
 REPETITIONS = 2
-REQUEST_LIMIT = 20
+REQUEST_LIMIT = 200
 RATE_LIMIT = 2
-WALL_LIMIT = 20
-COMMAND_TIMEOUT = 20
+WALL_LIMIT = 120
+COMMAND_TIMEOUT = 120
+CLIENT_TIMEOUT = 15
+DALFOX_VERSION = "3.2.4"
+IDENTITY = {"method": "POST", "source_path": "/comments", "parameter": "comment",
+            "read_path": "/admin/comments", "role": "writer-to-reader-admin fixture broker"}
 DXADYN = Path(__file__).resolve().parents[1] / "tools/dom-xss-analyzer/dxadyn.py"
 REPO = Path(__file__).resolve().parents[1]
 
@@ -49,7 +53,8 @@ def _command(tool, origin, cookie, report_path, dalfox_path):
             "--sxss-method", "GET", "--sxss-retries", "1",
             "--cookies", "bridge=" + cookie, "--max-payloads-per-param", "2",
             "--workers", "1", "--rate-limit", str(RATE_LIMIT),
-            "--timeout", "2", "--scan-timeout", "12", "--skip-mining",
+            "--timeout", str(CLIENT_TIMEOUT), "--scan-timeout", str(WALL_LIMIT), "--skip-mining",
+            "--skip-discovery", "--encoders", "none",
             "--skip-ast-analysis", "--skip-waf-probe", "--waf-bypass", "off",
             "--no-color", "--format", "json", "--output", str(report_path)]
 
@@ -59,36 +64,52 @@ def _parse_findings(tool, path):
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return None
+    if not isinstance(value, dict):
+        return None
+    rows = value.get("findings")
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        return None
     if tool == "dxadyn":
-        rows = value.get("findings") if isinstance(value, dict) else None
-        return rows if isinstance(rows, list) else None
-    if isinstance(value, list):
-        return value
-    if isinstance(value, dict):
-        for key in ("data", "findings", "issues", "results"):
-            rows = value.get(key)
-            if isinstance(rows, list):
-                return rows
+        events = value.get("events", [])
+        if not isinstance(events, list) or any(not isinstance(event, dict) for event in events):
+            return None
+        if value.get("skipped_submits", 0) or any(event.get("kind") in {"error", "skip"} for event in events):
+            return None
+        return rows
+    if tool == "dalfox":
+        meta = value.get("meta", {})
+        if (isinstance(meta, dict) and meta.get("incomplete") is False
+                and type(meta.get("failed_requests")) is int and meta["failed_requests"] == 0
+                and type(meta.get("findings_count")) is int and meta["findings_count"] == len(rows)):
+            return rows
     return None
 
 
-def _classify_run(returncode, timed_out, budget_exceeded, findings, wall):
+def _classify_run(returncode, timed_out, budget_exceeded, findings, wall, *, tool="dxadyn"):
     """Keep scanner errors and timeouts distinct from valid completed runs."""
     if timed_out:
         return "timeout"
-    # dxadyn documents exit 1 when it has candidate findings. Treat that as a
-    # completed scan only when its structured output also contains candidates.
-    finding_exit = returncode == 1 and isinstance(findings, list) and bool(findings)
-    if returncode != 0 and not finding_exit:
+    # Both dxadyn and pinned Dalfox 3.2.4 document exit 1 for findings.
+    # Incomplete reports are rejected by the parser before this classification.
+    finding_exit = tool in {"dxadyn", "dalfox"} and returncode == 1 and isinstance(findings, list) and bool(findings)
+    if returncode not in (0, 1):
         return "error"
     if budget_exceeded or findings is None or wall > WALL_LIMIT:
         return "incomplete"
+    if returncode != 0 and not finding_exit:
+        return "error"
     return "completed"
 
 
 def run_comparison(dalfox_path: Path, output: Path):
     dalfox_path = dalfox_path.resolve()
-    output.mkdir(parents=True, exist_ok=True)
+    if output.exists():
+        raise ValueError("comparison output must be a new directory")
+    version = subprocess.run([str(dalfox_path), "--version"], capture_output=True,
+                             text=True, timeout=10, check=True).stdout.strip()
+    if version != "dalfox " + DALFOX_VERSION:
+        raise ValueError("unexpected Dalfox version")
+    output.mkdir(parents=True, exist_ok=False)
     records = []
     order = ("dxadyn", "dalfox")
     for repetition in range(1, REPETITIONS + 1):
@@ -107,7 +128,8 @@ def run_comparison(dalfox_path: Path, output: Path):
                                     str(dalfox_path))
                     # Credentials and ephemeral ports are deliberately omitted
                     # from the shareable command manifest.
-                    safe_argv = ["<dalfox-v3.2.4>" if x == str(dalfox_path) else
+                    safe_argv = ["<output>/" + report_path.relative_to(output).as_posix() if x == str(report_path) else
+                                 "<dalfox-v3.2.4>" if x == str(dalfox_path) else
                                  "<python-3.10>" if x == sys.executable else
                                  "<repo>/tools/dom-xss-analyzer/dxadyn.py" if x == str(DXADYN) else
                                  x.replace("bridge=" + cookie, "bridge=<fixture-token>")
@@ -139,15 +161,21 @@ def run_comparison(dalfox_path: Path, output: Path):
                             contents = contents.replace(secret, replacement)
                         (run_dir / name).write_text(contents, encoding="utf-8")
                     if report_path.is_file():
-                        report_text = report_path.read_text(encoding="utf-8")
+                        report_text = report_path.read_text(encoding="utf-8", errors="replace")
                         for secret, replacement in redactions:
                             report_text = report_text.replace(secret, replacement)
                         report_path.write_text(report_text, encoding="utf-8")
                     exhausted = fixture.state.budget_exceeded
-                    outcome = _classify_run(returncode, timed_out, exhausted, findings, wall)
+                    outcome = _classify_run(returncode, timed_out, exhausted, findings, wall, tool=tool)
                     statuses = [row["status"] for row in fixture.state.requests]
                     rejected = sum(1 for row in fixture.state.requests if row.get("budget_rejected"))
+                    artifacts = {}
+                    for label, path in (("stdout", run_dir / "stdout.txt"),
+                                        ("stderr", run_dir / "stderr.txt"), ("report", report_path)):
+                        artifacts[label] = ({"path": path.relative_to(output).as_posix(),
+                                             "sha256": sha256(path)} if path.is_file() else None)
                     records.append({
+                        "identity": dict(IDENTITY), "artifacts": artifacts,
                         "case_id": case["id"], "expected_execution": case["expected_execution"],
                         "repetition": repetition, "order_index": tool_order.index(tool),
                         "tool": tool, "status": outcome,
@@ -161,7 +189,7 @@ def run_comparison(dalfox_path: Path, output: Path):
                         "forwarded_requests": len(fixture.state.requests) - rejected,
                         "budget_rejected_requests": rejected,
                         "request_limit": REQUEST_LIMIT, "max_inflight": fixture.state.max_inflight,
-                        "rate_limit_rps": RATE_LIMIT, "wall_seconds": wall,
+                        "rate_limit_rps": RATE_LIMIT, "per_request_timeout_seconds": CLIENT_TIMEOUT, "wall_seconds": wall,
                         "wall_limit_seconds": WALL_LIMIT, "command_timeout_seconds": COMMAND_TIMEOUT,
                         "safe_command": safe_argv,
                         "http_statuses": statuses,
@@ -169,33 +197,31 @@ def run_comparison(dalfox_path: Path, output: Path):
     counts = {name: sum(1 for row in records if row["status"] == name)
               for name in ("completed", "error", "timeout", "incomplete")}
     return {
-        "schema": "r4-local-comparison/1", "status": "partial-candidate-comparison",
+        "schema": "r4-local-comparison/2", "status": "partial-candidate-comparison",
         "summary": {"selected": len(records), **counts},
         "corpus_version": "r4-admin-stored-candidate/1",
         "cases": list(CASES), "repetitions": REPETITIONS,
         "order": {"rep-1": ["dxadyn", "dalfox"], "rep-2": ["dalfox", "dxadyn"]},
-        "identity": {"method": "POST", "source_path": "/comments", "parameter": "comment",
-                     "read_path": "/admin/comments", "role": "writer-to-reader-admin fixture broker"},
+        "identity": dict(IDENTITY),
         "auth": {"scanner_input": "same ephemeral bridge cookie", "brokered_roles": ["writer", "reader-admin"],
                  "real_login_coverage": False},
         "budgets": {"requests_per_run": REQUEST_LIMIT, "rate_rps": RATE_LIMIT,
                     "concurrency": 1, "wall_seconds": WALL_LIMIT,
-                    "outer_process_seconds": COMMAND_TIMEOUT, "dalfox_per_request_seconds": 2,
-                    "dxadyn_per_request_seconds": 15},
+                    "outer_process_seconds": COMMAND_TIMEOUT, "dalfox_per_request_seconds": CLIENT_TIMEOUT,
+                    "dxadyn_per_request_seconds": CLIENT_TIMEOUT},
         "runtime": {"python": platform.python_version(), "platform": platform.platform(),
-                    "dalfox_version": "3.2.4", "dalfox_sha256": sha256(dalfox_path),
+                    "dalfox_version": DALFOX_VERSION, "dalfox_version_output": version, "dalfox_sha256": sha256(dalfox_path),
                     "dxadyn_sha256": sha256(DXADYN), "adapter_sha256": sha256(Path(__file__)),
                     "test_sha256": sha256(Path(__file__).with_name("test_r4_compare_local.py")),
                     "fixture_sha256": sha256(Path(__file__).with_name("r4_comparison_fixture.py"))},
         "results": records,
         "interpretation": {
             "candidate_only": True,
-            "browser_execution_oracle": "reported separately by test_r4_compare_local.py",
+            "browser_execution_oracle": "reported separately by test_r4_comparison_fixture.py",
             "ranking": False,
             "coverage_gaps": [
                 "scanner accounts are not independently authenticated; local broker maps one test cookie to distinct writer and reader-admin fixture roles",
                 "candidate rows are not correlated to scanner-generated CIDs and must not be scored as execution TP/FP/FN",
-                "per-request client timeouts differ; hard request, rate, concurrency, and outer wall budgets are shared",
                 "dxaprove execution proof is not a scanner candidate parser and is not ranked against either candidate scanner"
             ]
         }

@@ -1,0 +1,9 @@
+[dxadyn] concurrency: rate=2.0/s
+[dxadyn] session cookie attached to every request (39 chars)
+[dxadyn] STORED probe: http://127.0.0.1:<ephemeral-port>/comments field='comment' -> checking 1 URL(s) - authorized/local only
+
+[dxadyn] canary id = dxa895fb023
+http://127.0.0.1:<ephemeral-port>/admin/comments  [HTML-REFLECTION] context=body  stored via http://127.0.0.1:<ephemeral-port>/comments field 'comment'  -> UNENCODED (HTML injection)  (submit HTTP 200, check HTTP 200)
+
+1 unique stored candidate(s) - JavaScript execution not established. Validate in the browser and triage the security boundary.
+[dxadyn] submits clean: 0 rejected (no 403/429/WAF/connection-error).

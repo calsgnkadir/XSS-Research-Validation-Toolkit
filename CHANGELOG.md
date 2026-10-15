@@ -2,6 +2,16 @@
 
 ## Unreleased — 2026-10-15
 
+- R4 bounded candidate comparison now completes eight runs with equal limits;
+  output reuse, partial reports and pacing past the wall limit are rejected.
+  An independent artifact gate checks coverage, identity and report hashes.
+  Candidate results remain separate from browser proof and accuracy ranking.
+
+- R6 mandatory CI builds a wheel and checks all nine installed module hashes,
+  CLI help and static/dynamic config behavior from outside the checkout.
+  The wheel and hash-bound acceptance JSON are retained together; mismatched
+  wheels and optimized checker execution are rejected. No release tag.
+
 - R4 corpus v4 adds inert comment/template and activated-template controls;
   stable identities, independent browser oracle and CI gate cover 17 cases.
 - R6 dynamic CLI accepts strict versioned HTTP tuning config, preserves CLI

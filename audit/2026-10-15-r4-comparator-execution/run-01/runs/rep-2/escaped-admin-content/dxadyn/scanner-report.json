@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "mode": "stored",
+  "findings": [],
+  "events": [],
+  "meta": {
+    "target": "http://127.0.0.1:<ephemeral-port>/comments",
+    "shape": "field='comment'",
+    "canary_id": "dxa44c147da",
+    "session_check": "not-requested",
+    "session_role": "unspecified"
+  },
+  "skipped_submits": 0
+}

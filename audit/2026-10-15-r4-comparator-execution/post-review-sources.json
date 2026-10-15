@@ -1,0 +1,9 @@
+{
+  "purpose": "post-live malformed-input/privacy review source hashes; not the live experiment source snapshot",
+  "sources": {
+    "bench/r4_compare_local.py": "110d05b9ffb14fc6d76e07f981992673732853f4ba692754992344f44cd40733",
+    "bench/r4_comparison_fixture.py": "2b8eb7d83c753b7ad8ed3d7ea439a348861d991fefffbddb0bdd5465a9ea4b13",
+    "bench/test_r4_compare_local.py": "9a9ca2913603f8e0c823696e0eb54239c0198292bea1072c664e941624e7f294",
+    "bench/test_r4_comparison_fixture.py": "5d482b6def90da0bfbaa93ae0a4c76f59c60db99683e4e5206ee04002026a7d0"
+  }
+}

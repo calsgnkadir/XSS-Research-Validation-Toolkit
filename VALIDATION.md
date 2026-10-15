@@ -1,5 +1,24 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## R6 installed wheel CI gate
+
+Coordinator rebuilt a wheel and installed it offline into a fresh Python
+3.10.11 Windows venv. Seven installed CLI/config checks passed outside source;
+all nine module hashes matched source and wheel. A changed wheel was rejected
+before producing success evidence. These are script checks, not new pytest
+cases. No browser execution is claimed by this new check.
+[Command and results](audit/2026-10-15-r6-installed-ci/README.md).
+
+## R4 equal-budget candidate comparison follow-up
+
+Final integrated local regression: **207 passed**, zero failure/error/skip;
+independent checker subset **72 passed**. Run-02 artifact validation selected
+8, completed 8, error/timeout/incomplete/skipped 0, equal client timeouts true,
+candidate-only true, ranking false. Browser fixture cases are included in the
+integrated run. Counts overlap; they are not added together.
+[Live run and limits](audit/2026-10-15-r4-comparator-execution/README.md),
+[independent artifact check](audit/r4-comparison-acceptance/README.md).
+
 ## 15 October R4 candidate comparison follow-up
 
 Pinned Dalfox 3.2.4 and dxadyn were attempted on the bounded loopback stored

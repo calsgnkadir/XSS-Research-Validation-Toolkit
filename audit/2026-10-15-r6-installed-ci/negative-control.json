@@ -1,0 +1,10 @@
+{
+  "case": "wheel bytes differ from installed module",
+  "exit_code": 1,
+  "expected_error": "dxa wheel mismatch",
+  "success_artifact_created": false,
+  "optimized_python": {
+    "exit_code": 1,
+    "rejected": true
+  }
+}

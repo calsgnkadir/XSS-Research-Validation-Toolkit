@@ -1,0 +1,7 @@
+[dxadyn] concurrency: rate=2.0/s
+[dxadyn] session cookie attached to every request (39 chars)
+[dxadyn] STORED probe: http://127.0.0.1:<ephemeral-port>/comments field='comment' -> checking 1 URL(s) - authorized/local only
+
+[dxadyn] canary id = dxab93ee60a
+No unencoded stored reflection found.
+[dxadyn] submits clean: 0 rejected (no 403/429/WAF/connection-error).

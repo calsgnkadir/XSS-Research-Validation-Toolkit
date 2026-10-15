@@ -76,6 +76,15 @@ class R4ComparisonFixture:
                         state.next_request_at = max(time.monotonic(), state.next_request_at) + 1.0 / state.rate_limit
                     if wait_for:
                         time.sleep(wait_for)
+                    # The pacing sleep is part of the wall budget. A request
+                    # admitted before sleeping must not execute after expiry.
+                    if time.monotonic() - state.started >= state.wall_limit:
+                        with state.lock:
+                            state.budget_exceeded = True
+                            state.requests.append({"method": self.command, "path": self.path.split("?", 1)[0],
+                                                   "status": 429, "budget_rejected": True})
+                        self._reply(429, "fixture budget exhausted", "text/plain; charset=utf-8")
+                        return
                     token = self._token()
                     with state.lock:
                         identities = state.sessions.get(token)

@@ -70,3 +70,13 @@ def test_server_budget_serializes_and_caps_requests():
         assert _request(fixture.origin, path="/admin/comments", cookie=cookie)[0] == 429
         assert fixture.state.budget_exceeded is True
         assert fixture.state.max_inflight == 1
+
+
+def test_rate_wait_cannot_forward_after_wall_deadline():
+    with R4ComparisonFixture(escaped=False, request_limit=10, rate_limit=2,
+                             wall_limit=0.2) as fixture:
+        cookie = fixture.state.broker_cookie()
+        assert _request(fixture.origin, path="/comments", cookie=cookie)[0] == 200
+        assert _request(fixture.origin, "POST", "/comments", cookie, {"comment": "late"})[0] == 429
+        assert fixture.state.comments == []
+        assert fixture.state.budget_exceeded

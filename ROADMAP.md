@@ -300,6 +300,14 @@ was inconclusive (8 selected, 4 completed, 0 errors, 4 timeouts); all Dalfox
 runs timed out, while dxadyn raw reflections remain candidates without execution
 proof. No ranking or accuracy score is accepted. Competitor comparison remains open.
 [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
+
+15 Ekim devamı: ortak 200 istek/2 rps/120 saniye ve 15 saniye istemci
+timeout sınırlarında yeni Dalfox/dxadyn aday koşusu 8/8 tamamlandı; hata,
+timeout veya eksik koşu yok. Bağımsız kapı kimlikleri, kapsam paydasını ve
+çıktı hashlerini doğrular. Broker oturumu bağımsız araç login'i değildir;
+adayların CID/browser kanıt eşlemesi ve insan triage'ı olmadan karşılaştırma
+kabulü ve sıralama açık kalır.
+[Yeni R4 kanıtı](audit/2026-10-15-r4-comparator-execution/README.md).
 Code 0261baa remote CI 38706882024 and downloaded artifact accepted corpus17/17
 and 179 zero-skip tests; [remote record](audit/2026-10-15-resumed-delivery/remote-r4-acceptance.json).
 This does not close the broader R4 criteria.
@@ -493,10 +501,17 @@ ve kanıt belgeleri paylaşılabilir araştırma çıktısıdır, kullanılabili
 sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 
 - [ ] Tek kurulum komutu ve opsiyonel browser extra gerçekten paketlenir; sürüm etiketi/CHANGELOG vardır.
-- [ ] Config önceliği CLI > config > varsayılan olarak testlidir.
-- [ ] JSON şeması sürümlüdür; HTML aynı kanıttan üretilir; rapor test girdisini güvenli escape eder.
-- [ ] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
-- [ ] Demo sonucu temiz ortamda elde edilir; known limitations ve fixture kapsamı görünürdür.
+- [x] Config önceliği CLI > config > varsayılan olarak testlidir.
+- [x] JSON şeması sürümlüdür; HTML aynı kanıttan üretilir; rapor test girdisini güvenli escape eder.
+- [x] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
+- [x] Demo sonucu temiz ortamda elde edilir; known limitations ve fixture kapsamı görünürdür.
+
+15 Ekim: Bu dört yerel kabul, yukarıdaki release-matrix kaydındaki 109 test
+ve kurulu CLI/demo kanıtına dayanır; yeni test koşusu değildir. Kalıcı
+kurulu-wheel CI kontrolü ayrıca temiz venv'de 7 kontrolü ve dokuz modülün
+kaynak/wheel eşleşmesini doğruladı; değiştirilmiş wheel reddedildi.
+[Yeni kapı](audit/2026-10-15-r6-installed-ci/README.md).
+Paket 0.0.0.dev0; etiket/yayın ve genel R4/R5 bağımlılıkları açık kalır.
 
 SARIF sonraki küçük teslim olabilir. Plugin API/Marketplace, ihtiyaç gösterilmeden bu sürümü geciktirmez.
 
