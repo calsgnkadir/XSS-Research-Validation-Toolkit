@@ -6,8 +6,9 @@ Engine `r4_comparator_execution` eşit bütçeli Dalfox/dxadyn çalıştırması
 QA `r4_comparison_acceptance` bağımsız manifest/kanıt kapısını geliştiriyor.
 Koordinatör R6 kurulu-wheel kontrolünü zorunlu CI adımına bağladı: yeni yerel
 venv'de 7 kontrol ve dokuz modülün kaynak/wheel hash eşleşmesi geçti;
-değiştirilmiş wheel negatif kontrolü reddedildi. Commit `db1167a` origin/main
-ile eşleşti; CI `38790053904` üç job başarılı. Uzak wheel gate 7/7, zorunlu
+değiştirilmiş wheel negatif kontrolü reddedildi. Kod commit’i `db1167a`, audit
+follow-up `5c20611` origin/main’e push edildi; CI `38790053904` ve belge
+follow-up CI `38790989887` üçer job başarılı. Uzak wheel gate 7/7, zorunlu
 browser artifact gate 186 test/0 skip ve corpus 17/17 geçti. R6 ZIP içeriği
 connector tarafından yerelde açılamadı; metadata/loglar doğrulandı.
 [R6 kanıtı](audit/2026-10-15-r6-installed-ci/README.md).
@@ -17,6 +18,8 @@ Sıralama ve XSS doğruluğu çıkarımı yok; genel R4 açık.
 [R4 karşılaştırma](audit/2026-10-15-r4-comparator-execution/README.md) ve
 [QA gate](audit/r4-comparison-acceptance/README.md).
 R5 bağımsız insan tekrarı ertelenmiş; sürüm etiketi/yayın yapılmadı.
+K01 workflow `38790989802` geçti; bu otomatik Linux koşusu ikinci insan R5
+kabulü değildir. Son doğrulanan remote branch HEAD `5c20611`.
 
 ## Latest R4/R6 follow-up - 15 October 2026
 
