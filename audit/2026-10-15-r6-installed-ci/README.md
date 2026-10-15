@@ -31,4 +31,11 @@ historical evidence and scripts were not rewritten.
 This is development package readiness, not release approval. Version remains
 `0.0.0.dev0`. R4 comparison acceptance and the deferred R5 independent human
 repeat remain separate requirements. No release tag or publication occurred.
-Remote CI for this change has not yet been observed.
+Remote CI run **38790053904** completed successfully (all three jobs).
+The Linux installed-wheel step passed all seven checks and uploaded the wheel
+plus acceptance JSON as artifact `r6-installed-package`, ID `12000435488`,
+ZIP SHA-256 `a19a550578ad31a377b427633948a60fb1d1bd6a74f37742bcaf327c08c3cb7b`.
+The GitHub artifact connector returned a file reference rather than local ZIP
+bytes, so its contents were not independently reopened; job logs and metadata
+were checked. The required browser artifact gate passed 186 tests with zero
+skips/errors and corpus17/17 TP8 FP0 FN0. See [remote-ci.json](remote-ci.json).

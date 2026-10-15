@@ -1,12 +1,15 @@
 # Güncel devam noktası — 15 Ekim 2026
 
-## Aktif üç ajanlı R4/R6 turu
+## Son tamamlanan üç ajanlı R4/R6 turu
 
 Engine `r4_comparator_execution` eşit bütçeli Dalfox/dxadyn çalıştırmasını,
 QA `r4_comparison_acceptance` bağımsız manifest/kanıt kapısını geliştiriyor.
 Koordinatör R6 kurulu-wheel kontrolünü zorunlu CI adımına bağladı: yeni yerel
 venv'de 7 kontrol ve dokuz modülün kaynak/wheel hash eşleşmesi geçti;
-değiştirilmiş wheel negatif kontrolü reddedildi. Uzak CI henüz doğrulanmadı.
+değiştirilmiş wheel negatif kontrolü reddedildi. Commit `db1167a` origin/main
+ile eşleşti; CI `38790053904` üç job başarılı. Uzak wheel gate 7/7, zorunlu
+browser artifact gate 186 test/0 skip ve corpus 17/17 geçti. R6 ZIP içeriği
+connector tarafından yerelde açılamadı; metadata/loglar doğrulandı.
 [R6 kanıtı](audit/2026-10-15-r6-installed-ci/README.md).
 R4 run-02 eşit bütçeli 8/8 tamamlandı; bağımsız hash kapısı 8/8 doğruladı.
 Birleşik yerel gate/browser paketi 207, QA oracle alt kümesi 72 test geçti.

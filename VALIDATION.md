@@ -8,6 +8,10 @@ all nine module hashes matched source and wheel. A changed wheel was rejected
 before producing success evidence. These are script checks, not new pytest
 cases. No browser execution is claimed by this new check.
 [Command and results](audit/2026-10-15-r6-installed-ci/README.md).
+Commit `db1167a` hosted CI `38790053904` üç job başarıyla tamamlandı. Remote
+wheel gate 7/7; required browser gate 186 test, 0 skip/error, corpus17/17
+TP8 FP0 FN0. Artifact digest/logları kaydedildi; R6 ZIP içeriği ayrıca yerelde
+açılıp yeniden çalıştırılmadı.
 
 ## R4 equal-budget candidate comparison follow-up
 
