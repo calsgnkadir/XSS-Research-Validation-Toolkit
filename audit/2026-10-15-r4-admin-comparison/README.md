@@ -43,21 +43,50 @@ scanner accuracy, privilege escalation, or a vulnerability in any target.
 ## Competitor comparison status
 
 The local PATH inventory checked `xsstrike`, `dalfox`, `wapiti`, `nikto`,
-`jaeles`, and `arjun`; no executable was found. The installed Python package
-inventory exposed Playwright and Requests as support libraries, but no
-competitor scanner. The repository's own scanner is the system under test and
-was not treated as a competitor. No tool was installed or downloaded, and no
-competitor was run. Consequently there is no equal-budget comparison or frozen
-comparison manifest, and the ROADMAP R4 competitor criterion remains open.
-The existing protocol remains the comparison contract; this audit does not
-claim a winner or scanner superiority.
+`jaeles`, and `arjun`; initially no executable was found. A checksum-verified,
+temporary Dalfox 3.2.4 release binary was then downloaded to `%TEMP%` after
+approval. It was not installed system-wide. The attempted comparison uses that
+binary against repository `dxadyn`; raw commands, logs, and run records are in
+[`candidate-comparison/`](candidate-comparison/).
+
+The comparator was Dalfox v3.2.4 (release commit `da19527`), downloaded as a
+temporary Windows x86_64 release asset. The official asset SHA-256 was
+`28100d9355a1c767facd571a180d08b87d4de61167b3db99d56e4d8a6601d69a`; the
+extracted executable SHA-256 is recorded in the run manifest. The temp copy was
+removed after the experiment. OAST was disabled and proxy variables were
+removed for scanner subprocesses; the fixture bound only to `127.0.0.1`.
+
+The first experiment is **inconclusive**. Of 8 selected runs, 4 completed and
+4 timed out (see `comparison.json` for per-run accounting). Both escaped
+`dxadyn` control runs completed with zero candidates. The two raw `dxadyn` runs
+printed one stored HTML reflection candidate each and exited 1. Source review
+confirmed that exit 1 is dxadyn's documented finding status; because both runs
+also had non-empty structured findings, they are completed candidate scans,
+not errors. This is candidate evidence only, not browser execution or a
+confirmed vulnerability. All four Dalfox runs timed out at the outer 20-second
+limit. They generated 28 request attempts each: 20 forwarded requests and 8
+local 429 budget rejections, despite one-request concurrency and the configured
+2 requests/second rate. The harness records selected/completed/error/timeout
+separately and tests finding-exit, budget, timeout, and error outcomes.
+
+The fixture enforces the same maximum forwarded request count (20), rate
+(2/s), concurrency (1), and outer process wall limit (20s) for each tool. The
+client request timeout differs (Dalfox 2s, dxadyn 15s), and the tool behavior
+under the shared request gate also differed. Scanner inputs use the same
+ephemeral broker cookie, which maps internally to writer and reader-admin
+fixture roles; this is not independent login/session coverage. The scanner
+candidate output is not correlated with scanner-generated CIDs or the separate
+browser execution oracle, so there is no TP/FP/FN score or tool ranking. The
+browser oracle remains separate from these candidate rows. ROADMAP R4's
+competitor-comparison acceptance remains open.
 
 ## Scope mapping
 
 - ROADMAP R4: separate authenticated accounts, writer-to-admin blind stored
   submission/read path, independent HTTP and browser oracles, CID correlation,
   fixed negative, and disposable cleanup are covered by this narrow fixture.
-- ROADMAP R4: controlled competitor comparison remains open because no local
-  comparator was available and the protocol's common proof adapter/budget
-  parity are not established.
+- ROADMAP R4: a pinned competitor was attempted on loopback, but the comparison
+  is inconclusive because all Dalfox runs timed out and exceeded the attempt
+  budget; common proof adapter and independent authentication requirements also
+  remain unsatisfied.
 - R5 independent human repetition remains deferred and open.

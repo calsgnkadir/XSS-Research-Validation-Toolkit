@@ -1,5 +1,18 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 15 October R4 candidate comparison follow-up
+
+Pinned Dalfox 3.2.4 and dxadyn were attempted on the bounded loopback stored
+fixture: 8 selected = 4 completed, 0 errors, 4 timeouts. Dalfox generated 28
+attempts per run (20 forwarded plus eight 429 rejections) and exceeded the
+budget; all four runs timed out. Source review confirmed dxadyn exit 1 means
+candidate findings, so its two raw runs were completed candidate scans, not
+errors or execution proof. The final combined comparator/accounting/browser
+tests passed 9/9; the CI gate unit module passed within the 119-test suite.
+This is inconclusive, not an accuracy score or tool ranking. R4 competitor
+acceptance remains open.
+[Run record](audit/2026-10-15-r4-admin-comparison/candidate-comparison/README.md).
+
 ## 15 October R4 admin fixture and R6 readiness
 
 R4 separate-account loopback fixture/browser oracle: specialist 3 passed and

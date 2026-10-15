@@ -3,9 +3,11 @@
 ## Latest R4/R6 follow-up - 15 October 2026
 
 R4 separate writer/reader-admin loopback fixture, blind submission, exact-CID
-Chrome proof and escaped control passed 3/3 in the specialist run and coordinator
-rerun. Comparator inventory found none locally, so equal-budget comparison stays
-open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
+Chrome proof and escaped control passed 3/3 in specialist and coordinator runs.
+A pinned Dalfox 3.2.4 vs dxadyn loopback attempt was inconclusive: 8 selected,
+4 completed, 0 errors, 4 timeouts. Completed raw dxadyn outputs are candidates,
+not execution proof; all Dalfox runs timed out. No ranking or accuracy score;
+competitor acceptance remains open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
 R6 rebuilt 0.0.0.dev0 wheel passed local installed readiness matrix and 109
 focused tests (zero failure/error/skip). All three CLI help/config contracts,
 docs, optional browser metadata and packaged loopback demo were checked.

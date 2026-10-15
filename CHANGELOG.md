@@ -9,7 +9,9 @@
   uses separate config/report filenames. No release tag is created.
 - R5 independent-human result form is available; acceptance remains pending.
 - R4 adds a two-account blind stored loopback fixture with CID browser oracle;
-  local equal-budget comparator run remains open because no tool is installed.
+  a pinned Dalfox 3.2.4 vs dxadyn loopback attempt is inconclusive (four
+  completed candidate scans and four Dalfox timeouts); no ranking is claimed.
+  Comparator accounting tests and the separate browser oracle are added to CI.
 - R6 installed-wheel readiness matrix covers all three CLI help contracts,
   static/dynamic config behavior, and the packaged loopback proof demo. The
   version remains a developer build; R4/R5 prerequisites and release gate stay open.

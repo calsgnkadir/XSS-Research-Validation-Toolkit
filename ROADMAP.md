@@ -295,8 +295,11 @@ activated-template positive. Required Chrome suite 254 passed; strict CLI
 [Acceptance](audit/2026-10-15-r4-broader-corpus/README.md).
 15 October follow-up: separate writer and reader-admin accounts, blind submission,
 CID-matched Chrome proof and escaped control passed 3/3, repeated by coordinator.
-This validates only the fixture. No local competitor was available, so equal-budget
-comparison remains open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
+This validates only the fixture. A pinned Dalfox 3.2.4 vs dxadyn loopback attempt
+was inconclusive (8 selected, 4 completed, 0 errors, 4 timeouts); all Dalfox
+runs timed out, while dxadyn raw reflections remain candidates without execution
+proof. No ranking or accuracy score is accepted. Competitor comparison remains open.
+[R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
 Code 0261baa remote CI 38706882024 and downloaded artifact accepted corpus17/17
 and 179 zero-skip tests; [remote record](audit/2026-10-15-resumed-delivery/remote-r4-acceptance.json).
 This does not close the broader R4 criteria.
