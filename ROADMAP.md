@@ -293,6 +293,9 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 activated-template positive. Required Chrome suite 254 passed; strict CLI
 17/17, TP8 FP0 FN0. General admin/controlled-comparison criteria remain open.
 [Acceptance](audit/2026-10-15-r4-broader-corpus/README.md).
+Code 0261baa remote CI 38706882024 and downloaded artifact accepted corpus17/17
+and 179 zero-skip tests; [remote record](audit/2026-10-15-resumed-delivery/remote-r4-acceptance.json).
+This does not close the broader R4 criteria.
 
 
 14 Ekim corpus v3: 14 vaka; önceki dokuza sanitized+raw, no-op sanitizer→DOM,

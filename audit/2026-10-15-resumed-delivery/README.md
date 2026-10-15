@@ -44,3 +44,26 @@ independent test oracles. The installed-smoke helper initially overwrote its
 config with a same-named report; distinct filenames fixed the test helper and
 the new successful run is recorded. Runtime product sources remained stable.
 R5 has no human acceptance evidence; the handoff is the only R5 document change.
+
+## Remote acceptance
+
+Code `0261baaa8a21ff2d16308bf9a1a4ccd003ceccb8` was pushed and remote main
+matched. General [CI 38706882024](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38706882024)
+completed all three jobs successfully. Downloaded artifact digest matched
+GitHub metadata. The exact committed gate accepted 179 JUnit tests, zero
+failure/error/skip, corpus v4 17/17 TP8 FP0 FN0 and demo execution. Separate
+auth controls passed 6/6 with cleanup. Canonical JSON/Markdown and Git-blob
+source hashes matched. [R4 artifact record](remote-r4-acceptance.json).
+
+[K01 Linux 38706882018](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38706882018)
+also succeeded. Downloaded artifact: 22 JUnit tests, five passing proof
+controls, five distinct closed ports recorded by CI, ci profile and gate/source/
+proof-member hashes matched. [K01 artifact record](remote-r5-acceptance.json).
+Downloaded artifacts do not re-observe historical sockets or establish a
+second human. Docker acceptance was not rerun. Earlier pending statements
+in local acceptance records describe their pre-push snapshot.
+
+The canonical generated corpus Markdown includes a final blank line. Staged
+whitespace checking with `core.whitespace=-blank-at-eof` passed; the canonical
+renderer output was preserved for JSON/Markdown equality. Share copies omit
+local JUnit hostname and browser path as recorded in their audit metadata.

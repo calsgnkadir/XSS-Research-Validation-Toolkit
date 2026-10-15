@@ -1,0 +1,109 @@
+{
+  "head_sha": "0261baaa8a21ff2d16308bf9a1a4ccd003ceccb8",
+  "remote_main_sha_verified": true,
+  "workflow_run": {
+    "id": 38706882024,
+    "url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38706882024",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "dxadom browser harness (Playwright opt-in)",
+        "conclusion": "success"
+      },
+      {
+        "name": "Required local authenticated browser proof",
+        "conclusion": "success"
+      },
+      {
+        "name": "dom-xss-analyzer tests",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "artifact": {
+    "id": 11958897394,
+    "name": "r3-browser-proof",
+    "archive_sha256": "82b671f4299b53b2493393b36778e7d52736ab8449d6bc746db9d2bf3646fed2",
+    "archive_digest_matches_github_metadata": true,
+    "contents_downloaded": true,
+    "member_sha256": {
+      "r3-proof/result.html": "ab2bfb067afb562e4aed1f3c62e33a91438b0082b99ff38d3b9500ac61265c32",
+      "r3-r4-pytest.xml": "81bac13bd052e9deb8ad4372f683bd44272c24bb55a699ca345ceb4d70e92194",
+      "r3-proof/result.json": "3e081f2f83d8c64a96c4a87cd574f8af74ca682955dfddf3994611c341bfe5ac",
+      "r4-proof.json": "e9e56dd39c1c78cc2347525b2ce9c3ea20e6d656802ebd29737aa64bf4b19d8c",
+      "r4-proof.md": "e387d37199b81ea86f6161b35a605e23b533352651a272ed869dd3f054753c32",
+      "auth-controls.json": "8ee798be0d1ba2bc1eac96401dc0fae200f0b631d9cf437baef702e89b7389c6",
+      "auth-controls.md": "2e3e5e9fbdca6ce838e973a6ab4b68f6d2319b921e930c4130d54e74320f31f4"
+    }
+  },
+  "gate": {
+    "exit_code": 0,
+    "result": "R3/R4 acceptance passed: 179 tests, zero skips/errors; corpus 17/17 TP=8 FP=0 FN=0; JSON/Markdown provenance matched; demo execution observed",
+    "gate_sha256": "bcf8f676ccbca07a012f852d50d3a7af32b0cc335a4e974dd3f72bfd2491ab90"
+  },
+  "report": {
+    "corpus_version": "loopback-proof/4",
+    "environment": {
+      "python": "3.12.15",
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "runner_sha256": "398afb3271542828ec7d29020b37d2d933938d63fea556e314d4d74f0021e495",
+      "scanner_sha256": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+      "fixture_sha256": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+      "corpus_sha256": "ff9aefae42d48602080f6d3878de7c10af29d6bab5aec68d0807f56aac790d7d"
+    },
+    "command": [
+      "bench/run.py",
+      "--proof-suite",
+      "--no-history",
+      "--out",
+      "r4-proof.md"
+    ],
+    "totals": {
+      "dxaprove": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0,
+        "wall": 19.410000000000004,
+        "selected": 17,
+        "completed": 17,
+        "skipped": 0,
+        "error": 0,
+        "timeout": 0,
+        "invalid": 0,
+        "inconclusive": 0
+      }
+    }
+  },
+  "credentials_saved": false,
+  "limitations": [
+    "Hosted CI did not run opt-in local Bludit Docker acceptance.",
+    "Runtime fields are report metadata checked against CI expectations; this is not cryptographic runtime attestation.",
+    "Broader R4 corpus/coverage and comparison methodology remain open."
+  ],
+  "controls": {
+    "selected": 6,
+    "passed": 6,
+    "cleanup_passed": 6,
+    "xss_totals": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "wall": 0.16,
+      "selected": 1,
+      "completed": 1,
+      "skipped": 0,
+      "error": 0,
+      "timeout": 0,
+      "invalid": 0,
+      "inconclusive": 0
+    },
+    "source_sha256_matches_commit": true,
+    "markdown_matches_json": true
+  },
+  "remote_main_descends_from_head": true,
+  "verification_source": {
+    "commit": "0261baaa8a21ff2d16308bf9a1a4ccd003ceccb8",
+    "mode": "Exact Git blob bytes in a minimal temporary source tree",
+    "line_endings": "Local Windows runner and fixture have CRLF; hosted artifact hashes match committed LF bytes."
+  }
+}

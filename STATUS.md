@@ -10,8 +10,11 @@ implementation review/testing; no background agent task remains.
 [Commands, source hashes and limits](audit/2026-10-15-resumed-delivery/README.md).
 R5 human-repeat form reviewed and linked; independent human evidence has not
 been supplied, so acceptance remains open. No release tag created.
-Git delivery and remote CI are pending at this local acceptance snapshot.
-Next: remote artifact acceptance, then R4 separate admin fixture/controlled
+Code `0261baa` pushed; remote main matched. General CI 38706882024 3/3 and
+K01 Linux 38706882018 succeeded. Downloaded R4 artifact:179 tests, corpus17/17
+TP8/FP0/FN0, auth6/6. K01 artifact:22 tests/proof5/5. Archive/source/proof hashes
+matched. Remote acceptance records are linked in the resumed delivery audit.
+Next: R4 separate admin fixture/controlled
 comparison and R6 remaining overall config/release criteria. R5 needs a real
 participant's fresh checkout/venv run; another AI or CI run cannot replace it.
 

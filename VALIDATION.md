@@ -12,7 +12,11 @@ K01 regression in integration is not a second-human reproduction.
 [Commands, JUnit and source hashes](audit/2026-10-15-resumed-delivery/README.md),
 [R4](audit/2026-10-15-r4-broader-corpus/acceptance.json),
 [R6](audit/2026-10-15-r6-config-release/validation.json).
-Remote CI pending code push; no release tag or external target test.
+Code 0261baa remote CI 38706882024 all 3 jobs success; downloaded artifact
+accepted 179 tests with zero skip/error, corpus17/17 TP8/FP0/FN0, auth6/6.
+K01 Linux 38706882018 success: artifact22 tests/proof5/5; digest and source/member
+hashes matched. Exact remote records are in the resumed-delivery audit.
+No release tag, second-human acceptance or external target test.
 
 
 ## 15 Ekim R4/R5/R6 devam kabulü
