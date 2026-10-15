@@ -1,0 +1,33 @@
+{
+  "commit": "7d78f778e638652d9f8494b674a820edcbdced14",
+  "run_id": 38710720264,
+  "run_url": "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38710720264",
+  "conclusion": "success",
+  "artifact_gate": "passed",
+  "artifact_sha256": "60d39debc6915275bef3125910b71b154112b152490e10764864894231207828",
+  "gate_junit_tests": 182,
+  "corpus": {
+    "version": "loopback-proof/4",
+    "selected": 17,
+    "completed": 17,
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  "auth_controls": {
+    "selected": 6,
+    "passed": 6,
+    "cleanup_passed": 6
+  },
+  "admin_fixture_junit_cases": 3,
+  "admin_fixture_source_sha256": {
+    "bench/r4_admin_fixture.py": "4ca9e9ec61fe9551280de3643b6988113a298900e2f99fc7696b898035a8ca31",
+    "bench/test_r4_two_account_fixture.py": "6803e7906e086f4d91bcdade720005c80fca54d832b1f69f3859a322eb1735ad"
+  },
+  "archive_digest_matches_github": true,
+  "limitations": [
+    "Hosted CI did not run Bludit Docker acceptance.",
+    "Local competitor comparison remains open.",
+    "R5 human repeat remains deferred/open."
+  ]
+}

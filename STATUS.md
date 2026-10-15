@@ -9,7 +9,7 @@ open. [R4 evidence](audit/2026-10-15-r4-admin-comparison/README.md).
 R6 rebuilt 0.0.0.dev0 wheel passed local installed readiness matrix and 109
 focused tests (zero failure/error/skip). All three CLI help/config contracts,
 docs, optional browser metadata and packaged loopback demo were checked.
-Overall R6 remains open. [R6 evidence](audit/2026-10-15-r6-release-matrix/README.md).
+General CI 38710720264 passed 3/3; downloaded artifact gate passed 182 JUnit cases, corpus17/17 TP8/FP0/FN0, auth6/6, and the new admin fixture tests; [remote acceptance](audit/2026-10-15-r4-r6-followup/remote-r4-acceptance.json). Overall R6 remains open. [R6 evidence](audit/2026-10-15-r6-release-matrix/README.md).
 R5 human repeat is explicitly deferred and remains open. No tag/publication.
 [Combined follow-up](audit/2026-10-15-r4-r6-followup/README.md).
 

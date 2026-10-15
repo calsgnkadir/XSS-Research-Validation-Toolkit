@@ -10,7 +10,7 @@ checks, config behavior, package metadata/docs and loopback demo. Demo triage is
 unreviewed. [Combined record](audit/2026-10-15-r4-r6-followup/README.md),
 [R4](audit/2026-10-15-r4-admin-comparison/acceptance.json),
 [R6](audit/2026-10-15-r6-release-matrix/acceptance-final.json).
-R5 human repeat was deferred and remains open; no release tag.
+Commit 7d78f77 general CI 38710720264 passed 3/3; downloaded artifact gate accepted 182 zero-skip/error tests, corpus17/17 TP8/FP0/FN0, auth6/6 and all 3 new admin fixture tests. R5 human repeat was deferred and remains open; no release tag.
 
 
 ## 15 October resumed corpus/config acceptance
