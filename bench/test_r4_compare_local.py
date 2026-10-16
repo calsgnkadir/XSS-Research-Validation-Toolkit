@@ -79,3 +79,115 @@ def test_invalid_utf8_report_is_incomplete(tmp_path):
     report = tmp_path / "report.json"
     report.write_bytes(b"\xff")
     assert _parse_findings("dalfox", report) is None
+
+
+def test_proof_experiment_rejects_report_hash_drift_before_browser(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import r4_compare_local as adapter
+    source = tmp_path / "source"
+    source.mkdir()
+    report = source / "scanner.json"
+    report.write_text(json.dumps({"findings": [{"payload": "<img onerror=alert(1)>"}],
+                                  "meta": {"incomplete": False, "failed_requests": 0,
+                                           "findings_count": 1}}))
+    expected = hashlib.sha256(report.read_bytes()).hexdigest()
+    manifest = source / "comparison.json"
+    manifest.write_text(json.dumps({"schema": "r4-local-comparison/3",
+                                    "results": [{"tool": "dalfox", "status": "completed",
+                                                 "stored_payloads": ["<img onerror=alert(1)>"],
+                                                 "artifacts": {"report": {"path": "scanner.json",
+                                                                          "sha256": expected}}}]}))
+    report.write_text(report.read_text() + " ")
+    monkeypatch.setattr(adapter, "observe_exact_payload_replay",
+                        lambda *args, **kwargs: pytest.fail("browser must not start"))
+    with pytest.raises(ValueError, match="hash"):
+        adapter.run_proof_experiment(manifest, tmp_path / "new")
+    assert not (tmp_path / "new").exists()
+
+
+def test_proof_experiment_keeps_candidate_and_browser_categories_separate(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import r4_compare_local as adapter
+    source = tmp_path / "source"
+    source.mkdir()
+    payload = "<img onerror=alert(1)>"
+    report = source / "scanner.json"
+    report.write_text(json.dumps({"findings": [{"payload": payload}],
+                                  "meta": {"incomplete": False, "failed_requests": 0,
+                                           "findings_count": 1}}))
+    manifest = source / "comparison.json"
+    manifest.write_text(json.dumps({"schema": "r4-local-comparison/3",
+                                    "results": [{"tool": "dalfox", "status": "completed",
+                                                 "case_id": "local/raw", "repetition": 1,
+                                                 "candidate_count": 1,
+                                                 "stored_payloads": [payload],
+                                                 "artifacts": {"report": {"path": "scanner.json",
+                                                                          "sha256": hashlib.sha256(report.read_bytes()).hexdigest()}}}]}))
+    monkeypatch.setattr(adapter, "observe_exact_payload_replay",
+                        lambda *args, **kwargs: {"payload_sha256": hashlib.sha256(payload.encode()).hexdigest(),
+                                                 "outcome": "exact-payload-replay-execution",
+                                                 "raw_dialog_observed": True,
+                                                 "escaped_dialog_observed": False})
+    result = adapter.run_proof_experiment(manifest, tmp_path / "new")
+    assert result["results"][0]["candidate_count"] == 1
+    assert result["results"][0]["proofs"][0]["outcome"] == "exact-payload-replay-execution"
+    assert result["interpretation"]["ranking"] is False
+    assert "tp" not in str(result).lower()
+    assert payload not in str(result)
+
+
+def test_proof_experiment_keeps_unmatched_report_candidates_inconclusive(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import r4_compare_local as adapter
+    source = tmp_path / "source"
+    source.mkdir()
+    payload = "<img onerror=alert(1)>"
+    report = source / "scanner.json"
+    report.write_text(json.dumps({"findings": [{"payload": payload},
+                                                 {"payload": "not stored"}],
+                                  "meta": {"incomplete": False, "failed_requests": 0,
+                                           "findings_count": 2}}))
+    manifest = source / "comparison.json"
+    manifest.write_text(json.dumps({"schema": "r4-local-comparison/3",
+                                    "results": [{"tool": "dalfox", "status": "completed",
+                                                 "case_id": "local/raw", "repetition": 1,
+                                                 "candidate_count": 2,
+                                                 "stored_payloads": [payload],
+                                                 "artifacts": {"report": {"path": "scanner.json",
+                                                                          "sha256": hashlib.sha256(report.read_bytes()).hexdigest()}}}]}))
+    monkeypatch.setattr(adapter, "observe_exact_payload_replay",
+                        lambda *args, **kwargs: {"outcome": "exact-payload-replay-execution",
+                                                 "escaped_dialog_observed": False})
+    result = adapter.run_proof_experiment(manifest, tmp_path / "new")
+    assert result["results"][0]["exact_stored_candidate_count"] == 1
+    assert result["results"][0]["unmatched_candidate_count"] == 1
+    assert result["results"][0]["outcome"] == "inconclusive"
+
+
+def test_proof_experiment_does_not_accept_failed_escaped_control(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import r4_compare_local as adapter
+    source = tmp_path / "source"
+    source.mkdir()
+    payload = "<img onerror=alert(1)>"
+    report = source / "scanner.json"
+    report.write_text(json.dumps({"findings": [{"payload": payload}],
+                                  "meta": {"incomplete": False, "failed_requests": 0,
+                                           "findings_count": 1}}))
+    manifest = source / "comparison.json"
+    manifest.write_text(json.dumps({"schema": "r4-local-comparison/3",
+                                    "results": [{"tool": "dalfox", "status": "completed",
+                                                 "case_id": "local/raw", "repetition": 1,
+                                                 "candidate_count": 1,
+                                                 "stored_payloads": [payload],
+                                                 "artifacts": {"report": {"path": "scanner.json",
+                                                                          "sha256": hashlib.sha256(report.read_bytes()).hexdigest()}}}]}))
+    monkeypatch.setattr(adapter, "observe_exact_payload_replay",
+                        lambda *args, **kwargs: {"outcome": "failed-negative-control",
+                                                 "escaped_dialog_observed": True})
+    result = adapter.run_proof_experiment(manifest, tmp_path / "new")
+    assert result["results"][0]["outcome"] == "inconclusive"

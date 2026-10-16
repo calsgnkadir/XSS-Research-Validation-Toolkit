@@ -186,3 +186,45 @@ def test_browser_observer_rejects_non_loopback_or_non_origin_urls(origin):
     from r4_cid_oracle import _loopback_origin
     with pytest.raises(ValueError, match="loopback"):
         _loopback_origin(origin)
+
+
+def test_exact_candidate_matching_rejects_unsubmitted_report_payload():
+    from r4_cid_oracle import match_reported_payloads
+    assert match_reported_payloads("dalfox", [{"payload": "<img onerror=alert(1)>"}],
+                                   ["different stored text"]) == []
+
+
+def test_exact_candidate_matching_keeps_only_unique_submitted_bytes():
+    from r4_cid_oracle import match_reported_payloads
+    stored = ["dxa12345678\"<dXsS>", "'><IMG src=x onerror=alert(1) ClAss=dlx1234>"]
+    assert match_reported_payloads("dxadyn", [{"canary_id": "dxa12345678"}], stored) == stored[:1]
+    assert match_reported_payloads("dalfox", [{"payload": stored[1]}], stored) == stored[1:]
+    assert match_reported_payloads("dxadyn", [{"canary_id": "dxa"}], stored) == []
+
+
+def test_exact_replay_observes_scanner_shape_with_escaped_negative_control():
+    from r4_cid_oracle import observe_exact_payload_replay
+    scanner_shape = "'><IMG src=x onerror=alert(1) ClAss=dlx1234>"
+    result = observe_exact_payload_replay(scanner_shape, browser_path=__import__("os").environ.get("DXA_BROWSER"))
+    assert result["raw_dialog_observed"] is True
+    assert result["escaped_dialog_observed"] is False
+    assert result["outcome"] == "exact-payload-replay-execution"
+    assert scanner_shape not in str(result)
+
+
+def test_exact_replay_benign_marker_stays_inconclusive():
+    from r4_cid_oracle import observe_exact_payload_replay
+    result = observe_exact_payload_replay('dxa12345678"<dXsS>',
+                                          browser_path=__import__("os").environ.get("DXA_BROWSER"))
+    assert result["outcome"] == "inconclusive"
+    assert result["raw_dialog_observed"] is False
+
+
+def test_exact_replay_blocks_external_http_and_websocket(monkeypatch):
+    from r4_cid_oracle import observe_exact_payload_replay
+    payload = '<img src="http://203.0.113.1/pixel" onerror=alert(1)>'
+    result = observe_exact_payload_replay(payload,
+                                          browser_path=__import__("os").environ.get("DXA_BROWSER"))
+    assert result["raw"]["external_http_blocked"] >= 1
+    assert result["raw_dialog_observed"] is True
+    assert result["escaped_dialog_observed"] is False

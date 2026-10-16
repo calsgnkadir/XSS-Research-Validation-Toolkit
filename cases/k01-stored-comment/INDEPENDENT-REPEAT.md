@@ -1,8 +1,12 @@
 # R5 bağımsız insan tekrarı — sonuç formu
 
 Durum: **BEKLİYOR — bu dosya doldurulmamış teslim şablonudur.**
-Otomatik CI ve AI ajanı koşuları ikinci insan kabulünü karşılamaz.
+Otomatik CI ve AI ajanı koşuları ikinci insan tekrarını karşılamaz.
 Bu formun depoda bulunması bir tekrarın yapıldığı anlamına gelmez.
+16 Ekim 2026 kapsam kararında kullanıcı, ikinci insan tekrarı bu oturumda
+sağlanamazsa R5'in zorunlu kapanış ölçütünden çıkarılmasını istedi. Bu form
+isteğe bağlı sonraki insan doğrulaması için saklanır; geçmişte yapılmış gibi
+gösterilmez. Teknik R5 kabulü ve sınırı [kapanış kaydındadır](../../audit/r5-final-acceptance-2026-10-16/README.md).
 
 ## Uygulama
 
@@ -53,4 +57,5 @@ kaydıdır. Temiz ortam ve uygulayıcının bağımsızlığı insan beyanı ola
 değerlendirilir; hash eşleşmesi bunu otomatik olarak doğrulamaz.
 
 İnceleme sonucu / kanıt bağlantısı: **BEKLİYOR**.
-R5 roadmap kabulü bu alanlar ve gerçek kanıt incelenene kadar açık kalır.
+İkinci insan doğrulaması ancak bu alanlar ve gerçek kanıt incelenirse
+ayrıca kabul edilir; formun boş kalması teknik R5 kabulünü geri almaz.

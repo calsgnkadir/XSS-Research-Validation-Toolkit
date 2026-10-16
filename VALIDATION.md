@@ -1,5 +1,38 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 16 October final R4/R5 technical closeout
+
+After coordinator review, R4 replay summaries require a clean escaped control
+for every matched candidate, block non-fixture HTTP requests, disable service
+workers and reject WebSockets. Chrome-required command:
+
+```powershell
+$env:DXA_BROWSER='C:\Program Files\Google\Chrome\Application\chrome.exe'
+py -3.10 -m pytest bench/test_r4_compare_local.py bench/test_r4_cid_oracle.py -q -p no:cacheprovider --tb=short
+```
+
+Result: **57 passed, zero failure/error/skip**. Updated live replay command
+and source/output hashes are in
+[the R4 experiment audit](audit/r4-proof-experiment-2026-10-16/README.md).
+It read 8 historical scanner rows and replayed 6 exact stored candidates; two
+Dalfox raw payloads produced dialogs in the raw fixture and none in the
+escaped fixture. Other candidates remain inconclusive. This was not a fresh
+scanner run or original-session browser observation. The replay HTTP guard is
+not a general network sandbox; WebSocket and other non-HTTP channels remain in
+R9 scope. A dedicated WebSocket negative-control attempt timed out and was not
+accepted as a pass.
+
+R5 fresh Windows venv run: **5/5 browser controls**, **5/5 distinct ports
+closed**, zero hash mismatches across the 12 proof members, 3 case sources
+and gate. Environment: Python 3.10.11, Playwright 1.63.0, Chrome 155.0.8059.82.
+The prior downloaded Linux artifact gate is on a different commit; current
+push workflow status is recorded separately.
+
+Commit `06c4e21` push was verified by remote ref hash. GitHub CI `38879831807`
+and K01 workflow `38879831825` completed successfully. These are job results;
+artifact contents for this commit were not downloaded. The current R4/R5
+scope decision and its boundaries are recorded in ROADMAP.
+
 ## 16 October R4/R5 closure review at `d9db15b`
 
 Native Engine ran `py -3.10 -m pytest bench/test_r4_compare_local.py

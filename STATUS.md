@@ -1,26 +1,30 @@
 # Güncel devam noktası — 16 Ekim 2026
 
-## R4/R5 kapanış incelemesi — 16 Ekim
+## R4/R5 kapanışı — 16 Ekim 2026
 
-Çalışma kökündeki `.git` zaten mevcuttu. Başlangıçta temiz `main` ve fetch
-sonrasında `HEAD`/`origin/main` `d9db15ba2094b44c27870a311959de1d1dad15f6`
-ile eşleşti (0/0). Bu ilk incelemenin Git teslimi sonraki commit ve CI
-kayıtlarında ayrıca izlenir.
+**R4 tamamlandı, teknik kapsamla sınırlı.** Yeni replay kapısı report hash'i ve
+aday→saklanan payload eşleşmesini denetler; her payload'ı byte değiştirmeden
+ayrı loopback raw/escaped fixture'da, doğrulanmış reader-admin ile gözlemler.
+Koordinatör incelemesinde fail-closed özet ve HTTP istek sınırı sıkılaştırıldı. Son
+Chrome paketi **57/57** geçti. Yeni replay 8 tarihsel satırdan 6 exact adayı
+eşleştirdi; iki Dalfox raw payload dialog üretti, escaped kontroller üretmedi;
+diğerleri inconclusive. Bu tarihsel scanner koşusunun browser ziyareti değildir
+ve yeni scanner koşusu değildir; WebSocket/genel ağ sandboxı R9 kapsamındadır.
+[R4 audit](audit/r4-proof-experiment-2026-10-16/README.md).
+Kullanıcı kararıyla insan triage/üstünlük sıralaması zorunlu kapanıştan çıkarıldı;
+accuracy, TP/FP/FN veya vulnerability iddiası yok.
 
-Native Engine uzmanı R4'ün mevcut sekiz tamamlanmış scanner koşusunun depolanan
-payloadlarını CID/browser oracle'sıyla karşılaştırdı: sekiz satırın hiçbirinde
-aynı `?cid=` ve `window.__dxaProof` bağı yok. Yeni yerel odaklı paket **48/48**
-geçti; bu fixture/oracle testidir, scanner execution sonucu değildir.
-[R4 incelemesi](audit/r4-closure-2026-10-16/README.md). Mevcut kıyasta TP/FP/FN,
-araç sıralaması ve genel R4 kapanışı desteklenmiyor. Sonraki teknik iş iki araç
-için önceden tanımlı eşit payload/proof protokolüyle **yeni** izinli loopback
-deneyi; insan triage'ı ayrı açık kalır.
+**R5 tamamlandı, teknik kabul kapsamında.** Yeni Windows venv gate'i **5/5**
+kontrol ve **5/5** port cleanup ile geçti; 12 proof üyesi, 3 kaynak ve gate
+hash'i eşleşti. Önceden kabul edilen Linux artifact gate'i 5/5 proof ve 13
+sıfır-skip test içeriyor; farklı commit'e ait olduğu ayrıca belirtiliyor.
+İkinci bağımsız insan koşusu kullanıcı kararıyla zorunlu ölçütten çıkarıldı;
+boş form opsiyonel/tarihsel kalıyor. [R5 audit](audit/r5-final-acceptance-2026-10-16/README.md).
 
-Native QA uzmanı R5 proof paketindeki 12 üye, üç kaynak ve gate hashini mevcut
-baytlarla eşleştirdi. Vaka kodu veya bağımsız insan formunda kusur bulmadı;
-bu turda yeni browser testi/CI koşmadı. [R5 incelemesi](audit/r5-closure-2026-10-16/README.md).
-İkinci bağımsız kişinin temiz ortam tekrarı açık ve ertelenmiş; sonuç formu boş.
-Mevcut yerel otomatik kabul korunur, genel R5 kapanışı ilan edilmez.
+Commit `06c4e21570df8fbdad4ba45885dccf2b0dc28a54` origin/main'e push edildi ve
+ref hash'i doğrulandı. GitHub CI run `38879831807` ve K01 run `38879831825`
+başarılı. Bu iki workflow sonucu; bu push'taki artifact içerik indirme/kabulü
+değil. Final R4/R5 tesliminin uzak CI durumu yeni commit sonrası ayrıca eklenir.
 
 ## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
 
@@ -174,7 +178,8 @@ R6 rebuilt 0.0.0.dev0 wheel passed local installed readiness matrix and 109
 focused tests (zero failure/error/skip). All three CLI help/config contracts,
 docs, optional browser metadata and packaged loopback demo were checked.
 General CI 38710720264 passed 3/3; downloaded artifact gate passed 182 JUnit cases, corpus17/17 TP8/FP0/FN0, auth6/6, and the new admin fixture tests; [remote acceptance](audit/2026-10-15-r4-r6-followup/remote-r4-acceptance.json). Overall R6 remains open. [R6 evidence](audit/2026-10-15-r6-release-matrix/README.md).
-R5 human repeat is explicitly deferred and remains open. No tag/publication.
+As recorded on 15 October, the R5 human repeat was deferred; that interim
+status is superseded by the 16 October technical scope decision above. No tag/publication.
 [Combined follow-up](audit/2026-10-15-r4-r6-followup/README.md).
 
 ## Previous completed delivery

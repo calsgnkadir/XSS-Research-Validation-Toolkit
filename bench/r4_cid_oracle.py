@@ -2,16 +2,20 @@
 from __future__ import annotations
 
 from collections import Counter
+import hashlib
 import ipaddress
 import json
 import re
 from typing import Any, Iterable, Mapping
+import urllib.parse
+import urllib.request
 from urllib.parse import urlsplit
 
 _CID_IN_QUERY = re.compile(r"[?&]cid=([A-Za-z0-9_-]{12,80})(?:[&#\"'\s]|$)", re.I)
 _CID_IN_EXECUTION = re.compile(r"window\.__dxaProof\s*=\s*(['\"])([A-Za-z0-9_-]{12,80})\1", re.I)
 _CID_SHAPE = re.compile(r"[A-Za-z0-9_-]{8,80}\Z")
 _ALLOWED_RUN_STATES = {"completed", "error", "timeout", "skipped", "incomplete"}
+_DXA_STORED_CID = re.compile(r"dxa[0-9a-f]{8}\Z")
 
 
 def _extract_payload_cid(payload: str) -> str | None:
@@ -195,3 +199,133 @@ def observe_reader_admin(origin: str, case_id: str, reader_token: str,
         finally:
             browser.close()
     return rows
+
+
+def match_reported_payloads(tool: str, findings: Iterable[Mapping[str, Any]],
+                            stored_payloads: Iterable[str]) -> list[str]:
+    """Find exact submitted bytes behind a scanner report, without trusting labels.
+
+    Dalfox v3 exposes its submitted payload. dxadyn exposes the stored canary ID;
+    its exact string is recovered only when fixture readback has one prefix match.
+    Missing or ambiguous matches are left out of the proof experiment.
+    """
+    stored = list(stored_payloads)
+    if not all(isinstance(value, str) for value in stored):
+        raise TypeError("stored payloads must be strings")
+    matches = []
+    for row in findings:
+        if not isinstance(row, Mapping):
+            continue
+        if tool == "dalfox":
+            value = row.get("payload")
+            if isinstance(value, str) and stored.count(value) == 1 and value not in matches:
+                matches.append(value)
+        elif tool == "dxadyn":
+            cid = row.get("canary_id")
+            if isinstance(cid, str) and _DXA_STORED_CID.fullmatch(cid):
+                candidates = [value for value in stored if value.startswith(cid)]
+                if len(candidates) == 1 and candidates[0] not in matches:
+                    matches.append(candidates[0])
+    return matches
+
+
+def observe_exact_payload_replay(payload: str, *, browser_path: str | None = None,
+                                 observe_ms: int = 500) -> dict[str, Any]:
+    """Replay exact fixture-readback bytes in isolated raw and escaped loopback labs.
+
+    This is evidence about the scanner's submitted payload shape, not an
+    observation of its original request. Each replay has one stored string,
+    a verified reader-admin identity, and a completed browser window. Dialogs
+    are observed and dismissed; the observer adds no script to the page.
+    """
+    if not isinstance(payload, str) or not payload or len(payload.encode("utf-8")) > 16_384:
+        raise ValueError("payload must be a bounded non-empty string")
+    if type(observe_ms) is not int or not 100 <= observe_ms <= 10_000:
+        raise ValueError("observe_ms must be between 100 and 10000")
+    from playwright.sync_api import sync_playwright
+    from r4_comparison_fixture import R4ComparisonFixture
+
+    rows: dict[str, dict[str, Any]] = {}
+    with sync_playwright() as playwright:
+        options: dict[str, Any] = {"headless": True}
+        if browser_path:
+            options["executable_path"] = browser_path
+        browser = playwright.chromium.launch(**options)
+        try:
+            for escaped in (False, True):
+                label = "escaped" if escaped else "raw"
+                with R4ComparisonFixture(escaped=escaped, request_limit=20,
+                                         rate_limit=50, wall_limit=30) as fixture:
+                    _, writer = fixture.login("writer")
+                    _, reader = fixture.login("reader-admin")
+                    body = urllib.parse.urlencode({"comment": payload}).encode("utf-8")
+                    request = urllib.request.Request(
+                        fixture.origin + "/comments", data=body, method="POST",
+                        headers={"Cookie": f"writer_session={writer}"})
+                    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+                    with opener.open(request, timeout=5) as response:
+                        submitted = response.status == 200
+                    if not submitted or fixture.stored_comments() != [payload]:
+                        rows[label] = {"status": "error", "reason": "storage-mismatch"}
+                        continue
+                    context = browser.new_context(service_workers="block")
+                    try:
+                        blocked_external: list[str] = []
+
+                        def route_loopback_only(route):
+                            target = urlsplit(route.request.url)
+                            if f"{target.scheme}://{target.netloc}" == fixture.origin:
+                                route.continue_()
+                            else:
+                                blocked_external.append(target.scheme)
+                                route.abort()
+
+                        context.route("**/*", route_loopback_only)
+                        context.add_cookies([{"name": "admin_session", "value": reader,
+                                              "url": fixture.origin, "httpOnly": True,
+                                              "sameSite": "Strict"}])
+                        page = context.new_page()
+                        check = page.goto(fixture.origin + "/session/reader-admin",
+                                          wait_until="load", timeout=5000)
+                        try:
+                            verified = check is not None and check.status == 200 and check.json() == {
+                                "principal": "reader-admin", "role": "reader-admin"}
+                        except Exception:
+                            verified = False
+                        if not verified:
+                            rows[label] = {"status": "error", "reason": "reader-role-check"}
+                            continue
+                        dialogs = []
+                        def on_dialog(dialog):
+                            dialogs.append(dialog.type)
+                            dialog.dismiss()
+                        page.on("dialog", on_dialog)
+                        read = page.goto(fixture.origin + "/admin/comments",
+                                         wait_until="load", timeout=5000)
+                        if read is None or read.status != 200:
+                            rows[label] = {"status": "error", "reason": "reader-http"}
+                            continue
+                        page.wait_for_timeout(observe_ms)
+                        rows[label] = {"status": "completed", "role_verified": True,
+                                       "dialog_observed": "alert" in dialogs,
+                                       "dialog_count": len(dialogs),
+                                       "external_http_blocked": len(blocked_external),
+                                       "request_attempts": len(fixture.state.requests),
+                                       "budget_exceeded": fixture.state.budget_exceeded}
+                    finally:
+                        context.close()
+        finally:
+            browser.close()
+    raw, escaped = rows.get("raw", {}), rows.get("escaped", {})
+    completed = all(row.get("status") == "completed" and row.get("role_verified") is True
+                    and row.get("budget_exceeded") is False for row in (raw, escaped))
+    raw_dialog = raw.get("dialog_observed") is True
+    escaped_dialog = escaped.get("dialog_observed") is True
+    outcome = ("inconclusive" if not completed else
+               "failed-negative-control" if escaped_dialog else
+               "exact-payload-replay-execution" if raw_dialog else "inconclusive")
+    return {"schema": "r4-exact-payload-replay/1", "payload_sha256": hashlib.sha256(
+                payload.encode("utf-8")).hexdigest(), "outcome": outcome,
+            "raw_dialog_observed": raw_dialog, "escaped_dialog_observed": escaped_dialog,
+            "raw": raw, "escaped": escaped,
+            "original_scanner_request_observed_in_browser": False}

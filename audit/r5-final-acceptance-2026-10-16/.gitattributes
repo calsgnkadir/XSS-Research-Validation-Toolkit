@@ -1,0 +1,3 @@
+# Preserve the bytes named by proof/acceptance.json SHA-256 values.
+* -text whitespace=cr-at-eol
+proof/fix.diff whitespace=-blank-at-eol,cr-at-eol

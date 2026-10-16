@@ -2,12 +2,23 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
-- Native R4 closure review found that none of the eight prior scanner rows
-  carries the exact CID/browser proof binding. Focused fixture/oracle tests
-  passed 48/48; comparison ranking and general R4 acceptance remain open.
-- Native R5 review matched all 16 bound local proof hashes. No new browser
-  run occurred; the independent second-person repeat remains open. These
-  review notes describe local evidence; Git delivery is tracked separately.
+- R4 technical scope closed after the exact stored-payload replay gate was
+  tightened for fail-closed outcomes and loopback-only HTTP browser requests.
+  Final Chrome suite: 57 passed; final replay: 8 rows, 6 exact candidates,
+  two Dalfox raw payloads observed in raw fixtures and no escaped execution.
+  No scanner rerun, accuracy score, TP/FP/FN or ranking is claimed. The
+  WebSocket negative-control attempt timed out and is outside R4 replay scope;
+  no general browser network sandbox is claimed.
+- R5 technical acceptance closed with a fresh Windows venv run: 5/5 controls,
+  5/5 fixture ports closed, and all proof/source/gate hashes matched. The user
+  removed independent-human repetition as a mandatory closeout condition.
+- The earlier review commit `06c4e21` is on origin/main; CI run 38879831807
+  and K01 run 38879831825 succeeded. Artifact contents for that push were not
+  downloaded. Current closure notes and code are recorded in this follow-up.
+
+- Earlier interim reviews recorded the original-session CID gap and the
+  pending second-person repeat. The final R4 replay and user-directed R5
+  technical scope decision below supersede those interim statuses.
 
 - Code/evidence commit `157a438` was pushed and remote main hash verified.
   General CI 38806623338 passed all three jobs; K01 Linux 38806623393 passed.

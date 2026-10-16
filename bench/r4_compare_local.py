@@ -13,6 +13,7 @@ import sys
 import time
 
 from r4_comparison_fixture import R4ComparisonFixture
+from r4_cid_oracle import match_reported_payloads, observe_exact_payload_replay
 from r4_scanner_sessions import check_role_boundaries, check_scanner_sessions, provision_scanner_sessions
 
 
@@ -267,11 +268,95 @@ def run_comparison(dalfox_path: Path, output: Path):
     }
 
 
+def run_proof_experiment(manifest_path: Path, output: Path, *,
+                         browser_path: str | None = None):
+    """Observe exact scanner-submitted candidates in isolated browser replays.
+
+    The source is a completed local comparator manifest. Scanner requests are
+    not rerun here. Report hashes and exact fixture storage matches are checked
+    before a browser opens; result rows omit payload and credential material.
+    """
+    if output.exists():
+        raise ValueError("proof output must be a new directory")
+    manifest_path = manifest_path.resolve()
+    source = manifest_path.parent
+    try:
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("invalid comparison manifest") from exc
+    if not isinstance(document, dict) or document.get("schema") != "r4-local-comparison/3":
+        raise ValueError("unsupported comparison manifest")
+    rows = document.get("results")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("comparison results missing")
+    prepared = []
+    for row in rows:
+        if not isinstance(row, dict) or row.get("tool") not in {"dxadyn", "dalfox"}:
+            raise ValueError("invalid comparison row")
+        if row.get("status") != "completed":
+            prepared.append((row, None, []))
+            continue
+        report_link = row.get("artifacts", {}).get("report")
+        if not isinstance(report_link, dict):
+            raise ValueError("report artifact missing")
+        relative = report_link.get("path")
+        if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
+            raise ValueError("invalid report artifact path")
+        report = (source / relative).resolve()
+        if not report.is_relative_to(source) or not report.is_file():
+            raise ValueError("report artifact outside source or missing")
+        if sha256(report) != report_link.get("sha256"):
+            raise ValueError("report artifact hash mismatch")
+        findings = _parse_findings(row["tool"], report)
+        stored = row.get("stored_payloads")
+        if (findings is None or not isinstance(stored, list)
+                or any(not isinstance(value, str) for value in stored)
+                or row.get("candidate_count") != len(findings)):
+            raise ValueError("candidate report or storage mismatch")
+        prepared.append((row, findings, match_reported_payloads(row["tool"], findings, stored)))
+    output.mkdir(parents=True, exist_ok=False)
+    results = []
+    for row, findings, matches in prepared:
+        proofs = [observe_exact_payload_replay(payload, browser_path=browser_path)
+                  for payload in matches]
+        results.append({"tool": row["tool"], "case_id": row.get("case_id"),
+                        "repetition": row.get("repetition"), "scanner_status": row.get("status"),
+                        "candidate_count": len(findings) if findings is not None else None,
+                        "exact_stored_candidate_count": len(matches),
+                        "unmatched_candidate_count": len(findings) - len(matches) if findings is not None else None,
+                        "proofs": proofs,
+                        "outcome": "candidate-payload-replay-observed" if proofs and len(proofs) == len(findings) and all(
+                            proof["outcome"] == "exact-payload-replay-execution"
+                            and proof["escaped_dialog_observed"] is False
+                            for proof in proofs) else "inconclusive"})
+    result = {"schema": "r4-candidate-payload-browser-experiment/1",
+              "source_manifest_sha256": sha256(manifest_path),
+              "comparison_source_schema": document["schema"],
+              "results": results,
+              "interpretation": {
+                  "candidate_only": True, "ranking": False,
+                  "original_scanner_submissions_replayed_exactly": True,
+                  "original_scanner_requests_observed_in_browser": False,
+                  "human_triage_performed": False,
+                  "execution_proof_scope": "isolated exact-byte candidate replay with raw and escaped reader-admin controls",
+                  "unmatched_or_nonexecuting_candidates": "inconclusive; never a true negative"}}
+    (output / "proof-experiment.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dalfox", required=True, help="path to checksum-verified Dalfox 3.2.4 binary")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--dalfox", help="path to checksum-verified Dalfox 3.2.4 binary")
+    mode.add_argument("--proof-manifest", type=Path, help="completed local comparison manifest for exact-payload replay")
     parser.add_argument("--output", required=True, type=Path, help="new R4 audit output directory")
+    parser.add_argument("--browser", help="installed local Chromium/Chrome executable for proof replay")
     args = parser.parse_args()
+    if args.proof_manifest:
+        result = run_proof_experiment(args.proof_manifest, args.output, browser_path=args.browser)
+        print(f"replay_rows={len(result['results'])} exact_candidates="
+              f"{sum(row['exact_stored_candidate_count'] for row in result['results'])}")
+        return 0
     result = run_comparison(Path(args.dalfox), args.output)
     (args.output / "comparison.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(f"selected={result['summary']['selected']} completed={result['summary']['completed']} "

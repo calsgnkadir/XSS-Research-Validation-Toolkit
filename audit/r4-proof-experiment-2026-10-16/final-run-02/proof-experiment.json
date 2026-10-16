@@ -1,0 +1,266 @@
+{
+  "schema": "r4-candidate-payload-browser-experiment/1",
+  "source_manifest_sha256": "b03aadbab9806ae93fdd6cd22359af0561cccda6b435271f0b699efc61b6ca10",
+  "comparison_source_schema": "r4-local-comparison/3",
+  "results": [
+    {
+      "tool": "dxadyn",
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "repetition": 1,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "3bc28f684bb3bf8df4536d09db018746a3eaf6a157520b953a9435b02c672cfb",
+          "outcome": "inconclusive",
+          "raw_dialog_observed": false,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "inconclusive"
+    },
+    {
+      "tool": "dalfox",
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "repetition": 1,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "7f3d89551cd5ec35a44cbb501642b7ebb8e3124ac4557eaee20ef9f8f1e939a1",
+          "outcome": "exact-payload-replay-execution",
+          "raw_dialog_observed": true,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": true,
+            "dialog_count": 1,
+            "external_http_blocked": 0,
+            "request_attempts": 6,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "candidate-payload-replay-observed"
+    },
+    {
+      "tool": "dxadyn",
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "repetition": 1,
+      "scanner_status": "completed",
+      "candidate_count": 0,
+      "exact_stored_candidate_count": 0,
+      "unmatched_candidate_count": 0,
+      "proofs": [],
+      "outcome": "inconclusive"
+    },
+    {
+      "tool": "dalfox",
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "repetition": 1,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "7f70632771fc4b786f226ae0bf6f5cd3805a8ef4266a3d2d738d95f786a26627",
+          "outcome": "inconclusive",
+          "raw_dialog_observed": false,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "inconclusive"
+    },
+    {
+      "tool": "dalfox",
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "repetition": 2,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "fc694b0df37966f64c9c222bcde29c598deeed8047481f1a2d80b65c1d4bab23",
+          "outcome": "exact-payload-replay-execution",
+          "raw_dialog_observed": true,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": true,
+            "dialog_count": 1,
+            "external_http_blocked": 0,
+            "request_attempts": 6,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "candidate-payload-replay-observed"
+    },
+    {
+      "tool": "dxadyn",
+      "case_id": "r4-admin-stored/raw-admin-content",
+      "repetition": 2,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "7197cc77dd26cacb82c42a2355e3d9fbad09711759371c5abdfdfcae835ac8af",
+          "outcome": "inconclusive",
+          "raw_dialog_observed": false,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "inconclusive"
+    },
+    {
+      "tool": "dalfox",
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "repetition": 2,
+      "scanner_status": "completed",
+      "candidate_count": 1,
+      "exact_stored_candidate_count": 1,
+      "unmatched_candidate_count": 0,
+      "proofs": [
+        {
+          "schema": "r4-exact-payload-replay/1",
+          "payload_sha256": "7f70632771fc4b786f226ae0bf6f5cd3805a8ef4266a3d2d738d95f786a26627",
+          "outcome": "inconclusive",
+          "raw_dialog_observed": false,
+          "escaped_dialog_observed": false,
+          "raw": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "escaped": {
+            "status": "completed",
+            "role_verified": true,
+            "dialog_observed": false,
+            "dialog_count": 0,
+            "external_http_blocked": 0,
+            "request_attempts": 5,
+            "budget_exceeded": false
+          },
+          "original_scanner_request_observed_in_browser": false
+        }
+      ],
+      "outcome": "inconclusive"
+    },
+    {
+      "tool": "dxadyn",
+      "case_id": "r4-admin-stored/escaped-admin-content",
+      "repetition": 2,
+      "scanner_status": "completed",
+      "candidate_count": 0,
+      "exact_stored_candidate_count": 0,
+      "unmatched_candidate_count": 0,
+      "proofs": [],
+      "outcome": "inconclusive"
+    }
+  ],
+  "interpretation": {
+    "candidate_only": true,
+    "ranking": false,
+    "original_scanner_submissions_replayed_exactly": true,
+    "original_scanner_requests_observed_in_browser": false,
+    "human_triage_performed": false,
+    "execution_proof_scope": "isolated exact-byte candidate replay with raw and escaped reader-admin controls",
+    "unmatched_or_nonexecuting_candidates": "inconclusive; never a true negative"
+  }
+}

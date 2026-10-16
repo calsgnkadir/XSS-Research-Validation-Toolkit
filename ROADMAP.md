@@ -1,8 +1,10 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-Son üç işin yeniden denetimi: R8 modül düzeyi encoder ataması karşı örneği
-düzeltildi (92 ilgili test geçti); R6 wheel temiz venv'de kaynak dizin dışından
-kuruldu; R5 ayrı agent koşusu 5/5 geçti. İkinci insan tekrarı açık.
+16 Ekim güncel durum: R4 teknik teslimi ve R5/K01 teknik kabulü tamamlandı.
+İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması kullanıcı
+kapsam kararıyla zorunlu teslim ölçütü değildir. Ayrıntı STATUS.md ve aşağıdaki
+kapanış kayıtlarındadır; sonuçlar ürün doğruluğu veya vulnerability iddiası
+oluşturmaz.
 
 14–15 Ekim devam teslimi: R3 allowlist header gözlemi ham değer tutmadan ayrı
 çıktıya bağlandı; R6 statik CLI config önceliği ve statik/dinamik JSON/HTML
@@ -11,7 +13,7 @@ birleşik paket 293/293 geçti. Genel R4/R6 ve R5 ikinci insan kabulü açık.
 Kod a0cf348 için genel CI 38637484190 3/3 ve K01 Linux 38637484214 geçti.
 [Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
 
-## 14 Ekim 2026 — güncel yetenek ve kalan işler
+## 14 Ekim 2026 — tarihli yetenek snapshot'ı
 
 **Aşama:** araştırma amaçlı Python CLI ve rapor prototipi. Paketlenmiş release
 henüz yok. R4 auth runner kodu **bec59b4**, R5/K01 aynı-host kanıt commit'i
@@ -159,8 +161,8 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R1 | 2026-10-05, [kapanış matrisi](audit/2026-10-05-r1/R1-KAPANIS.md) | Tamam; 479 passed, 36 skipped |
 | R2 | 2026-10-06, [kapanış matrisi](audit/2026-10-06-r2/R2-KAPANIS.md) | HTTP kabul kapsamı tamam; browser oturum aktarımı R3'te |
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
-| K01-min | 2026-10-05, [vaka ve 5/5 browser kontrolü](cases/k01-stored-comment/README.md) | Tamam; tam R5 bağımsız temiz ortam doğrulaması bekliyor |
-| R4 | [14 Ekim corpus v3](audit/2026-10-14-r4-corpus-v3/README.md) | 527 yerel test; 4331403 uzak CI/artifact 14/14 kabulü; auth/CSRF, blind/admin ve kontrollü kıyas açık |
+| K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
+| R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
 | C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
@@ -203,8 +205,8 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R1 Kanıt modelini düzelt | Tamam — kabul kapsamı ve sınırlar aşağıda | R0 | Resmî dataclass sözleşmesi, ortak rapor/olaylar, doğru etiketler, stored blind takip ve dedup |
 | R2 İstek/oturum güvenilirliği | Tamam — HTTP kabul kapsamı | R0; R1 şemasıyla uyumlu | JSON, hedefe özel auth-check, rate, sıralı CSRF/stored ve hata olayları |
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
-| R4 Doğru benchmark ve CI | Devam — sentetik proof scorer, Bludit lifecycle, opt-in runner ve artifact gate mevcut | Geniş corpus/coverage ve karşılaştırma metodolojisini tamamla | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact; genel R4 kriterlerinin karşılanması |
-| R5 / K01 Tekrar üretilebilir XSS vaka çalışması | Açık | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı |
+| R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
+| R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
 | R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
 
@@ -287,13 +289,28 @@ taşındı; R3 loopback kabulü bunları tamamlanmış saymaz.
 
 Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kaydedilir. Unrelated application dialog, konsol çıktısı veya random cid benzeri metin proof olamaz.
 
-## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
+## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — tamam (sınırlandırılmış teknik kapsam)
 
-16 Ekim kapanış denetimi: native Engine mevcut 8/8 tamamlanmış eşit bütçeli
-scanner koşusundaki gerçek depolanan dizeleri CID/browser oracle'sıyla
-karşılaştırdı. Hiçbir satır oracle'nın exact-CID JS proof sözleşmesini taşımıyor;
-48/48 odaklı yerel fixture/oracle testi geçti. Bu, scanner execution veya
-TP/FP/FN kanıtı değildir. Genel R4 karşılaştırması ve insan triage'ı açık.
+**16 Ekim kapanış kararı:** R4'ün teknik teslimatı tamamlandı. Sabit corpus ve
+kimlik bazlı scorer, eksik/timeout kapıları, zorunlu browser CI ve indirilen
+artifact doğrulaması, Bludit lifecycle/runner, ayrı auth kontrolleri ve exact
+scanner payload replay kapısı kanıtlandı. Son Chrome paketi 57/57 geçti; yeni
+replay 8 tarihsel satırı inceledi, altı eşleşen adayı yeniden oynattı; iki
+Dalfox raw payload raw fixture'da dialog üretti, escaped kontroller üretmedi.
+Diğer adaylar inconclusive kaldı. Kaynak run tarihsel ve broker-cookie
+kapsamındadır; yeni scanner koşusu yapılmadı. HTTP dışı browser kanalları ve
+WebSocket için genel ağ sandboxı R9 kapsamındadır; bu R4 replay'i böyle bir
+garanti vermez.
+
+Kullanıcı kararıyla bağımsız insan triage'ı ve rakip üstünlüğü R4'ün zorunlu
+kapanış ölçütü olmaktan çıkarıldı. Karşılaştırma protokolü ve geçmiş kayıtlar
+korunur; mevcut sonuçtan TP/FP/FN, doğruluk oranı, genel ürün açığı veya kazanan
+çıkarılmaz. Bunlar bu roadmap'in R4 kapanışını engellemez. [Son kabul ve sınırlar](audit/r4-proof-experiment-2026-10-16/README.md).
+
+16 Ekim ara denetiminde 8/8 tarihsel scanner satırının hiçbiri oracle'nın
+original-session CID/JS proof sözleşmesini taşımıyordu; ara test 48/48 geçti.
+Bu ara sonuç aynı tarihteki final replay ve teknik kapsam kararıyla supersede
+edildi. Ayrıntı [ara denetimde](audit/r4-closure-2026-10-16/README.md).
 [Gerekçe ve kanıt matrisi](audit/r4-closure-2026-10-16/README.md).
 
 15 October resumed delivery: corpus v4 adds comment/template negatives and
@@ -424,20 +441,26 @@ Kabul ölçütleri:
 - [x] Gerekli browser işi continue-on-error değildir; uzak JUnit sıfır skip ile gate'ten geçti (14 Ekim).
 - [x] Sabit uygulama digest'i, bootstrap/login ve endpoint'ler; disposable teardown doğrulandı (13 Ekim Bludit lifecycle kabulü). Bu, scorer entegrasyonunu veya genel R4'ü kapatmaz.
 - [x] JSON/Markdown sonuçları ve ortam/sürüm/komut bilgileri CI artifact olarak saklanır ve indirilen içerik gate'ten geçti (14 Ekim).
-- [ ] Rakip kıyaslaması ancak aynı kapsam, auth, bütçe ve insan triage'ı sağlandığında yayımlanır.
+- [x] Araç kıyasının yayın eşiği ve sonuç sınırı kaydedildi; güncel aday/replay kanıtıyla sıralama yayımlanmıyor. Kullanıcı kararıyla insan triage/üstünlük ölçümü zorunlu kapanıştan çıkarıldı; kanıtsız üstünlük iddiası yapılmayacak. [Karar](audit/r4-proof-experiment-2026-10-16/README.md).
 
 15 Ekim R4 artifact kapısı, callback sayısı/varlığı özetini nested fixture
 kanıtıyla türü dahil eşleştiriyor. Sekiz yanlış JSON/Markdown çifti önce hatayı
 üretti; dar düzeltme kabul edildi. Genel corpus/admin ve karşılaştırma açık.
 [R4 kabul eşlemesi](audit/2026-10-15-r4-acceptance/README.md).
 
-## R5 — Stajın devamı olan güçlü vaka
+## R5 — Stajın devamı olan güçlü vaka — tamam (teknik kabul)
 
-16 Ekim kapanış denetimi: native QA tarihsel yerel proof paketindeki 16 bağlı
-hashi güncel baytlarla eşleştirdi; yeni browser/CI koşusu yapmadı. Uygulama
-ve bağımsız tekrar formunda somut kusur bulunmadı. İkinci kişinin temiz ortam
-tekrarı halen açık ve ertelenmiş; genel R5 kapanışı yok.
-[Kabul matrisi](audit/r5-closure-2026-10-16/README.md).
+**16 Ekim kapanış kararı:** Yeni izole Windows venv'de K01 gate **5/5** browser
+kontrolü ve **5/5** ayrı port cleanup ile geçti; proof paketindeki 12 artifact,
+3 kaynak ve gate hash'i eşleşti. Tarihsel indirilen Linux artifact gate'i de
+5/5 proof ve 13/13 sıfır-skip test kaydı içeriyor. Farklı commit/ortamlara ait
+kanıtların provenance sınırları audit'te belirtilmiştir. Kullanıcı kararıyla
+başka bir insanın tekrarı zorunlu kapanıştan çıkarıldı; form opsiyonel tarihsel
+kayıt olarak boş saklanır. [Teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md).
+
+16 Ekim ara denetimi tarihsel proof hashlerini eşleştirdi; o sırada yeni
+browser/CI koşusu yapmamıştı. Aynı gün sonraki temiz-vnev koşusu ve teknik
+kapsam kararı bu ara notu supersede eder. [Ara kabul matrisi](audit/r5-closure-2026-10-16/README.md).
 
 15 October human handoff: [independent-repeat form](cases/k01-stored-comment/INDEPENDENT-REPEAT.md)
 is ready and explicitly unfilled. Coordinator reviewed the handoff; no new
@@ -469,7 +492,7 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 
 İlk vaka için mevcut yetkili laboratuvar veya minimal yerel fixture kullanılabilir. Teslimat: hedef sürümü, kaynak→sink izi, iki rol gerekiyorsa hesap A/B kontrolü, tam komut, maskeli request/response, cid ile proof, negatif kontrol, fix diff ve aynı testin fix sonrası sonucu.
 
-- [ ] Temiz ortamdan başka biri tekrar üretebilir.
+- [x] Temiz Windows venv ve ayrı Linux artifact gate teknik tekrarı kabul edildi; kullanıcı kararıyla bağımsız ikinci insan şartı zorunlu ölçütten çıkarıldı, boş form tarihsel/isteğe bağlı tutuldu. [Kabul ve sınır](audit/r5-final-acceptance-2026-10-16/README.md).
 - [x] K01-min için çalıştırılmayan kısım ve gözlenmeyen davranış açık yazılır.
 - [x] K01-min staj kaydı amaç, yöntem, bulgu, hata, düzeltme, öğrenilen akışını izler.
 - [x] JSON ham marker ve normal dialog false-positive karşı örnekleri; R1 çözümü ve yeni browser negatif kontrolleri belgelenir.
@@ -481,7 +504,8 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 CLI > config > defaults, strict validation and per-mode applicability. Focused
 101 tests and fresh-venv installed smoke 6/6 passed; coordinator integration
 503 passed. Counts overlap. The installed-smoke helper filename collision was
-fixed and the smoke rerun. No release tag; broader R4/R5 dependencies stay open.
+fixed and the smoke rerun. No release tag. This 15 October R6 snapshot preceded
+the 16 October technical closeout of R4/R5; release/tag work remains separate.
 [Acceptance and limits](audit/2026-10-15-r6-config-release/README.md).
 15 October release-readiness matrix: rebuilt wheel installed into fresh offline
 venvs. All CLI help/config, docs, metadata/browser-extra and packaged loopback
@@ -524,7 +548,8 @@ ve kurulu CLI/demo kanıtına dayanır; yeni test koşusu değildir. Kalıcı
 kurulu-wheel CI kontrolü ayrıca temiz venv'de 7 kontrolü ve dokuz modülün
 kaynak/wheel eşleşmesini doğruladı; değiştirilmiş wheel reddedildi.
 [Yeni kapı](audit/2026-10-15-r6-installed-ci/README.md).
-Paket 0.0.0.dev0; etiket/yayın ve genel R4/R5 bağımlılıkları açık kalır.
+Paket 0.0.0.dev0; etiket/yayın açık kalır. R4/R5 teknik kapsam kararı 16 Ekim
+kapanış kaydında güncellenmiştir.
 
 SARIF sonraki küçük teslim olabilir. Plugin API/Marketplace, ihtiyaç gösterilmeden bu sürümü geciktirmez.
 
