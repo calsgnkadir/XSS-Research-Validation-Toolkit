@@ -1,7 +1,9 @@
 # Static analysis limits (R8)
 
-`dxa.py` is a regex source/sink linter, not an AST analyzer or an execution
-validator. HIGH is a candidate with a recognized source/provenance signal.
+`dxa.py` uses regex approximations for most languages and a bounded Python AST
+pilot for a small subset of assignments; it is not a sound data-flow analyzer
+or an execution validator. HIGH is a candidate with a recognized
+source/provenance signal.
 MEDIUM, LOW or no findings do not prove safety. Static output does not establish
 HTTP reflection, a resource callback, browser execution or vulnerability impact.
 Those observations and the separate role/by-design/self-XSS triage require their
@@ -9,7 +11,10 @@ own evidence; see EVIDENCE-CONTRACT.md and BROWSER-PROOF.md.
 
 ## Supported approximations
 
-- JavaScript/TypeScript, PHP, Java and Python have bounded assignment taint.
+- JavaScript/TypeScript, PHP and Java use bounded regex assignment taint.
+  Python uses a small AST pilot for syntax-level source recognition and
+  ordinary/tuple/list assignments; its labeled two-case corpus is a regression
+  check, not an accuracy estimate.
   Raw provenance survives encoder calls, unknown `sanitize`/`clean` helpers,
   and trust markers such as `Markup`, `mark_safe` and `SafeString`.
 - Recognized HTML encoder call spans provide only an HTML-body mitigation
@@ -45,7 +50,8 @@ template or sanitizer is safe.
 
 Tests: `test_static_context.py` exercises identity/mixed encoders, trust markers,
 context changes, source versus template parameters, file/name collisions,
-template extensions and the C# boundary. `test_dxa.py` retains provenance and
-existing language/fixture coverage. Future AST work remains a separate,
-single-language pilot measured on labeled positive and negative examples;
-there is no vulnerability-count quota for clean projects.
+template extensions and the C# boundary. `test_r8_ast_pilot.py` measures one
+labeled Python positive and one negative. `test_dxa.py` retains provenance and
+existing language/fixture coverage. Broader corpus measurement and additional
+AST languages are future work; there is no vulnerability-count quota for clean
+projects.

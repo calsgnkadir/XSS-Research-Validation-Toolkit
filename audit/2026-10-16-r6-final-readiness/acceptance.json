@@ -54,7 +54,7 @@
     "installed_version": "0.1.0"
   },
   "packaged_module_sha256": {
-    "dxa": "d81b9bc05fe199672404e4be9c6dd03e0fa2328a4f6c59e9ecc1cfc5e19e144b",
+    "dxa": "c1f444d50b55e5da1c2cf2f815a7d76f6df70d5bc29ee48a1ed8196031cb7170",
     "dxadyn": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
     "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
     "dxadom": "b43677bd5c396f9bdbc6c9cb5d36dce40ebbf07ecb428594752be04c671d08c4",
@@ -64,7 +64,7 @@
     "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
     "dxa2dyn": "d7083188cde6e2672d4696b3ed2a97a17e5c2d01598943427b879b0270ac898f"
   },
-  "wheel_sha256": "75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719",
+  "wheel_sha256": "bde6f6cdba1190f2bee30e5b02499f7a4717a943a503e1686e1f73680535aba9",
   "source_sha256": {
     "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497"
   },

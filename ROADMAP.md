@@ -5,7 +5,7 @@ R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmad
 Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
-doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot işleri R8/R9;
+doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot işi R9;
 portfolyo/kanıt işleri ayrıca açıktır.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
@@ -126,7 +126,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R6, R8–R9 | R0–R5 tamam (R4/R5 teknik kapsam); R6 0.1.0 release hazırlığı tamam/yayımlanmadı; R8/R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R6, R8–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 tamam; R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -510,12 +510,14 @@ kontrol geçti, dokuz modül kaynak/wheel/kurulu kopya hashleri eşleşti.
 Release tag'i ve dış paket yayını yapılmadı; bunlar için ayrıca açık yayın
 yetkisi ve son kabul gerekir.
 
-R8 güncel kaynak denetimi: security uzmanı mevcut taint/rebinding, context,
-template ve destek sınırı regresyonlarını inceledi; koordinatör odaklı paketi
-41/41 çalıştırdı. Yeni kusur veya kod değişikliği yok.
-[R8 inceleme kaydı](audit/2026-10-16-r8-current-review/README.md). Tek dilli
-AST pilotu ve etiketli pozitif/negatif corpus ölçümü açık kalır; R8 kapanmış
-sayılmaz.
+R8 güncel kaynak denetimi mevcut taint/rebinding, context, template ve destek
+sınırlarını doğruladı. Ardından Python-only AST pilotu eklendi: tuple-unpack
+pozitifi ve string içindeki sahte source negatifi önce kırmızıydı; final iki
+vaka corpus'u TP/FP/FN/TN **1/0/0/1** ölçtü. Ara entegrasyon testlerindeki
+context ve cross-file gerilemeleri düzeltildi. Son focused R8 **95/95**, R6 ile
+birleşik **210/210** geçti. R8 roadmap kriterleri dar ve belgelenmiş scope'ta
+tamamlandı; genel soundness, geniş doğruluk oranı veya diğer dillere AST iddiası
+yok. [R8 kapanış kaydı](audit/2026-10-16-r8-current-review/README.md).
 
 15 October resumed delivery: dynamic config supports depth/parallel/rate with
 CLI > config > defaults, strict validation and per-mode applicability. Focused
@@ -587,18 +589,18 @@ Genel subdomain/dizin brute-force motoru, IoT genişlemesi, daha çok mutation s
 
 Kod + yanlış davranışı yakalayan test + ilgili fixture sonucu + kısa sürüm notu + STATUS güncellemesi. Yeşil test sayısı artışı zorunlu hedef değildir; doğru beklenti ve kapsama anlamı esastır. Süre tahmini yerine bir sonraki küçük teslim ve kabul koşulu takip edilir.
 
-## R8 — Statik analiz ve fixture doğruluğu (bot; açık)
+## R8 — Statik analiz ve fixture doğruluğu (bot; tamam, sınırlı kapsam)
 
 Açık encoder adı identity fonksiyonuna yeniden atanınca taint'in kaybolması
 dar kapsamda düzeltildi; önce/sonra ve gerçek encoder karşı örnekleriyle
 91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı.
-Dinamik alias/branch ve genel AST ölçümü açık.
+Dinamik alias/branch çözümlemesi sınırlı destek dışı olarak belgelenmiştir.
 [Dar R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
 
-16 Ekim güncel kaynak incelemesinde yeni karşı örnek bulunmadı; focused R8
-paketi 41/41 geçti. Mevcut regex yaklaşımının alias/import/branch sınırları
-korunur; tek dil AST pilotu ve etiketli pozitif/negatif corpus ölçümü hâlâ
-açık. [Güncel inceleme](audit/2026-10-16-r8-current-review/README.md).
+16 Ekim: sınırlı Python AST pilotu ve etiketli iki-vaka corpus kabul edildi;
+R8 odaklı 95 test, R6 ile birleşik 210 test geçti. Geniş alias/import/branch
+çözümlemesi ve başka dillerde AST bu teslimin kapsamı değildir. Güncel
+[kapanış kaydı](audit/2026-10-16-r8-current-review/README.md).
 
 
 Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
@@ -606,15 +608,15 @@ Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.
 9 Ekim dar teslim aşağıdaki ilk altı maddenin context/provenance, fixture ve
 belgeleme alanlarını test etti; [kabul](audit/2026-10-09-resume/README.md) ve
 [regex sınırları](tools/dom-xss-analyzer/STATIC-LIMITS.md) geçerlidir. Birleşik
-R8 kapanışı ve AST ölçümü yapılmış sayılmaz; kutuların kapsamı daraltılmaz.
+Bu 9 Ekim kaydı tarihsel ve dar teslimi anlatır; 16 Ekim kapanış matrisi aşağıdadır.
 
-- [ ] `sanitize(q) + q` ve identity sanitizer taint'i yok etmez; mevcut hard-clear test oracle'ı düzeltilir.
-- [ ] Sanitizer bağlamı ve temizlenen alt ifade değerlendirilir; Markup/SafeString benzeri güven işaretleyicileri encoder sanılmaz.
-- [ ] Dosyalar arası isim/kapsam çakışması negatif fixture'ı vardır; regex destek sınırı yazılır.
-- [ ] .html/.twig/.jinja/.vue kapsamı gerçekte desteklenen dosyalarla test edilir; JSP'ye gizlenmiş template testi yeterli sayılmaz.
-- [ ] C# sink tespiti ile taint desteği ayrı belgelenir; dil desteği tek sayı ile eşitmiş gibi sunulmaz.
-- [ ] `safe.py` template kaynağına girdi birleştirmez; template parametresi kullanır; SSTI ve XSS ayrı test beklentileridir.
-- [ ] AST sonraki genişlemede tek dil ile başlar; pozitif/negatif etiketli corpus üzerinde ölçülür; temiz projede açık bulma kotası yoktur.
+- [x] `sanitize(q) + q` ve identity sanitizer taint'i yok etmez; mevcut hard-clear test oracle'ı düzeltilir.
+- [x] Sanitizer bağlamı ve temizlenen alt ifade değerlendirilir; Markup/SafeString benzeri güven işaretleyicileri encoder sanılmaz.
+- [x] Dosyalar arası isim/kapsam çakışması negatif fixture'ı vardır; regex destek sınırı yazılır.
+- [x] .html/.twig/.jinja/.vue kapsamı gerçekte desteklenen dosyalarla test edilir; JSP'ye gizlenmiş template testi yeterli sayılmaz.
+- [x] C# sink tespiti ile taint desteği ayrı belgelenir; dil desteği tek sayı ile eşitmiş gibi sunulmaz.
+- [x] `safe.py` template kaynağına girdi birleştirmez; template parametresi kullanır; SSTI ve XSS ayrı test beklentileridir.
+- [x] Python AST pilotu tek dille başlar; pozitif/negatif etiketli corpus üzerinde ölçülür; temiz projede açık bulma kotası yoktur.
 
 ## R9 — Operasyon, kapsam ve tekrar üretim (bot; açık)
 

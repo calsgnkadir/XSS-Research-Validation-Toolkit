@@ -92,16 +92,30 @@ has not run with this follow-up.
 
 ## Coordinator verification of the metadata follow-up
 
-Run date: 2026-10-16, Windows / Python 3.10.11. The coordinator built the
-selected `0.1.0` wheel from the current working tree in `%TEMP%`, installed it
-offline into a fresh venv, and ran the full checker from that venv. The updated
-gate passed **7/7** checks, including `dxa-research-toolkit` metadata and
-matching installed version `0.1.0`. All nine module hashes matched source,
-wheel, and installed copies. Wheel SHA-256:
-`75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719`;
-the refreshed [acceptance.json](acceptance.json) binds the result.
+Run date: 2026-10-16, Windows / Python 3.10.11. After the R8 Python AST pilot
+was integrated, the coordinator rebuilt the selected `0.1.0` wheel from the
+current working tree in `%TEMP%`, installed it offline into a fresh venv, and
+ran the full checker from that venv. The updated gate passed **7/7** checks,
+including `dxa-research-toolkit` metadata and matching installed version
+`0.1.0`. All nine module hashes matched current source, wheel, and installed
+copies. Wheel SHA-256:
+`bde6f6cdba1190f2bee30e5b02499f7a4717a943a503e1686e1f73680535aba9`;
+the refreshed [acceptance.json](acceptance.json) binds this final result.
 
 The run used only an offline temporary venv; no global package install was
 performed for this rerun. It is local Windows evidence, not hosted CI. The
 version and release-specific changelog are prepared, but the wheel was not
 tagged or published.
+
+## Hosted verification for R6 delivery
+
+Commit `401e6bf6848a95986ba26eccd51127600712a4b3` was pushed to `origin/main`
+and the remote branch hash matched. General CI run
+[38894634586](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38894634586)
+completed with all three jobs successful. The `dom-xss-analyzer tests` job
+includes the new synthetic wheel metadata regressions; the required browser
+proof job and opt-in browser job also succeeded. K01 Linux run
+[38894634507](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38894634507)
+completed successfully. These are workflow results; downloaded artifact
+contents were not independently inspected. No PyPI publication or Git release
+tag was made.

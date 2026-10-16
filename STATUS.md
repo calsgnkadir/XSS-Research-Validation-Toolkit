@@ -2,20 +2,23 @@
 
 ## R6 / R8 devamı — 16 Ekim 2026
 
-R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü seçildi; sürüme özel
-changelog hazırlandı. Wheel geçici temiz Windows venv'e offline kuruldu; yeni
-metadata/entry-point kapısı dahil installed CLI **7/7**, dokuz modül hash'i
-kaynak/wheel/kurulu kopyada eşleşti. R6 metadata/config ve R8 statik
-regresyonları birlikte **156/156** geçti; R8 alt kümesi 41/41. Güncel kanıt
-[R6](audit/2026-10-16-r6-final-readiness/README.md) ve
-[R8](audit/2026-10-16-r8-current-review/README.md) kayıtlarında. Bu çalışma
-henüz commit/push/hosted CI görmedi; release tag'i veya dış paket yayını yok.
+R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü ve changelog
+hazırlandı. Kurulu-wheel gate **7/7** geçti; dokuz modülün hashleri eşleşti.
+R6 teslim commit'i
+`401e6bf6848a95986ba26eccd51127600712a4b3` `origin/main` ile eşleşti; genel CI
+`38894634586` üç job'da, K01 Linux `38894634507` başarılı. Artifact içerikleri
+indirilip doğrulanmadı. Bu commit'ten sonraki R8 kodu yeni wheel ve CI kapısında
+yeniden sınanıyor. R6 yayını için tag/PyPI işlemi yapılmadı.
 
-R6 teknik hazırlığı tamamlandı; yayın ayrıca yetki gerektirir. R8 açık kalır:
-tek dilli AST pilotu ve etiketli pozitif/negatif corpus ölçümü yapılmadı.
-R8 uzmanı yeni, yeniden üretilebilir kusur bulmadı; bu kapsam inceleme sonucu,
-genel analiz doğruluğu iddiası değildir. Sıradaki teknik iş R8 AST pilotunu
-küçük bir pozitif/negatif fixture corpusuyla ölçmek; ardından R9 kapsamıdır.
+R8 kapsamı tamamlandı: Python AST pilotu tuple/list atama taint'ini izliyor ve
+quoted source metnini kaynak sanmıyor. Labeled corpus TP/FP/FN/TN **1/0/0/1**;
+odaklı paket **95/95**, R6 ile birleşik **210/210**. Mevcut alias/import,
+interprocedural, class/closure ve path-sensitive branch sınırları belgeli ve
+bu dar kabulün dışındadır. Bu genel analiz soundness veya ürün doğruluk iddiası
+değildir. R8 sonrası yeniden üretilen `0.1.0` wheel'i de temiz venv'de 7/7
+kurulu-paket gate'ini geçti; final digest ve modül hashleri R6 audit'indedir.
+Bu AST teslimi için commit/hosted CI henüz yok. Sıradaki bot işi R9 operasyon/scope
+maddeleridir.
 
 ## R4/R5 kapanışı — 16 Ekim 2026
 
@@ -416,8 +419,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 - WebSocket/genel ağ sandboxı ile diğer operasyon sınırları R9 kapsamındadır;
   R4/R5 kapanışı bunları çözülmüş saymaz. CI job başarısı ve artifact içeriği
   doğrulaması ayrı tutulur.
-- R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
-  birleşik kabul işleri açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
+- R8 tamamlandı: dar Python AST pilotu ve regression corpus kabulü yukarıdadır.
+  R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer birleşik kabul işleri
+  açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
 - R6 `0.1.0` sürüm ve release-specific changelog hazırlığı, 7/7 wheel gate'iyle
   tamamlandı; hosted CI henüz bu working-tree değişikliklerini çalıştırmadı.
   Release tag'i/paketi yayımlanmadı.

@@ -13,6 +13,10 @@
   R8 regex kapsamı, R9 ağ/operasyon sınırları ve genel scanner doğruluğu bu
   sürümün iddiası değildir. XSS sonuçları aday veya sınırlı lab kanıtı olarak
   kalır; genel ürün doğruluğu/başarılı CVE iddiası yoktur.
+- R8 adds a bounded Python AST pilot for syntax-level sources and ordinary or
+  tuple/list assignment flow. A tiny labeled positive/negative corpus catches
+  one prior false negative and one false positive; this is not an accuracy
+  benchmark or a sound-analysis claim.
 - Bu kayıt release hazırlığıdır; tag veya paket yayını yapılmadı.
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up

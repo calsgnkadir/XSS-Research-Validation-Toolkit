@@ -64,14 +64,24 @@ Result: **156 passed**, zero failures/errors/skips (R8 subset 41). The selected
 `0.1.0` wheel was rebuilt, installed offline in a fresh temporary venv, and the
 full installed CLI gate passed **7/7**; all nine module hashes matched source,
 wheel and installation. Wheel SHA-256:
-`75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719`.
+`bde6f6cdba1190f2bee30e5b02499f7a4717a943a503e1686e1f73680535aba9` (rebuilt
+again after the R8 AST pilot; updated module hashes are in acceptance.json).
 The JSON acceptance is [here](audit/2026-10-16-r6-final-readiness/acceptance.json).
-This is local Windows evidence; hosted CI has not yet run on these working-tree
-changes. The wheel is not tagged or published.
+This is local Windows evidence. Commit `401e6bf6848a95986ba26eccd51127600712a4b3`
+was pushed and its remote hash verified. General CI
+[38894634586](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38894634586)
+and K01 Linux
+[38894634507](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38894634507)
+completed successfully. These are workflow/job results; artifact contents were
+not independently downloaded. The wheel is not tagged or published.
 
-R8 source/test review found no new reproducible issue; the AST pilot and labeled
-positive/negative corpus measurement remain open. See
-[R8 review](audit/2026-10-16-r8-current-review/README.md).
+R8 then implemented the planned Python-only AST pilot. The two-case corpus
+first failed on a tuple-unpack positive and quoted-source negative; final
+TP/FP/FN/TN was **1/0/0/1**. An intermediate integration run exposed context
+and cross-file regressions, which were fixed before the final focused
+**95/95** and combined R6/R8 **210/210** runs. This closes the bounded R8
+roadmap criteria only; general soundness and broader accuracy are not claimed.
+See [R8 review](audit/2026-10-16-r8-current-review/README.md).
 
 ## 16 October final R4/R5 technical closeout
 

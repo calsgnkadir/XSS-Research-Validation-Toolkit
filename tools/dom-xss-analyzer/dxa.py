@@ -28,6 +28,7 @@ Exit code is non-zero when findings are reported, so it can gate a CI pipeline.
 """
 
 import argparse
+import ast
 import dxa_evidence as evidence
 import html
 import json
@@ -704,6 +705,164 @@ def _lang_for(path):
     return "cs", CS_SINKS, CS_SOURCES, ASSIGN, False
 
 
+def _python_ast_analysis(source):
+    """Return bounded Python taint snapshots and syntax-level sources.
+
+    This is a single-language pilot, not a sound data-flow analysis. It handles
+    ordinary assignments (including matching tuple/list unpacking) in lexical
+    statement order. Conditional bodies are merged monotonically; aliases,
+    interprocedural flow, class/closure scopes and dynamic imports are not
+    resolved. Invalid Python returns None so the legacy heuristic remains the
+    fallback.
+    """
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError, TypeError):
+        return None
+
+    source_lines = {}
+
+    def source_names_in(node, text):
+        found = set()
+        for child in ast.walk(node):
+            # Inspect the syntactic receiver/callee only. Looking at an outer
+            # call's full source text would mistake a quoted example for input.
+            if isinstance(child, ast.Call):
+                segment = ast.get_source_segment(text, child.func)
+                if segment:
+                    found.update(source_hits(segment + "(", PY_SOURCES, False))
+            elif isinstance(child, (ast.Subscript, ast.Attribute)):
+                segment = ast.get_source_segment(text, child)
+                if segment:
+                    found.update(source_hits(segment, PY_SOURCES, False))
+        return found
+
+    def source_names(node):
+        return source_names_in(node, source)
+
+    for node in ast.walk(tree):
+        found = set()
+        if isinstance(node, ast.Call):
+            segment = ast.get_source_segment(source, node.func)
+            if segment:
+                found.update(source_hits(segment + "(", PY_SOURCES, False))
+        elif isinstance(node, (ast.Subscript, ast.Attribute)):
+            segment = ast.get_source_segment(source, node)
+            if segment:
+                found.update(source_hits(segment, PY_SOURCES, False))
+        if found:
+            source_lines.setdefault(node.lineno, set()).update(found)
+
+    raw_at_line = {}
+    html_at_line = {}
+    rebound_at_line = {}
+    tainted = set()
+    html_tainted = set()
+    source_lines_text = source.splitlines()
+
+    def expr_tainted(node, names):
+        if source_names(node):
+            return True
+        return any(isinstance(item, ast.Name) and isinstance(item.ctx, ast.Load)
+                   and item.id in names for item in ast.walk(node))
+
+    def bind(target, value, raw_value, html_value, rebound_names):
+        if isinstance(target, (ast.Tuple, ast.List)):
+            if isinstance(value, (ast.Tuple, ast.List)) and len(target.elts) == len(value.elts):
+                for lhs, rhs in zip(target.elts, value.elts):
+                    bind(lhs, rhs, expr_tainted(rhs, tainted),
+                         expr_tainted_text(rhs, html_tainted, tainted, rebound_names), rebound_names)
+                return
+            for lhs in target.elts:
+                bind(lhs, value, raw_value, html_value, rebound_names)
+            return
+        if isinstance(target, ast.Name):
+            # Taint is monotonic, matching the existing conservative behavior.
+            if raw_value:
+                tainted.add(target.id)
+            if html_value:
+                html_tainted.add(target.id)
+
+    def expr_tainted_text(node, names, raw_names, rebound_names):
+        segment = ast.get_source_segment(source, node) or ""
+        if _ambiguous_html_context(segment):
+            return expr_tainted(node, raw_names)
+        residual = _html_residual(segment, rebound_names)
+        try:
+            residual_ast = ast.parse(residual, mode="eval")
+        except SyntaxError:
+            return expr_tainted(node, names)
+        if source_names_in(residual_ast, residual):
+            return True
+        return any(isinstance(item, ast.Name) and isinstance(item.ctx, ast.Load)
+                   and item.id in names for item in ast.walk(residual_ast))
+
+    def visit_statements(statements, inherited_rebound=None):
+        local_rebound = set(inherited_rebound or ())
+        for statement in statements:
+            start = getattr(statement, "lineno", 1)
+            end = getattr(statement, "end_lineno", start)
+            for line in range(start, end + 1):
+                if 1 <= line <= len(source_lines_text):
+                    binding = _HTML_ENCODER_REBIND.match(source_lines_text[line - 1])
+                    if binding:
+                        local_rebound.add(binding.group(1))
+            for line in range(start, end + 1):
+                raw_at_line[line] = set(tainted)
+                html_at_line[line] = set(html_tainted)
+                rebound_at_line[line] = set(local_rebound)
+
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                # Function bodies are independent scopes. Nested definitions
+                # are intentionally not traversed by this pilot.
+                saved_raw, saved_html = tainted.copy(), html_tainted.copy()
+                tainted.clear()
+                html_tainted.clear()
+                visit_statements(statement.body, local_rebound)
+                tainted.clear(); tainted.update(saved_raw)
+                html_tainted.clear(); html_tainted.update(saved_html)
+                continue
+            if isinstance(statement, (ast.ClassDef,)):
+                continue
+
+            value = None
+            targets = []
+            if isinstance(statement, ast.Assign):
+                value, targets = statement.value, statement.targets
+            elif isinstance(statement, ast.AnnAssign) and statement.value is not None:
+                value, targets = statement.value, [statement.target]
+            elif isinstance(statement, ast.NamedExpr):
+                value, targets = statement.value, [statement.target]
+            elif isinstance(statement, ast.AugAssign):
+                value, targets = statement.value, [statement.target]
+                if isinstance(statement.target, ast.Name) and statement.target.id in tainted:
+                    tainted.add(statement.target.id)
+                    html_tainted.add(statement.target.id)
+
+            if value is not None:
+                raw_value = expr_tainted(value, tainted)
+                html_value = expr_tainted_text(value, html_tainted, tainted, local_rebound)
+                for target in targets:
+                    bind(target, value, raw_value, html_value, local_rebound)
+
+            # Merge control-flow blocks into a conservative monotonic view.
+            # This deliberately makes no claim about branch feasibility.
+            child_blocks = []
+            if isinstance(statement, (ast.If, ast.For, ast.AsyncFor, ast.While)):
+                child_blocks.extend((statement.body, statement.orelse))
+            elif isinstance(statement, (ast.With, ast.AsyncWith)):
+                child_blocks.append(statement.body)
+            elif isinstance(statement, (ast.Try,)):
+                child_blocks.extend([statement.body, statement.orelse, statement.finalbody])
+                child_blocks.extend(handler.body for handler in statement.handlers)
+            for block in child_blocks:
+                visit_statements(block, local_rebound)
+
+    visit_statements(tree.body)
+    return {"raw": raw_at_line, "html": html_at_line,
+            "sources": source_lines, "rebound": rebound_at_line}
+
+
 def scan_file(path, cross_file_funcs=None):
     """Scan a single file for XSS-family sinks. Phase 0.4: optional
     `cross_file_funcs` set is passed through to compute_taint AND used to
@@ -715,12 +874,14 @@ def scan_file(path, cross_file_funcs=None):
 
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as fh:
-            lines = fh.read().split("\n")
+            source_text = fh.read()
+            lines = source_text.split("\n")
     except OSError as exc:
         REPORT_EVENTS.append(evidence.ReportEvent("static-read", "error", type(exc).__name__, str(path)))
         return []
 
     msg_active = lang == "js" and bool(MSG_LISTENER.search("\n".join(lines)))
+    python_ast = _python_ast_analysis(source_text) if lang == "py" else None
     # Java/C# statements often span lines (ternaries, long argument lists,
     # generic types); join by `;` before taint so multi-line sanitize()
     # wraps are visible. JS/PHP/Python usually single-line - default OK.
@@ -757,12 +918,23 @@ def scan_file(path, cross_file_funcs=None):
             srcs = source_hits(evaluated, sources, msg_active)
             tvars = sorted(v for v in (html_tainted if html_body else tainted)
                            if re.search(r'(?<!\w)' + re.escape(v) + r'\b', evaluated))
-            # Phase 0.4: cross-file call directly on the sink line - upgrade
-            # confidence too. E.g. `res.send(getUserInput())` where
-            # getUserInput lives in util.js and returns req.query raw.
+            legacy_tvars = tvars
+            # Python AST does not resolve the separate sibling-import provider map.
             xfunc_hits = ([fname for fname in xfuncs
                           if re.search(r'(?<!\w)' + re.escape(fname) + r'\s*\(', evaluated)]
                           if xfunc_call_re and xfunc_call_re.search(line) else [])
+            if python_ast is not None:
+                srcs = sorted(python_ast["sources"].get(lineno, set()))
+                ast_names = (python_ast["html"] if html_body else python_ast["raw"]).get(lineno, set())
+                tvars = sorted({
+                    name for name in ast_names
+                    if re.search(r'(?<!\w)' + re.escape(name) + r'\b', evaluated)
+                })
+                if xfuncs:
+                    tvars = sorted(set(tvars) | set(legacy_tvars))
+            # Phase 0.4: cross-file call directly on the sink line - upgrade
+            # confidence too. E.g. `res.send(getUserInput())` where
+            # getUserInput lives in util.js and returns req.query raw.
             if srcs or tvars or xfunc_hits:
                 confidence = "high"
             elif dynamic.search(line.split("//", 1)[0]):
