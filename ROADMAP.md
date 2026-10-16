@@ -510,6 +510,15 @@ kontrol geçti, dokuz modül kaynak/wheel/kurulu kopya hashleri eşleşti.
 Release tag'i ve dış paket yayını yapılmadı; bunlar için ayrıca açık yayın
 yetkisi ve son kabul gerekir.
 
+16 Ekim son kaynak tekrarında, R9 çalışma ağacındaki dokuz modülle `0.1.0`
+wheel yeniden üretildi; temiz geçici venv kurulum/CLI kapısı **7/7** geçti,
+source/wheel/install modül hashleri eşleşti. Paketlenmiş loopback demo
+`execution-observed` verdi, triage `unreviewed` kaldı. Wheel SHA-256
+`d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad`.
+Teknik R6 satırları bu test edilen aday için tamam; yayın satırı açık ve ayrı
+yetki bekliyor. Bu yerel R9 değişiklikleri commit/push veya yeni hosted CI
+değildir. [Birleşik R6/R9 audit kaydı](audit/2026-10-16-r6-r9-final-source/README.md).
+
 R8 güncel kaynak denetimi mevcut taint/rebinding, context, template ve destek
 sınırlarını doğruladı. Ardından Python-only AST pilotu eklendi: tuple-unpack
 pozitifi ve string içindeki sahte source negatifi önce kırmızıydı; final iki
@@ -632,18 +641,25 @@ scheme/host/port sınırı iki loopback origin ile doğrulandı. Cookie jar koru
 Genel auth/flow/stored/browser/callback, DNS/proxy ve WebSocket kapsamı bu
 teslimle kapanmaz; aşağıdaki birleşik kabul maddeleri açık kalır.
 
-- [ ] Callback kayıt erişimi, CORS, istek boyutu, limit doğrulaması, proxy başlığı güveni ve SQLite hata görünürlüğü için yerel/dışa açık çalışma sınırı tanımlanır ve test edilir.
-- [ ] Auth/CSRF/cookie/API key konsol ve raporda maskelenir; callback kanıtı gizli veri toplamadan çalışır.
-- [ ] WebSocket ve diğer browser dışı ağ kanalları için kapsam kararı, açıkça izin verilen loopback sınırı ve başarısız denemenin rapor biçimi belirlenir; Playwright kapanışını kilitleyen filtre kabul testi sayılmaz.
-- [ ] HTTP dışı ağ sandboxı gerekiyorsa ayrı izole adapter ile doğrulanır; genel ağ filtresi loopback kanıtının yerine geçirilmez.
-- [ ] Aynı-origin/kapsam ve redirect sınırı belirtilir; desteklenmeyen CLI birleşimleri URL yokken de doğru hata verir.
-- [ ] Variant adıyla context kararı, ilk cid/çoklu reflection, yorum/textarea/style bağlamı ve marker kesilmesi için testler vardır.
-- [ ] Mutation tekrarları/no-op dönüşümleri raporlanır; URL/entity decode zinciri browser fixture'ıyla ölçülür, sayı doyum kanıtı sayılmaz.
-- [ ] Stored auto keşfinde çoklu canary ve seed sınırları ölçülür; elle sağlanan hedef ile otonom keşif ayrılır.
-- [ ] Docker readiness daemon ve uygulama seviyesinde ayrılır; bootstrap/login/lesson ve own-hardened adapter'ı olmadan hedef hazır sayılmaz.
-- [ ] Compose portları yerel arayüzle sınırlı, sürümler sabit; `down -v` veri etkisi açık ve kontrollüdür.
-- [ ] Self-scan beklenen finding exit kodu ile crash'i ayırır; browser skip ve bench FP/error CI tarafından denetlenir.
+- [x] Callback kayıt erişimi, CORS, istek boyutu, limit doğrulaması, proxy başlığı güveni ve SQLite hata görünürlüğü için yerel/dışa açık çalışma sınırı tanımlanır ve test edilir. Bu kabul loopback/temp DB sınırındadır; reverse-proxy/DNS deployment testi değildir.
+- [x] Auth/CSRF/cookie/API key konsol ve raporda maskelenir; callback kanıtı gizli veri toplamadan çalışır. Bilinen etiketli credential literal'ları CLI'da maskeli; paylaşım JSON'u ham kaynak yerine fingerprint taşır. Keyfi serbest metin ve özel etiketler garanti kapsamında değildir.
+- [x] WebSocket ve diğer browser dışı ağ kanalları için kapsam kararı, açıkça izin verilen loopback sınırı ve başarısız denemenin rapor biçimi belirlenir; Playwright kapanışını kilitleyen filtre kabul testi sayılmaz. WebSocket kapalı/raporlu; WebRTC, WebTransport, DNS ve process kanalları garanti dışı.
+- [x] R9 browser sözleşmesi HTTP dışı ağ sandboxı vaat etmez; bu kapsam için ayrı adapter gerekmiyor. WebSocket kapalı/raporlu; WebRTC, WebTransport, DNS ve process kanalları desteklenmiyor ve genel ağ sandboxı iddiası yok.
+- [x] Aynı-origin/kapsam ve redirect sınırı belirtilir; desteklenmeyen CLI birleşimleri URL yokken de doğru hata verir.
+- [x] Variant adıyla context kararı, ilk cid/çoklu reflection, yorum/textarea/style bağlamı ve marker kesilmesi için testler vardır. Context etiketi yalnız metadata'dır; severity `html-reflection`, evidence `reflection` kalır. `test_dxadyn.py` + `test_http_evidence.py` 194/194 geçti.
+- [x] Mutation tekrarları/no-op dönüşümleri raporlanır; URL/entity decode zinciri browser fixture'ıyla ölçülür, sayı doyum kanıtı sayılmaz.
+- [x] Stored auto keşfinde çoklu canary ve seed sınırları ölçülür; elle sağlanan hedef ile otonom keşif ayrılır.
+- [x] Docker readiness daemon ve uygulama seviyesinde ayrılır; bootstrap/login/lesson ve own-hardened adapter'ı olmadan hedef hazır sayılmaz.
+- [x] Compose portları yerel arayüzle sınırlı, sürümler sabit; `down -v` veri etkisi açık ve kontrollüdür.
+- [x] Self-scan beklenen finding exit kodu ile crash'i ayırır; browser skip ve bench FP/error CI tarafından denetlenir.
 - [ ] Paket/runtime sürümü, komut, ortam ve kaynak provenance kayıtlıdır; commit/push iddiası yalnız gerçek Git kontrolüyle yapılır.
+
+16 Ekim R9 yerel devamı yukarıdaki kapalı dilimleri doğruladı: mutation ve
+stored-auto fixture'ları, callback'in loopback çalışma sınırı, loopback/redirect/
+WebSocket DOM sınırı, compose statik kapıları ve self-scan/CI oracle'ı.
+**R9 bütünü açık**: temiz tam DOM browser suite ve son Git provenance teslimi hâlâ
+kapanış incelemesi bekliyor. Tam suite'teki aralıklı hatalar ve yerel kanıt
+sınırları [audit kaydında](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
 

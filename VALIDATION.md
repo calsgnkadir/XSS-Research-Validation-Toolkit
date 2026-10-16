@@ -47,6 +47,56 @@ cached `wheel==0.48.0` install into system Python are recorded in the
 tag or publication was made in this initial run; the later selected `0.1.0`
 candidate and final wheel check are recorded below.
 
+## R6 final 0.1.0 wheel and R9 local continuation — 2026-10-16
+
+The final R9 working-tree sources were built into the selected `0.1.0` wheel,
+installed offline into a fresh temporary Windows/Python 3.10.11 venv, and
+checked from outside the repository. The installed-wheel gate passed **7/7**;
+all nine packaged module hashes matched source, wheel, and installation. Wheel
+SHA-256: `d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad`.
+The packaged `dxaprove --demo` returned `execution-observed` on its built-in
+single-origin loopback fixture; triage remains `unreviewed`, so this is not a
+vulnerability confirmation. The wheel recheck used Playwright 1.63.0 and
+Chrome 155.0.8059.82 from the preinstalled environment; no package download
+occurred. Full hashes and limits:
+[final-source audit](audit/2026-10-16-r6-r9-final-source/README.md).
+
+R9 coordinator reruns on local Windows/Python 3.10.11:
+
+```powershell
+py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadyn.py -q -p no:cacheprovider --tb=short
+py -3.10 -m pytest tools/dom-xss-analyzer/test_dxa_callback.py tools/dom-xss-analyzer/test_callback_boundaries.py tools/dom-xss-analyzer/test_blind_journal.py -q -p no:cacheprovider --tb=short
+py -3.10 -m pytest bench/test_target_compose_safety.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py -q -p no:cacheprovider --tb=short
+$env:DXA_BROWSER='C:\Program Files\Google\Chrome\Application\chrome.exe'; $env:DXA_REQUIRE_BROWSER='1'; py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadom.py -q -p no:cacheprovider --tb=short
+```
+
+Results: dynamic **182 passed** after the context matrix change; the combined
+`test_dxadyn.py` + `test_http_evidence.py` set passed **194/194**. The context
+tests retain `html-reflection` / `reflection` evidence and do not claim execution.
+The malformed `dxadyn --header` warning no longer echoes supplied values.
+Credential-labeled literals in `dxa.py --json` and terminal source snippets are
+masked at presentation time; common `--json-out` omits source and retains its
+fingerprint. `test_dxa.py` + `test_dxa2dyn.py` passed **58/58**, including
+parameter-hint compatibility. Arbitrary free text and custom credential field
+names are outside the masking guarantee.
+Callback/journal **103 passed** (the narrower
+callback boundary suite independently passed **82**), CI/compose **133 passed**,
+report privacy **23 passed**, and the five targeted DOM redirect/WebSocket plus
+historical dialog/XHR regressions **5 passed**. Callback evidence uses loopback
+and temporary/in-memory SQLite, not a production reverse proxy or external
+network. The complete DOM suite did not produce a clean run: three earlier
+attempts were **77/80**, **79/80**, and **78/80**. A further isolated full suite
+passed **70/80** in 270.63 seconds: 10 failures included page-error/sink/dialog
+observations and two `goto` 15-second timeouts; most corresponding fixture
+servers reported `ConnectionAbortedError`. The two latest previously failing
+tests (`test_dialog_prompt_captured`, `test_mixed_page_captures_both_runtime_and_static`)
+passed together **2/2** focused. Keep the full-suite gate open while route and
+session lifecycle are investigated. The first
+dynamic full-suite attempt also had a jitter-bound failure under concurrent
+test load; its isolated rerun passed before the context-matrix change. No hosted CI was run for this
+dirty working-tree snapshot, and the earlier R6/R8 CI records do not apply to
+these R9 edits. Full evidence and source hashes are linked above.
+
 ## R6 0.1.0 release-candidate gate and R8 current review — 2026-10-16
 
 The installed-wheel gate was strengthened after review found that it checked

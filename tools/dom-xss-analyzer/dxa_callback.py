@@ -87,7 +87,7 @@ class CallbackDB:
     module-level lock guarding writes."""
 
     _SCHEMA = """
-    CREATE TABLE IF NOT EXISTS hits (
+    CREATE TABLE hits (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
         cid          TEXT NOT NULL,
         ts           REAL NOT NULL,
@@ -98,23 +98,70 @@ class CallbackDB:
         referer      TEXT,
         body_preview TEXT
     );
-    CREATE INDEX IF NOT EXISTS idx_cid ON hits(cid);
-    CREATE INDEX IF NOT EXISTS idx_ts ON hits(ts);
+    CREATE INDEX idx_cid ON hits(cid);
+    CREATE INDEX idx_ts ON hits(ts);
     """
 
-    def __init__(self, path: str = ":memory:"):
-        self.path = path
-        if path != ":memory:":
-            pathlib.Path(path).expanduser().parent.mkdir(
-                parents=True, exist_ok=True)
-        # check_same_thread=False lets the handler-thread pool share this
-        # connection; we serialise writes via _lock.
-        self._conn = sqlite3.connect(
-            str(pathlib.Path(path).expanduser()) if path != ":memory:" else ":memory:",
-            check_same_thread=False, isolation_level=None,
+    _REQUIRED_COLUMNS = {
+        "id", "cid", "ts", "method", "path", "user_agent",
+        "remote_ip", "referer", "body_preview",
+    }
+
+    @classmethod
+    def _validate_existing(cls, conn):
+        version = conn.execute("PRAGMA user_version").fetchone()[0]
+        column_rows = conn.execute(
+            "PRAGMA table_info(hits)").fetchall()
+        columns = {row[1]: row for row in column_rows}
+        required_types = {
+            "id": "INTEGER", "cid": "TEXT", "ts": "REAL", "method": "TEXT",
+            "path": "TEXT", "user_agent": "TEXT", "remote_ip": "TEXT",
+            "referer": "TEXT", "body_preview": "TEXT",
+        }
+        constraints_match = (
+            all(name in columns and columns[name][2].upper() == kind
+                for name, kind in required_types.items())
+            and columns.get("id", (None,) * 6)[5] == 1
+            and all(columns[name][3] == 1 for name in ("cid", "ts", "method", "path"))
         )
+        if (version != 0 or not cls._REQUIRED_COLUMNS <= columns.keys()
+                or not constraints_match):
+            raise ValueError("existing SQLite file is not a callback database")
+
+    def __init__(self, path: str = ":memory:"):
+        if path == ":memory:":
+            self.path = path
+            self._conn = sqlite3.connect(
+                ":memory:", check_same_thread=False, isolation_level=None)
+            self._conn.executescript(self._SCHEMA)
+        else:
+            db_path = pathlib.Path(path).expanduser()
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            self.path = str(db_path)
+            try:
+                # Exclusive creation prevents a file appearing between the
+                # existence check and SQLite open from being initialized.
+                descriptor = os.open(
+                    db_path, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+            except FileExistsError:
+                try:
+                    readonly_uri = db_path.resolve().as_uri() + "?mode=ro"
+                    readonly = sqlite3.connect(readonly_uri, uri=True)
+                    try:
+                        self._validate_existing(readonly)
+                    finally:
+                        readonly.close()
+                except (sqlite3.Error, ValueError):
+                    raise ValueError(
+                        "existing SQLite file is not a callback database") from None
+                self._conn = sqlite3.connect(
+                    self.path, check_same_thread=False, isolation_level=None)
+            else:
+                os.close(descriptor)
+                self._conn = sqlite3.connect(
+                    self.path, check_same_thread=False, isolation_level=None)
+                self._conn.executescript(self._SCHEMA)
         self._lock = threading.Lock()
-        self._conn.executescript(self._SCHEMA)
 
     def record(self, cid: str, method: str, path: str,
                user_agent: Optional[str], remote_ip: Optional[str],
@@ -214,19 +261,15 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         self._send(status, json.dumps(obj).encode(),
                    ctype="application/json")
 
-    def _remote_ip(self) -> str:
-        # Never trust caller-controlled forwarding headers.
-        try:
-            return self.client_address[0]
-        except Exception:                                # noqa: BLE001
-            return ""
-
     def _record_hit(self, cid: str, body_preview: Optional[str]):
         try:
             self.db.record(
                 cid=cid, method=self.command, path=urllib.parse.urlsplit(self.path).path,
                 user_agent=None,
-                remote_ip=self._remote_ip(),
+                # Callback evidence needs only the CID and timestamp. Do not
+                # persist client IPs (including forwarded values); retain the
+                # legacy SQLite column for compatibility with existing rows.
+                remote_ip=None,
                 referer=None,
                 body_preview=None,
             )

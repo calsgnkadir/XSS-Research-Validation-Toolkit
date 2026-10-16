@@ -997,6 +997,48 @@ def _load_cli_config(path, parser):
     return config
 
 
+_CREDENTIAL_SOURCE_KEY = (
+    r"(?:x[-_]?api[-_]?key|api[-_]?key|authorization|proxy[-_]authorization|"
+    r"access[-_]token|refresh[-_]token|id[-_]token|client[-_]secret|"
+    r"auth[-_]token|csrf[-_]token|x[-_]csrf[-_]token|x[-_]xsrf[-_]token|"
+    r"set[-_]cookie|(?:document\.)?cookie)"
+)
+_QUOTED_CREDENTIAL_ASSIGNMENT = re.compile(
+    rf'''(?ix)(?P<prefix>(?:["'`]?{_CREDENTIAL_SOURCE_KEY}["'`]?)\s*[:=]\s*)'''
+    rf'''(?P<quote>["'`])(?:\\.|(?! (?P=quote) ).)*(?P=quote)'''
+)
+_UNQUOTED_BEARER_ASSIGNMENT = re.compile(
+    rf'''(?ix)(?P<prefix>(?:["'`]?{_CREDENTIAL_SOURCE_KEY}["'`]?)\s*[:=]\s*)'''
+    r'''Bearer\s+[^\s,;}]+'''
+)
+
+
+def _redact_raw_json_source(findings):
+    """Mask obvious credential literals in legacy JSON without mutating scans.
+
+    Only literal assignments with credential-specific field names are changed.
+    Arbitrary source snippets remain intact; common sharing reports use the
+    separate fingerprint-only adapter.
+    """
+    exported = []
+    for finding in findings:
+        row = dict(finding)
+        code = row.get("code")
+        if isinstance(code, str):
+            row["code"] = _redact_source_code(code)
+        exported.append(row)
+    return exported
+
+
+def _redact_source_code(code):
+    """Redact only credential-labeled source literals in a displayed snippet."""
+    code = _QUOTED_CREDENTIAL_ASSIGNMENT.sub(
+        lambda match: (match.group("prefix") + match.group("quote")
+                       + "[redacted]" + match.group("quote")), code)
+    return _UNQUOTED_BEARER_ASSIGNMENT.sub(
+        lambda match: match.group("prefix") + "[redacted]", code)
+
+
 def main():
     ap = argparse.ArgumentParser(description="source-to-sink XSS analyzer (JS + C#/.NET)")
     ap.add_argument("target", help="file or directory to scan")
@@ -1046,7 +1088,7 @@ def main():
         sys.exit(result_code)
 
     if args.json:
-        print(json.dumps(findings, indent=2))
+        print(json.dumps(_redact_raw_json_source(findings), indent=2))
         sys.exit(result_code)
 
     if not findings:
@@ -1062,7 +1104,7 @@ def main():
         print(f"{f['file']}:{f['line']}  [{f['severity'].upper()}/{f['confidence']} "
               f"confidence, {f['lang']}]  sink: {f['sink']}{flow}")
         print(f"    {f['description']}")
-        print(f"    | {f['code']}")
+        print(f"    | {_redact_source_code(f['code'])}")
         print()
 
     highs = sum(1 for f in findings if f["confidence"] == "high")

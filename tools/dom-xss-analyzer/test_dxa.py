@@ -1,8 +1,13 @@
 """Tests for dxa. Run from this directory with:  pytest -q"""
 
+import hashlib
+import json
 import os
 
+import pytest
+
 import dxa
+import dxa2dyn
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EX = os.path.join(HERE, "examples")
@@ -79,6 +84,67 @@ def test_source_equality_is_still_a_read():
     # `==` / `===` must not be mistaken for an assignment
     assert "location.hash" in dxa.source_hits("if (location.hash === '#a') {}",
                                               dxa.JS_SOURCES, False)
+
+
+def test_legacy_json_redacts_known_credentials_and_preserves_dxa2dyn_hints(
+        monkeypatch, capsys, tmp_path):
+    secrets = ("FAKE_API_KEY_123", "FAKE_BEARER_456", "FAKE_COOKIE_789")
+    source_line = (f'const API_KEY="{secrets[0]}";'
+                   f'const headers={{Authorization:"Bearer {secrets[1]}",'
+                   f'Cookie:"sid={secrets[2]}"}};'
+                   'el.innerHTML=new URLSearchParams(location.search).get("search");')
+    source = tmp_path / "fixture.js"
+    source.write_text(source_line + "\n", encoding="utf-8")
+
+    monkeypatch.setattr("sys.argv", ["dxa", str(source), "--json"])
+    with pytest.raises(SystemExit) as legacy_exit:
+        dxa.main()
+    assert legacy_exit.value.code == 1
+    legacy = capsys.readouterr().out
+    for secret in secrets:
+        assert secret not in legacy
+    rows = json.loads(legacy)
+    assert rows and rows[0]["code"] == (
+        'const API_KEY="[redacted]";const headers={Authorization:"[redacted]",'
+        'Cookie:"[redacted]"};el.innerHTML=new URLSearchParams(location.search).get("search");')
+    assert dxa2dyn.extract_param_hints(rows) == ["search"]
+
+    monkeypatch.setattr("sys.argv", ["dxa", str(source)])
+    with pytest.raises(SystemExit) as text_exit:
+        dxa.main()
+    assert text_exit.value.code == 1
+    console = capsys.readouterr().out
+    for secret in secrets:
+        assert secret not in console
+    assert "URLSearchParams(location.search)" in console
+
+    report_path = tmp_path / "sharing.json"
+    monkeypatch.setattr("sys.argv", ["dxa", str(source), "--json-out", str(report_path)])
+    with pytest.raises(SystemExit) as report_exit:
+        dxa.main()
+    assert report_exit.value.code == 1
+    shared = report_path.read_text(encoding="utf-8")
+    for secret in secrets:
+        assert secret not in shared
+    expected_hash = hashlib.sha256(source_line.encode()).hexdigest()
+    assert expected_hash in shared
+
+    # dxa2dyn invokes the same legacy JSON CLI internally; redaction must not
+    # erase the source parameter that its probe selection depends on.
+    bridge_rows = dxa2dyn.run_dxa(str(tmp_path))
+    assert bridge_rows and dxa2dyn.extract_param_hints(bridge_rows) == ["search"]
+
+
+def test_raw_json_redaction_is_limited_to_credential_assignments():
+    source = ('const api_key_name="X-API-Key"; const label="Authorization"; '
+              'const API_KEY="FAKE_LITERAL"; Authorization: Bearer FAKE_HEADER;')
+    row = {"code": source, "description": "keep analyzer metadata"}
+    exported = dxa._redact_raw_json_source([row])
+    assert exported[0]["code"] == (
+        'const api_key_name="X-API-Key"; const label="Authorization"; '
+        'const API_KEY="[redacted]"; Authorization: [redacted];')
+    assert row["code"] == source
+    assert exported[0]["description"] == row["description"]
 
 
 def test_taint_propagates_across_assignments():

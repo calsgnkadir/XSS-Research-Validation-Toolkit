@@ -89,14 +89,54 @@ def test_db_persists_across_reopen(tmp_path):
     db_path = str(tmp_path / "cb.db")
     db1 = dxa_callback.CallbackDB(db_path)
     db1.record("dxaP", "GET", "/c/dxaP", None, None, None, None)
+    original_rows = db1.list_all()
+    original_schema = db1._conn.execute(
+        "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall()
     db1.close()
 
     db2 = dxa_callback.CallbackDB(db_path)
     try:
         assert db2.count() == 1
-        assert db2.list_all()[0]["cid"] == "dxaP"
+        assert db2.list_all() == original_rows
+        assert db2._conn.execute(
+            "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall() == original_schema
     finally:
         db2.close()
+
+
+@pytest.mark.parametrize("version,table_sql", [
+    (0, "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep')"),
+    (7, "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep')"),
+    (0, "CREATE TABLE hits (cid TEXT); INSERT INTO hits VALUES ('keep')"),
+])
+def test_existing_non_callback_database_is_rejected_without_modification(
+        tmp_path, version, table_sql):
+    path = tmp_path / "user-data.db"
+    with sqlite3.connect(path) as conn:
+        conn.executescript(table_sql)
+        conn.execute(f"PRAGMA user_version={version}")
+        before_schema = conn.execute(
+            "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall()
+        table = "hits" if "CREATE TABLE hits" in table_sql else "unrelated"
+        before_rows = conn.execute(f"SELECT * FROM {table}").fetchall()
+
+    with pytest.raises(ValueError, match="not a callback database"):
+        dxa_callback.CallbackDB(str(path))
+
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == version
+        assert conn.execute(
+            "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall() == before_schema
+        assert conn.execute(f"SELECT * FROM {table}").fetchall() == before_rows
+
+
+def test_existing_non_sqlite_file_is_preserved(tmp_path):
+    path = tmp_path / "not-a-database.db"
+    contents = b"keep this file unchanged"
+    path.write_bytes(contents)
+    with pytest.raises(ValueError, match="not a callback database"):
+        dxa_callback.CallbackDB(str(path))
+    assert path.read_bytes() == contents
 
 
 def test_db_concurrent_writes_safe():
@@ -195,6 +235,7 @@ def test_get_c_cid_returns_1x1_gif_and_records(server):
     row = server.db.list_all()[0]
     assert row["cid"] == "dxaHIT01"
     assert row["user_agent"] is None
+    assert row["remote_ip"] is None
     assert row["referer"] is None
     assert row["method"] == "GET"
 
@@ -218,6 +259,7 @@ def test_post_c_cid_discards_body(server):
     assert parsed == {"ok": True}
     row = server.db.list_for_cid("dxaPOST")[0]
     assert row["body_preview"] is None
+    assert row["remote_ip"] is None
 
 
 def test_post_body_over_limit_rejected(server):
@@ -292,11 +334,11 @@ def test_unknown_path_returns_404(server):
 
 
 def test_x_forwarded_for_ignored(server):
-    """Untrusted clients cannot spoof peer addresses."""
+    """Callback collection does not persist peer or forwarded IP addresses."""
     _get(server.port, "/c/dxaXFF",
          headers={"X-Forwarded-For": "203.0.113.5, 10.0.0.1"})
     row = server.db.list_for_cid("dxaXFF")[0]
-    assert row["remote_ip"] == "127.0.0.1"
+    assert row["remote_ip"] is None
 
 
 def test_concurrent_hits_all_recorded(server):

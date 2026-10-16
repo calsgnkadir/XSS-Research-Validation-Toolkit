@@ -3,13 +3,34 @@
 ## R6 / R8 devamı — 16 Ekim 2026
 
 R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü ve changelog
-hazırlandı. Kurulu-wheel gate **7/7** geçti; dokuz modülün hashleri eşleşti.
+hazırlandı. Son R9 kaynaklarıyla yeniden üretilen wheel, temiz geçici venv'e
+offline kuruldu; kurulu-wheel gate **7/7** geçti ve dokuz modülün source/wheel/
+install hashleri eşleşti. Paketlenmiş loopback demo `execution-observed` verdi;
+triage `unreviewed` kaldı.
 R6 teslim commit'i `401e6bf6848a95986ba26eccd51127600712a4b3` ve R8 teslim
 commit'i `ab91b092f5a02af24149c48869083898e223b238` uzak main hashleriyle
 eşleşti. R8 commit'i için genel CI `38898993545` üç job'da, K01 Linux
 `38898993396` başarılı. Önceki R6 CI `38894634586` ve K01 Linux `38894634507`
-de başarılıydı. Artifact içerikleri indirilip doğrulanmadı. R6 yayını için
-tag/PyPI işlemi yapılmadı.
+de başarılıydı. Artifact içerikleri indirilip doğrulanmadı. R6 teknik kabulü
+tamam; tag/PyPI yayını yapılmadı. Açık R6 satırı yalnızca açık release yetkisi
+gerektiren yayın adımıdır. Son wheel ve modül hashleri [R6/R9 audit kaydında]
+(audit/2026-10-16-r6-r9-final-source/README.md).
+
+R9 açık ve kısmi teslim aşamasında. Callback boundary **82/82**, callback/journal
+birleşik paket **103/103**, CI/compose
+**133/133**, dynamic analyzer **182/182** (context matrisi dahil),
+`test_dxadyn.py` + HTTP evidence **194/194**, rapor privacy **23/23** ve yeni DOM
+scope regresyonları **5/5**, credential masking + `dxa2dyn` compatibility
+**58/58** geçti. Tam `test_dxadom.py` paketi önceki üç koşuda
+77/80, 79/80 ve 78/80; son tekil koşuda **70/80** geçti. Son koşudaki 10
+başarısızlığın çoğunda fixture sunucusu `ConnectionAbortedError` aldı; ikisinde
+`goto` 15 saniye timeout verdi. Son iki önceki hata focused koşuda 2/2 geçti,
+ancak tam suite kabul edilmedi ve ortak kök neden doğrulanmadı. Genel R9
+kapanışı veya tam DOM suite kabulü iddia edilmiyor. `dxa.py --json` artık
+credential etiketli API key/Bearer/Cookie/token literal'larını CLI ve JSON
+snippet'lerinde maskeliyor; paylaşım `--json-out` ham kaynak yerine fingerprint
+taşır. Keyfi serbest metin ve özel etiketler garanti kapsamında değildir. Yerel koşular ve kalan R9 maddeleri [audit kaydında]
+(audit/2026-10-16-r6-r9-final-source/README.md).
 
 R8 kapsamı tamamlandı: Python AST pilotu tuple/list atama taint'ini izliyor ve
 quoted source metnini kaynak sanmıyor. Labeled corpus TP/FP/FN/TN **1/0/0/1**;
@@ -421,11 +442,16 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
   R4/R5 kapanışı bunları çözülmüş saymaz. CI job başarısı ve artifact içeriği
   doğrulaması ayrı tutulur.
 - R8 tamamlandı: dar Python AST pilotu ve regression corpus kabulü yukarıdadır.
-  R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer birleşik kabul işleri
-  açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
+  R9 credential-labeled CLI redaction, evidence output sınırları ve browser
+  channel scope yerel kabul aldı. Genel DOM browser suite gate'i kararsız,
+  son Git/hosted CI provenance henüz kaydedilmedi. Dar redaction genel sır
+  tespit garantisi değildir.
 - R6 `0.1.0` sürüm ve release-specific changelog hazırlığı, 7/7 wheel gate'iyle
-  tamamlandı; hosted CI henüz bu working-tree değişikliklerini çalıştırmadı.
-  Release tag'i/paketi yayımlanmadı.
+  tamamlandı; kod commit'i `401e6bf`, AST sonrası R8 kaynak commit'i `ab91b09`
+  ve hosted CI kayıtları başarılıdır (ayrıntı üstte ve VALIDATION.md'de).
+  Artifact içeriği bağımsız indirilip doğrulanmadı. Release tag'i/paketi
+  yayımlanmadı. Son R9 çalışma ağacı wheel'i ayrıca yeniden üretildi; güncel
+  digest ve kaynak hashleri üstteki audit kaydında bulunur.
 - R8/R9 ve C/K/P/S/A işleri ROADMAP'te açık.
 - Çalışma yeri için en üstteki güncel kullanıcı yönlendirmesi geçerlidir.
   C:\xss\xss-github içindeki commit edilmemiş işler korunmalıdır.

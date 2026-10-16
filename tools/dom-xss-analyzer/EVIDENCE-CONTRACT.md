@@ -73,8 +73,11 @@ HTTP(S) dışı URL'lerde sır tespiti sağlamaz. Ham girdiler değiştirilmez.
 - Statik yönlendirmeli HTTP: `dxa2dyn.py SOURCE URL --json-out report.json --html report.html`
 - Blind uzlaştırma: `dxa_attempts.py --journal DB --blind-callback URL --json-out report.json --html report.html`
 
-Statik `--json` eski ham liste API'sidir (dxa2dyn uyumluluğu); ortak ve maskeli
-rapor için `--json-out` kullanılır. Journal SQLite formatı aynı kalır;
+Statik `--json` eski liste API'sidir (dxa2dyn uyumluluğu): bulgu yapısı
+korunur, ancak kod satırı/konsol snippet'inde açık credential etiketiyle
+atanmış literal değerler sunum anında maskelenir. Bu tespit keyfi serbest metin
+veya özel credential adlarını kapsamaz. Paylaşılabilir ortak rapor için
+`--json-out` kullanılır; kaynak kodu yerine fingerprint taşır. Journal SQLite formatı aynı kalır;
 uzlaştırma JSON'undaki `attempts`, `findings` listesinin uyumluluk alias'ıdır.
 HTML ve JSON aynı adapter/model üzerinden aynı kimlikleri ve gözlemleri taşır.
 

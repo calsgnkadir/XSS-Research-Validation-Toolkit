@@ -8,6 +8,7 @@ import http.server
 import pathlib
 import sys
 import threading
+import urllib.request
 from unittest import mock
 
 import pytest
@@ -32,6 +33,7 @@ def test_find_chromium_executable_skips_missing_hints(monkeypatch):
     """If none of the hint paths exist, function returns None cleanly."""
     monkeypatch.setattr(dxadom, "_CHROMIUM_HINTS",
                         ["/does/not/exist/*/chrome"])
+    monkeypatch.delenv("DXA_BROWSER", raising=False)
     assert dxadom.find_chromium_executable() is None
 
 
@@ -45,7 +47,17 @@ def test_find_chromium_executable_prefers_newest_version(tmp_path, monkeypatch):
     new.write_text("new")
     monkeypatch.setattr(dxadom, "_CHROMIUM_HINTS",
                         [str(tmp_path / "chromium-*" / "chrome-linux" / "chrome")])
+    monkeypatch.delenv("DXA_BROWSER", raising=False)
     assert dxadom.find_chromium_executable() == str(new)
+
+
+def test_find_chromium_executable_honors_existing_dxa_browser_override(
+        tmp_path, monkeypatch):
+    browser = tmp_path / "browser.exe"
+    browser.write_bytes(b"browser")
+    monkeypatch.setenv("DXA_BROWSER", str(browser))
+    monkeypatch.setattr(dxadom, "_CHROMIUM_HINTS", [])
+    assert dxadom.find_chromium_executable() == str(browser)
 
 
 def test_is_available_returns_tuple():
@@ -129,6 +141,133 @@ def static_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+@pytest.fixture
+def browser_scope_lab():
+    """Two disposable loopback origins used to prove the browser route gate."""
+    outside_requests = []
+    main_requests = []
+    websocket_requests = []
+    outside = http.server.HTTPServer(("127.0.0.1", 0), _StaticHandler)
+    outside_port = outside.server_address[1]
+
+    class ScopeHandler(http.server.BaseHTTPRequestHandler):
+        def log_message(self, format, *args):
+            return
+
+        def do_GET(self):
+            main_requests.append(self.path)
+            if self.path == "/start-http":
+                body = (
+                    "<html><body><img src='http://127.0.0.1:"
+                    f"{outside_port}/hello'><iframe src='/redirect'>"
+                    "</iframe><iframe src='/same-redirect'></iframe></body></html>"
+                )
+            elif self.path == "/start-ws":
+                body = ("<html><body><script>"
+                        "new WebSocket('ws://127.0.0.1:' + location.port + '/socket');"
+                        "</script></body></html>")
+            else:
+                body = "outside"
+            if self.path == "/redirect":
+                self.send_response(302)
+                self.send_header("Location", f"http://127.0.0.1:{outside_port}/hello")
+                self.end_headers()
+                return
+            if self.path == "/same-redirect":
+                self.send_response(302)
+                self.send_header("Location", "/hello")
+                self.end_headers()
+                return
+            payload = body.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+            if self.path == "/socket":
+                websocket_requests.append(self.path)
+
+    class OutsideHandler(_StaticHandler):
+        def do_GET(self):
+            outside_requests.append(self.path)
+            super().do_GET()
+
+    outside.server_close()
+    outside = http.server.HTTPServer(("127.0.0.1", outside_port), OutsideHandler)
+    main = http.server.HTTPServer(("127.0.0.1", 0), ScopeHandler)
+    servers = (outside, main)
+    threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in servers]
+    for thread in threads:
+        thread.start()
+    try:
+        yield (main.server_address[1], outside_port, outside_requests,
+               main_requests, websocket_requests)
+    finally:
+        for server in servers:
+            server.shutdown()
+            server.server_close()
+
+
+def test_loopback_origin_parser_rejects_nonliteral_or_non_http_targets():
+    assert dxadom._loopback_http_origin("http://127.0.0.1:8080/a") == (
+        "http", "127.0.0.1", 8080)
+    assert dxadom._loopback_http_origin("https://[::1]/") == (
+        "https", "::1", 443)
+    assert dxadom._loopback_http_origin("http://localhost/") is None
+    assert dxadom._loopback_http_origin("http://192.0.2.1/") is None
+    assert dxadom._loopback_http_origin("file:///tmp/page.html") is None
+    assert dxadom._loopback_http_origin("http://user:secret@127.0.0.1/") is None
+
+
+def test_browser_session_rejects_initial_out_of_scope_url_without_navigation():
+    summary = dxadom.BrowserSession().visit("http://192.0.2.1/private")
+    assert summary["status"] is None
+    assert summary["network_events"] == [{
+        "channel": "http", "kind": "blocked",
+        "reason": "initial-url-outside-literal-loopback-scope",
+        "origin": None,
+    }]
+    assert "blocked by loopback browser scope" in summary["errors"][0]
+
+
+@_skip
+def test_browser_scope_blocks_cross_origin_http(browser_scope_lab):
+    port, outside_port, outside_requests, main_requests, websocket_requests = browser_scope_lab
+    # Prove this disposable sink sees a real request before checking that the
+    # browser gate prevents both direct and redirected access to it.
+    with urllib.request.urlopen(f"http://127.0.0.1:{outside_port}/hello") as response:
+        assert response.status == 200
+    assert outside_requests == ["/hello"]
+    outside_requests.clear()
+    with dxadom.BrowserSession(timeout_ms=4000) as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/start-http")
+    events = summary["network_events"]
+    assert any(event["channel"] == "http" and event["kind"] == "blocked"
+               and event["origin"] == f"http://127.0.0.1:{outside_port}"
+               for event in events)
+    redirects = [event for event in events
+                 if event["reason"] == "http-redirect-disabled-by-dxadom-scope"]
+    assert len(redirects) == 2
+    assert {event["origin"] for event in redirects} == {
+        f"http://127.0.0.1:{outside_port}", f"http://127.0.0.1:{port}"}
+    assert outside_requests == []
+    assert "/hello" not in main_requests
+    assert websocket_requests == []
+
+
+@_skip
+def test_browser_scope_reports_and_closes_websocket_attempt(browser_scope_lab):
+    port, outside_port, outside_requests, main_requests, websocket_requests = browser_scope_lab
+    with dxadom.BrowserSession(timeout_ms=4000) as sess:
+        summary = sess.visit(f"http://127.0.0.1:{port}/start-ws")
+    events = summary["network_events"]
+    assert any(event["channel"] == "websocket" and event["kind"] == "unsupported"
+               and event["origin"] == f"ws://127.0.0.1:{port}"
+               for event in events)
+    assert outside_requests == []
+    assert websocket_requests == []
 
 
 @_skip

@@ -15,6 +15,24 @@ shared host mounts. Rollback means stopping only containers created by this run;
 retain existing volumes and record any new volume names for the operator. A
 failed setup is an error, never a clean negative benchmark result.
 
+## Readiness boundary
+
+Docker daemon availability only permits Compose preflight/startup. Compose
+healthchecks and a reachable loopback URL are infrastructure/liveness signals;
+they do not establish that an application is installed, logged in, configured,
+or at the intended lesson. The generic benchmark runner reports that HTTP is
+reachable while explicitly retaining “application setup and scan oracle not
+verified”; this state is not product acceptance. A candidate scan may still
+run, but must not be described as a completed application or lesson check.
+
+The disposable Bludit ingress adapter is the only target-specific acceptance
+path here: it verifies fresh bootstrap, login, admin-authored raw/escaped
+controls and browser observations before it records a pass. DVWA and WebGoat
+Compose definitions are infrastructure templates only; they have no
+target-specific login/lesson acceptance adapter. The own-hardened targets named
+in `bench/targets.json` have no Compose target adapter here. None of those
+targets becomes product-ready from daemon health or HTTP reachability alone.
+
 `bludit/local-inspected.yml` is a separate fresh disposable configuration with an
 immutable local image and no volumes. On 9 October 2026 a network-disabled,
 read-only inspection of this image found `BLUDIT_VERSION=3.16.2` in

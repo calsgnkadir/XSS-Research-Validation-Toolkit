@@ -7,11 +7,13 @@ ignores the second, with no false positive on the encoded one.
 """
 
 import html
+import os
 import threading
+from pathlib import Path
 
 import pytest
 from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import dxadyn
 
@@ -558,6 +560,36 @@ def test_verdict_marker_absent_when_only_partial_survives():
     assert dxadyn.verdict("dxaAAAA", body, marker='</title><dXsS>') == "encoded"
 
 
+def test_verdict_truncated_variant_marker_is_not_full_reflection():
+    marker = dxadyn.PAYLOAD_VARIANTS["title-breakout"][1]
+    assert dxadyn.verdict("dxaAAAA", "dxaAAAA" + marker[:-1], marker) == "encoded"
+
+
+def test_verdict_checks_each_cid_reflection_for_marker():
+    marker = dxadyn.PAYLOAD_VARIANTS["title-breakout"][1]
+    response = "dxaAAAA" + marker.replace("<", "&lt;") + " | dxaAAAA" + marker
+    assert dxadyn.verdict("dxaAAAA", response, marker) == "unencoded"
+
+
+@pytest.mark.parametrize("markup,expected", [
+    ("<!-- dxaAAAA -->", "comment"),
+    ("<textarea>dxaAAAA</textarea>", "textarea"),
+    ("<style>.x { background: url(dxaAAAA) }</style>", "style"),
+])
+def test_find_context_labels_non_body_markup_contexts(markup, expected):
+    context = dxadyn.find_context("dxaAAAA", markup)
+    assert context == expected
+    finding = dxadyn._finding("http://127.0.0.1/", "GET", "q", "unencoded", 200,
+                              context, "dxaAAAA", "text/html", "body")
+    assert finding["severity"] == "html-reflection"
+    assert finding["evidence_level"] == "reflection"
+
+
+def test_find_context_uses_first_cid_when_response_has_multiple_reflections():
+    body = "<title>dxaAAAA</title><div>dxaAAAA</div>"
+    assert dxadyn.find_context("dxaAAAA", body) == "title"
+
+
 def test_ct_gate_breakout_variant_remains_reflection():
     """A raw -breakout marker is reflection; its name cannot prove context escape."""
     ctx, sev = dxadyn._apply_ct_gate("unencoded", "title", "text/html",
@@ -635,6 +667,30 @@ def test_make_canaries_for_no_waf_bypass_stays_single_shape():
     """Default (waf_bypass=False) still yields exactly one tuple per variant."""
     out = list(dxadyn.make_canaries_for(["body", "attr-breakout"]))
     assert len(out) == 2
+
+
+def test_waf_mutation_report_marks_noop_and_repeated_shapes(monkeypatch, capsys):
+    """Generated mutation count is not distinct-shape evidence."""
+    dxadyn.REPORT_EVENTS.clear()
+    monkeypatch.setattr(dxadyn, "_WAF_MUTATIONS", [
+        ("noop", lambda value: value),
+        ("noop-again", lambda value: value),
+        ("append", lambda value: value + "!"),
+        ("append-again", lambda value: value + "!"),
+    ])
+    out = list(dxadyn.make_canaries_for(["body"], waf_bypass=True))
+    assert len(out) == 5
+    reasons = [event.reason for event in dxadyn.REPORT_EVENTS]
+    assert "no-op:body/noop" in reasons
+    assert "no-op:body/noop-again" in reasons
+    assert "repeat:body/append-again:append" in reasons
+    assert all(event.kind == "info" and event.stage == "mutation"
+               for event in dxadyn.REPORT_EVENTS)
+    document = dxadyn.write_json_report("", [], "reflected", for_html=True)
+    assert {event["reason"] for event in document["events"]} >= set(reasons)
+    dxadyn._print_mutation_summary()
+    assert "2 no-op, 1 repeated shape(s)" in capsys.readouterr().out
+    dxadyn.REPORT_EVENTS.clear()
 
 
 # --- Phase 1.2: expanded variant library -----------------------------------
@@ -1559,7 +1615,7 @@ def test_auto_check_discovers_and_flags_stored_reflection():
     try:
         findings, cid, meta = dxadyn.probe_stored_auto(
             base + "/post", "tag", extra_fields={},
-            seed_urls=[base + "/"], csrf_field=""     # this fixture has no CSRF
+            seed_urls=[], csrf_field=""     # this fixture has no CSRF
         )
     finally:
         srv.shutdown()
@@ -1569,7 +1625,221 @@ def test_auto_check_discovers_and_flags_stored_reflection():
     assert findings[0]["reflection"] == "unencoded"
     assert "/tag/" in findings[0]["check_url"]
     assert findings[0]["auto_discovered"] is True
+    assert findings[0]["discovery_source"] == "same-origin-link"
     assert meta["candidates"] >= 2                            # home + at least the tag page
+    assert meta["manual_seed_pages"] == 0
+    assert meta["origin_root_pages"] == 1
+    assert meta["link_discovered_pages"] >= 1
+
+
+def test_auto_check_counts_each_canary_run_and_discovery_source():
+    _AUTO_DB.clear()
+    dxadyn.REPORT_EVENTS.clear()
+    dxadyn.OPENER = dxadyn._opener()
+    dxadyn.EXTRA_HEADERS.clear()
+    srv = HTTPServer(("127.0.0.1", 0), _AutoApp)
+    port = srv.server_address[1]
+    base = f"http://127.0.0.1:{port}"
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        findings, first_cid, meta = dxadyn.probe_stored_auto(
+            base + "/post", "tag", extra_fields={}, seed_urls=[base + "/"],
+            csrf_field="", variants=["body", "attr-breakout"])
+    finally:
+        srv.shutdown()
+
+    assert first_cid
+    assert meta["canary_runs"] == 2
+    assert meta["checked_pages"] == meta["candidates"]
+    assert meta["manual_seed_pages"] == 2
+    assert meta["origin_root_pages"] == 0  # same URL dedupes to the operator seed
+    assert len({row["canary_id"] for row in findings}) == 2
+    # The supplied URL is the seed, but the finding is on its linked tag page.
+    assert all(row["discovery_source"] == "same-origin-link" for row in findings)
+
+
+def test_auto_check_rejects_out_of_origin_seed_without_fetching_it():
+    _AUTO_DB.clear()
+    dxadyn.REPORT_EVENTS.clear()
+    dxadyn.OPENER = dxadyn._opener()
+    dxadyn.EXTRA_HEADERS.clear()
+    external_gets = []
+
+    class _CountExternal(_AutoApp):
+        def do_GET(self):
+            external_gets.append(self.path)
+            return super().do_GET()
+
+    target = HTTPServer(("127.0.0.1", 0), _AutoApp)
+    external = HTTPServer(("127.0.0.1", 0), _CountExternal)
+    target_port = target.server_address[1]
+    external_port = external.server_address[1]
+    base = f"http://127.0.0.1:{target_port}"
+    threading.Thread(target=target.serve_forever, daemon=True).start()
+    threading.Thread(target=external.serve_forever, daemon=True).start()
+    try:
+        findings, _cid, meta = dxadyn.probe_stored_auto(
+            base + "/post", "tag", extra_fields={},
+            seed_urls=[f"http://127.0.0.1:{external_port}/must-not-fetch"],
+            csrf_field="")
+    finally:
+        target.shutdown()
+        external.shutdown()
+
+    assert findings
+    assert external_gets == []
+    assert meta["out_of_scope_seed_count"] == 1
+    assert any(event.reason == "out-of-scope-seed" for event in dxadyn.REPORT_EVENTS)
+    dxadyn.REPORT_EVENTS.clear()
+
+
+def test_auto_check_candidate_budget_includes_seed_pages():
+    _AUTO_DB.clear()
+    dxadyn.OPENER = dxadyn._opener()
+    dxadyn.EXTRA_HEADERS.clear()
+    srv = HTTPServer(("127.0.0.1", 0), _AutoApp)
+    port = srv.server_address[1]
+    base = f"http://127.0.0.1:{port}"
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        _findings, _cid, meta = dxadyn.probe_stored_auto(
+            base + "/post", "tag", extra_fields={},
+            seed_urls=[base + "/seed-a", base + "/seed-b", base + "/seed-c"],
+            csrf_field="", max_links=2)
+    finally:
+        srv.shutdown()
+
+    assert meta["candidates"] == 2
+    assert meta["checked_pages"] == 2
+    assert meta["manual_seed_pages"] == 2
+    assert meta["seed_budget_omitted"] == 3  # third manual seed + landing + origin root
+
+
+def test_cli_does_not_mix_manual_check_urls_and_auto_discovery(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", [
+        "dxadyn", "--stored", "--target", "http://127.0.0.1:1/post",
+        "--target-field", "tag", "--check", "http://127.0.0.1:1/view",
+        "--auto-check",
+    ])
+    with pytest.raises(SystemExit) as exc:
+        dxadyn.main()
+    assert exc.value.code == 2
+    assert "separate stored modes" in capsys.readouterr().err
+
+
+def test_malformed_header_warning_does_not_echo_credential(monkeypatch, capsys):
+    secret = "FAKE_AUTH_SECRET_SHOULD_NOT_REACH_STDERR"
+    monkeypatch.setattr("sys.argv", [
+        "dxadyn", "http://127.0.0.1:1/", "--header", "Authorization " + secret,
+    ])
+    monkeypatch.setattr(dxadyn, "crawl", lambda *args, **kwargs: [])
+    with pytest.raises(SystemExit):
+        dxadyn.main()
+    captured = capsys.readouterr()
+    assert secret not in captured.out + captured.err
+    assert "--header ignored" in captured.err
+
+
+class _DecodeChainFixture(BaseHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        body = """<!doctype html><meta charset=utf-8>
+<div id=url-positive></div><div id=entity-positive></div><div id=negative></div>
+<script>
+function urlChain(input) {
+  let value = input, rounds = 0;
+  for (; rounds < 5; rounds++) {
+    let next;
+    try { next = decodeURIComponent(value); } catch (_) { break; }
+    if (next === value) break;
+    value = next;
+  }
+  return {value, rounds};
+}
+function entityChain(input) {
+  let value = input, rounds = 0;
+  for (; rounds < 5; rounds++) {
+    const node = document.createElement('textarea');
+    node.innerHTML = value;
+    const next = node.value;
+    if (next === value) break;
+    value = next;
+  }
+  return {value, rounds};
+}
+const params = new URL(location.href).searchParams;
+const url = urlChain(params.get('u'));
+const entity = entityChain(params.get('e'));
+document.querySelector('#url-positive').innerHTML = url.value;
+document.querySelector('#entity-positive').innerHTML = entity.value;
+document.querySelector('#negative').textContent = entity.value;
+window.decodeProfile = {
+  url_rounds: url.rounds,
+  entity_rounds: entity.rounds,
+  url_probe: !!document.querySelector('#url-positive probe'),
+  entity_probe: !!document.querySelector('#entity-positive probe'),
+  negative_probe: !!document.querySelector('#negative probe'),
+  negative_text: document.querySelector('#negative').textContent
+};
+</script>"""
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(body.encode("utf-8"))
+
+
+def test_local_browser_measures_url_and_entity_decode_chains():
+    """A tiny harmless-tag oracle measures browser decode rounds; it is not a payload score."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        if os.environ.get("DXA_REQUIRE_BROWSER") == "1":
+            pytest.fail("required Playwright package is missing")
+        pytest.skip("Playwright package is unavailable")
+
+    browser_path = os.environ.get("DXA_BROWSER")
+    if not browser_path and Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe").exists():
+        browser_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+    srv = HTTPServer(("127.0.0.1", 0), _DecodeChainFixture)
+    port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        browser = None
+        with sync_playwright() as pw:
+            launch = {"headless": True}
+            if browser_path:
+                launch["executable_path"] = browser_path
+            try:
+                browser = pw.chromium.launch(**launch)
+            except Exception as exc:  # browser absence is a skip; navigation timeout below is failure
+                if os.environ.get("DXA_REQUIRE_BROWSER") == "1":
+                    pytest.fail(f"required browser could not start ({type(exc).__name__})")
+                pytest.skip(f"browser unavailable ({type(exc).__name__})")
+            try:
+                page = browser.new_page()
+                query = urlencode({"u": "%253Cprobe%253E",
+                                   "e": "&amp;lt;probe&amp;gt;"})
+                try:
+                    page.goto(f"http://127.0.0.1:{port}/?{query}",
+                              wait_until="load", timeout=5000)
+                    page.wait_for_function("window.decodeProfile !== undefined", timeout=2000)
+                except Exception as exc:
+                    pytest.fail(f"local browser fixture timed out or failed ({type(exc).__name__})")
+                profile = page.evaluate("window.decodeProfile")
+            finally:
+                if browser is not None:
+                    browser.close()
+    finally:
+        srv.shutdown()
+
+    assert profile == {
+        "url_rounds": 2, "entity_rounds": 2,
+        "url_probe": True, "entity_probe": True,
+        "negative_probe": False, "negative_text": "<probe>",
+    }
 
 
 def test_all_links_skips_junk_and_dedupes():
@@ -1602,6 +1872,8 @@ def test_stored_mode_auth_and_verdict():
         assert findings, "stored XSS must be detected on the raw /view page"
         assert findings[0]["reflection"] == "unencoded"
         assert cid in findings[0]["check_url"]
+        assert not findings[0].get("auto_discovered")
+        assert "discovery_source" not in findings[0]
 
         # SAFE view page: no finding
         findings2, _ = dxadyn.probe_stored(

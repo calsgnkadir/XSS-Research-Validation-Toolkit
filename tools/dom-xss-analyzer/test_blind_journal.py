@@ -193,6 +193,29 @@ def test_missing_journal_does_not_create_empty_success(tmp_path):
     assert not path.exists()
 
 
+@pytest.mark.parametrize("version,sql,existing", [
+    (0, "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep')", True),
+    (1, "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep')", True),
+    (0, "CREATE TABLE unrelated (value TEXT); INSERT INTO unrelated VALUES ('keep')", False),
+])
+def test_existing_nonjournal_database_is_not_repaired_or_changed(
+        tmp_path, version, sql, existing):
+    path = tmp_path / "user-data.db"
+    with sqlite3.connect(path) as db:
+        db.executescript(sql)
+        db.execute(f"PRAGMA user_version={version}")
+        before_schema = db.execute(
+            "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall()
+        before_rows = db.execute("SELECT value FROM unrelated").fetchall()
+    with pytest.raises(ValueError):
+        dxa_attempts.AttemptJournal(path, "http://localhost:9999", existing=existing)
+    with sqlite3.connect(path) as db:
+        assert db.execute("PRAGMA user_version").fetchone()[0] == version
+        assert db.execute(
+            "SELECT type, name, sql FROM sqlite_master ORDER BY type, name").fetchall() == before_schema
+        assert db.execute("SELECT value FROM unrelated").fetchall() == before_rows
+
+
 def test_cli_survives_process_exit_without_resubmitting(tmp_path, callback):
     server, base = callback
     class Target(BaseHTTPRequestHandler):

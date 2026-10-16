@@ -47,6 +47,7 @@ class AttemptJournal:
     """
     def __init__(self, path, callback, role="unspecified", *, existing=False):
         self.path = Path(path)
+        db_preexisting = self.path.is_file()
         self.callback = callback_base(callback)
         self.role = role
         self.run_id = uuid.uuid4().hex
@@ -58,12 +59,22 @@ class AttemptJournal:
             version = db.execute("PRAGMA user_version").fetchone()[0]
             if version not in (0, 1):
                 raise ValueError("unsupported blind journal schema")
-            if existing and version != 1:
+            table = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='attempts'").fetchone()
+            if version == 1:
+                columns = {row[1] for row in db.execute(
+                    "PRAGMA table_info(attempts)").fetchall()}
+                if not table or not {"cid", "run_id", "callback", "record"} <= columns:
+                    raise ValueError("invalid version 1 blind journal schema")
+            elif existing or db_preexisting or table:
+                # Never repair, initialize, or relabel a pre-existing/partial
+                # SQLite file. It may contain user data unrelated to journals.
                 raise ValueError("not a version 1 blind journal")
-            db.execute("CREATE TABLE IF NOT EXISTS attempts "
-                       "(cid TEXT PRIMARY KEY, run_id TEXT NOT NULL, "
-                       "callback TEXT NOT NULL, record TEXT NOT NULL)")
-            db.execute("PRAGMA user_version=1")
+            else:
+                db.execute("CREATE TABLE attempts "
+                           "(cid TEXT PRIMARY KEY, run_id TEXT NOT NULL, "
+                           "callback TEXT NOT NULL, record TEXT NOT NULL)")
+                db.execute("PRAGMA user_version=1")
 
     def _connect(self):
         # sqlite Connection's context manager commits but does not close.

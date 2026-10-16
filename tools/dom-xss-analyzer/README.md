@@ -151,6 +151,13 @@ python dxa.py src/ --json
 python dxa.py src/ --html report.html
 ```
 
+`--json` keeps the legacy finding-list shape used by `dxa2dyn`. Credential
+values in clearly labelled source assignments (such as API keys, Authorization,
+Cookie, and token/CSRF fields) are masked in JSON and terminal snippets. This
+does not detect arbitrary secrets or custom field names. For reports intended
+for sharing, use `--json-out`; it omits raw source snippets and retains a source
+fingerprint.
+
 ### Example
 
 ```

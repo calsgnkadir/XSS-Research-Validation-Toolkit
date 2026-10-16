@@ -84,4 +84,28 @@ içerebilir; otomatik raporlanmaz. Raporlarda ham cookie/token/body yoktur.
   otomatik header harvest ve Linux CI sonuç doğrulaması R4 işidir; WebSocket ve
   genel ağ sandboxı R9 operasyon kapsamındadır.
 
+## `dxadom --dom` browser inspection boundary (R9)
+
+The bare DOM observer accepts only an initial HTTP(S) URL whose host is a
+literal loopback IP address (`127.0.0.0/8` or `::1`). It routes browser HTTP
+requests at context level, fetches one hop only for requests with the exact
+same scheme, IP and effective port, then fulfills the browser request from
+that response. Every HTTP redirect is aborted (including same-origin ones),
+because Playwright route handlers do not see each hop in a redirect chain.
+Cross-origin requests and redirects are recorded in `network_events`; the
+summary stores only the blocked origin, without path, query, userinfo or
+fragment. Hostnames such as
+`localhost` are rejected because their resolution is environment-controlled.
+Service workers are blocked. Playwright 1.48 or newer is required for the
+WebSocket guard; without that API the visit fails before navigation. All
+WebSocket attempts, including loopback ones, are closed and reported as
+`unsupported` events rather than used as scanner channels.
+
+This is a bounded browser adapter rule, not a general network sandbox.
+Playwright request routing does not provide a network boundary for WebRTC,
+WebTransport, DNS or other browser/process-level channels; those are outside
+the adapter's guarantee and require an external isolated network environment
+if they ever need testing. Context shutdown, disabled service workers or an
+HTTP route test alone do not prove those channels are isolated.
+
 [Test ve demo kanıtı](../../audit/2026-10-06-r3-final/README.md).

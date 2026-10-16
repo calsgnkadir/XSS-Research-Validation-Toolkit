@@ -34,8 +34,9 @@ directories that Playwright's default lookup misses.
 from __future__ import annotations
 import contextlib
 import glob
+import ipaddress
 import os
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 from typing import Any, Iterator, List, Optional
 
 # Known chromium binary paths, in probe order. First hit wins.
@@ -397,6 +398,11 @@ def find_chromium_executable() -> Optional[str]:
     Uses glob to match versioned directories - Playwright bumps the
     build number roughly every release, so hard-coding `chromium-1194`
     would rot fast."""
+    # Explicit operator selection also supports installed Chrome on Windows,
+    # where Playwright's browser cache may not contain a Chromium build.
+    override = os.environ.get("DXA_BROWSER", "").strip().strip('"')
+    if override and os.path.isfile(override):
+        return override
     for hint in _CHROMIUM_HINTS:
         # If the hint has no glob metachars, os.path.isfile is the check.
         if any(c in hint for c in "*?["):
@@ -430,6 +436,66 @@ def is_available() -> tuple[bool, str]:
                 "chromium binary not found in any known location - run "
                 "`playwright install chromium`")
     return (True, exe)
+
+
+def _loopback_http_origin(url: str) -> Optional[tuple[str, str, int]]:
+    """Return a normalized HTTP(S) origin only for literal loopback IPs.
+
+    Hostnames such as ``localhost`` are deliberately rejected: name resolution
+    is environment-controlled and is not a reliable network boundary.
+    """
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+            return None
+        if parsed.username is not None or parsed.password is not None:
+            return None
+        address = ipaddress.ip_address(parsed.hostname)
+        if not address.is_loopback:
+            return None
+        port = parsed.port or (443 if parsed.scheme.lower() == "https" else 80)
+        return parsed.scheme.lower(), address.compressed.lower(), port
+    except (ValueError, TypeError):
+        return None
+
+
+def _websocket_origin(url: str) -> Optional[str]:
+    """Return a credential-free WebSocket origin for event reporting."""
+    try:
+        parsed = urlsplit(url)
+        scheme = parsed.scheme.lower()
+        if scheme not in ("ws", "wss") or not parsed.hostname:
+            return None
+        if parsed.username is not None or parsed.password is not None:
+            return None
+        default_port = 443 if scheme == "wss" else 80
+        port = parsed.port or default_port
+        host = parsed.hostname.lower()
+        if ":" in host:
+            host = f"[{host}]"
+        suffix = "" if port == default_port else f":{port}"
+        return f"{scheme}://{host}{suffix}"
+    except (ValueError, TypeError):
+        return None
+
+
+def _safe_http_origin_label(url: str) -> Optional[str]:
+    """Return a credential-free HTTP(S) origin; omit path and query data."""
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme.lower() not in ("http", "https") or not parsed.hostname:
+            return None
+        if parsed.username is not None or parsed.password is not None:
+            return None
+        host = parsed.hostname.lower()
+        if ":" in host:
+            host = f"[{host}]"
+        port = parsed.port
+        default = 443 if parsed.scheme.lower() == "https" else 80
+        suffix = f":{port}" if port is not None and port != default else ""
+        return f"{parsed.scheme.lower()}://{host}{suffix}"
+    except (ValueError, TypeError):
+        return None
 
 
 class BrowserSession:
@@ -483,11 +549,11 @@ class BrowserSession:
         assert self._browser is not None, (
             "BrowserSession must be used inside `with` block"
         )
-        page = self._browser.new_page()
+        context = self._browser.new_context(service_workers="block")
         try:
-            yield page
+            yield context
         finally:
-            page.close()
+            context.close()
 
     def visit(self, url: str) -> dict:
         """Navigate to url, return a summary dict:
@@ -501,6 +567,7 @@ class BrowserSession:
               'static':  [str],                # regex-extracted from <script>
             },
             'requests': [ {method, origin, route} ],
+            'network_events': [ {channel, kind, reason, origin} ],
             'header_observations': [ {name, origin, route, present} ],
             'auth_headers': { name_lower: True },       # names only
           }
@@ -525,9 +592,96 @@ class BrowserSession:
             "sinks": [], "dialogs": [],
             "routes": {"runtime": [], "static": []},
             "requests": [], "header_observations": [], "auth_headers": {},
+            "network_events": [],
             "limitations": ["eval-not-instrumented-to-preserve-lexical-scope"],
         }
-        with self._page_scope() as page:
+        origin = _loopback_http_origin(url)
+        if origin is None:
+            summary["network_events"].append({
+                "channel": "http", "kind": "blocked",
+                "reason": "initial-url-outside-literal-loopback-scope",
+                "origin": None,
+            })
+            summary["errors"].append("initial URL blocked by loopback browser scope")
+            return summary
+
+        with self._page_scope() as context:
+            # Context-level routing covers top-level navigation, redirects,
+            # frames and subresources. Service workers are disabled because
+            # Playwright routing does not intercept service-worker-owned work.
+            def _route_http(route):
+                request_url = route.request.url
+                request_origin = _loopback_http_origin(request_url)
+                if request_origin != origin:
+                    summary["network_events"].append({
+                        "channel": "http", "kind": "blocked",
+                        "reason": "request-outside-same-loopback-origin",
+                        "origin": _safe_http_origin_label(request_url),
+                    })
+                    route.abort()
+                    return
+                try:
+                    # Playwright invokes route handlers only for the first
+                    # request in a redirect chain. Fetch exactly one hop, so
+                    # the adapter can reject every redirect before Chromium
+                    # follows its Location header.
+                    response = route.fetch(max_redirects=0)
+                    if 300 <= response.status < 400:
+                        location = response.headers.get("location", "")
+                        destination = urljoin(request_url, location) if location else request_url
+                        summary["network_events"].append({
+                            "channel": "http", "kind": "blocked",
+                            "reason": "http-redirect-disabled-by-dxadom-scope",
+                            "origin": _safe_http_origin_label(destination),
+                        })
+                        route.abort()
+                        return
+                    route.fulfill(response=response)
+                except Exception:                         # noqa: BLE001
+                    summary["network_events"].append({
+                        "channel": "http", "kind": "error",
+                        "reason": "request-routing-failed-closed",
+                        "origin": _safe_http_origin_label(request_url),
+                    })
+                    try:
+                        route.abort()
+                    except Exception:                     # noqa: BLE001
+                        pass
+
+            context.route("**/*", _route_http)
+
+            # Playwright >=1.48 supports explicit WebSocket routing. If this
+            # guard is absent, fail before navigation rather than silently
+            # running without the promised HTTP-only boundary.
+            route_web_socket = getattr(context, "route_web_socket", None)
+            if not callable(route_web_socket):
+                summary["network_events"].append({
+                    "channel": "websocket", "kind": "error",
+                    "reason": "playwright-websocket-routing-unavailable",
+                    "origin": None,
+                })
+                summary["errors"].append(
+                    "browser visit unavailable: WebSocket guard is unsupported")
+                return summary
+
+            pending_websockets = []
+
+            def _route_websocket(ws):
+                ws_url = getattr(ws, "url", "") or ""
+                summary["network_events"].append({
+                    "channel": "websocket", "kind": "unsupported",
+                    "reason": "websocket-channel-disabled-by-dxadom-scope",
+                    "origin": _websocket_origin(ws_url),
+                })
+                # Do not call the sync API from inside Playwright's route
+                # callback: it blocks that callback's event loop. Without
+                # connect_to_server(), this route is a local mock and cannot
+                # open a network connection. Close it from the caller thread
+                # after navigation and evidence collection.
+                pending_websockets.append(ws)
+
+            route_web_socket("**/*", _route_websocket)
+            page = context.new_page()
             page.on("console", lambda msg: summary["console"].append(
                 f"{msg.type}: {msg.text}"))
             page.on("pageerror", lambda exc: summary["errors"].append(str(exc)))
@@ -645,6 +799,16 @@ class BrowserSession:
                     summary["errors"].append("auth observation failed")
             except Exception as e:                        # noqa: BLE001
                 summary["errors"].append(f"goto(): {e}")
+            for ws in pending_websockets:
+                try:
+                    ws.close(code=1008,
+                             reason="WebSocket unsupported by dxadom scope")
+                except Exception:                         # noqa: BLE001
+                    summary["network_events"].append({
+                        "channel": "websocket", "kind": "error",
+                        "reason": "websocket-mock-close-failed",
+                        "origin": None,
+                    })
         return summary
 
 

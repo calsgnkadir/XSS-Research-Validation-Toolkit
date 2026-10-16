@@ -1,0 +1,268 @@
+{
+    "schema_version":  1,
+    "date":  "2026-10-16",
+    "base_commit":  "f89058e74194f60de8ec9cd3db701e6c6254253c",
+    "working_tree_committed":  false,
+    "environment":  {
+                        "os":  "Windows",
+                        "python":  "3.10.11",
+                        "browser":  "Chrome 155.0.8059.82 (R6 final source wheel/demo recheck)",
+                        "playwright":  "1.63.0"
+                    },
+    "r6":  {
+               "distribution":  "dxa-research-toolkit",
+               "version":  "0.1.0",
+               "wheel_sha256":  "d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad",
+               "offline_fresh_venv":  true,
+               "installed_wheel_gate":  {
+                                            "passed":  7,
+                                            "total":  7,
+                                            "failed":  0,
+                                            "errors":  0,
+                                            "skipped":  0
+                                        },
+               "module_hashes_match_source_wheel_install":  true,
+               "modules":  {
+                               "dxa":  "36bfc0f768edea63e0d167d3bf2b56df6da493b558229ccfa4a75fead27aca7a",
+                               "dxadyn":  "723d527cde9dcd36c0a892604ae48cae6250d6dbc02900f04cad68511a03ebf2",
+                               "dxaprove":  "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+                               "dxadom":  "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+                               "dxa_evidence":  "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+                               "dxa_callback":  "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+                               "dxa_attempts":  "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+                               "dxa_proof_lab":  "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+                               "dxa2dyn":  "d7083188cde6e2672d4696b3ed2a97a17e5c2d01598943427b879b0270ac898f"
+                           },
+               "demo":  {
+                            "exit_code":  0,
+                            "status":  "execution-observed",
+                            "triage":  "unreviewed",
+                            "scope":  "loopback, single origin, one shared account, no vulnerability confirmation",
+                            "vulnerability_confirmed":  false,
+                            "browser_version":  "155.0.8059.82"
+                        },
+               "release_tag_or_publication":  false,
+               "hosted_ci_for_working_tree":  false,
+               "last_recheck":  {
+                                    "run_utc":  "2026-10-16T15:14:57Z",
+                                    "python":  "3.10.11",
+                                    "os":  "Windows 10.0.26200",
+                                    "browser":  "Chrome 155.0.8059.82",
+                                    "playwright":  "1.63.0",
+                                    "venv":  "fresh temporary venv with system-site-packages to reuse preinstalled Playwright; toolkit installed from the wheel offline using --no-index --no-deps",
+                                    "build_command":  "py -3.10 -m pip wheel --no-deps --no-build-isolation --wheel-dir \u003ctemp wheelhouse\u003e .",
+                                    "install_command":  "py -3.10 -m venv --system-site-packages \u003ctemp venv\u003e; \u003cvenv python\u003e -m pip install --no-index --no-deps \u003cwheel\u003e",
+                                    "gate_command":  "\u003cvenv python\u003e bench/check_installed_cli.py --bin-dir \u003cvenv Scripts\u003e --wheel \u003cwheel\u003e --output \u003ctemp gate JSON\u003e",
+                                    "demo_command":  "\u003cvenv Scripts/dxaprove.exe\u003e --demo --browser C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe --output \u003ctemp output\u003e",
+                                    "wheel_path":  "C:\\Users\\user\\AppData\\Local\\Temp\\r6-final-source-recheck-20261016-181457\\wheelhouse\\dxa_research_toolkit-0.1.0-py3-none-any.whl",
+                                    "wheel_sha256":  "d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad",
+                                    "gate_results":  {
+                                                         "dxa_help":  {
+                                                                          "exit_code":  0
+                                                                      },
+                                                         "dxadyn_help":  {
+                                                                             "exit_code":  0
+                                                                         },
+                                                         "dxaprove_help":  {
+                                                                               "exit_code":  0
+                                                                           },
+                                                         "static_config":  {
+                                                                               "configured_findings":  1,
+                                                                               "override_findings":  2
+                                                                           },
+                                                         "config":  {
+                                                                        "exit_code":  0,
+                                                                        "depth":  1,
+                                                                        "observed_routes":  [
+                                                                                                "/",
+                                                                                                "/child",
+                                                                                                "/child?\u003cquery\u003e"
+                                                                                            ],
+                                                                        "html_json_depth_match":  true,
+                                                                        "fixture_thread_closed":  true
+                                                                    },
+                                                         "cli_override":  {
+                                                                              "exit_code":  0,
+                                                                              "depth":  0,
+                                                                              "observed_routes":  [
+                                                                                                      "/",
+                                                                                                      "/child?\u003cquery\u003e"
+                                                                                                  ],
+                                                                              "html_json_depth_match":  true,
+                                                                              "fixture_thread_closed":  true
+                                                                          },
+                                                         "invalid_config":  {
+                                                                                "exit_code":  2,
+                                                                                "secret_not_echoed":  true
+                                                                            }
+                                                     },
+                                    "gate_evidence":  "audit/2026-10-16-r6-r9-final-source/r6-installed-wheel-gate-final-source.json",
+                                    "demo_evidence":  "audit/2026-10-16-r6-r9-final-source/r6-packaged-demo-final-source.json",
+                                    "source_wheel_installed_module_sha256":  {
+                                                                                 "dxa":  "36bfc0f768edea63e0d167d3bf2b56df6da493b558229ccfa4a75fead27aca7a",
+                                                                                 "dxadyn":  "723d527cde9dcd36c0a892604ae48cae6250d6dbc02900f04cad68511a03ebf2",
+                                                                                 "dxaprove":  "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+                                                                                 "dxadom":  "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+                                                                                 "dxa_evidence":  "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+                                                                                 "dxa_callback":  "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+                                                                                 "dxa_attempts":  "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+                                                                                 "dxa_proof_lab":  "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+                                                                                 "dxa2dyn":  "d7083188cde6e2672d4696b3ed2a97a17e5c2d01598943427b879b0270ac898f"
+                                                                             },
+                                    "release_tag_or_publication":  false,
+                                    "hosted_ci_for_working_tree":  false
+                                }
+           },
+    "r9_local_tests":  {
+                           "dynamic_analyzer":  {
+                                                    "command":  "py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadyn.py -q -p no:cacheprovider --tb=short",
+                                                    "isolated_passed":  175,
+                                                    "isolated_failed":  0,
+                                                    "parallel_attempt":  {
+                                                                             "passed":  174,
+                                                                             "failed":  1,
+                                                                             "failure":  "jitter bound exceeded under concurrent test load"
+                                                                         }
+                                                },
+                           "callback_and_journal":  {
+                                                        "passed":  103,
+                                                        "failed":  0
+                                                    },
+                           "callback_boundary_focused":  {
+                                                             "passed":  82,
+                                                             "failed":  0,
+                                                             "scope":  "loopback with temporary/in-memory SQLite; no production reverse proxy or external network"
+                                                         },
+                           "ci_and_compose":  {
+                                                  "passed":  133,
+                                                  "failed":  0
+                                              },
+                           "report_privacy":  {
+                                                  "passed":  23,
+                                                  "failed":  0,
+                                                  "common_evidence_adapter_changed":  false
+                                              },
+                           "credential_cli_and_dxa2dyn":  {
+                                                              "command":  "py -3.10 -m pytest tools/dom-xss-analyzer/test_dxa.py tools/dom-xss-analyzer/test_dxa2dyn.py -q -p no:cacheprovider --tb=short",
+                                                              "passed":  58,
+                                                              "failed":  0,
+                                                              "coverage":  [
+                                                                               "API-key, Authorization Bearer, Cookie source literal masking in --json and console",
+                                                                               "sharing --json-out source fingerprint without raw snippet",
+                                                                               "dxa2dyn parameter-hint extraction preserved"
+                                                                           ]
+                                                          },
+                           "focused_dom_browser":  {
+                                                       "passed":  5,
+                                                       "failed":  0,
+                                                       "covers":  [
+                                                                      "dialog capture",
+                                                                      "dialog timestamp",
+                                                                      "XHR header observation",
+                                                                      "cross-origin direct/redirect boundary",
+                                                                      "WebSocket unsupported/reporting"
+                                                                  ]
+                                                   },
+                           "full_dom_suite_attempts":  [
+                                                           {
+                                                               "passed":  77,
+                                                               "failed":  3,
+                                                               "failures":  [
+                                                                                "test_dialog_alert_captured",
+                                                                                "test_dialog_record_carries_timestamp",
+                                                                                "test_xhr_headers_captured_and_auth_extracted"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "passed":  79,
+                                                               "failed":  1,
+                                                               "failures":  [
+                                                                                "test_route_capture_pushstate"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "passed":  78,
+                                                               "failed":  2,
+                                                               "failures":  [
+                                                                                "test_dialog_prompt_captured",
+                                                                                "test_mixed_page_captures_both_runtime_and_static"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "passed":  70,
+                                                               "failed":  10,
+                                                               "duration_seconds":  270.63,
+                                                               "failures":  [
+                                                                                "test_browser_session_captures_page_error",
+                                                                                "test_sink_outerHTML_captured",
+                                                                                "test_sink_document_write_captured",
+                                                                                "test_sink_document_writeln_captured",
+                                                                                "test_eval_is_not_wrapped",
+                                                                                "test_dialog_confirm_captured",
+                                                                                "test_dialog_prompt_captured",
+                                                                                "test_multiple_dialogs_all_captured",
+                                                                                "test_dialog_from_onerror_handler_captured",
+                                                                                "test_dialog_hits_for_correlates_canary_across_many_dialogs"
+                                                                            ],
+                                                               "fixture_connection_aborted":  true,
+                                                               "goto_timeout_ms":  15000
+                                                           }
+                                                       ],
+                           "focused_reruns_passed":  [
+                                                         "test_dialog_alert_captured",
+                                                         "test_dialog_record_carries_timestamp",
+                                                         "test_xhr_headers_captured_and_auth_extracted",
+                                                         "test_route_capture_pushstate"
+                                                     ],
+                           "latest_two_failures_focused_rerun":  {
+                                                                     "passed":  2,
+                                                                     "failed":  0,
+                                                                     "tests":  [
+                                                                                   "test_dialog_prompt_captured",
+                                                                                   "test_mixed_page_captures_both_runtime_and_static"
+                                                                               ]
+                                                                 },
+                           "latest_failure_group_rerun":  {
+                                                              "passed":  6,
+                                                              "failed":  4,
+                                                              "duration_seconds":  99,
+                                                              "focused_retry_of_failures":  {
+                                                                                                "passed":  4,
+                                                                                                "failed":  0,
+                                                                                                "tests":  [
+                                                                                                              "test_sink_document_write_captured",
+                                                                                                              "test_dialog_prompt_captured",
+                                                                                                              "test_multiple_dialogs_all_captured",
+                                                                                                              "test_dialog_from_onerror_handler_captured"
+                                                                                                          ]
+                                                                                            },
+                                                              "route_fetch_or_shutdown_root_cause":  false
+                                                          },
+                           "intermittent_root_cause_established":  false,
+                           "full_dom_suite_gate":  "open"
+                       },
+    "source_sha256":  {
+                          "tools/dom-xss-analyzer/dxadyn.py":  "723d527cde9dcd36c0a892604ae48cae6250d6dbc02900f04cad68511a03ebf2",
+                          "tools/dom-xss-analyzer/test_dxadyn.py":  "04d2cfa381ac0b00d80f4d4c4273de2367e5a5584f53931f91ae23bd2b3d477a",
+                          "tools/dom-xss-analyzer/dxadom.py":  "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+                          "tools/dom-xss-analyzer/test_dxadom.py":  "c7eee81fc6fc692d7fea8eb04ae4dbbf0b48e3ed2d0d53e97b1f7061e9b951d9",
+                          "tools/dom-xss-analyzer/dxa_callback.py":  "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+                          "tools/dom-xss-analyzer/test_report_privacy.py":  "f7e382eda1a1ea5d4fba85f0074d486e4110e49a0647bb43b6f2903cf53c7cca",
+                          "tools/dom-xss-analyzer/test_dxa_callback.py":  "840d7440f2b127e8354f7887bb79e889bc94114dbb2b9a42faeb119311e3f462",
+                          "tools/dom-xss-analyzer/test_callback_boundaries.py":  "de4f6742a23f32b0323cf7b886b70edc1fd3803a31ef429366ab96bb635a98fe",
+                          "tools/dom-xss-analyzer/dxa_attempts.py":  "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+                          "tools/dom-xss-analyzer/test_blind_journal.py":  "3a5dd5865de85a3ae111408468c5042c4be4e9af1e23c5b0aa492871c72d09b6",
+                          "bench/targets/README.md":  "9493c4251d587f702c9a91b6e163373cbcf746344c36aa17e91ad8bf2815b081",
+                          "bench/test_target_compose_safety.py":  "61046dc1de5c3d31ba7d10882191f4bf9da94974c481350458468d3d89bdf09c",
+                          "tools/dom-xss-analyzer/BROWSER-PROOF.md":  "48688df596d93a73e7dfdc77884d4ca7cb3615e665c7dca55ca4e035608f6c0c",
+                          "tools/dom-xss-analyzer/dxa.py":  "36bfc0f768edea63e0d167d3bf2b56df6da493b558229ccfa4a75fead27aca7a",
+                          "tools/dom-xss-analyzer/test_dxa.py":  "c8d78449c45d08384142f2b411cda7ec7ec2f17b6ddf4f6baeaaa762d270210b",
+                          "tools/dom-xss-analyzer/EVIDENCE-CONTRACT.md":  "d76944a01a1a6a760efd59d226d3a7eb4867b841b796f86e384b49be9437c527",
+                          "tools/dom-xss-analyzer/README.md":  "43498f362b264724213610bc36bd86c055af8e06c4a2d2ffe9cde1fb9cf8d6cd"
+                      },
+    "git_delivery":  {
+                         "commit_created":  false,
+                         "push_performed":  false,
+                         "remote_verified":  false
+                     }
+}

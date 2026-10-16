@@ -417,6 +417,27 @@ def _waf_mutations(base_canary, marker):
     return [(name, xf(base_canary), xf(marker)) for name, xf in _WAF_MUTATIONS]
 
 
+def _mutation_outcomes(base_canary, base_marker, mutations):
+    """Classify transform outputs without treating shape count as coverage.
+
+    A mutation can be a no-op for a particular variant, or two names can
+    produce the same wire shape. Keep both cases explicit so reports do not
+    imply that every generated attempt was distinct.
+    """
+    seen = {(base_canary, base_marker): "base"}
+    outcomes = []
+    for name, canary, marker in mutations:
+        shape = (canary, marker)
+        if shape == (base_canary, base_marker):
+            outcomes.append((name, "no-op", "base"))
+        elif shape in seen:
+            outcomes.append((name, "repeat", seen[shape]))
+        else:
+            outcomes.append((name, "distinct", ""))
+            seen[shape] = name
+    return outcomes
+
+
 # --- Phase 3.2: blind XSS payload family -----------------------------------
 #
 # Stored payloads that fire in someone else's session (admin panel moderator
@@ -595,9 +616,17 @@ def make_canaries_for(variants, waf_bypass=False):
         yield v, cid, base_canary, marker
         if not waf_bypass:
             continue
-        for mut_name, mut_canary, mut_marker in _waf_mutations(base_canary, marker):
+        mutations = _waf_mutations(base_canary, marker)
+        outcomes = _mutation_outcomes(base_canary, marker, mutations)
+        for (mut_name, mut_canary, mut_marker), (_name, state, previous) in zip(
+                mutations, outcomes):
             # give each mutation its own cid so its verdict is independent
             mut_cid = "dxa" + secrets.token_hex(4)
+            if state != "distinct":
+                reason = (f"{state}:{v}/{mut_name}" if state == "no-op" else
+                          f"repeat:{v}/{mut_name}:{previous}")
+                REPORT_EVENTS.append(evidence.ReportEvent(
+                    "mutation", "info", reason, canary_id=mut_cid))
             yield (f"{v}/{mut_name}", mut_cid,
                    mut_canary.replace(cid, mut_cid, 1), mut_marker)
 
@@ -830,6 +859,18 @@ def _print_skip_summary():
           + ("" if WAF_LOG_FILE is None else f"  Full log: {WAF_LOG_FILE}."))
 
 
+def _print_mutation_summary():
+    """Show transform duplicates/no-ops without claiming bypass coverage."""
+    outcomes = [event.reason for event in REPORT_EVENTS
+                if event.stage == "mutation"]
+    if not outcomes:
+        return
+    noops = sum(reason.startswith("no-op:") for reason in outcomes)
+    repeats = sum(reason.startswith("repeat:") for reason in outcomes)
+    print(f"[dxadyn] mutation transforms: {noops} no-op, {repeats} repeated shape(s); "
+          "shape accounting only, not WAF bypass or browser-execution evidence.")
+
+
 @_session_serial
 def fetch(url, data=None, method=None, extra=None, scope_origin=None):
     """GET (data=None) / POST (data=dict) / any HTTP method (method='PUT'|...).
@@ -938,26 +979,30 @@ def find_context(cid, body):
       'body'        - free markup context; a raw <img onerror> executes
       'title'       - inside <title>...</title>; needs </title> breakout to run
       'script'      - inside <script>...</script>; needs JS-string breakout
+      'style'       - inside <style>...</style>; CSS context, not free markup
+      'textarea'    - inside <textarea>...</textarea>; text/RCDATA context
+      'comment'     - inside an HTML comment; comment-close breakout required
       'attr:NAME'   - inside an HTML attribute value; needs " or ' breakout
       'url-attr:NAME' - href/src/action/... value; a `javascript:` URL executes
       'unknown'     - cid not present (should not happen when we call this)
-    This is what turns "the payload reflected raw" into "the payload actually
-    executes without further tricks" - the practical difference between a
-    reportable exploit and a reflection that still needs a follow-on breakout
-    step (which we hit repeatedly on Bludit's <title>-only tag XSS)."""
+    Context is descriptive metadata only. It does not upgrade a reflection to
+    browser execution or vulnerability evidence."""
     i = body.find(cid)
     if i == -1:
         return "unknown"
     before_low = body[max(0, i - 800): i].lower()
 
-    # inside a <title> that hasn't closed yet?
-    ti = before_low.rfind("<title")
-    if ti != -1 and "</title" not in before_low[ti:]:
-        return "title"
-    # inside a <script> that hasn't closed?
-    si = before_low.rfind("<script")
-    if si != -1 and "</script" not in before_low[si:]:
-        return "script"
+    # Comment text can look like markup. Recognize it before tag parsing.
+    if before_low.rfind("<!--") > before_low.rfind("-->"):
+        return "comment"
+
+    # Raw-text/RCDATA elements take precedence over generic body/attribute
+    # parsing. The first CID's nearest unmatched opening element is reported.
+    for tag in ("title", "script", "style", "textarea"):
+        opened = before_low.rfind("<" + tag)
+        closed = before_low.rfind("</" + tag)
+        if opened > closed:
+            return tag
     # inside an opening tag whose > hasn't been seen yet -> attribute context
     lt = before_low.rfind("<")
     gt = before_low.rfind(">")
@@ -1630,7 +1675,13 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
     # tuple. The first landing URL (input order) becomes the crawl seed root.
     canaries = list(make_canaries_for(variants, waf_bypass)) if _canaries is None else _canaries
     if len(canaries) > 1:
-        rows, first, totals = [], "", {"submit_landing": "", "checked_pages": 0, "candidates": 0}
+        rows, first, totals = [], "", {
+            "submit_landing": "", "checked_pages": 0, "candidates": 0,
+            "canary_runs": 0, "manual_seed_pages": 0,
+            "submit_landing_pages": 0, "origin_root_pages": 0,
+            "link_discovered_pages": 0, "out_of_scope_seed_count": 0,
+            "seed_budget_omitted": 0, "link_budget_omitted": 0,
+        }
         for canary in canaries:
             found, cid, details = probe_stored_auto(
                 target_url, target_field, extra_fields, seed_urls, method, csrf_field,
@@ -1641,6 +1692,9 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                 first, totals["submit_landing"] = cid, details["submit_landing"]
             totals["checked_pages"] += details["checked_pages"]
             totals["candidates"] += details["candidates"]
+            for key in totals:
+                if key not in ("submit_landing", "checked_pages", "candidates"):
+                    totals[key] += details[key]
         return dedupe_findings(rows), first, totals
 
     def _one_submit(quad):
@@ -1667,32 +1721,53 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
     origin = urllib.parse.urlsplit(target_url)
     root = f"{origin.scheme}://{origin.netloc}/"
     resolved_seeds = [u.replace("{CID}", first_cid) for u in (seed_urls or [])]
-    seeds, seen_seeds = [], set()
-    for u in resolved_seeds + ([landing] if landing else []) + [root]:
-        if u and u not in seen_seeds:
-            seen_seeds.add(u)
-            seeds.append(u)
+    seed_entries = ([(u, "manual-seed") for u in resolved_seeds] +
+                    ([(landing, "submit-landing")] if landing else []) +
+                    [(root, "origin-root")])
+    seed_sources, seen_seeds = {}, set()
+    out_of_scope_seed_count = 0
+    for url, source in seed_entries:
+        url = urllib.parse.urldefrag(url or "")[0]
+        if not url or url in seen_seeds:
+            continue
+        seen_seeds.add(url)
+        if not _in_origin(url, _origin(target_url)):
+            out_of_scope_seed_count += 1
+            REPORT_EVENTS.append(evidence.ReportEvent(
+                "stored-auto", "skip", "out-of-scope-seed", url))
+            continue
+        seed_sources[url] = source
 
-    host = origin.netloc
-    candidates, seen = [], set()
-    for seed in seeds:
-        if seed not in seen:
-            seen.add(seed)
-            candidates.append(seed)
+    page_limit = max(0, int(max_links))
+    candidates, candidate_sources = [], {}
+    seed_budget_omitted = max(0, len(seed_sources) - page_limit)
+    for url, source in seed_sources.items():
+        if len(candidates) >= page_limit:
+            break
+        candidate_sources[url] = source
+        candidates.append(url)
+    if seed_budget_omitted:
+        REPORT_EVENTS.append(evidence.ReportEvent(
+            "stored-auto", "skip", f"seed-budget-exhausted:{seed_budget_omitted}"))
+
+    link_budget_omitted = 0
+    for seed in candidates[:len(seed_sources) - seed_budget_omitted]:
         st, _, body, _ct = fetch(seed)
         if not body or body.startswith("__error__"):
             continue
         for link in _all_links(seed, body):
-            if urllib.parse.urlsplit(link).netloc != host:
+            if not _in_origin(link, _origin(target_url)):
                 continue
-            if link in seen:
+            if link in candidate_sources:
                 continue
-            seen.add(link)
+            if len(candidates) >= page_limit:
+                link_budget_omitted += 1
+                continue
+            candidate_sources[link] = "same-origin-link"
             candidates.append(link)
-            if len(candidates) >= max_links:
-                break
-        if len(candidates) >= max_links:
-            break
+    if link_budget_omitted:
+        REPORT_EVENTS.append(evidence.ReportEvent(
+            "stored-auto", "skip", f"link-budget-exhausted:{link_budget_omitted}"))
 
     # Phase 3: fetch each candidate once, verdict against every variant.
     # Phase 1.1: candidate fetches run in parallel (each fetch is
@@ -1711,6 +1786,7 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                 row = _finding(cand_url, "GET", label, v, st, raw_ctx, cid, _ct, vname)
                 row.update(target=target_url, field=label, check_url=cand_url,
                            sub_status=sub_status, check_status=st, auto_discovered=True,
+                           discovery_source=candidate_sources.get(cand_url, "unknown"),
                            submission_method=method.upper())
                 rows.append(row)
         return rows
@@ -1731,8 +1807,21 @@ def probe_stored_auto(target_url, target_field, extra_fields, seed_urls,
                                 ("attempt_id", "created_at", "submitted_at", "session_role",
                                  "submission_state")})
                     row["evidence_level"] = "reflection"
-    return findings, first_cid, {"submit_landing": landing, "checked_pages": checked,
-                                 "candidates": len(candidates)}
+    return findings, first_cid, {
+        "submit_landing": landing, "checked_pages": checked,
+        "candidates": len(candidates), "canary_runs": len(submits),
+        "manual_seed_pages": sum(1 for source in candidate_sources.values()
+                                  if source == "manual-seed"),
+        "submit_landing_pages": sum(1 for source in candidate_sources.values()
+                                    if source == "submit-landing"),
+        "origin_root_pages": sum(1 for source in candidate_sources.values()
+                                 if source == "origin-root"),
+        "link_discovered_pages": sum(1 for source in candidate_sources.values()
+                                     if source == "same-origin-link"),
+        "out_of_scope_seed_count": out_of_scope_seed_count,
+        "seed_budget_omitted": seed_budget_omitted,
+        "link_budget_omitted": link_budget_omitted,
+    }
 
 
 def probe_headers(url, header_names, variants=None, waf_bypass=False):
@@ -2548,6 +2637,8 @@ def main():
     # Validate mode selection before browser discovery, session setup or I/O.
     if sum(bool(mode) for mode in (args.dom, args.stored, args.flow)) > 1:
         ap.error("choose only one of --dom, --stored, or --flow")
+    if args.stored and args.auto_check and args.check:
+        ap.error("--check (manual URLs) and --auto-check (autonomous discovery) are separate stored modes")
     if args.url and (args.stored or args.flow):
         ap.error("positional URL is for reflected/--dom mode; stored/flow defines its own target")
     if args.dom and args.auth_check:
@@ -2741,7 +2832,7 @@ def main():
         if apply_header(spec):
             print(f"[dxadyn] extra header set: {spec.split(':', 1)[0].strip()}")
         else:
-            print(f"[dxadyn] --header ignored (need 'Name: value'): {spec!r}",
+            print("[dxadyn] --header ignored (need 'Name: value'; supplied value omitted)",
                   file=sys.stderr)
 
     # Phase 1.5: --auth-flow runs BEFORE the scan proper (--flow / --stored /
@@ -2893,6 +2984,7 @@ def main():
             attempt_journal = AttemptJournal(args.blind_journal, BLIND_CALLBACK, args.session_role)
             print(f"[dxadyn] blind journal: {args.blind_journal}; run_id={attempt_journal.run_id}")
 
+        stored_auto_meta = None
         if args.auto_check:
             seeds = [u.strip() for u in args.auto_check_from.split(",") if u.strip()]
             print(f"[dxadyn] STORED-AUTO probe: {args.target} {shape_desc}{vlabel} "
@@ -2906,9 +2998,18 @@ def main():
                 header_target=args.header_target or None,
                 variants=variants, waf_bypass=args.waf_bypass,
                 attempt_journal=attempt_journal)
+            stored_auto_meta = meta
             print(f"[dxadyn] canary id = {cid}{' (of ' + str(total_shapes) + ' shapes)' if total_shapes > 1 else ''}")
             print(f"[dxadyn] submit landed at: {meta['submit_landing']}")
-            print(f"[dxadyn] crawled {meta['checked_pages']}/{meta['candidates']} pages")
+            print(f"[dxadyn] crawled {meta['checked_pages']}/{meta['candidates']} page candidates "
+                  f"across {meta['canary_runs']} canary run(s); "
+                  f"seeds={meta['manual_seed_pages']} operator, "
+                  f"{meta['submit_landing_pages']} landing, "
+                  f"{meta['origin_root_pages']} origin-root; "
+                  f"linked={meta['link_discovered_pages']}; "
+                  f"out-of-scope seeds={meta['out_of_scope_seed_count']}; "
+                  f"budget omitted seeds/links={meta['seed_budget_omitted']}/"
+                  f"{meta['link_budget_omitted']}")
         else:
             checks = [u.strip() for u in args.check.split(",") if u.strip()]
             print(f"[dxadyn] STORED probe: {args.target} {shape_desc}{vlabel} "
@@ -2937,8 +3038,12 @@ def main():
 
         mode = "stored-auto" if args.auto_check else "stored"
         meta = {"target": args.target, "shape": shape_desc, "canary_id": cid}
+        if stored_auto_meta is not None:
+            meta.update({key: value for key, value in stored_auto_meta.items()
+                         if key != "submit_landing"})
         document = write_json_report(args.json_out, findings, mode, meta,
                                      for_html=bool(args.html))
+        _print_mutation_summary()
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
                 fh.write(render_html(findings, args.target, mode, document=document))
@@ -3013,6 +3118,7 @@ def main():
         meta["waf_bypass"] = "on"
     document = write_json_report(args.json_out, findings, "reflected", meta,
                                  for_html=bool(args.html))
+    _print_mutation_summary()
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
             fh.write(render_html(findings, args.url, "reflected", document=document))
