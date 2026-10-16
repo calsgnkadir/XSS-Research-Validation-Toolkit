@@ -217,7 +217,7 @@ Son yeniden denetim: R8 modül düzeyi encoder rebinding karşı örneği düzel
 R5 ayrı agent K01'i 5/5 tekrarladı; ikinci insan kabulü hâlâ açık.
 
 Ana hedef ve kabul ölçütleri [ROADMAP](ROADMAP.md), test kanıtları
-[VALIDATION](VALIDATION.md), çalışma düzeni [AGENT-WORKFLOW](docs/AGENT-WORKFLOW.md).
+[VALIDATION](VALIDATION.md), AI kullanım açıklaması [AI_USAGE](AI_USAGE.md).
 
 ## Son yerel kabul ve kalan işler — R5, R8, R6
 
@@ -254,8 +254,8 @@ Chrome ile K01 proof 5/5 tekrarladı. Koordinatör 12 kanıt üyesinin hashlerin
 ve vaka README diffini doğruladı. Beş geçici port kapandı, aynı payload/fix
 retest kaydedildi. [Kanıt](audit/2026-10-14-r5-k01-clean-repeat/README.md).
 İkinci kişi/farklı ortam kabulü henüz yok; genel R5 açık. Daha sonraki ayrı
-agent koşusu [burada](audit/2026-10-14-r5-independent-agent-repeat/README.md);
-aynı host ve mevcut Python ile çalıştı.
+agent koşusu aynı host ve mevcut Python ile çalıştı; tarihsel paket yerel
+kopyada korunup kamuya açık depodan çıkarılmıştır.
 
 ## Son doğrulanan R4 teslimi — auth/CSRF ana runner entegrasyonu
 

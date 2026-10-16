@@ -187,7 +187,7 @@ proje talebi; dış hedef için açık hedef/scope yetkisi ayrıca doğrulanır.
 disclosure/mesaj/yayın için kullanıcının gönderim talimatı gerekir; bir agent
 yorumu veya eski hedef önerisi bunun yerine geçmez. Mevcut GitHub push yetkisi sürer.
 
-[Agent yorumunun ayrıntılı değerlendirmesi](audit/2026-10-05-r1/AGENT-YORUMU.md).
+Tarihsel agent inceleme notu, yerel kopyada korunup kamuya açık depodan çıkarılmıştır.
 
 ## Bot: ayrıntılı görevler ve kabul koşulları
 
@@ -409,7 +409,7 @@ fixture'larını gerçek `dxaprove.run` üzerinden kimlik scorer'ına bağlar.
 CID/frame/source/rol doğrulaması, tamamlanmış pozitif miss için FN ve
 error/invalid ayrımı testlidir. Legacy aday sayaçları ayrı kalır. Bu dört
 fixture tam corpus, gerçek ürün adapter'ı veya uzak CI kapanışı değildir.
-[Çalışma ve kanıt](audit/2026-10-06-multi-agent-round1/README.md).
+Bu tarihsel çalışma/kanıt paketi yerel kopyada korunup kamuya açık depodan çıkarılmıştır.
 
 Önce aşağıdaki sentetik fixture matrisi, ardından tek gerçek uygulama adapter'ı. 20 yarım hedef yerine kurulumdan rapora çalışan küçük corpus.
 

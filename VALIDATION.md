@@ -578,15 +578,15 @@ bu teslimde uygulanmadı. Eski browser discovery skip'leri kapanmış sayılmaz.
 
 - Birleşik scope/HTTP/auth/browser/rapor/benchmark paketi: **339 passed,
   86.51 saniye**. Log/JUnit yerel çıktıdır, depoda yoktur;
-  [yeniden üretim komutu](audit/2026-10-06-multi-agent-round1/README.md#önce-hata-sonra-düzeltme).
+  tarihsel yeniden üretim komutu yerel kopyadaki audit paketindedir; paket kamuya açık depodan çıkarılmıştır.
 - Chrome proof-suite: dört seçilen/dört tamamlanan, TP=1 FP=0 FN=0,
   strict exit 0. JSON/Markdown yerel çıktıdır, depoda yoktur;
-  [yeniden üretim komutu](audit/2026-10-06-multi-agent-round1/README.md#r4-ölçüm-kanıtı).
+  tarihsel yeniden üretim komutu yerel kopyadaki audit paketindedir; paket kamuya açık depodan çıkarılmıştır.
 - Eval global-scope testi yeterli değildi: fonksiyon-local karşı örnek önce
   başarısız oldu; hook kaldırılınca 21 browser testi geçti. Ortak JSON/HTML
   raporunda eval gözleminin desteklenmediği artık açıkça kayıtlıdır.
 - Bu tur tam depo veya uzak CI koşusu değildir. Önceki 36 browser skip'in
-  tamamının çözüldüğü iddia edilmez. [Kapsam ve katkılar](audit/2026-10-06-multi-agent-round1/README.md).
+  tamamının çözüldüğü iddia edilmez. Kapsam ve katkıların tarihsel kaydı yerel kopyada korunup kamuya açık depodan çıkarılmıştır.
 
 ## R3 ilk browser zinciri — tarihsel teslim
 
