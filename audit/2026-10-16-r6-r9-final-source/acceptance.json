@@ -363,7 +363,17 @@
                                                            "run_id":  "38974413706",
                                                            "conclusion":  "success"
                                                        },
-                                  "delivery_of_test_only_changes":  "pending",
-                                  "hosted_rerun":  "pending"
+                                  "delivery_commit":  "3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f",
+                                  "remote_ref_verified":  true,
+                                  "delivery_of_test_only_changes":  "committed and pushed",
+                                  "hosted_rerun":  {
+                                                       "general_ci_run":  "38977151511",
+                                                       "conclusion":  "success",
+                                                       "successful_jobs":  3,
+                                                       "total_jobs":  3,
+                                                       "k01_linux_run":  "38977151588",
+                                                       "k01_conclusion":  "success"
+                                                   },
+                                  "bounded_r9_hosted_acceptance":  "complete"
                               }
 }

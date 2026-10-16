@@ -1,12 +1,13 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-16 Ekim güncel durum: R4 teknik teslimi ve R5/K01 teknik kabulü tamamlandı;
+17 Ekim güncel durum: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
+pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
 Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
-doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot işi R9;
-portfolyo/kanıt işleri ayrıca açıktır.
+doğruluğu veya vulnerability iddiası oluşturmaz. Bot işlerinde R7/A01–A05 için
+yetkili araştırma kapsamı seçimi açık; portfolyo/kanıt işleri ayrıca açıktır.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
 “genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
@@ -126,7 +127,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R6, R8–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 tamam; R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -629,14 +630,15 @@ Bu 9 Ekim kaydı tarihsel ve dar teslimi anlatır; 16 Ekim kapanış matrisi aş
 - [x] `safe.py` template kaynağına girdi birleştirmez; template parametresi kullanır; SSTI ve XSS ayrı test beklentileridir.
 - [x] Python AST pilotu tek dille başlar; pozitif/negatif etiketli corpus üzerinde ölçülür; temiz projede açık bulma kotası yoktur.
 
-## R9 — Operasyon, kapsam ve tekrar üretim (bot; açık)
+## R9 — Operasyon, kapsam ve tekrar üretim (bot; tamam, bounded scope)
 
 Dosyalar: callback servisi, CLI, bench compose dosyaları, README/CI.
 
-11 Ekim dar teslim: CI self-scan'in crash/import hatasını beklenen bulgu
+11 Ekim tarihli dar teslim: CI self-scan'in crash/import hatasını beklenen bulgu
 sayması düzeltildi; gerçek CLI + bağımsız karşı örneklerle 143 test geçti.
-[Kanıt](audit/2026-10-11-continuity/README.md). Aşağıdaki birleşik self-scan /
-browser skip / bench CI maddesi ve genel R9 kapanışı açık kalır.
+[Kanıt](audit/2026-10-11-continuity/README.md). O tarihte aşağıdaki birleşik
+self-scan / browser skip / bench CI maddesi ve genel R9 kapanışı açıktı; güncel
+kapanış için bu bölümün sonundaki 17 Ekim kaydını kullan.
 
 6 Ekim dar teslim: reflected crawler form/link/redirect/CSRF isteklerinde
 scheme/host/port sınırı iki loopback origin ile doğrulandı. Cookie jar korunur.
@@ -662,16 +664,15 @@ WebSocket DOM sınırı, compose statik kapıları ve self-scan/CI oracle'ı.
 17 Ekim'de test fixture'larındaki seri HTTP sunucuları, aynı scope ve oracle'ları
 koruyarak `ThreadingHTTPServer` kullandı; teardown her server thread'inin
 kapandığını denetliyor. Hata grubu **14/14**, tam Chrome DOM paketi **80/80**
-geçti. `dxadom.py` çalışma davranışı değişmedi. Commit `221baa5` push edildi;
-hosted CI `38974413648`'de analyzer ve required browser proof job'ları başarısız,
-opt-in browser harness başarılı; K01 Linux `38974413706` başarılı. Log API 403
-verdi, dolayısıyla job içi hata nedeni doğrulanmadı. Takipte iki test-fixture
-düzeltmesi yapıldı: direct-eval testi loopback HTTP fixture kullanıyor ve
-stored-auto report mock'u üretim metadata alanlarını sağlıyor. Sonraki yerel
-Windows/Python 3.10.11 tam analyzer paketi **788 passed, 38 skipped, 0 failed**;
-11 dosyalı required Chrome kabulü **218/218**. Bu iki test değişikliği henüz
-commit/push ve hosted CI'da doğrulanmadı. **R9 hosted CI kapısı açık.** [Yerel ve
-uzak kanıt sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
+geçti; `dxadom.py` davranışı değişmedi. `221baa5` ilk hosted koşusunda iki
+test-fixture hatası bulundu; düzeltmeler `3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f`
+ile push edildi. Bu commit için general CI `38977151511` üç job'da başarılı,
+K01 Linux `38977151588` başarılı. Aynı kaynak düzeltmeleriyle yerel full
+analyzer **788 passed, 38 skipped, 0 failed**; 11 dosyalı required Chrome
+seçimi **218/218** geçti. R9'un bu roadmap'te tanımlı bounded operasyon ve
+tekrar üretim kabulü tamamlandı. Reverse proxy/DNS deployment, WebSocket dışı
+non-HTTP ağ kanallarının sandbox'ı ve genel ürün doğruluğu iddia edilmez. [Yerel
+ve uzak kanıt sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
 

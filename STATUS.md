@@ -13,16 +13,15 @@ CVE aidiyeti doğrulanmış değil; A03'ün eski program/90 gün ifadeleri günc
 scope veya izin kanıtı değil. Yetkili ürün ve program scope'u olmadan dış hedef
 testi yapılmadı.
 
-R9 DOM fixture düzeltmesi `221baa5621fc26a8eb581b4d88410b2e0a66e77b` ile
-push edildi. Yerel Chrome DOM paketi **80/80**, tarihsel hata grubu **14/14**
-geçti. Bu commit'in hosted CI run `38974413648` başarısız: opt-in browser
-harness başarılı, analyzer ve required browser proof job'ları başarısız; K01
-Linux `38974413706` başarılı. Job logları 403 nedeniyle alınamadı. İki test
-fixture düzeltmesi bu hosted koşuda yoktu: direct-eval loopback fixture'ı ve
-stored-auto metadata test double'ı. Düzeltmeler sonrası 11 dosyalı Chrome
+R9 test-fixture ve report-matrix düzeltmeleri `3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f`
+ile push edildi ve uzak main hash'i eşleşti. Önceki `221baa5` genel CI'daki
+başarısız analyzer/proof job'ları düzeltmelerden önceki test sorunlarıydı.
+Güncel general CI `38977151511` üç job'da başarılı; K01 Linux `38977151588`
+başarılı. Yerel Chrome DOM paketi **80/80**, 11 dosyalı required Chrome
 kabulü **218/218**, tam analyzer paketi **788 geçti, 38 atlandı, hata yok**
-(Windows/Python 3.10.11) oldu. Son iki düzeltme henüz commit/push edilmedi;
-R9 kapanışı yeni push ve hosted genel CI doğrulanana kadar açık.
+(Windows/Python 3.10.11). Böylece ROADMAP'teki sınırlı R9 teknik ve hosted CI
+kabulü tamamlandı. Reverse proxy/DNS deployment, genel ağ sandboxı ve genel
+ürün doğruluğu bu kapsamda kanıtlanmış değildir.
 
 ## Tarihsel R6 / R8 devamı — 16 Ekim 2026 (sonraki kayıtlarla güncellendi)
 

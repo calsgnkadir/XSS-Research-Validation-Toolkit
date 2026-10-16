@@ -1,6 +1,23 @@
-﻿# Doğrulama kaydı — 2026-10-15
+# Doğrulama kaydı — 2026-10-17
 
-## 221baa5 CI follow-up — 2026-10-17, local Windows and hosted jobs
+## Latest R9 delivery — 2026-10-17, local Windows and hosted jobs
+
+Commit `3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f` was pushed to `origin/main`
+and the remote ref hash matched. General CI
+[run 38977151511](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38977151511)
+passed all three jobs; K01 Linux
+[run 38977151588](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38977151588)
+passed. These are workflow/job outcomes; no artifact was independently
+downloaded in this follow-up.
+
+The commit contains two test-fixture fixes: direct-eval browser proof serves
+from a literal-loopback HTTP fixture, and the stored-auto report matrix mock
+supplies the probe's full metadata contract. On Windows/Python 3.10.11, the
+11-file required Chrome suite passed **218/218**, and the full analyzer suite
+passed **788**, skipped **38**, failed **0** in 183.55 seconds. Quiet pytest
+output did not include skip names/reasons.
+
+## Prior `221baa5` CI run — 2026-10-17
 
 Commit `221baa5621fc26a8eb581b4d88410b2e0a66e77b` general CI
 `38974413648` completed with opt-in Playwright harness success, but
@@ -18,9 +35,8 @@ errors or skips (Windows, Python 3.10.11, Chrome 155.0.8059.82,
 Playwright 1.63.0). The full `tools/dom-xss-analyzer` suite then passed
 **788**, skipped **38**, failed **0** in 183.55 seconds (Windows/Python 3.10.11).
 The quiet full-suite output did not identify skip names/reasons. These two
-test-only changes are not in commit `221baa5`; no hosted CI result applies to
-them. R9's hosted gate remains open until their delivery and a successful
-hosted rerun.
+test-only changes were absent from `221baa5`; they were later delivered and
+validated by hosted CI `38977151511` above.
 
 ## R9 DOM fixture recheck — 2026-10-17, local Windows
 

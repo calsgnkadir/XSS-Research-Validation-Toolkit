@@ -26,8 +26,8 @@
   Logs were not retrievable (HTTP 403). Two test-only fixes followed: a
   loopback HTTP fixture for the direct-eval proof and a complete stored-auto
   report mock. The local required Chrome selection passed 218/218 and the full
-  analyzer suite passed 788 with 38 skips; the corrected snapshot still needs
-  a hosted rerun.
+  analyzer suite passed 788 with 38 skips. Commit `3a386ee` then passed all
+  three general CI jobs and K01 Linux; details are in VALIDATION.md.
 
 - R9 local DOM test fixtures now use threaded HTTP servers with explicit
   shutdown/join checks. The full Chrome `test_dxadom.py` suite passed 80/80;

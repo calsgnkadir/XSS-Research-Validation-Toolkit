@@ -143,12 +143,13 @@ channels are explicitly unsupported, so a separate adapter is not required by
 this scope. Docker fixtures without target-specific bootstrap/login/lesson
 adapters remain explicitly unready; this is the accepted operational guard,
 not proof those targets work. Scoped report/credential masking and the
-variant/context matrix have local test acceptance. R9 remains open because the
-newly passing local DOM fixture change still needs Git delivery and hosted CI.
+variant/context matrix have local test acceptance. At this snapshot R9 remained
+open because the newly passing local DOM fixture change still needed Git
+delivery and hosted CI; the final delivery below supersedes that status.
 The previous full-suite failures remain historical run results; the 17 October
 threaded-fixture rerun is the current local DOM acceptance.
 
-## Delivery and CI follow-up — 2026-10-17
+## Local-only follow-up before final delivery — 2026-10-17
 
 The R9 threaded-fixture DOM test change was delivered as commit
 `221baa5621fc26a8eb581b4d88410b2e0a66e77b`; `origin/main` matched. Its
@@ -163,11 +164,21 @@ stored-auto report-mode mock supplies the real probe's full metadata contract.
 The direct-eval isolated regression changed from 1 failure to 1 pass; the exact
 11-file Chrome acceptance suite then passed **218/218**. The full analyzer
 suite passed **788**, skipped **38**, failed **0** in 183.55 seconds on Windows
-Python 3.10.11. Quiet pytest output did not identify the skipped tests. These
-two files are not part of `221baa5` and have no hosted result yet. The earlier
-pending-delivery wording below describes the preceding snapshot; current status
-is this follow-up. R9 hosted acceptance remains open pending delivery and a
-successful hosted rerun.
+Python 3.10.11. Quiet pytest output did not identify the skipped tests. At that
+point the two files were not part of `221baa5` and had no hosted result. This
+interim state was superseded by the final delivery below.
+
+## Final R9 delivery — 2026-10-17
+
+The two test-only fixes and their validation records were delivered as commit
+`3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f`; the remote `main` ref matched.
+General CI [run 38977151511](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38977151511)
+passed all three jobs. K01 Linux
+[run 38977151588](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38977151588)
+passed. The bounded R9 hosted acceptance is complete. CI artifacts were not
+independently downloaded, and the declared scope does not claim a general
+non-HTTP network sandbox, reverse-proxy/DNS deployment proof, or general
+product accuracy.
 
 ## Source hashes
 
@@ -177,5 +188,7 @@ The SHA-256 digests for modified source, tests, and documentation are in
 CI run `38923418347` had the opt-in browser harness succeed but the analyzer
 test and required authenticated browser proof jobs fail; K01 Linux run
 `38923418259` succeeded. Failed logs and artifacts were not independently
-retrieved, so no specific failure cause or artifact contents are claimed. The
-full local DOM suite remains open.
+retrieved, so no specific failure cause or artifact contents are claimed. This
+source-hash and CI record describes the older `f4d8bdf` snapshot. The later
+`221baa5` and `3a386ee` deliveries and final DOM/R9 acceptance are recorded in
+the dated follow-ups above.
