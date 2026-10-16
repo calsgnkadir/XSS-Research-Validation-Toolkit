@@ -1,48 +1,59 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+# Defense notes: controls tied to the failure boundary
 
-# Defenses & Secure Coding
+These are general remediation patterns for the classes discussed in the
+historical Juice Shop writeups. They are not claims that every control was
+tested against the pictured application. The screenshots show limited UI or
+request/response observations; see the [evidence inventory](../audit/2026-10-17-k-evidence/README.md)
+for the artifacts that are absent.
 
-Finding a vulnerability is only half the job — knowing how to **fix** it is the other half. For every
-class exercised in this assessment, this is how it should be defended, and *why*. These mitigations
-map directly to the findings in the [main README](../README.md#findings) and the [writeups](../writeups/).
+## Cross-cutting XSS controls
 
-## The one rule behind most XSS
+- Render untrusted values as text by default. If rich HTML is a product
+  requirement, use a maintained HTML parser/sanitizer with an explicit
+  allowlist and test it against the actual output context.
+- Encode for the destination context at the point of output. HTML text,
+  attributes, JavaScript, CSS, and URL components have different rules.
+- Treat Content Security Policy as defense in depth. A policy can reduce the
+  impact of some script injection paths; it does not make unsafe rendering safe
+  or prove that a particular input path is blocked.
+- `HttpOnly` limits direct script access to a cookie value. It does not stop
+  same-origin script from making authenticated requests, and it does not replace
+  output encoding or authorization checks.
+- Do not generalize from one sanitizer observation or recursive filtering
+  example. Repeated deletion can change input structure; a parser-based policy
+  with regression tests is preferable to a hand-maintained blocklist.
 
-**Filtering (blocklist) is not protection; encoding and allowlisting are.** A blocklist tries to guess
-every dangerous input and always misses one — e.g. a filter that strips `<script>` still lets
-`<img src=x onerror=…>` execute, and a single-pass filter can be defeated when *removing* one tag
-re-forms another (the nested-tag mutation in Findings 2 and 8). The reliable controls are:
+## Per-class guidance and evidence boundary
 
-- **Context-aware output encoding.** When you only need text, render it as text (`textContent`,
-  template auto-escaping). The browser escapes `< > & "` and nothing can execute. This is the default
-  and the safest option.
-- **Allowlist sanitisation for rich HTML.** If users genuinely need some HTML, parse it and keep only
-  a known-safe set of tags/attributes, dropping everything else — applied idempotently so a single
-  pass cannot re-form a tag. Use a battle-tested library (**DOMPurify**), never a hand-rolled regex.
-- **Content Security Policy (CSP).** A second layer: even if injection succeeds, a strict CSP
-  (`script-src 'self'` + per-response nonce, no `unsafe-inline`) stops the script from running.
-- **`HttpOnly` + `Secure` + `SameSite` cookies.** So a successful XSS still cannot read the session
-  token — which is what turns "an alert box" into "account takeover".
+| Class | Recommended control | What this repository currently supports |
+|---|---|---|
+| DOM XSS | Keep framework escaping enabled; avoid trust-bypass APIs for untrusted data. If markup is required, sanitize with a maintained parser before the HTML sink. | The writeup describes a DOM path; the screenshots here do not show the source-to-sink path or a browser execution proof. |
+| Stored XSS / header input | Treat request headers as untrusted. Validate expected format and encode at the rendering sink. | Screenshots 03 and 06 show a header value reflected in JSON. Screenshots 07–08 show two empty response values. They do not establish HTML execution, a complete filter, or an exhaustive bypass test. |
+| Stored XSS / API input | Validate on the server and encode output in every consuming interface, including administrative views. | A recommendation only; no evidence package here establishes an admin-view execution or role boundary. |
+| CSP-related behavior | Keep security policy configuration server-controlled; avoid reflecting user input into policy headers. Use CSP as an additional restriction and test response headers plus browser behavior. | Screenshot 02 shows profile form fields only. No CSP header or bypass result is captured in this image set. |
+| SQL injection | Use parameterized queries or prepared statements; allowlist any query structure that cannot be bound and apply least privilege to the database identity. | The writeup records an author-reported local challenge result. The exact request/response and retest artifacts are absent from the current evidence set; UNION/blind sections are explanatory theory. |
+| JWT validation | Pin accepted algorithms in server configuration; bind keys to the expected algorithm and validate issuer, audience, and time claims. | The writeup records an author-reported `alg:none` challenge result. No matching request/response artifact is present; the RS256-to-HS256 attempt is explicitly recorded as unsolved. |
+| BOLA / IDOR | Authorize each object operation against the authenticated principal, preferably by scoping the data lookup to that principal. Test with two accounts and the same object identifier. | The writeup records an author-reported basket observation. A paired two-account request/response artifact is absent, so the cross-user authorization boundary is not independently demonstrated here. |
+| Archive extraction | Canonicalize paths and enforce extraction containment; reject entries that escape the destination. Sanitize any subsequently rendered content separately. | General guidance only; no extraction test artifact is part of this K evidence set. |
 
-## Per-class defenses
+## Review checklist for a fix
 
-| Class (finding) | Root cause | Fix |
-|-----------------|-----------|-----|
-| **DOM-based XSS** (search sink) | Framework auto-escaping was turned off (`bypassSecurityTrustHtml`) | Don't opt out of escaping; if raw HTML is unavoidable, sanitise with DOMPurify first. Add CSP + `HttpOnly` token. |
-| **Stored XSS — sanitizer bypass** (feedback) | Single-pass blocklist; deletion re-forms a valid tag | Allowlist parser, applied recursively until stable; output-encode at render. |
-| **Stored XSS — HTTP header** (`True-Client-IP`) | Same allowlist filter, bypassed by nested-tag mutation | Make sanitisation idempotent/recursive; never trust CDN headers (`True-Client-IP`, `X-Forwarded-For`) as input. |
-| **Stored XSS — registration API → admin panel** | Client-side validation only; admin panel renders raw | Validate on the **server** for every field; output-encode in the admin UI too. |
-| **CSP bypass** (profile Image URL) | User input reflected into the CSP header | Never reflect user input into a security header; use a static, strict CSP with nonces. |
-| **SQL Injection** (login bypass) | User input concatenated into SQL | Parameterized queries / ORM bindings only; least-privilege DB user. |
-| **IDOR / BOLA** (basket) | Ownership never checked | Enforce per-object authorization on every request (`resource.ownerId === session.userId`). |
-| **Zip Slip → Stored XSS** (subtitle) | Archive entry names not validated; content rendered raw | Reject/normalise `../` in entry names, extract only inside the target dir; sanitise rendered content (incl. subtitles). |
-| **Mutation XSS** (Findings 2 & 8) | Browser re-parse mutates a "clean" string into a live one | Allowlist on the *parsed* DOM; parse-serialise idempotently; DOMPurify. |
+1. Identify the attacker-controlled source and the exact parser/rendering or
+   authorization decision it reaches.
+2. Apply the control at that boundary, not only at input validation.
+3. Preserve a positive reproduction and a negative/fixed control with the same
+   input where feasible.
+4. Record product/version, role, request/response, environment, and proof type;
+   mask credentials before creating a shareable copy.
+5. Keep reflection, callback, browser execution, and vulnerability triage as
+   separate conclusions.
 
-## Cross-cutting principles
+This document gives remediation advice; it does not claim the historical target
+was retested or fixed. Related roadmap work: C07, C08, C12, K02–K04, and P01.
 
-- **Defense in depth.** No single control is enough. Server validation *and* client encoding *and* CSP
-  *and* `HttpOnly` cookies — so one failure doesn't become a breach.
-- **Secure by default.** Auto-escaping frameworks are safe until you opt out; the safest change is
-  often *not disabling* a protection you already have.
-- **Validate and encode at the right layer.** Validate on the server (client checks are only UX);
-  encode at the point of output, for the correct context (HTML / attribute / URL / JS).
+## Technical references checked 17 October 2026
+
+- [OWASP Cross Site Scripting Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) — context-specific output encoding, sanitization, CSP as defense in depth, and cookie attributes as impact limitation.
+- [OWASP SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html) — prepared statements and parameterized queries.
+- [OWASP JSON Web Token Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_Cheat_Sheet.html) — allowlisted algorithm/key binding.
+- [OWASP Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) — authentication is distinct from authorization and object-level checks need application context.

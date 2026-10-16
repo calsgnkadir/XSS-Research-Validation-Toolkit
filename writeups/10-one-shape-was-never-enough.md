@@ -1,23 +1,31 @@
 > Güncel tamamlayıcı kanıt: [K01 yerel stored XSS, fix ve retest](../cases/k01-stored-comment/README.md). Bu vaka aşağıdaki tarihsel hedeflerin bağımsız doğrulaması değildir.
 
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical variant-design snapshot — execution claim withdrawn.** This writeup describes an early implementation and its payload-shape experiments. Marker survival, a `-breakout` name, HTML response, or a `dxadyn` severity label does not prove parser escape or JavaScript execution. The archived Bludit D2 report is explicitly only an `EXECUTABLE` scanner classification; independent browser proof and a fix/retest are absent. The 950/variant count is not 950 working exploits or WAF bypasses. See [C10](../ROADMAP.md), the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), and [current evidence limits](../tools/dom-xss-analyzer/EVIDENCE-CONTRACT.md).
 
-# One shape was never enough: payload variants and WAF bypass
+# One shape was never enough: payload variants and WAF testing hypotheses
+
+The details below preserve a historical feature proposal/report and are not a
+current contract. In the current `dxadyn.py`, `_apply_ct_gate()` classifies an
+HTML observation through `_severity(reflection, context)`; the `variant`
+argument does not upgrade a label to execution. Therefore the variant-upgrade
+snippet and expected test result below do not describe current source behavior.
+No stored report here demonstrates that a WAF was bypassed or that the marker
+executed in a browser.
 
 > **TL;DR** — Up through v3.9 the bot sent exactly one canary shape:
 > `cid"<dXsS>`. It's fine for body-context reflections, but a value that
 > lands inside `<title>` / `<script>` / an HTML attribute only scores
 > `breakout-req` with that shape — the marker survives raw but the
 > browser doesn't execute the class without a follow-on breakout payload
-> the operator has to compose by hand. v3.10 fixes this two ways at once.
+> that must be separately checked. The historical v3.10 notes proposed
+> variants and mutations; they do not establish parser escape or execution.
 > **Payload variants** send five context-tuned shapes (body, title-break,
 > attr-break, script-break, url-scheme) — each with its own cid so
-> verdicts stay independent — and any variant whose marker survived raw
-> in an HTML response is upgraded from `breakout-req` to `executable`
-> because the marker's presence *proves* the escape worked. **WAF-bypass
-> mutations** add four alternate shapes per variant (case-swap,
-> split-tag-comment, whitespace, URL-encode), so a regex WAF anchored on
-> `<dXsS>` literally still gets bypassed by at least one shape. Same
+> verdicts stay separately attributable. A marker surviving raw is still a
+> reflection observation, not proof that a parser reached an executable
+> position. The archived `EXECUTABLE` output is a tool label, not browser
+> proof. **Payload mutations** add alternate strings; their presence does not
+> demonstrate bypass of any WAF. Same
 > flags work in reflected + stored + header-probe modes; total shapes
 > per round is `variants × (1 + 4 if waf-bypass else 1)`.
 

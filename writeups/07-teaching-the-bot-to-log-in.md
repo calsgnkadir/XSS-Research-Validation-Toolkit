@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical implementation snapshot — not a current feature guide.** Versions, counts, classifications and target results below describe an earlier iteration. A static `HIGH` label is a heuristic priority, a sanitizer-name match does not prove sanitization, and zero HIGH findings do not establish safety. The Bludit/CVE association is not independently established for the version described. Check [current status](../STATUS.md), [CLI documentation](../tools/dom-xss-analyzer/README.md), and [R8 limits](../audit/2026-10-16-r8-current-review/README.md).
 
 # Teaching the bot to log in, find its own targets, and shut up
 
@@ -107,9 +107,10 @@ the same bounded fix-point that JS uses, with a per-language `ASSIGN` regex.
 A word-boundary bug had to be fixed en route (Python's `\b` doesn't treat `$`
 as a word boundary; `(?<!\w)` lookbehind works for both PHP and JS identifiers).
 
-`dxa` on Bludit's `bl-kernel/` (~110 PHP files) reports **260 findings, 0
-HIGH.** That is the *right* number — Bludit disciplines its output through
-`Text::htmlEncode()`, so the source→sink border never opens in a single line.
+The historical run reported `dxa` on Bludit's `bl-kernel/` (~110 PHP files) as
+**260 findings, 0 HIGH**. This is a version-specific heuristic count, not a
+validated expected number or evidence that all flows are safe. A recognizable
+`Text::htmlEncode()` call does not prove every output path is correctly encoded.
 On a plugin from a hobby developer with a `echo $_GET['q']` in it, the same
 tool would fire HIGH and be right. The number a bot returns on well-written
 code is as important as the number on bad code; if the well-written case is
@@ -191,12 +192,13 @@ time goes to the last step.
 
 ---
 
-*Hands-on, on an authorized local target only: OWASP Bludit 3.16.2 in Docker
+*Historical author report: OWASP Bludit 3.16.2 in local Docker
 (`localhost:8090`, admin credentials seeded via the login-plugin CLI), plus
 seeded `examples/` corpus (safe.php / vulnerable.php / vulnerable.js /
 vulnerable.cs / vulnerable.cshtml). Tool sources:
 [`tools/dom-xss-analyzer/dxa.py`](../tools/dom-xss-analyzer/dxa.py),
 [`dxadyn.py`](../tools/dom-xss-analyzer/dxadyn.py), and the bridge
-[`dxa2dyn.py`](../tools/dom-xss-analyzer/dxa2dyn.py) — 44 pytest cases, CI-gated,
-zero third-party dependencies. Reference: CVE-2026-4420 shape (Bludit tags
-stored XSS, autonomous end-to-end detection).*
+[`dxa2dyn.py`](../tools/dom-xss-analyzer/dxa2dyn.py) — the historical account
+lists 44 pytest cases; this is not a current test result. The Bludit/CVE-2026-4420
+association is a reported similarity only; root-cause equivalence and
+autonomous end-to-end execution are not independently verified here.*

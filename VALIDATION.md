@@ -1,5 +1,32 @@
 # Doğrulama kaydı — 2026-10-17
 
+## Portfolio/evidence closeout — 2026-10-17, local Windows
+
+The C/K evidence review updated historical claims and report labels without
+rerunning historical targets. The report renderer and its regression test
+changed; the coordinator ran the full analyzer suite against the combined
+working tree:
+
+```powershell
+py -3.10 -m pytest tools/dom-xss-analyzer -q -p no:cacheprovider --tb=short
+```
+
+Result: **789 passed, 38 skipped, 0 failed** in 186.48 seconds, Windows,
+Python 3.10.11. This run covers local analyzer regressions; hosted CI has not
+run for the current portfolio/evidence delivery.
+
+P04 was reproduced from a fresh `.venv-p04-20261017` environment. The package
+and `.[browser]` extra installed, Playwright 1.63.0 installed Chromium
+153.0.8010.12, and installed `dxaprove --demo` returned
+`execution-observed` with triage `unreviewed` on its loopback fixture. The
+installed demo result SHA-256 is
+`DF066619B35E364D9B7E93CF9F8A94E699F83C9F62E2BCCE2A7D84F9794A02D9`.
+The installed K01 local profile passed **5/5 controls** and closed **5/5
+distinct fixture ports**. Its acceptance SHA-256 is
+`698BAF306A41DB68F7EA979D2319BBD219FFFAAFD780F972FE5EF619F3E5EBF9`.
+See the [P01/P04 audit](audit/2026-10-17-p01-p04/README.md) for the retained
+JSON files and detailed scope.
+
 ## Latest R9 delivery — 2026-10-17, local Windows and hosted jobs
 
 Commit `3a386eefbfa61e494f1bcb2ae6dadcf4d1c4bf7f` was pushed to `origin/main`

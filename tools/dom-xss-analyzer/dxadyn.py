@@ -1998,7 +1998,7 @@ def render_html(findings, target, mode, meta=None, events=None, document=None):
 </table>
 {evidence.render_events(report['events'])}
 <details><summary>Observation records</summary><pre>{esc(json.dumps(findings, ensure_ascii=False, indent=2))}</pre></details>
-<footer>dxadyn - deterministic dynamic XSS verifier. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>
+<footer>dxadyn - dynamic reflection and observation report. A report row is not a confirmed vulnerability or proof of JavaScript execution. Companion of <span class='mono'>dxa</span>. Authorized targets only.</footer>
 """
 
 

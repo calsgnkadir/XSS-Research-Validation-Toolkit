@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Historical report evidence — publication preview</title>
+<style>
+body{font:16px/1.5 system-ui,Arial,sans-serif;max-width:1000px;margin:2rem auto;padding:0 1rem;color:#18212b}
+table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #ccd3da;padding:.6rem;text-align:left;vertical-align:top}
+th{background:#edf2f6}.notice{border-left:4px solid #b7791f;background:#fff8e6;padding:.8rem 1rem}
+code{font-family:ui-monospace,Consolas,monospace}
+</style>
+<h1>Historical report evidence — publication preview</h1>
+<p class="notice"><strong>Scope:</strong> summary of the archived 2026-09-26 report
+rows. This page does not rerun a scanner or alter the preserved raw reports.
+Candidate counts and reflection labels are not confirmed vulnerability or
+JavaScript-execution counts. No findings is not a safety result.</p>
+<table>
+<thead><tr><th>Archived source</th><th>Observed rows</th><th>Shareable label</th><th>Evidence boundary</th></tr></thead>
+<tbody>
+<tr><td><code>A-hotel-platform-25shape.html</code></td><td>25</td><td>JSON-only reflections</td><td>All archived rows are labelled JSON-ONLY; the report shows zero executable-context rows. No browser execution proof is attached.</td></tr>
+<tr><td><code>C2-wallet-stored-25shape.html</code></td><td>25</td><td>JSON-only reflections</td><td>All archived rows are labelled JSON-ONLY; the report shows zero executable-context rows. No browser execution proof is attached.</td></tr>
+<tr><td><code>D1-bludit-body-breakout-req.html</code></td><td>1</td><td>Reflection candidate; title context; breakout required</td><td>Historical renderer label BREAKOUT-REQ. The row is not execution proof.</td></tr>
+<tr><td><code>D2-bludit-title-breakout-EXECUTABLE.html</code></td><td>1</td><td>Reflection candidate; title context; legacy classifier said EXECUTABLE</td><td>The legacy label describes a context heuristic. No matching browser-proof artifact is included in this report package.</td></tr>
+<tr><td><code>B1-mahrem-static.html</code></td><td>78</td><td>Static analyzer candidates; medium confidence; 0 high-confidence rows in report summary</td><td>Source-to-sink heuristic observations only. No runtime execution or product triage is established.</td></tr>
+<tr><td><code>B2-mahrem-reflected.html</code></td><td>0 observed reflections</td><td>No unencoded reflections observed in that run</td><td>Not evidence that the target is safe or that all inputs were covered.</td></tr>
+<tr><td><code>C1-wallet-reflected.html</code></td><td>0 observed reflections</td><td>No unencoded reflections observed in that run</td><td>Not evidence that the target is safe or that all inputs were covered.</td></tr>
+</tbody></table>
+<p>The original report files are retained under <code>2026-09-26-v310-live/</code>
+as historical artifacts. They may contain local paths, request metadata, and
+legacy labels; this preview is the shareable summary. See the
+<a href="../tools/dom-xss-analyzer/report-preview.png">static renderer preview</a>
+for a separate synthetic source-analysis report example.</p>
+</html>

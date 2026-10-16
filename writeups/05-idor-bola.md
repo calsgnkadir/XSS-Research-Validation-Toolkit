@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical lab account — proof limit.** The text reports changing basket IDs while authenticated and receiving different `UserId` values, but the retained evidence does not include a masked A/B account-control pair or request/response set proving which object belonged to which user. The historical BOLA claim is therefore not independently verified here. Vertical privilege escalation was not demonstrated. See [C05](../ROADMAP.md) and the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md).
 
 # IDOR / BOLA: the server checks *who you are*, not *what's yours*
 
@@ -37,8 +37,9 @@ whether *this* user owns *that* record. When the code treats "logged in" as
 
 ## The finding: Juice Shop's basket (`/rest/basket/{id}`)
 
-This is **Finding #7** of the assessment, done entirely in Burp — no exploit
-string, just an edited id:
+The historical assessment describes this as **Finding #7**, exercised in Burp
+by editing the ID. The transcript below is a narrative summary, not a retained
+raw request/response pair:
 
 ```
 1. Sent my own request  GET /rest/basket/1   → Repeater
@@ -48,12 +49,13 @@ string, just an edited id:
 3. Each returned 200 OK — a different UserId each time.
 ```
 
-The basket is fetched by the `id` in the path and returned to whoever asks, as long
-as they hold *a* valid token. Mine authenticated me fine; the server never asked the
-next question — *is basket #2 mine?* — so it handed over baskets 2, 3, 4: **other
-users' data, retrieved with my own session.** No privilege was escalated, nothing
-was injected. The authorization check simply wasn't there. (Solved on the score
-board as *View Basket*.)
+The author reported that a token returned basket records with different `UserId`
+values and that the *View Basket* challenge completed. To establish horizontal
+BOLA independently, an evidence package must identify account A, show A's own
+object, then show A requesting account B's known object with the same session,
+including expected and observed status/body and a negative control. Those
+artifacts are not retained here. No privilege escalation is claimed by this
+writeup.
 
 ## Why this ships so easily
 
@@ -130,8 +132,8 @@ a key to everyone's data.
 
 ---
 
-*Demonstrated on an authorized, local target only: OWASP Juice Shop running via
-Docker (Finding #7 — `/rest/basket/{id}`, ownership never checked), tested by editing
-the id in Burp Suite Repeater and observing other users' baskets return under my own
-token. Same repo discipline (`source → sink`, then **AUTHZ**), applied at the
-access-control layer where identity is checked but entitlement is not.*
+*Historical author report: OWASP Juice Shop via Docker, `/rest/basket/{id}` and
+the *View Basket* challenge. The retained repository lacks the A/B ownership
+control pair needed to independently verify the claimed cross-user access; no
+current retest or vertical privilege-escalation result is claimed. Apply the
+authorization check to each object access and test it with separate accounts.*

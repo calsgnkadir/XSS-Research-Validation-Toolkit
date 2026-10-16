@@ -1,0 +1,38 @@
+{
+  "case_version": "k01-v1.0",
+  "environment": {
+    "python": "3.10.11",
+    "platform": "Windows",
+    "playwright": "1.63.0",
+    "browser_version": "153.0.8010.12"
+  },
+  "result": {
+    "passed": 5,
+    "total": 5,
+    "fixture_ports_closed": 5,
+    "distinct_fixture_ports": 5
+  },
+  "source_sha256": {
+    "prove.py": "55b9ba58de66f0effc51a73477f5cf2035b815ad89901e24ddc35b8611056491",
+    "render_fixed.py": "99960d46babaa86700aabe2daba5a3052bdb4cb8d5c1a25da78a99b212c38aaa",
+    "render_vulnerable.py": "23a884fad172562171b808f0a8b1bf570140b557e5506073bc581e2e1ce8f4a5"
+  },
+  "proof_sha256": {
+    "fix.diff": "dfcd62d10721300feb9a2b724533b477b3c79e85e1460e95eea2cbe1c6980348",
+    "fixed-request.json": "71b4b1543c94751309aa9bc21b06e42b0fa8b397d9985c2e8e8b91c92e552da6",
+    "fixed-response.txt": "b2511a70db24657ed36111259dd19e5d37e1b6bfe59eefbe18825939bb5d1103",
+    "javascript-disabled-request.json": "71b4b1543c94751309aa9bc21b06e42b0fa8b397d9985c2e8e8b91c92e552da6",
+    "javascript-disabled-response.txt": "98568707d5b43c02b29f3d1681f44b50f0793af8a3a78dc4b7b3e73c05b3562d",
+    "json-only-request.json": "0583703e19a6919bcaf6bbebe269df8f619697f205b67a41ce34119ac33059f3",
+    "json-only-response.txt": "5f3e64b62ac46b2ddf96f28a87f7b156c9f2932b4914980d31291f1de9159d46",
+    "normal-dialog-request.json": "255c48cdcc903b57967edd2e90f5c4ebcc7510dfc8611bb47556a24ff9bb951e",
+    "normal-dialog-response.txt": "73cc2c86013250329161a55cb3460e917c807c5ac80dae51533558a8c4b1ef37",
+    "result.json": "f33841d458d4f00fe505057e9d9f3ad5c2b25843b9a47073eef5b225231fe3b7",
+    "vulnerable-request.json": "71b4b1543c94751309aa9bc21b06e42b0fa8b397d9985c2e8e8b91c92e552da6",
+    "vulnerable-response.txt": "98568707d5b43c02b29f3d1681f44b50f0793af8a3a78dc4b7b3e73c05b3562d"
+  },
+  "scope": "fresh 127.0.0.1 fixture; anonymous author and separate reader context",
+  "limitation": "Automated repetition is not an independent second person or product/CVE claim",
+  "profile": "local",
+  "gate_sha256": "de4a5e427686587629f1b8c30944abe03a27ae6bccd9565259f7c4b9076c51a8"
+}

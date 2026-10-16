@@ -1458,6 +1458,28 @@ def test_render_html_with_findings_shows_row_and_badges():
     assert out.count("<tr>") >= 3
 
 
+def test_render_html_json_only_is_reflection_not_execution():
+    finding = {
+        "url": "http://127.0.0.1:8080/api/profile",
+        "method": "POST",
+        "param": "json",
+        "reflection": "unencoded",
+        "severity": "json-only",
+        "evidence_level": "reflection",
+        "content_type": "application/json",
+        "status": 200,
+    }
+    out = dxadyn.render_html([finding], "http://127.0.0.1:8080/",
+                             "stored")
+
+    assert "JSON reflections" in out
+    assert "JSON-ONLY" in out
+    assert "reflection" in out
+    assert "do not establish JavaScript execution" in out
+    assert "deterministic dynamic XSS verifier" not in out
+    assert "not a confirmed vulnerability or proof of JavaScript execution" in out
+
+
 # --- v3.4: JSON body + stored header target ---------------------------------
 
 _V34_DB = {"json": None, "hdr": None}

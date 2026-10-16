@@ -7,18 +7,39 @@ Use it only on systems you own or are explicitly authorized to test.
 The project includes repeatable test cases and fix-and-retest examples.
 It does not claim broad detection accuracy or confirmed new vulnerability discoveries.
 
-Stajda başlayan web güvenliği çalışmalarının devamı: kaynak→sink incelemesi,
-Python ile XSS aday tespiti ve tekrar üretilebilir laboratuvar doğrulaması.
-Amaç, sonuçlarını kanıtla açıklayan ve başka bir araştırmacının da çalıştırabildiği bir araç geliştirmek.
+## Current status
 
-**Güncel durum:** araştırma prototipi. Statik ve HTTP analizleri çalışıyor;
-Playwright ve blind callback parçaları deneysel. Otomatik sınıflandırmaların
-tamamı doğrulanmış XSS anlamına gelmez. Yeni CVE kredisi bu arşivden doğrulanmış değildir.
+This is an experimental research toolkit, not a general-purpose vulnerability
+scanner. Technical acceptance for R0–R6 is complete; the `0.1.0` package is a
+release candidate and has not been tagged or published. The bounded Python AST
+pilot (R8) and declared operational/reproducibility scope (R9) are complete.
+R7 product research has not started because no authorized product scope was
+selected. See [STATUS](STATUS.md), the [roadmap](ROADMAP.md), and the
+[validation log](VALIDATION.md) for current limits and evidence.
 
-**Doğrulama — 6 Ekim 2026:** 544 test geçti, 36 browser testi otomatik
-Chrome keşfi nedeniyle atlandı. Bu sayı tüm XSS sınıflarının doğrulandığı
-anlamına gelmez. Normal dialog ve JavaScript kapalı callback karşı örnekleri
-mevcut Chrome ile ayrıca kontrol edildi. [Test sonuçları ve kanıtlar](VALIDATION.md).
+The latest local Windows/Python 3.10.11 analyzer suite passed **789 tests**,
+with **38 skipped and no failures**. The 11-file required Chrome selection
+passed **218/218**; the full Chrome DOM suite passed **80/80**. General hosted
+CI passed all three jobs and K01 Linux CI succeeded for the preceding R9
+delivery. This current documentation/report-renderer change has local test
+results only. These are bounded regression and workflow results, not broad detection-accuracy
+or vulnerability-discovery measurements.
+
+## Selected evidence-backed cases
+
+- **Stored XSS proof → fix → retest:** [K01 local fixture](cases/k01-stored-comment/README.md)
+  records one CID-matched browser execution, four negative controls, HTML text
+  encoding, and retest. It is a training fixture, not a product/CVE claim.
+- **Tooling failure → regression:** [R9 browser-fixture follow-up](audit/2026-10-16-r6-r9-final-source/README.md)
+  records serial fixture failures, the threaded-server correction, and the
+  full local Chrome DOM suite. This measures fixture reliability, not scanner
+  accuracy.
+- **Controlled research replay:** [R4 exact-payload replay](audit/r4-proof-experiment-2026-10-16/README.md)
+  checks stored scanner candidates in separate writer/reader-admin loopback
+  fixtures with escaped controls. Some outcomes remain inconclusive; it is not
+  a fresh scanner comparison or a vulnerability ranking.
+
+[Install and run the local demos](docs/PORTFOLIO-DEMO.md).
 
 Stored/stored-auto blind denemeleri artık yansıma olmasa da kalıcı kaydedilir;
 tarama sonrası callback kontrolü ve JSON/HTML kayıt raporu vardır.
@@ -53,11 +74,11 @@ encoding sonrası düz metin kaldı. Bu vaka kanıtıdır; genel bot execution m
 
 | Bileşen | İşlev | Sınır |
 |---|---|---|
-| dxa.py | JS/TS, C#, PHP, Java ve Python için regex kaynak/sink adayları | Destek diller arasında eşit değil; AST/sound data-flow değil |
-| dxadyn.py | HTTP reflection/stored, form/JSON/header, auth/flow ve HTML rapor | JSON gönderimi düzeltildi; auth, flow sınıflandırması ve severity sorunları açık |
-| dxadom.py | Playwright ile sayfa/sink/dialog/route/header gözlemi | Gözlem≠canary ile ilişkili execution proof |
-| dxa_callback.py | Yerel callback kayıt ve sorgulama | Eşleşen istek resource-callback; JavaScript proof değil |
-| dxa2dyn.py | Statik adaydan dinamik parametre önerisi | Tam otomatik kaynak→sink ispatı değil |
+| `dxa.py` | Static source/sink candidates, with a bounded Python AST pilot | Language coverage differs; this is not general sound data-flow analysis |
+| `dxadyn.py` | HTTP reflection, stored checks, and bounded same-origin discovery | Findings are candidates/reflections; they do not alone establish XSS |
+| `dxadom.py` | Playwright page, sink, dialog, route, and header observations | Bounded loopback adapter; observation is distinct from CID-matched execution |
+| `dxa_callback.py` | Local callback collection and lookup | A matched callback is `resource-callback`, not JavaScript execution |
+| `dxa2dyn.py` | Parameter hints from static candidates | A hint is not a complete source-to-sink proof |
 
 50 temel varyant ve 18 mutation, 950 üretim oluşturur; cid çıkarılınca
 895 benzersiz dize vardır. Bu sayılar çalışan exploit veya WAF bypass sayısı değildir.

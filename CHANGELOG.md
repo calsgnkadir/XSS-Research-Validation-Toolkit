@@ -1,5 +1,23 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-17 portfolio and evidence review
+
+- C01–C13 writeups and methodology now separate author-reported history from
+  retained evidence; the writeup index no longer repeats old target, accuracy,
+  WAF-bypass, or execution claims as current proof.
+- K02 publication-safe screenshot copies mask account/token/cookie data while
+  preserving originals. K03 records missing raw SQLi/JWT/BOLA evidence. K04
+  aligns defense and methodology language. K05 adds a separate, qualified
+  preview for archived JSON-only, Bludit, and static reports; raw reports are
+  unchanged.
+- P01 curates three bounded evidence paths. P04 was installed in a clean
+  Python 3.10 environment; the package demo returned `execution-observed` and
+  K01 local reproduction passed 5/5 controls with 5/5 fixture ports closed.
+  No package release or historical target finding is claimed.
+- Final local analyzer suite after the report-renderer regression: 789 passed,
+  38 skipped, zero failures (Windows/Python 3.10.11). Hosted CI has not run for
+  this delivery.
+
 ## 0.1.0 — 2026-10-16 (release adayı; yayımlanmadı)
 
 - İlk kurulabilir araştırma sürümü için paket sürümü `0.1.0` seçildi. Temel

@@ -1,6 +1,6 @@
 > Güncel tamamlayıcı kanıt: [K01 yerel stored XSS, fix ve retest](../cases/k01-stored-comment/README.md). Bu vaka aşağıdaki tarihsel hedeflerin bağımsız doğrulaması değildir.
 
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical lab account — evidence limit.** This writeup records the author's 2026-09-28 local Juice Shop experiment. The archived screenshots show the header value reaching the Last Login IP field, but do not show a successful JavaScript canary. Treat the source/header path as an observation and the XSS/execution story below as **not independently verified by the retained evidence**. See the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), [current status](../STATUS.md), and [acceptance scope](../ROADMAP.md).
 
 # Why filtering isn't protection: the nested-tag sanitizer bypass
 
@@ -49,9 +49,12 @@ a tag — the `<script>` block sat between them and broke them apart. After
 sanitising, the two fragments fuse into a valid, live `<iframe>`. The filter did
 not miss the payload; **the filter assembled it.**
 
-This is a *mutation*: the input string is not equal to the string the browser
-finally parses. Any defense that inspects the input, not the parsed result, is
-playing the wrong game.
+This is a *mutation* example: filtering can change how a parser interprets the
+remaining bytes. It illustrates why a string replacement rule is not, by itself,
+a reliable HTML sanitizer. The exact Juice Shop payload and browser execution
+described here are historical author-reported results; the retained screenshots
+show a normal header value being stored and filtered payloads returning blank,
+not the successful nested-tag execution claimed in the narrative.
 
 ## Why it then executes
 
@@ -63,9 +66,11 @@ Two small facts do the rest:
    schemes are not.** That is why bypasses reach for `onerror`, `onload`, or
    `javascript:` rather than a raw `<script>` — a different, still-live code path.
 
-When the sanitised value is dropped into the page (in Juice Shop, into the
-feedback list and the Last Login IP element), the browser parses the *mutated*
-string, builds the iframe, loads it, and runs the URL. The payload fired.
+In general, if an unsafe transformation leaves an executable construct in an
+HTML-parsing sink, the browser may parse and execute it. That is a mechanism
+description, **not a retained reproduction result for this Juice Shop path**.
+The archived header screenshots do not demonstrate an iframe load, JavaScript
+execution, or a confirmed finding.
 
 ## The pattern, generalised
 
@@ -94,13 +99,20 @@ Stop trying to enumerate "bad." Two controls do the real work:
    single pass can't leave a re-formed tag. Use a maintained library —
    **DOMPurify**, `sanitize-html` — never a hand-rolled regex.
 
-Then layer defense in depth so one slip isn't a breach:
+Then layer defense in depth; neither control replaces correct output handling:
 
-- **CSP** (`script-src 'self'` + per-response nonce, no `unsafe-inline`) — even a
-  successful injection has nothing to run.
-- **`HttpOnly` + `Secure` + `SameSite` cookies** — a successful XSS still can't
-  read the session token, which is what turns "an alert box" into account
-  takeover.
+- **CSP** with a narrow `script-src`, nonces/hashes where appropriate, and no
+  unsafe inline execution can reduce impact. It is defense in depth, not proof
+  that injection is harmless or that all script-capable paths are blocked.
+- **`HttpOnly`, `Secure`, and suitable `SameSite` cookie settings** reduce
+  cookie theft and cross-site request risk. `HttpOnly` does not stop injected
+  script from acting through the victim's authenticated page or reading
+  non-cookie data.
+
+Repeatedly applying a sanitizer until output appears stable is not a general
+security fix: parser behavior, namespaces, decoding and later transformations
+can still differ. For rich HTML, use a maintained parser-based allowlist
+sanitizer in the correct context, and avoid modifying sanitized output later.
 
 ## Takeaway
 
@@ -111,6 +123,7 @@ yourself writing `.replace(/<script>/…)`, you are defending the wrong layer.
 
 ---
 
-*Tested only on authorized, local, intentionally-vulnerable targets (OWASP Juice
-Shop via Docker). See the repository [README](../README.md) for the full finding
-and remediation table.*
+*Historical account: OWASP Juice Shop via Docker was described as the target.
+The retained evidence supports the header-to-field data path and filter
+observations, but not successful execution; no current retest is claimed. See
+the repository [README](../README.md) for project navigation.*

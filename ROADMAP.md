@@ -7,7 +7,9 @@ Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
 doğruluğu veya vulnerability iddiası oluşturmaz. Bot işlerinde R7/A01–A05 için
-yetkili araştırma kapsamı seçimi açık; portfolyo/kanıt işleri ayrıca açıktır.
+yetkili araştırma kapsamı seçimi açık. 17 Ekim'de C01–C13 ve K01–K05
+kanıt-sınırlı içerik kabulü ile P01/P04 demo/portfolyo kabulü tamamlandı;
+P02/P03 ve S01–S03 sırada.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
 “genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
@@ -128,8 +130,8 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
 | 1 | Bot R0–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
-| 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
-| 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
+| 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 17 Ekim kanıt-sınırlı editoryal/indeks kabulü tamam; tarihsel SQLi/JWT/BOLA ve eski saha iddiaları doğrulanmadı | İddia sınırları, yayın kopyaları, K01 ve arşiv rapor etiketleri kaydedildi; eksik tarihsel ham kanıt yeni bulgu sayılmaz |
+| 3 | Portfolyo P01–P04 | P01/P04 tamam; P02/P03 açık | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; CV/proje tanımı ile 06–10 serisi ayrıca düzenlenecek |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
 | 5 | Araştırma/CVE A01–A05 / R7 | Plan ve doğrulanmamış tarihsel beyanlar | Ürün/sürüm/rol/yenilik/kanal doğrulaması; kanıtlı sonuç durumu |
 
@@ -163,7 +165,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
-| C/P/S | 2026-10-05 S01 ve rapor altyapısı; vaka düzeltmeleri açık | Önce C01→C11→C05, sonra üç seçilmiş P01 vaka |
+| C/K/P | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md) | C01–C13 ve K01–K05 kanıt-sınırlı içerik kabulü; P01/P04 tamam. Tarihsel ürün iddiaları doğrulanmış bulguya çevrilmedi. | P02/P03 portfolyo düzenlemesine, ardından S01–S03'e geç |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
@@ -676,43 +678,55 @@ ve uzak kanıt sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
 
-Hepsi **açık**; C11'de sayım ve elle konfigürasyon düzeltmesi **kısmen tamam**.
-Başlığa tarihsel uyarı eklemek aşağıdaki teknik düzeltmeleri tamamlamaz.
+**17 Ekim kanıt-sınırlı editoryal kabul tamamlandı.** Her yazı mevcut kanıtla
+uyumlu hale getirildi; ispatlanamayan tarihsel saha ve hedef iddiaları
+yazar-beyanı/tarihsel not olarak sınırlandı. Bu kabul, geçmiş olayları yeniden
+üretmez veya yeni bulgu doğrulamaz. C05 BOLA A/B kontrolü, C02 kapsam/bundle,
+C03 SQLi istek/sürüm ve C04 JWT ham alışverişi bu depoda hâlâ yoktur; bunlar
+eksik kanıt olarak açıkça listelenir. C13 root README ve writeup indeksindeki
+eski başarı ifadelerini ve portfolyo bağlantılarını güncelledi. Aşağıdaki
+sonuçlar içerik ve iddia sınırı kabulüdür; eksik tarihsel kanıtlar yeniden
+üretim kabulü değildir.
 
 | Kimlik / dosya | Yapılacak iş | Kabul ölçütü / bağımlılık |
 |---|---|---|
-| C01 / writeup 01 | Header source, filtre ve execution iddiasını ayır; recursive filtreyi genel çözüm gibi sunma | Kaynak/filtre kanıtı ayrı; execution için K01 veya açık “doğrulanmadı”; savunma K04 ile tutarlı |
-| C02 / writeup 02 | postMessage yokluğu, server-trusted veri, Trusted Types createHTML/enforcement ve CSP directive yorumlarını düzelt | İncelenen yol/süre/kapsam yazılı; kanıtsız güvenli/erişilemez hükmü yok; K02 |
-| C03 / writeup 03 | Gerçek SQLi demosunu UNION/blind teorisinden ayır; email/admin ve parser varsayımlarını düzelt | Her bölüm deney/teori diye etiketli; sürüm/istek ve sonuç eşleşir |
-| C04 / writeup 04 | JWT başarı/başarısızlık, newline hipotezi ve SPKI/PKCS#8 terminolojisi | Gözlem ile neden hipotezi ayrı; kanıt yoksa neden kesin değil |
-| C05 / writeup 05 | İki hesap/aynı nesne yetki kontrolü; yatay BOLA ile privilege escalation ayrımı | A/B kontrol çifti ve beklenen/gerçek yanıt veya açık kanıt eksiği; K03 |
-| C06 / writeup 06 | Seed/URL yardımı ile otonom keşfi ve tarihsel sürümü ayır | Komut girdileri görünür; desteklenmeyen discovery iddiası yok |
-| C07 / writeup 07 | 0 HIGH≠güvenli; sanitizer adı≠fonksiyon analizi; Bludit aidiyetini düzelt | R8 sınırlarıyla uyumlu; login başarı iddiası R2 kanıtına bağlı |
-| C08 / writeup 08 | Ham JSON≠HTML injection/XSS; çok URL≠çok açık; Pico/WonderCMS sonuçlarını daralt | İncelenen sink/kapsam belli; by-design ve yetki sınırı triage edilmiş |
-| C09 / writeup 09 | 3→1 düşüşünü precision ölçümü sanma; sanitizer FN ve kalan HIGH yorumunu düzelt | R8 karşı örneği ve R4 ölçümü bağlantılı; aday/doğrulanmış ayrımı |
-| C10 / writeup 10 | Marker/mutation/execution ayrımı; ineffective/legacy şekilleri etiketle | Gerçek parser pozitif/negatif kontrolü; 950 çalışan exploit iddiası yok |
-| C11 / writeup 11 | 50 JSON-only; B sıfır; Bludit etiketi≠proof; yerel patch ve hedef ayarları | Ham rapor sayımı doğru; version+komut+fix diff+browser kanıtı veya sınır; K01/K05 |
-| C12 / methodology.md | Kaynak→sink→kanıt yöntemini gerçek uygulama sınırlarıyla düzelt | Network/DOM birbirini dışlayan kategoriler gibi sunulmaz; belirsizlik ve negatif kontrol yazılı |
-| C13 / tüm README/indeksler | Güncel durum, sürüm/test sayısı, linkler ve eski DONE blokları | Her güncel iddia STATUS/VALIDATION'a bağlı; tarihsel beyan güncel başarı olarak görünmez; P01 |
+| C01 / writeup 01 | Header source, filtre ve execution iddiasını ayır; recursive filtreyi genel çözüm gibi sunma | **Tamam:** source/filter ayrıldı, recursive filtering genellenmiyor; historical execution proof eksikliği açık (K02/K04) |
+| C02 / writeup 02 | postMessage yokluğu, server-trusted veri, Trusted Types createHTML/enforcement ve CSP yorumlarını düzelt | **Tamam:** incelenen yol ve sınır yazılı; bundle, header ve target-wide kapsam kanıtı yok (K02) |
+| C03 / writeup 03 | Gerçek SQLi demosunu UNION/blind teorisinden ayır; email/admin ve parser varsayımlarını düzelt | **Tamam:** deney anlatısı yazar beyanı; UNION/blind teori; exact request/version artifact mevcut değil (K03) |
+| C04 / writeup 04 | JWT başarı/başarısızlık, newline hipotezi ve SPKI/PKCS#8 terminolojisi | **Tamam:** gözlem ve hipotez ayrıldı; raw exchange ve key-format cause doğrulanmadı (K03) |
+| C05 / writeup 05 | İki hesap/aynı nesne kontrolü; yatay BOLA ile privilege escalation ayrımı | **Tamam:** horizontal claim yazar beyanı; A/B same-object pair ve vertical claim proof yok (K03) |
+| C06 / writeup 06 | Seed/URL yardımı ile otonom keşfi ve tarihsel sürümü ayır | **Tamam:** inputs, old build counts and unverified CVE/version relationship scoped as historical |
+| C07 / writeup 07 | 0 HIGH≠güvenli; sanitizer adı≠fonksiyon analizi; Bludit aidiyetini düzelt | **Tamam:** heuristic HIGH and sanitizer limits stated; no CVE attribution or general safety claim |
+| C08 / writeup 08 | Ham JSON≠HTML injection/XSS; çok URL≠çok açık; target sonuçlarını daralt | **Tamam:** counts and JSON reflections are not findings; unavailable target artifacts and triage limits stated |
+| C09 / writeup 09 | 3→1 düşüşünü precision ölçümü sanma; sanitizer FN ve kalan HIGH yorumunu düzelt | **Tamam:** reduction not precision; R8 example and R4 candidate boundary linked |
+| C10 / writeup 10 | Marker/mutation/execution ayrımı; ineffective/legacy şekilleri etiketle | **Tamam:** variants/mutations are not parser, execution or WAF proof; current gate behavior described |
+| C11 / writeup 11 | 50 JSON-only; Bludit label≠proof; local patch and target settings | **Tamam:** 50 JSON rows + 2 Bludit labels qualified; D2 has no attached browser proof; K01/K05 linked |
+| C12 / methodology.md | Kaynak→sink→kanıt yöntemini gerçek uygulama sınırlarıyla düzelt | **Tamam:** HTTP/DOM overlap, reflection, sink, callback, execution and triage separated; negative/role limits stated |
+| C13 / README/index | Güncel status, sürüm/test sayısı, links and historical completion language | **Tamam:** root README and writeup index reflect current evidence and link selected P01 cases |
 
-## Kanıt ve savunma — K01–K05 (açık)
+## Kanıt ve savunma — K01–K05
+
+**17 Ekim kanıt envanteri ve yayın etiketleme kabulü tamamlandı.** K03'te
+SQLi/JWT/BOLA raw evidence eksikleri açık kalır; K04 tarihsel Juice Shop
+düzeltmelerinin uygulanıp tekrarlandığını iddia etmez. Bu maddeler mevcut
+paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 
 | Kimlik | Dosyalar / iş | Kabul ölçütü |
 |---|---|---|
-| K01 / R5 | XSS vaka paketi; writeup 01/10/11, reports, araştırma labı | Sabit sürüm, temiz kurulum, tam komut, masked request/response, cid-browser proof, negatif kontrol, fix diff, retest; proof yoksa aday |
-| K02 | screenshots 01–08 + report-preview.png ve indeks | Her görselin source/filtre/challenge/proof seviyesi yazılı; eksik CSP/dialog kanıtı açık; token/cookie/hash maskeli yayın kopyası; orijinal arşiv korunur |
-| K03 | SQLi/JWT/BOLA vakalarının kanıt envanteri | Anlatılan her sonucun kanıt bağlantısı veya “mevcut değil” durumu; iki kullanıcı kontrolü gerektiğinde ayrı kayıt; teori deney sayılmaz |
-| K04 | defense/README.md, methodology, writeup savunmaları | Bağlama uygun encoding ve sanitizer; CSP ek savunma; HttpOnly XSS/authenticated action önlemez; recursive filtre genellemesi yok; teknik kaynaklar düzeltme sırasında doğrulanır |
-| K05 | reports/*.html, dinamik HTML/JSON üretici, preview'lar | 50 JSON-only + 2 Bludit kayıt + 78 statik aday doğru etiketli; No findings satırı sayılmaz; varyant/evidence/rol/kök neden görünür; raw eski raporlar değişmez |
+| K01 / R5 — tamam | XSS vaka paketi; writeup 01/10/11, reports, araştırma labı | Temiz Windows venv 5/5 ve 5/5 port cleanup; proof/source/gate hashleri ve önceki Linux gate kaydı [R5 audit'inde](audit/r5-final-acceptance-2026-10-16/README.md) |
+| K02 — tamam | screenshots 01–08 + report-preview.png ve indeks | Kaynak/filtre/proof seviyesi ve eksik CSP/dialog kanıtı yazılı; sekiz maskeli PNG türevi, orijinaller korunmuş [K audit'i](audit/2026-10-17-k-evidence/README.md) |
+| K03 — tamam, kanıt envanteri | SQLi/JWT/BOLA vakalarının kanıt envanteri | Mevcut bağlantılar ve bulunmayan istek/yanıt/A-B proof açıkça listelendi; historical claims yazar beyanı olarak kaldı; yeniden üretim yapılmadı |
+| K04 — tamam, dokümantasyon | defense/README.md, methodology, writeup savunmaları | Bağlama uygun encoding, CSP ve HttpOnly sınırları; recursive filtre genellemesi kaldırıldı; tarihsel remediation retest iddiası yok |
+| K05 — tamam | reports/*.html, dinamik HTML/JSON üretici, preview'lar | 50 JSON-only + 2 Bludit + 78 statik satır ayrı etiketlendi; “no findings” güvenlik sayılmaz; raw eski raporlar değişmedi |
 
-## Portfolyo — P01–P04 (açık; giriş sayfası ilk düzenlemesi yapıldı)
+## Portfolyo — P01–P04 (P01/P04 tamam; P02/P03 açık)
 
 | Kimlik | İş | Kabul ölçütü |
 |---|---|---|
-| P01 | README/writeup indeksini üç seçilmiş vaka etrafında düzenle | XSS proof→fix, ölçülmüş bot hatası→regresyon, authz/araştırma vakası; birincil/ikincil bağlantılar anlaşılır; C/K kapanışlarına bağlı |
+| P01 — tamam, 17 Ekim | README/writeup indeksini üç seçilmiş vaka etrafında düzenle | K01 proof→fix, R9 test-fixture hatası→regresyon, R4 kontrollü araştırma replay'i; sınırlar ve C/K bağlantıları [kabul kaydında](audit/2026-10-17-p01-p04/README.md) |
 | P02 | 06–10'u araç geliştirme serisi olarak grupla, tekrarları azalt | Tarihsel içerik korunur; aynı başarı beş ayrı başarı gibi sunulmaz; gereksiz dosya silinmez |
 | P03 | CV/proje tanımını gerçek yetenekle sınırla | 950 exploit/tam otomatik proof/rakip üstünlüğü/yeni CVE iddiası kanıtsız yok; deneysel destek ve rol açık |
-| P04 | Paylaşılabilir demo ve ilk sürüm paketi | Başka biri kurulumu ve vakayı tekrarlar; release note + limitations + kanıt linki var; R6/K01/K05; yayın/push otomatik varsayılmaz |
+| P04 — tamam, 17 Ekim | Paylaşılabilir demo ve ilk sürüm paketi | Temiz Python 3.10 venv kurulumu, installed `dxaprove --demo` ve K01 local profile 5/5 tekrarlandı; release note, limitations ve kanıt bağlantısı var. `0.1.0` yayınlanmadı. |
 
 ## Stajın devamı — S01–S03 (açık)
 

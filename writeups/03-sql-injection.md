@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical lab account — evidence limit.** This writeup mixes SQLi concepts, illustrative queries, and a historical author-reported Juice Shop challenge. The retained repository does not contain the matching masked request/response, database/version, or reproducible challenge record needed to independently verify the claimed login bypass. The `UNION` and blind sections are theory/examples, not results. See [C03 in the roadmap](../ROADMAP.md), the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), and [status](../STATUS.md).
 
 # SQL Injection: when your input becomes part of the query
 
@@ -36,10 +36,10 @@ everything you write after it is parsed as **SQL code**:
 SELECT * FROM users WHERE username = 'administrator'-- ' AND password = '...'
 ```
 
-`--` starts a SQL comment, so the entire `AND password = …` check is **deleted**.
-The query now just asks for the administrator row, no password required. You are
-logged in. **That gap between "data inside the quotes" and "code after the quote"
-is the entire vulnerability class.**
+In SQL dialects where the exact comment syntax is accepted in that position,
+`--` comments out the trailing predicate. The illustrative query would then
+omit its password check. This is a dialect/parser-dependent example, not proof
+of the behavior of a specific application.
 
 This maps directly onto the repo's [`methodology.md`](../methodology.md): the
 **source** is any input that reaches a query (a form field, a `?query` param, an
@@ -85,14 +85,15 @@ to show usernames and password hashes instead:
   fits any type, so you probe with `NULL`s first, then swap a `NULL` for a string
   to find which column renders on the page.
 
-In this assessment the shape I actually confirmed is **#1, the login bypass** —
-**Finding #6**: `' OR 1=1--` (equivalently `administrator'--`) in OWASP Juice Shop's
-login-form email field comments out the password check and logs me in as the
-administrator (the *Login Admin* challenge). I also practised the WHERE-clause
-retrieval and login-bypass shapes on PortSwigger's Academy SQLi labs. The `UNION`
-exfiltration above and the blind techniques below are included as the **mechanism**
-— I did **not** run a `UNION` data dump against Juice Shop, so they're documented as
-technique, not claimed as a finding.
+The historical author account says shape **#1, login bypass**, was solved as
+Juice Shop Finding #6 using `' OR 1=1--` in the email field and that the
+*Login Admin* challenge completed. The retained screenshots support some
+challenge activity generally, but do not independently establish this exact
+request, response, authenticated identity, or query behavior. Treat this as an
+unverified historical report, not a currently reproduced finding. The
+PortSwigger Academy exercises are also author-reported here without a retained
+per-lab result. The `UNION` and blind sections below are mechanism/examples;
+they were not run against Juice Shop.
 
 ## When you can't see the output: blind SQLi
 
@@ -158,8 +159,8 @@ structure. **Parameterise, and the border can't be crossed.**
 
 ---
 
-*Hands-on, on authorized targets only: OWASP Juice Shop's *Login Admin* challenge —
-**solved** via a login-bypass injection (`' OR 1=1--`) — plus the WHERE-clause and
-login-bypass SQLi labs on PortSwigger's Web Security Academy. The `UNION` and blind
-sections are the mechanism explained for completeness, not run against Juice Shop.
-The method is the repo's `source → sink` discipline applied to the database layer.*
+*Historical author-reported practice: OWASP Juice Shop's *Login Admin* challenge
+and PortSwigger Academy labs. Their exact requests/results are not independently
+verified from retained evidence. The `UNION` and blind sections are explanatory
+examples, not claimed experiments. The method is source→query tracing applied to
+the database layer.*

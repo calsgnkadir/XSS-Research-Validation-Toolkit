@@ -1,5 +1,22 @@
 # Güncel devam noktası — 17 Ekim 2026
 
+## Portfolyo ve kanıt incelemesi — 17 Ekim 2026
+
+C01–C13 editoryal kabulü tamamlandı: tarihsel iddialar eldeki kanıta bağlandı
+veya yazar beyanı/doğrulanmamış olarak etiketlendi. K01–K05 envanter ve rapor
+kabulü tamamlandı; K03'te SQLi/JWT/BOLA için eşleşen ham kanıt yok, K04 de
+tarihsel düzeltmelerin yeniden test edildiğini iddia etmiyor. P01 ve P04 kendi
+kapsamlarında tamamlandı. Temiz Python 3.10 ortamına paket ve browser extra
+kuruldu; kurulu loopback demo `execution-observed` verdi, K01 yerel tekrarında
+5/5 kontrol ve 5/5 port temizliği geçti. Son analyzer paketi: **789 geçti, 38
+atlandı, 0 hata**. Bu teslim için hosted CI henüz çalışmadı. Ayrıntılar:
+[P01/P04 audit](audit/2026-10-17-p01-p04/README.md),
+[C/K inventory](audit/2026-10-17-k-evidence/README.md),
+[VALIDATION](VALIDATION.md).
+
+Sıradaki roadmap işleri P02/P03, sonra S01–S03. Yetkili ürün kapsamı
+seçilmediği için R7 başlamadı; bu portfolyo turunda hedef taranmadı.
+
 ## R6 / R7 / R8 / R9 devamı — 17 Ekim 2026
 
 R6 teknik kabulü tamam: final `0.1.0` wheel 7/7 kurulu-wheel gate ve dokuz

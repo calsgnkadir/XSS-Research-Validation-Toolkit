@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical lab account — evidence limit.** The `alg:none` challenge success and the unsuccessful key-confusion attempt are author-reported historical results. Retained evidence does not include the exact masked token exchange, target build, or verifier configuration needed to independently reproduce either outcome. The HS256 failure's cause is unknown; newline/key encoding below is a hypothesis, not an observed diagnosis. See the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md) and [roadmap](../ROADMAP.md).
 
 # Forging JWTs: when the token decides how it's checked
 
@@ -31,7 +31,7 @@ only thing stopping you from changing `email` to someone else's is the
 JWT attack is really one question: *can I produce a signature the server will
 accept without knowing its secret?* Two classic yeses follow.
 
-## Attack 1 — `alg: none`: tell the server not to check
+## Mechanism example 1 — `alg: none`
 
 The header names the algorithm. The JWT spec even defines `none` — "unsecured,
 no signature." If the server honors whatever the header says, you set
@@ -44,20 +44,18 @@ payload  = {"data":{"email":"jwtn3d@juice-sh.op"}}
 token    = base64url(header) . base64url(payload) .        ← empty signature
 ```
 
-Concretely, the token I forged for OWASP Juice Shop's *Unsigned JWT* challenge —
-**the one I actually landed** (the scoreboard turned green):
+The historical account says an `alg:none` token was submitted for OWASP Juice
+Shop's *Unsigned JWT* challenge and the challenge completed. The retained
+repository does not verify that exchange. The token below is a historical
+example from the writeup, not a current reproduction:
 
 ```
 eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJkYXRhIjp7ImVtYWlsIjoiand0bjNkQGp1aWNlLXNoLm9wIn19.
 ```
 
-How I did it in Burp: I took my own token out of the traffic, trimmed it to its
-`header.payload.signature` parts, decoded/re-encoded it in **Decoder**, then in
-**JWT Editor** changed the `email` claim and applied the *"alg:none"* attack (which
-rewrites the header to `none` and drops the signature). I pasted the resulting
-token into **Repeater** and sent it — the server saw `alg: none`, skipped
-verification, treated the `email` claim as authenticated, and the challenge solved.
-No key, no signature, just a header the server should never have trusted.
+The historical writeup says Burp Decoder/JWT Editor/Repeater were used and that
+the challenge completed. The exact exchange and verifier response are not retained,
+so the stated mechanism is not independently confirmed for the target.
 
 > **Field note.** Encoding this by hand is fiddly only because of base64url:
 > after a standard base64 encode, strip `=` padding and swap `+`→`-`, `/`→`_`. The
@@ -85,18 +83,12 @@ Juice Shop's *Forged Signed JWT* challenge serves the public key right at
 `/encryptionkeys/jwt.pub`; the intended path is to forge `email:
 rsa_lord@juice-sh.op`, switch the header to `HS256`, and HMAC-sign with that key.
 
-> **Honest field note — I did *not* land this one.** I attempted the key-confusion
-> forge on the *Forged Signed JWT* challenge and it did **not** solve, so I'm
-> documenting the mechanism and exactly where it stalled rather than claiming a win.
-> The trap: the HMAC secret must be the public key **byte-for-byte** as the server
-> holds it — PEM vs DER, PKCS#1 (`BEGIN RSA PUBLIC KEY`) vs PKCS#8 (`BEGIN PUBLIC
-> KEY`), and, the classic one, whether there's a **trailing newline**. A tool that
-> reformats the key computes a *different* HMAC and fails silently: the token looks
-> right (well-formed, `200 OK`) but the challenge never flips. Burp's **JWT Editor →
-> HMAC Key Confusion** is meant to handle the format (with a "remove trailing
-> newline" toggle), but I couldn't get the key bytes to match in the time I spent.
-> This is the unsolved half of this writeup — kept here honestly, because knowing
-> *why* it's finicky is worth more than pretending it worked.
+> **Historical field note — unsuccessful; cause unverified.** The author reported
+> that the key-confusion attempt did not complete the challenge. Key-byte or
+> representation differences are possible causes to investigate, but this attempt
+> retained no diagnostic evidence to establish the cause. A well-formed token or
+> HTTP 200 alone does not show signature verification succeeded. This remains an
+> unsuccessful, unexplained attempt.
 
 ## The common root cause
 
@@ -109,10 +101,11 @@ in this repo): never let attacker-controlled input decide a control.
 
 ## The fix: the server decides, not the token
 
-1. **Pin the algorithm server-side.** Verify with an explicit allowlist —
-   `jwt.verify(token, key, { algorithms: ['RS256'] })` — and **reject `none`**
-   outright. If the token's header disagrees, discard it. This one change kills
-   both attacks.
+1. **Pin the accepted algorithm and key type server-side.** Use the library's
+   explicit algorithm allowlist and reject unsecured tokens unless a narrowly
+   designed protocol explicitly requires them. Reject incompatible key/algorithm
+   combinations. Do not let the token header select arbitrary verification
+   behavior.
 2. **Never verify an HS256 token with an RSA public key.** Keep symmetric and
    asymmetric keys and code paths separate so a public key can never be used as an
    HMAC secret.
@@ -121,9 +114,10 @@ in this repo): never let attacker-controlled input decide a control.
    invalid.
 4. **Strong secrets for HS256** (long, random) so brute-forcing the secret is not
    an alternative path.
-5. **Keep the token out of reach of XSS** — `HttpOnly` cookies over `localStorage`,
-   so a forged *or* stolen token isn't trivially exfiltrated (ties back to the XSS
-   findings here).
+5. **Reduce token theft exposure.** `HttpOnly` cookies prevent JavaScript from
+   reading that cookie, unlike `localStorage`; they do not stop injected script
+   from issuing authenticated actions through the page. Choose storage and CSRF
+   defenses for the application's threat model.
 
 ## Takeaway
 
@@ -135,10 +129,9 @@ thing being verified decide how it's verified.
 
 ---
 
-*Hands-on, on an authorized local target: OWASP Juice Shop's *Unsigned JWT*
-(`alg:none`) challenge — **solved** (Burp Decoder + JWT Editor's alg:none attack,
-token sent via Repeater, scoreboard green). The RS256→HS256 *Forged Signed JWT*
-challenge is explained and was **attempted but not solved** (key-format friction,
-noted above) — included for the mechanism, marked honestly rather than claimed.
-Same lesson as the rest of this repo: never trust attacker-controlled input to make
-a security decision.*
+*Historical author report, on a stated local OWASP Juice Shop target: the *Unsigned JWT*
+(`alg:none`) challenge was described as solved; retained evidence does not
+independently verify the token exchange. The RS256→HS256 *Forged Signed JWT*
+challenge was reported as attempted but unsolved; its cause was not established.
+These are not current reproductions. The mechanism is explanatory: pin verification
+policy independently of attacker-controlled token headers.*

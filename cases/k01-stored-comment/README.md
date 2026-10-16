@@ -81,7 +81,10 @@ yöneltilemez; browser istekleri fixture origin'iyle sınırlandırılır.
 makinesinde kurulu Chrome kullanılarak 5/5 tekrarlandı. [Yeni koşu kanıtı](../../audit/2026-10-14-r5-k01-clean-repeat/README.md)
 ortamı, hash'leri ve fixture kapanışını kaydeder. Sonraki
 [Linux CI kabulü](../../audit/2026-10-14-r5-linux-gate/README.md) farklı işletim
-sistemini kapsadı. Bağımsız ikinci insan kabulü henüz yoktur; tam R5 maddesi açıktır.
+sistemini kapsadı. 16 Ekim kullanıcı kapsam kararı ve
+[teknik kabul kaydı](../../audit/r5-final-acceptance-2026-10-16/README.md)
+R5/K01 teknik kabulünü tamamladı. Bağımsız ikinci insan sonucu hâlâ yoktur;
+form boş tutulur ve bu eksiklik güncel teknik kapanış koşulu değildir.
 
 ### Bağımsız kişiye teslim ve gate profilleri
 
@@ -95,7 +98,7 @@ aynı beş kontrol, kaynak/çıktı hashleri, sabit fix diff, tek POST ve beş k
 fixture portu koşullarını uygular. `acceptance.json` profil ve gate kaynak
 hash'ini kaydeder. `local` sonucu CI veya bağımsız insan kabulü diye etiketlenmez.
 
-Başka bir kişi temiz checkout ve yeni venv ile yukarıdaki komutları çalıştırmalı;
+Başka bir kişi isterse temiz checkout ve yeni venv ile yukarıdaki komutları çalıştırabilir;
 başlangıç commit'ini `git rev-parse HEAD` ile, çalışma ağacını `git status --short`
 ile kaydetmeli. Linux'ta Python yolunu `.venv-k01/bin/python` olarak değiştirin;
 browser sistem bağımlılıkları eksikse Playwright'ın kurulum hatasını giderip yeni
@@ -107,8 +110,8 @@ Teslim: commit ve ortam, uygulanan komut, exit kodu, `result.json`, `fix.diff`,
 on request/response dosyası ve `acceptance.json`. Yerel browser yolu ve kişisel
 terminal çıktısını paylaşım öncesi ayıklayın. Beş portun kapalı oluşu yalnız canlı
 koşuda denetlenir; arşivi başka makineye taşımak tarihsel socket durumunu tekrar
-kanıtlamaz. İkinci kişinin temiz ortamda uygulaması ve sonuç değerlendirmesi
-ayrıca kaydedilmeden R5 insan kabulü tamamlanmaz.
+kanıtlamaz. Yeni bir insan koşusu ayrıca kaydedilirse bağımsız tekrar kanıtı olur;
+agent, CI ve mevcut teknik kabul kaydı başka bir insanın çalışması olarak sunulmaz.
 
 ## Kanıt dosyaları ve tekrar test
 

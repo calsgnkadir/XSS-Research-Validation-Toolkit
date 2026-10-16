@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical implementation snapshot — evidence limit.** This describes an early tool version, not current capability. Its Bludit run, CVE linkage, command output and test count are historical author-reported claims; the retained evidence does not independently establish that the reported 3.16.2 behavior matches CVE-2026-4420 or that the scanner proved JavaScript execution. A provided `{CID}` route is operator-supplied scope/seed input, not autonomous URL discovery. See the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), [current status](../STATUS.md), and [current CLI docs](../tools/dom-xss-analyzer/README.md).
 
 # Building an XSS bot: encoding a methodology as code
 
@@ -8,9 +8,10 @@
 > running target — injects a unique canary, follows the app's own links, and
 > reports where the payload survived **unencoded**. End-to-end it needs no
 > hand-picked URL: log in, submit, let it crawl. Same source→sink method as the
-> hand-work in this repo — just automated, deterministic, and re-runnable in CI.
-> Live-verified: it detects a CVE-2026-4420-shape stored XSS in Bludit's `tags`
-> field autonomously.
+> hand-work in this repo — automated for the supported paths. Historical reports
+> show that the tool was given a `{CID}` route seed and classified a stored
+> reflection; they do not independently prove autonomous discovery, browser
+> execution, or a CVE-2026-4420 match.
 
 Every earlier writeup here does the same three moves by hand: name the sources,
 name the sinks, prove one reaches the other. Those moves *are* an algorithm; a
@@ -64,8 +65,10 @@ HTML injection — a `<` and `>` around content that isn't a real HTML tag will
 either be encoded (safe) or preserved (unsafe). The `"` in front is a bonus
 signal: if only the quote survives, you might still have an attribute-breakout
 class bug. Every occurrence of the canary id is inspected: markup follows
-directly → `unencoded` (HIGH); only a raw quote follows → `attr-only` (MEDIUM);
-neither → `encoded` (safe, silent); id absent → this page isn't reflecting here.
+directly → `unencoded` (historical HIGH label); only a raw quote follows →
+`attr-only` (historical MEDIUM label); neither → marker not observed raw in the
+checked response. That does not establish safety outside the tested path; id
+absent → this response did not contain the identifier.
 The check looks at what follows the id **immediately** — otherwise the id landing
 inside a link like `<a href="/tag/<cid>-…">` false-fires on the attribute's own
 closing `"`.
@@ -91,10 +94,12 @@ honest limitation below).
 
 ## The walkthrough: catching Bludit's `tags` stored XSS
 
-Target: **Bludit 3.16.2** in a local Docker container on `localhost:8090`,
-admin credentials created via `bin/plugin login newuser`. The class we're
-after is CVE-2026-4420: an authenticated user (Author, Editor, Admin) writes
-a payload into a page's `tags` field; it renders unescaped on `/tag/<slug>`.
+Target as described in the historical account: **Bludit 3.16.2** in local
+Docker. The writeup associates its tags-field behavior with CVE-2026-4420, but
+that attribution is not independently established: the audit notes that the
+official record confirms other versions, and this repository does not preserve
+a source-level/vendor-fix comparison for 3.16.2. Do not infer either that this
+version is affected or that it is safe.
 
 **By hand — six steps.** Log in. Open `admin/new-content`. Put
 `dxaCANARY"><img src=x onerror=alert(1)>` in `tags`. Publish. Guess where it
@@ -147,11 +152,13 @@ tool tells you where to spend your time, not what to believe.
 
 The Bludit finding is worth calling out for what it *is* and *isn't*:
 
-- **It is:** a real, reproducible, authenticated stored XSS on Bludit 3.16.2,
-  caught end-to-end by the bot with no hand-picked check URL.
-- **It isn't:** a novel CVE. Bludit is heavily audited and the tags/categories
-  input class has several existing CVEs. The value here is **tool validation on
-  a real target** — the same shape you'd want in a portfolio piece.
+- **Historical claim:** the author reported an authenticated stored reflection
+  on a local Bludit instance and supplied an orphan route template. The retained
+  reports establish the scanner's historical classification, not independent
+  browser execution or autonomous discovery.
+- **Not established:** a new CVE, the precise CVE-2026-4420 root-cause match, or
+  current-version exposure. This chapter documents an early tool design and its
+  limits.
 
 ## Honest limitations
 
@@ -184,9 +191,13 @@ and every step reproducible in a unit test.
 
 ---
 
-*Hands-on, on an authorized local target only: Bludit 3.16.2 in Docker on
-`localhost:8090`, admin credentials seeded via the login-plugin CLI. Tool
-sources: [`tools/dom-xss-analyzer/dxa.py`](../tools/dom-xss-analyzer/dxa.py) +
-[`dxadyn.py`](../tools/dom-xss-analyzer/dxadyn.py) — 27 pytest cases, CI-gated,
-zero third-party dependencies. Reference: CVE-2026-4420 (Bludit ≥ 3.17.2 confirmed,
-3.16.2 shown here to carry the same shape).*
+*Historical author report: Bludit 3.16.2 in local Docker on `localhost:8090`,
+admin credentials seeded via the login-plugin CLI. The reports do not establish
+independent execution, a complete current setup, or CVE/root-cause equivalence.
+The tool source links below are current files and are not the historical
+version/hash used for the old output. Tool sources:
+[`tools/dom-xss-analyzer/dxa.py`](../tools/dom-xss-analyzer/dxa.py) +
+[`dxadyn.py`](../tools/dom-xss-analyzer/dxadyn.py) — the historical account lists
+27 pytest cases; this count was not rerun and is not current. The CVE-2026-4420
+reference confirms other versions in the cited audit, not this 3.16.2 instance;
+similar payload shape is not root-cause equivalence.*

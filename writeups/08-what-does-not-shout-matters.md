@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical implementation snapshot — evidence limit.** This describes an earlier analyzer build. Its reported JSON-only rows, 58-page dedup, static counts and hotel-platform behavior are historical author-reported outcomes, not a current accuracy measurement or proof that applications were safe. A JSON response is not by itself a browser HTML sink; downstream client rendering must be shown. A reported response/context classification or deduplicated row is not a confirmed vulnerability. See [C08](../ROADMAP.md), [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), and [current status](../STATUS.md).
 
 # What the bot *doesn't* shout about is what makes it useful
 

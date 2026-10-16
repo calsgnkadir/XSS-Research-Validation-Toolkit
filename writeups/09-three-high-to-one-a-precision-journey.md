@@ -1,18 +1,15 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical heuristic-tuning account — not a precision measurement.** The 3→1 HIGH change reports how one early regex analyzer's output changed after heuristic edits on one historical code snapshot. It is not a measured precision gain: there is no independently labeled representative corpus or accepted TP/FP/FN denominator here. In particular, sanitizer-name heuristics can suppress true flows, and the remaining HIGH is an inspection candidate, not a confirmed XSS. See [C09](../ROADMAP.md), the [R8 counterexample limits](../audit/2026-10-16-r8-current-review/README.md), and [status](../STATUS.md).
 
 # Three HIGH to one: a precision journey on real code
 
 > **TL;DR** — After [Writeup 08](08-what-does-not-shout-matters.md) added Java
 > to `dxa`, the first live-fire run against my own hotel-platform Spring Boot
 > backend (211 Java files) returned **3 HIGH findings**. Reading them by hand,
-> two were false positives that the regex heuristic just couldn't see through:
-> one was a value passed through a *local* `sanitize()` helper on a different
-> line from the sink, the other was a single line matching two overlapping
-> sink patterns and getting reported twice. This writeup is the anatomy of
-> the two follow-up fixes — **v3.8 cross-method sanitizer awareness with
-> multi-line statement join**, and **v3.9 sink-family dedup** — that walked
-> the HIGH count down 3 → 2 → 1 without weakening what the bot flags on real
-> problems. The remaining 1 HIGH is a *real* reach worth reviewing.
+> the author interpreted two rows as noise: one crossed a local helper whose
+> name looked sanitizer-like and one line matched overlapping sink patterns.
+> The historical changes reportedly reduced HIGH rows 3 → 2 → 1. The helper-name
+> rule does not inspect the helper's implementation or prove sanitization, so
+> it may suppress true flows. The remaining HIGH is only an inspection candidate.
 
 Writeup 08 was about the *categories* of noise the bot learned to quiet
 (sink-context, dedup across pages, JSON responses). This one is narrower and
@@ -162,7 +159,7 @@ Result: the two IdempotencyFilter rows collapse to one. HIGH drops from 2
 to 1. Total findings on the file drop from 9 to 7 as the same rule
 suppresses duplicate MEDIUMs on other lines too.
 
-## The one remaining HIGH is a real thing
+## The remaining HIGH was an inspection candidate
 
 The final row after v3.9:
 
@@ -204,10 +201,10 @@ Both fixes are heuristic and stay heuristic. Honest boundaries:
   add stay double-reporting. If a future language adds another pair
   (e.g. `jsp-el-unescape` vs `<c:out>` variants), it goes in the table.
 
-Precision moves in small, tested increments. The three-line drop on
-hotel-platform is what precision looks like when it's real: not a new
-detection, three fewer distractions and one row that still deserves your
-time.
+The reported row reduction is a historical output change on one target. It
+does not establish precision improvement; every heuristic change can also
+introduce misses, and a representative labeled corpus would be needed to
+measure that tradeoff.
 
 ## Takeaway
 
