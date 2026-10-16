@@ -12,9 +12,10 @@
 - R5 technical acceptance closed with a fresh Windows venv run: 5/5 controls,
   5/5 fixture ports closed, and all proof/source/gate hashes matched. The user
   removed independent-human repetition as a mandatory closeout condition.
-- The earlier review commit `06c4e21` is on origin/main; CI run 38879831807
-  and K01 run 38879831825 succeeded. Artifact contents for that push were not
-  downloaded. Current closure notes and code are recorded in this follow-up.
+- Review commit `06c4e21` is on origin/main (CI 38879831807 and K01
+  38879831825 succeeded). Final technical closeout `01a89e3` is also on
+  origin/main; CI 38887832797 and K01 38887832998 succeeded. Artifact contents
+  for either push were not downloaded.
 
 - Earlier interim reviews recorded the original-session CID gap and the
   pending second-person repeat. The final R4 replay and user-directed R5

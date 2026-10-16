@@ -3,8 +3,9 @@
 ## 16 October final R4/R5 technical closeout
 
 After coordinator review, R4 replay summaries require a clean escaped control
-for every matched candidate, block non-fixture HTTP requests, disable service
-workers and reject WebSockets. Chrome-required command:
+for every matched candidate, block non-fixture HTTP requests and disable service
+workers. WebSocket and other non-HTTP traffic is outside this replay's sandbox.
+Chrome-required command:
 
 ```powershell
 $env:DXA_BROWSER='C:\Program Files\Google\Chrome\Application\chrome.exe'
@@ -28,10 +29,10 @@ and gate. Environment: Python 3.10.11, Playwright 1.63.0, Chrome 155.0.8059.82.
 The prior downloaded Linux artifact gate is on a different commit; current
 push workflow status is recorded separately.
 
-Commit `06c4e21` push was verified by remote ref hash. GitHub CI `38879831807`
-and K01 workflow `38879831825` completed successfully. These are job results;
-artifact contents for this commit were not downloaded. The current R4/R5
-scope decision and its boundaries are recorded in ROADMAP.
+Commit `01a89e38e78182c1c7e81f2b1df021b66b429154` push was verified by remote
+ref hash. General CI `38887832797` completed successfully with all three jobs;
+K01 workflow `38887832998` also succeeded. Artifact contents for this commit
+were not downloaded. R4/R5 scope and boundaries are recorded in ROADMAP.
 
 ## 16 October R4/R5 closure review at `d9db15b`
 

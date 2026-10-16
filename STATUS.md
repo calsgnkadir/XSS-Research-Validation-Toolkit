@@ -21,10 +21,10 @@ sıfır-skip test içeriyor; farklı commit'e ait olduğu ayrıca belirtiliyor.
 İkinci bağımsız insan koşusu kullanıcı kararıyla zorunlu ölçütten çıkarıldı;
 boş form opsiyonel/tarihsel kalıyor. [R5 audit](audit/r5-final-acceptance-2026-10-16/README.md).
 
-Commit `06c4e21570df8fbdad4ba45885dccf2b0dc28a54` origin/main'e push edildi ve
-ref hash'i doğrulandı. GitHub CI run `38879831807` ve K01 run `38879831825`
-başarılı. Bu iki workflow sonucu; bu push'taki artifact içerik indirme/kabulü
-değil. Final R4/R5 tesliminin uzak CI durumu yeni commit sonrası ayrıca eklenir.
+Kapanış commit'i `01a89e38e78182c1c7e81f2b1df021b66b429154` origin/main'e push
+edildi ve uzak ref eşleşti. Genel CI run `38887832797` üç job'da başarılı;
+K01 run `38887832998` başarılı. Bunlar workflow/job sonuçlarıdır; artifact
+içerikleri bu commit için indirilmedi.
 
 ## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
 
