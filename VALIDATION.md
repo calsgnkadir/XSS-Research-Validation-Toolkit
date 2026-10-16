@@ -83,6 +83,14 @@ and cross-file regressions, which were fixed before the final focused
 roadmap criteria only; general soundness and broader accuracy are not claimed.
 See [R8 review](audit/2026-10-16-r8-current-review/README.md).
 
+R8 commit `ab91b092f5a02af24149c48869083898e223b238` was pushed and its remote
+ref hash matched. General CI
+[38898993545](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38898993545)
+passed all three jobs; K01 Linux
+[38898993396](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38898993396)
+also passed. These are workflow results; artifact contents were not
+independently downloaded. No release tag or package publication occurred.
+
 ## 16 October final R4/R5 technical closeout
 
 After coordinator review, R4 replay summaries require a clean escaped control

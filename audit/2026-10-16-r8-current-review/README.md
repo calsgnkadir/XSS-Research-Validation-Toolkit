@@ -63,3 +63,14 @@ Dynamic alias/import resolution, interprocedural flow, classes/closures,
 path-sensitive branch effects and configurable sanitizers remain documented
 limits. They are outside this bounded roadmap acceptance. The corresponding
 R8 checklist is now complete; broader analysis is future work. See [ROADMAP R8](../../ROADMAP.md).
+
+## Hosted verification
+
+R8 delivery commit `ab91b092f5a02af24149c48869083898e223b238` was pushed to
+`origin/main` and the remote branch hash matched. General CI
+[38898993545](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38898993545)
+completed successfully with all three jobs, including the analyzer suite with
+the new AST corpus. K01 Linux run
+[38898993396](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38898993396)
+also completed successfully. These are workflow results; artifact contents
+were not independently downloaded or inspected.

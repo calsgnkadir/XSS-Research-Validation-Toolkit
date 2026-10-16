@@ -4,11 +4,12 @@
 
 R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü ve changelog
 hazırlandı. Kurulu-wheel gate **7/7** geçti; dokuz modülün hashleri eşleşti.
-R6 teslim commit'i
-`401e6bf6848a95986ba26eccd51127600712a4b3` `origin/main` ile eşleşti; genel CI
-`38894634586` üç job'da, K01 Linux `38894634507` başarılı. Artifact içerikleri
-indirilip doğrulanmadı. Bu commit'ten sonraki R8 kodu yeni wheel ve CI kapısında
-yeniden sınanıyor. R6 yayını için tag/PyPI işlemi yapılmadı.
+R6 teslim commit'i `401e6bf6848a95986ba26eccd51127600712a4b3` ve R8 teslim
+commit'i `ab91b092f5a02af24149c48869083898e223b238` uzak main hashleriyle
+eşleşti. R8 commit'i için genel CI `38898993545` üç job'da, K01 Linux
+`38898993396` başarılı. Önceki R6 CI `38894634586` ve K01 Linux `38894634507`
+de başarılıydı. Artifact içerikleri indirilip doğrulanmadı. R6 yayını için
+tag/PyPI işlemi yapılmadı.
 
 R8 kapsamı tamamlandı: Python AST pilotu tuple/list atama taint'ini izliyor ve
 quoted source metnini kaynak sanmıyor. Labeled corpus TP/FP/FN/TN **1/0/0/1**;
@@ -17,8 +18,8 @@ interprocedural, class/closure ve path-sensitive branch sınırları belgeli ve
 bu dar kabulün dışındadır. Bu genel analiz soundness veya ürün doğruluk iddiası
 değildir. R8 sonrası yeniden üretilen `0.1.0` wheel'i de temiz venv'de 7/7
 kurulu-paket gate'ini geçti; final digest ve modül hashleri R6 audit'indedir.
-Bu AST teslimi için commit/hosted CI henüz yok. Sıradaki bot işi R9 operasyon/scope
-maddeleridir.
+R8 teslim commit'i ve hosted CI de başarılıdır. Sıradaki bot işi R9
+operasyon/scope maddeleridir.
 
 ## R4/R5 kapanışı — 16 Ekim 2026
 
