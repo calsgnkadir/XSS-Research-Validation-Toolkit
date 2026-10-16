@@ -111,7 +111,29 @@
                                                                              },
                                     "release_tag_or_publication":  false,
                                     "hosted_ci_for_working_tree":  false
-                                }
+                                },
+               "final_wheel_metadata_inspection":  {
+                                                       "verified":  true,
+                                                       "artifact":  "C:\\Users\\user\\AppData\\Local\\Temp\\r6-final-source-recheck-20261016-181457\\wheelhouse\\dxa_research_toolkit-0.1.0-py3-none-any.whl",
+                                                       "wheel_sha256":  "d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad",
+                                                       "source_build_commit":  "f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a",
+                                                       "audit_head_at_inspection":  "dcd019d93e852cf26f3d562b0fd5f35f2435e7d0",
+                                                       "inspection":  "Existing wheel was opened as ZIP and its .dist-info/METADATA read; no rebuild or CLI/test gate rerun.",
+                                                       "command":  "PowerShell: [System.IO.Compression.ZipFile]::OpenRead(\u003cwheel\u003e); read dxa_research_toolkit-0.1.0.dist-info/METADATA",
+                                                       "fields":  {
+                                                                      "Name":  "dxa-research-toolkit",
+                                                                      "Version":  "0.1.0",
+                                                                      "Requires-Python":  "\u003e=3.10",
+                                                                      "Provides-Extra":  [
+                                                                                             "browser"
+                                                                                         ],
+                                                                      "Requires-Dist":  [
+                                                                                            "playwright==1.63.0; extra == \"browser\""
+                                                                                        ]
+                                                                  },
+                                                       "tag_or_publication":  false,
+                                                       "git_delivery_performed":  false
+                                                   }
            },
     "r9_local_tests":  {
                            "dynamic_analyzer":  {
@@ -238,14 +260,33 @@
                                                                                             },
                                                               "route_fetch_or_shutdown_root_cause":  false
                                                           },
-                           "intermittent_root_cause_established":  false,
-                           "full_dom_suite_gate":  "open"
+                           "intermittent_root_cause_established":  true,
+                           "full_dom_fixture_recheck":  {
+                                                              "base_commit":  "dcd019d93e852cf26f3d562b0fd5f35f2435e7d0",
+                                                              "test_only":  true,
+                                                              "fixture_server":  "All local test HTTP fixtures use ThreadingHTTPServer; teardown joins and asserts server threads exit.",
+                                                              "prompt_serial_trials_failed":  5,
+                                                              "prompt_threaded_trials_passed":  5,
+                                                              "document_write_serial_trials_failed":  5,
+                                                              "focused_passed":  14,
+                                                              "focused_deselected":  66,
+                                                              "focused_duration_seconds":  58.68,
+                                                              "full_suite_command":  "$env:DXA_BROWSER='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'; $env:DXA_REQUIRE_BROWSER='1'; py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadom.py -q -p no:cacheprovider --tb=short",
+                                                              "full_suite_passed":  80,
+                                                              "full_suite_failed":  0,
+                                                              "full_suite_skipped":  0,
+                                                              "full_suite_duration_seconds":  91.29,
+                                                              "dxadom_py_changed":  false,
+                                                              "test_dxadom_py_sha256":  "a53e3e6a1c8273336f9e1a82d3575a3c041b5613786b8c76cd407889398a3879",
+                                                              "hosted_ci":  "pending delivery"
+                                                          },
+                           "full_dom_suite_gate":  "local pass; hosted CI pending"
                        },
     "source_sha256":  {
                           "tools/dom-xss-analyzer/dxadyn.py":  "723d527cde9dcd36c0a892604ae48cae6250d6dbc02900f04cad68511a03ebf2",
                           "tools/dom-xss-analyzer/test_dxadyn.py":  "04d2cfa381ac0b00d80f4d4c4273de2367e5a5584f53931f91ae23bd2b3d477a",
                           "tools/dom-xss-analyzer/dxadom.py":  "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
-                          "tools/dom-xss-analyzer/test_dxadom.py":  "c7eee81fc6fc692d7fea8eb04ae4dbbf0b48e3ed2d0d53e97b1f7061e9b951d9",
+                          "tools/dom-xss-analyzer/test_dxadom.py":  "a53e3e6a1c8273336f9e1a82d3575a3c041b5613786b8c76cd407889398a3879",
                           "tools/dom-xss-analyzer/dxa_callback.py":  "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
                           "tools/dom-xss-analyzer/test_report_privacy.py":  "f7e382eda1a1ea5d4fba85f0074d486e4110e49a0647bb43b6f2903cf53c7cca",
                           "tools/dom-xss-analyzer/test_dxa_callback.py":  "840d7440f2b127e8354f7887bb79e889bc94114dbb2b9a42faeb119311e3f462",

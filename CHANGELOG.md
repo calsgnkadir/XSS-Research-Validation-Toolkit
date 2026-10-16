@@ -21,6 +21,14 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
+- R9 local DOM test fixtures now use threaded HTTP servers with explicit
+  shutdown/join checks. The full Chrome `test_dxadom.py` suite passed 80/80;
+  this fixes local test-fixture contention only and does not alter browser
+  scope or analyzer behavior. Hosted CI is pending for this change.
+- R6 final 0.1.0 wheel metadata was inspected directly: the browser extra pins
+  Playwright 1.63.0. No wheel rebuild, release tag, or package publication was
+  performed for this metadata inspection.
+
 - R6 static CLI now rejects duplicate JSON config keys before scanning; a
   reproduced ambiguity regression is included. Focused config/mode/report
   suite: 110 passed. README installation steps now separate the base CLI,

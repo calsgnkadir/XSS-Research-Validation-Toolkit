@@ -28,6 +28,14 @@ vulnerability confirmation. `dxa.py` source/wheel/installed SHA-256 is
 `36bfc0f768edea63e0d167d3bf2b56df6da493b558229ccfa4a75fead27aca7a`; all nine
 module hashes are recorded in `acceptance.json`.
 
+Metadata was also read directly from the retained final wheel (no rebuild and
+no gate rerun). Its SHA-256 matched the recorded artifact above. The wheel
+contains `Name: dxa-research-toolkit`, `Version: 0.1.0`,
+`Requires-Python: >=3.10`, `Provides-Extra: browser`, and
+`Requires-Dist: playwright==1.63.0; extra == "browser"`. This metadata check
+was made from the source delivery recorded as `f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a`;
+the audit checkout HEAD at inspection was `dcd019d93e852cf26f3d562b0fd5f35f2435e7d0`.
+The exact wheel hash and metadata output are recorded in `acceptance.json`.
 Exact successful commands:
 
 ```powershell
@@ -94,11 +102,33 @@ page-error, DOM sink, dialog, and eval observations; most failures showed
 fixture-side `ConnectionAbortedError`, and two had `goto` 15-second timeouts.
 The two latest previously failing cases passed together in a focused rerun
 **2/2**. A narrow rerun of the four latest failures then passed **6/10**; its
-four failing cases (`document.write`, prompt, multiple dialogs, and onerror
+ four failing cases (`document.write`, prompt, multiple dialogs, and onerror
 dialog) passed immediately afterward in a focused rerun **4/4**. Their fixture
 servers again reported `ConnectionAbortedError`. The browser specialist found
 no deterministic `route.fetch` or context-shutdown defect and made no code
-change. Keep full DOM suite acceptance open.
+change. This was the status before the 17 October fixture follow-up below.
+
+## R9 DOM fixture follow-up — 2026-10-17
+
+The browser specialist used isolated A/B trials to locate the intermittent
+failures in serial local HTTP test fixtures. The prompt test failed **5/5**
+with the serial dialog server and passed **5/5** with a threaded dialog server.
+The `document.write` sink test failed **5/5** against its serial fixture, with
+the fixture reporting `ConnectionAbortedError`. Request diagnostics exposed
+only local paths and were removed after the cause was isolated.
+
+Only `tools/dom-xss-analyzer/test_dxadom.py` changed. All local fixture servers
+now use `ThreadingHTTPServer`; teardown shuts down and closes each server,
+joins the serving thread, and asserts it exited. Browser scope and test oracles
+are unchanged; `dxadom.py` has no diff. On base checkout
+`dcd019d93e852cf26f3d562b0fd5f35f2435e7d0`, the historical failure/scope
+selection passed **14/14** (66 deselected, 58.68 seconds), then the full Chrome
+suite passed **80/80** with zero failures or skips in 91.29 seconds. The updated
+test file SHA-256 is
+`a53e3e6a1c8273336f9e1a82d3575a3c041b5613786b8c76cd407889398a3879`.
+This is local test-fixture stability evidence, not a production analyzer fix.
+At the time of this result the fixture change was uncommitted, so it had no
+hosted CI result; R9 remains open pending Git delivery and hosted validation.
 
 The first dynamic suite run also had one jitter-bound failure while other
 long-running tests were executing; an isolated full rerun passed **175/175**.
@@ -114,7 +144,9 @@ this scope. Docker fixtures without target-specific bootstrap/login/lesson
 adapters remain explicitly unready; this is the accepted operational guard,
 not proof those targets work. Scoped report/credential masking and the
 variant/context matrix have local test acceptance. R9 remains open because the
-full DOM suite is still unstable and final Git provenance is not yet recorded.
+newly passing local DOM fixture change still needs Git delivery and hosted CI.
+The previous full-suite failures remain historical run results; the 17 October
+threaded-fixture rerun is the current local DOM acceptance.
 
 ## Source hashes
 

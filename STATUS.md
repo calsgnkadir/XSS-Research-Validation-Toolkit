@@ -1,4 +1,24 @@
-# Güncel devam noktası — 16 Ekim 2026
+# Güncel devam noktası — 17 Ekim 2026
+
+## R6 / R7 / R8 / R9 devamı — 17 Ekim 2026
+
+R6 teknik kabulü tamam: final `0.1.0` wheel 7/7 kurulu-wheel gate ve dokuz
+modül hash eşleşmesini geçti; 17 Ekim'de aynı wheel'in `browser` extra ve
+`playwright==1.63.0` metadata alanları da doğrudan doğrulandı. Açık R6
+checkbox'ı yalnız tag/dış yayın; bu adım henüz yapılmadı.
+
+R8 sınırlı Python AST kabulü tamam, R7 gerçek ürün araştırması başlamadı. A01
+tarihsel iddiaları yazar beyanı; A02'de yerel Bludit 3.16.2 davranışı var ancak
+CVE aidiyeti doğrulanmış değil; A03'ün eski program/90 gün ifadeleri güncel
+scope veya izin kanıtı değil. Yetkili ürün ve program scope'u olmadan dış hedef
+testi yapılmadı.
+
+R9 tam DOM Chrome paketi, yalnız test fixture sunucularını threaded yapıp her
+teardown'da thread kapanışını denetledikten sonra **80/80** geçti; tarihsel hata
+grubu **14/14** geçti. `dxadom.py` değişmedi. Değişiklik ve bu kanıt henüz
+commit edilmedi; önceki `f4d8bdf` hosted run'daki ana test ve required browser
+proof job'ları başarısızdı. R9 genel kapanışı yeni değişiklik push edilip
+hosted CI doğrulanana kadar açık.
 
 ## R6 / R8 devamı — 16 Ekim 2026
 

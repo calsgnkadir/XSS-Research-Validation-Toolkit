@@ -516,8 +516,9 @@ source/wheel/install modül hashleri eşleşti. Paketlenmiş loopback demo
 `execution-observed` verdi, triage `unreviewed` kaldı. Wheel SHA-256
 `d1151704ba4c5e6dbe91696f632040ad528947bf97b04dc765b585ef6c3729ad`.
 Teknik R6 satırları bu test edilen aday için tamam; yayın satırı açık ve ayrı
-yetki bekliyor. Bu yerel R9 değişiklikleri commit/push veya yeni hosted CI
-değildir. [Birleşik R6/R9 audit kaydı](audit/2026-10-16-r6-r9-final-source/README.md).
+yetki bekliyor. 17 Ekim'de aynı wheel'in `.dist-info/METADATA` alanlarında
+`Provides-Extra: browser` ve `Requires-Dist: playwright==1.63.0; extra ==
+"browser"` doğrulandı; wheel yeniden kurulmadı. [Birleşik R6/R9 audit kaydı](audit/2026-10-16-r6-r9-final-source/README.md).
 
 R8 güncel kaynak denetimi mevcut taint/rebinding, context, template ve destek
 sınırlarını doğruladı. Ardından Python-only AST pilotu eklendi: tuple-unpack
@@ -657,9 +658,13 @@ teslimle kapanmaz; aşağıdaki birleşik kabul maddeleri açık kalır.
 16 Ekim R9 yerel devamı yukarıdaki kapalı dilimleri doğruladı: mutation ve
 stored-auto fixture'ları, callback'in loopback çalışma sınırı, loopback/redirect/
 WebSocket DOM sınırı, compose statik kapıları ve self-scan/CI oracle'ı.
-**R9 bütünü açık**: temiz tam DOM browser suite kabulü kapanış incelemesi
-bekliyor. Tam suite'teki aralıklı hatalar ve hosted CI sonuçlarıyla yerel kanıt
-sınırları [audit kaydında](audit/2026-10-16-r6-r9-final-source/README.md).
+17 Ekim'de test fixture'larındaki seri HTTP sunucuları, aynı scope ve oracle'ları
+koruyarak `ThreadingHTTPServer` kullandı; teardown her server thread'inin
+kapandığını denetliyor. Hata grubu **14/14**, tam Chrome DOM paketi **80/80**
+geçti. `dxadom.py` çalışma davranışı değişmedi. **R9 bütünü açık**: test
+değişikliği henüz push edilmedi ve önceki commit'teki zorunlu hosted CI işleri
+başarısızdı. Yeni teslim için hosted CI sonucu bekleniyor. [Yerel ve uzak kanıt
+sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
 

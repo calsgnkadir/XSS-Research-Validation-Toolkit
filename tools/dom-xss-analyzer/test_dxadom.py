@@ -132,7 +132,7 @@ class _StaticHandler(http.server.BaseHTTPRequestHandler):
 
 @pytest.fixture
 def static_server():
-    httpd = http.server.HTTPServer(("127.0.0.1", 0), _StaticHandler)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _StaticHandler)
     port = httpd.server_address[1]
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
@@ -141,6 +141,8 @@ def static_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+        t.join(timeout=2)
+        assert not t.is_alive(), "static fixture server thread did not stop"
 
 
 @pytest.fixture
@@ -149,7 +151,7 @@ def browser_scope_lab():
     outside_requests = []
     main_requests = []
     websocket_requests = []
-    outside = http.server.HTTPServer(("127.0.0.1", 0), _StaticHandler)
+    outside = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _StaticHandler)
     outside_port = outside.server_address[1]
 
     class ScopeHandler(http.server.BaseHTTPRequestHandler):
@@ -195,8 +197,9 @@ def browser_scope_lab():
             super().do_GET()
 
     outside.server_close()
-    outside = http.server.HTTPServer(("127.0.0.1", outside_port), OutsideHandler)
-    main = http.server.HTTPServer(("127.0.0.1", 0), ScopeHandler)
+    outside = http.server.ThreadingHTTPServer(
+        ("127.0.0.1", outside_port), OutsideHandler)
+    main = http.server.ThreadingHTTPServer(("127.0.0.1", 0), ScopeHandler)
     servers = (outside, main)
     threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in servers]
     for thread in threads:
@@ -207,7 +210,12 @@ def browser_scope_lab():
     finally:
         for server in servers:
             server.shutdown()
+        for server in servers:
             server.server_close()
+        for thread in threads:
+            thread.join(timeout=2)
+        assert all(not thread.is_alive() for thread in threads), (
+            "browser scope fixture server thread did not stop")
 
 
 def test_loopback_origin_parser_rejects_nonliteral_or_non_http_targets():
@@ -429,7 +437,7 @@ class _SinkHandler(http.server.BaseHTTPRequestHandler):
 
 @pytest.fixture
 def sink_server():
-    httpd = http.server.HTTPServer(("127.0.0.1", 0), _SinkHandler)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SinkHandler)
     port = httpd.server_address[1]
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
@@ -438,6 +446,8 @@ def sink_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+        t.join(timeout=2)
+        assert not t.is_alive(), "sink fixture server thread did not stop"
 
 
 @_skip
@@ -657,7 +667,7 @@ class _DialogHandler(http.server.BaseHTTPRequestHandler):
 
 @pytest.fixture
 def dialog_server():
-    httpd = http.server.HTTPServer(("127.0.0.1", 0), _DialogHandler)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _DialogHandler)
     port = httpd.server_address[1]
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
@@ -666,6 +676,8 @@ def dialog_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+        t.join(timeout=2)
+        assert not t.is_alive(), "dialog fixture server thread did not stop"
 
 
 @_skip
@@ -921,7 +933,7 @@ class _SpaHandler(http.server.BaseHTTPRequestHandler):
 
 @pytest.fixture
 def spa_server():
-    httpd = http.server.HTTPServer(("127.0.0.1", 0), _SpaHandler)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SpaHandler)
     port = httpd.server_address[1]
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
@@ -930,6 +942,8 @@ def spa_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+        t.join(timeout=2)
+        assert not t.is_alive(), "SPA fixture server thread did not stop"
 
 
 @_skip
@@ -1227,7 +1241,7 @@ fetch("/api/x", {
 
 @pytest.fixture
 def xhr_server():
-    httpd = http.server.HTTPServer(("127.0.0.1", 0), _XhrFixture)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _XhrFixture)
     port = httpd.server_address[1]
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
@@ -1236,6 +1250,8 @@ def xhr_server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+        t.join(timeout=2)
+        assert not t.is_alive(), "XHR fixture server thread did not stop"
 
 
 @_skip

@@ -1,5 +1,31 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## R9 DOM fixture recheck — 2026-10-17, local Windows
+
+Base checkout: `dcd019d93e852cf26f3d562b0fd5f35f2435e7d0`; Python 3.10.11,
+Chrome 155.0.8059.82, Playwright 1.63.0. A/B tests reproduced serial fixture
+server failures for prompt (5/5) and `document.write` (5/5); corresponding
+threaded dialog fixture prompt trials passed 5/5. All local HTTP fixture
+servers in `test_dxadom.py` now use `ThreadingHTTPServer`; teardown shuts down,
+closes, joins, and asserts each server thread exited. Test oracle and browser
+scope are unchanged. This is a test-fixture concurrency fix; `dxadom.py` did
+not change.
+
+The historical failure/scope selection passed **14/14** (66 deselected, 58.68
+seconds). The full Chrome suite passed **80/80**, zero failures/skips, in 91.29
+seconds:
+
+```powershell
+$env:DXA_BROWSER='C:\Program Files\Google\Chrome\Application\chrome.exe'
+$env:DXA_REQUIRE_BROWSER='1'
+py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadom.py -q -p no:cacheprovider --tb=short
+```
+
+Updated `test_dxadom.py` SHA-256:
+`A53E3E6A1C8273336F9E1A82D3575A3C041B5613786B8C76CD407889398A3879`.
+This local working-tree result is based on `dcd019d`; it is not yet committed
+and has no hosted CI result. See the [R6/R9 audit](audit/2026-10-16-r6-r9-final-source/README.md).
+
 ## R4/R5 closeout recheck — 2026-10-16, local Windows
 
 Source checkout: `f1fb6556b930d683b7b47fd0c6b04d6f8703053b`; Python 3.10.11.
