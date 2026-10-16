@@ -63,47 +63,63 @@ encoding sonrası düz metin kaldı. Bu vaka kanıtıdır; genel bot execution m
 895 benzersiz dize vardır. Bu sayılar çalışan exploit veya WAF bypass sayısı değildir.
 HTTP/statik çekirdek stdlib kullanır; testler pytest, tarayıcı gözlemcisi Playwright ve uygun browser gerektirir.
 
-## Yerel başlangıç
+## Yerel kurulum ve smoke kontrolü
 
-Depo kökünde:
+Python 3.10 veya üstü gerekir. Depo kökünde temel CLI'ları sanal ortama kurup
+yardım ekranlarını kontrol et:
 
 ```console
-python tools/dom-xss-analyzer/dxa.py --help
-python tools/dom-xss-analyzer/dxadyn.py --help
-python -m pytest -q
+python -m venv .venv
 ```
 
-Pytest kurulu değilse test ortamına ayrıca kurulmalıdır. `--dom` şu an bir
-URL ziyaretini gözlemler; stored/auth-flow ile birleşik doğrulama değildir.
-`dxadyn` ana modlarından `--dom`, `--stored` ve `--flow` birlikte seçilemez.
-Stored/flow hedefini kendi seçeneklerinden alır; yanına positional URL verilmez.
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+python -m pip install .
+dxa --help
+dxadyn --help
+dxaprove --help
+```
+
+macOS/Linux:
+
+```console
+source .venv/bin/activate
+python -m pip install .
+dxa --help
+dxadyn --help
+dxaprove --help
+```
+
+Temel kurulumun zorunlu çalışma zamanı bağımlılığı yoktur. Browser proof demo'su
+için aynı ortamda isteğe bağlı, `playwright==1.63.0` sürümüne sabitlenmiş
+browser extra'yı kur ve Chromium binary'sini ayrıca yükle:
+
+```console
+python -m pip install ".[browser]"
+python -m playwright install chromium
+dxaprove --demo --output demo-evidence
+```
+
+Demo kendi geçici loopback fixture'ını açıp kapatır. Yeni bir çıktı klasörü
+kullan. `execution-observed` yalnız bu fixture'daki canary gözlemidir; açıklık
+triage'ı veya genel tarayıcı doğruluğu değildir. İzinli başka bir loopback lab
+için `dxaprove --spec <yerel-json>` kullanılabilir; bu proof sözleşmesi `dxa`
+ve `dxadyn` tarama config'lerinden ayrıdır. Tarama komutlarını yalnız kendi
+yerel fixture'larında veya açıkça yetkili hedeflerde çalıştır.
+
+Depo kaynak kodundan kurulan paket `dxa-research-toolkit` adıyla
+`0.0.0.dev0` geliştirici sürümüdür. Bu sürüm kurulum ve smoke kontrolü içindir;
+PyPI yayını veya Git release etiketi değildir ve R6 release kabulü anlamına
+gelmez. CLI'ları kaynak dosyalarından doğrudan çalıştırmak da mümkündür.
+
+`dxadyn` için `--dom`, `--stored` ve `--flow` ana modları birlikte seçilemez.
+Stored/flow hedefi kendi seçeneklerinden verilir; positional URL eklenmez.
 `--dom` HTTP oturum seçeneklerini (`--login`, `--auth-flow`, `--auth-check`,
 `--cookie`, `--header`, `--csrf-refresh`, `--csrf-header`) kabul etmez.
-Bu desteklenmeyen birleşimler ağ/browser işlemi ve rapor yazımı başlamadan
-exit 2 verir. Oturumlu browser proof için `dxaprove` kullanılır.
-R6 araştırma paketi taslağı depo kökünden bir sanal ortamda kurulabilir:
-
-    python -m pip install .
-    python -m pip install ".[browser]"
-    python -m playwright install chromium
-    dxa --help
-    dxadyn --help
-    dxaprove --help
-
-Browser extra Playwright 1.63.0 kurar; browser binary ayrı kurulur veya yerel
-Chrome yolu açıkça verilir. Paket adı dxa-research-toolkit, geliştirici sürümü
-0.0.0.dev0 yalnız test amaçlıdır. PyPI yayını, Git release etiketi ve R6 genel
-kabulü yapılmadı. Eski doğrudan Python komutları çalışmayı sürdürür.
-Tarama örneklerini kendi yerel fixture'ların veya açıkça yetkili hedeflerin üzerinde çalıştır.
-
-Kurulumdan sonra paketlenmiş loopback demo şu şekilde çalıştırılabilir:
-
-    dxaprove --demo --browser "<chrome-yolu>" --output <yeni-kanit-dizini>
-
-Demo kendi disposable loopback fixture'ını açıp kapatır. `execution-observed`
-yalnızca fixture'daki canary gözlemidir; vulnerability triage sonucu değildir.
-Başka bir izinli loopback lab için `dxaprove --spec <yerel-json>` kullanılır;
-bu proof sözleşmesi `dxa` ve `dxadyn` tarama config'lerinden ayrıdır.
+Desteklenmeyen birleşimler ağ/browser işlemi ve rapor yazımı başlamadan exit 2
+verir. Oturumlu browser proof için `dxaprove` kullanılır.
 
 Statik `dxa` CLI için isteğe bağlı JSON config örneği:
 

@@ -2,6 +2,15 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
+- R6 static CLI now rejects duplicate JSON config keys before scanning; a
+  reproduced ambiguity regression is included. Focused config/mode/report
+  suite: 110 passed. README installation steps now separate the base CLI,
+  optional pinned browser extra and disposable loopback demo.
+- Current-source R6 wheel installed offline into a fresh venv and passed the
+  seven-check installed CLI gate; all nine source/wheel/installed module hashes
+  matched. Wheel SHA-256 and environment/build caveat are in the R6 audit.
+  No hosted CI, release tag or publication was performed in this recheck.
+
 - R4 technical scope closed after the exact stored-payload replay gate was
   tightened for fail-closed outcomes and loopback-only HTTP browser requests.
   Final Chrome suite: 57 passed; final replay: 8 rows, 6 exact candidates,

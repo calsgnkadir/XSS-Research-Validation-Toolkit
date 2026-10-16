@@ -1,5 +1,51 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## R4/R5 closeout recheck — 2026-10-16, local Windows
+
+Source checkout: `f1fb6556b930d683b7b47fd0c6b04d6f8703053b`; Python 3.10.11.
+The coordinator reran the final R4 replay/oracle tests after the R4 specialist
+confirmed the replay sources and test files still match the 16 October audit:
+
+```powershell
+py -3.10 -m pytest bench/test_r4_compare_local.py bench/test_r4_cid_oracle.py -q -p no:cacheprovider --tb=short
+```
+
+Result: **57 passed**, zero failures/errors/skips, 20.79 seconds. The suite uses
+the local replay fixtures; it is not a new scanner comparison or a general
+accuracy measurement.
+
+The R5 specialist checked the K01 source/gate hashes against the final
+acceptance and reran its local fixture/gate regressions:
+
+```powershell
+py -3.10 -m pytest cases/k01-stored-comment/test_fixture.py cases/k01-stored-comment/test_repro_gate.py -q -p no:cacheprovider --tb=short
+```
+
+Result: **22 passed**, zero failures/errors/skips. This Windows test run does
+not establish a second human run or replace the historical Linux artifact
+provenance. No hosted CI was run for this documentation/recheck turn.
+
+## R6 current-source CLI/package readiness — 2026-10-16
+
+The R6 specialist reproduced duplicate JSON keys being accepted by the static
+CLI config loader, added a regression, and changed the loader to reject the
+ambiguous config before source discovery. The coordinator reran the focused
+suite on Python 3.10.11:
+
+```powershell
+py -3.10 -m pytest tools/dom-xss-analyzer/test_dxa_config.py tools/dom-xss-analyzer/test_r6_cli_modes.py tools/dom-xss-analyzer/test_dxadyn_config.py tools/dom-xss-analyzer/test_dxadyn_report_identity.py -q -p no:cacheprovider --tb=short
+```
+
+Result: **110 passed**, zero failures/errors/skips. A current working-tree wheel
+was then installed offline into a fresh Windows venv; installed CLI gate passed
+**7/7**, and all nine module hashes matched source, wheel and installed copies.
+Wheel SHA-256: `0edea5d639183f2088739241ec9b985cb7a39f0b43e33cc73a1ec8494675a07f`.
+This packaging script run is not pytest, browser proof or hosted CI. Its base
+HEAD and source-snapshot limits, the initial `bdist_wheel` failure, and the
+cached `wheel==0.48.0` install into system Python are recorded in the
+[R6 readiness audit](audit/2026-10-16-r6-final-readiness/README.md). No release
+tag or publication was made; the version remains `0.0.0.dev0`.
+
 ## 16 October final R4/R5 technical closeout
 
 After coordinator review, R4 replay summaries require a clean escaped control

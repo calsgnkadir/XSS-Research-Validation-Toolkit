@@ -91,3 +91,23 @@ def test_powershell_utf8_bom_config_is_accepted(tmp_path, monkeypatch, capsys):
     config.write_bytes(b'\xef\xbb\xbf{"schema_version":1,"min_confidence":"high"}')
     code, output, error = run_cli(monkeypatch, capsys, source, "--config", config, "--json")
     assert (code, json.loads(output), error) == (0, [], "")
+
+
+def test_duplicate_config_keys_are_rejected_before_scanning(tmp_path, monkeypatch, capsys):
+    source = tmp_path / "case.py"
+    source.write_text('HTMLResponse("constant")\n', encoding="utf-8")
+    config = tmp_path / "scan.json"
+    config.write_text(
+        '{"schema_version":1,"min_confidence":"low",'
+        '"min_confidence":"high"}',
+        encoding="utf-8",
+    )
+
+    def unexpected_scan(*args, **kwargs):
+        pytest.fail("ambiguous config reached source discovery")
+
+    monkeypatch.setattr(dxa, "iter_files", unexpected_scan)
+    code, output, error = run_cli(monkeypatch, capsys, source, "--config", config, "--json")
+    assert code == 2
+    assert output == ""
+    assert "min_confidence" not in error

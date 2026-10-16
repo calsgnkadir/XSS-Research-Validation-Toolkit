@@ -1,17 +1,15 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
 16 Ekim güncel durum: R4 teknik teslimi ve R5/K01 teknik kabulü tamamlandı.
-İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması kullanıcı
-kapsam kararıyla zorunlu teslim ölçütü değildir. Ayrıntı STATUS.md ve aşağıdaki
-kapanış kayıtlarındadır; sonuçlar ürün doğruluğu veya vulnerability iddiası
-oluşturmaz.
+Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
+geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
+kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
+doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot teslimi R6
+paketleme/release hazırlığıdır; R8/R9 ve portfolyo/kanıt işleri ayrıca açıktır.
 
-14–15 Ekim devam teslimi: R3 allowlist header gözlemi ham değer tutmadan ayrı
-çıktıya bağlandı; R6 statik CLI config önceliği ve statik/dinamik JSON/HTML
-tek kanıt belgesi dar kapsamda geliştirildi. Yerel Chrome 75/75, etkilenen
-birleşik paket 293/293 geçti. Genel R4/R6 ve R5 ikinci insan kabulü açık.
-Kod a0cf348 için genel CI 38637484190 3/3 ve K01 Linux 38637484214 geçti.
-[Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
+14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
+“genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
+durumdur, güncel devam noktası değildir. [Devam raporu](audit/2026-10-14-r3-r6-continuation/README.md).
 
 ## 14 Ekim 2026 — tarihli yetenek snapshot'ı
 
@@ -127,7 +125,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R4, R6, R8–R9 | R0/R1/R2/R3 tamam; R4 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm ve kurulabilir sürüm |
+| 1 | Bot R0–R6, R8–R9 | R0–R5 tamam (R4/R5 teknik kapsam); R6, R8, R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -462,9 +460,10 @@ kayıt olarak boş saklanır. [Teknik kabul](audit/r5-final-acceptance-2026-10-1
 browser/CI koşusu yapmamıştı. Aynı gün sonraki temiz-vnev koşusu ve teknik
 kapsam kararı bu ara notu supersede eder. [Ara kabul matrisi](audit/r5-closure-2026-10-16/README.md).
 
-15 October human handoff: [independent-repeat form](cases/k01-stored-comment/INDEPENDENT-REPEAT.md)
-is ready and explicitly unfilled. Coordinator reviewed the handoff; no new
-human execution evidence was supplied. The independent-person criterion stays open.
+Historical 15 October handoff: [independent-repeat form](cases/k01-stored-comment/INDEPENDENT-REPEAT.md)
+was left unfilled. On 16 October the user removed a second-person run from
+mandatory R5 closeout; this historical open status is superseded and the form
+remains optional. No second-person execution is claimed.
 
 
 15 Ekim: `check_repro.py --profile local --browser ...` taşınabilir kabul
@@ -475,7 +474,8 @@ tam runtime beyanını kontrol eder; optimize Python reddedilir. Yeni yerel
 
 Linux clean workflow ve bağımsız artifact gate kodu eklendi; yerel Windows
 gate 5/5, uzak Linux run 38596197622 5/5 ve artifact kabulü geçti.
-İkinci kişi kabulü ayrı açık.
+İkinci kişi kabulü o tarihte ayrı açıktı; kullanıcı 16 Ekim'de bunu zorunlu
+R5 kapanış ölçütünden çıkardı.
 [Dar R5 kanıtı](audit/2026-10-14-r5-linux-gate/README.md).
 
 
@@ -483,12 +483,12 @@ gate 5/5, uzak Linux run 38596197622 5/5 ve artifact kabulü geçti.
 14 Ekim aynı Windows hostunda yeni Python venv, pinned Playwright ve mevcut
 Chrome ile bağımsız agent tekrarında 5/5 kontrol ve 5/5 fixture teardown geçti.
 [Koşu kanıtı](audit/2026-10-14-r5-k01-clean-repeat/README.md).
-İkinci kişi/farklı ortam tekrarı henüz yok; aşağıdaki genel kabul açık.
+Bu 14 Ekim kaydı 16 Ekim teknik kapanış kararından öncedir.
 Kaydetme→ayrı okuyucu context'i→canary, aynı payload ile encoding sonrası retest,
 JS kapalı/JSON/normal dialog negatif kontrolleri; request/response, fix diff,
 ortam sürümleri ve kaynak hash'leri mevcut. Yeni CVE/gerçek ürün bulgusu değildir.
-Temiz Windows ve Linux ortam koşuları var; bağımsız ikinci kişi tekrarı
-henüz yapılmadı, aşağıdaki ilk madde açık.
+Temiz Windows ve Linux ortam koşuları var. Bağımsız ikinci kişi tekrarı
+yapılmadı; kullanıcı kararıyla bu R5 kapanış şartı değildir.
 
 İlk vaka için mevcut yetkili laboratuvar veya minimal yerel fixture kullanılabilir. Teslimat: hedef sürümü, kaynak→sink izi, iki rol gerekiyorsa hesap A/B kontrolü, tam komut, maskeli request/response, cid ile proof, negatif kontrol, fix diff ve aynı testin fix sonrası sonucu.
 
@@ -500,6 +500,14 @@ henüz yapılmadı, aşağıdaki ilk madde açık.
 
 ## R6 — Kullanılabilir ilk sürüm
 
+16 Ekim güncel R6 devamı: README'ye temiz venv, temel CLI, opsiyonel browser
+extra ve loopback demo adımları eklendi. Statik `dxa` config'inde tekrarlanan
+JSON anahtarları reddedilecek şekilde düzeltildi; ilgili config/mode/report
+paketi **110/110** geçti. Güncel kaynakla oluşturulan wheel temiz venv'e offline
+kuruldu; üç CLI ve yedi installed-wheel kontrolü geçti, dokuz modülün kaynak,
+wheel ve kurulu kopya hashleri eşleşti. [16 Ekim R6 kabulü](audit/2026-10-16-r6-final-readiness/README.md).
+Sürüm `0.0.0.dev0`; release etiketi veya yayın yapılmadı. R6 release kabulü açık.
+
 15 October resumed delivery: dynamic config supports depth/parallel/rate with
 CLI > config > defaults, strict validation and per-mode applicability. Focused
 101 tests and fresh-venv installed smoke 6/6 passed; coordinator integration
@@ -510,8 +518,9 @@ the 16 October technical closeout of R4/R5; release/tag work remains separate.
 15 October release-readiness matrix: rebuilt wheel installed into fresh offline
 venvs. All CLI help/config, docs, metadata/browser-extra and packaged loopback
 demo checks passed; focused suite 109/109. Wheel remains 0.0.0.dev0, demo triage
-unreviewed. Overall R6 stays open for R4 comparison and deferred R5 human repeat.
-No tag/publication. [Matrix](audit/2026-10-15-r6-release-matrix/README.md).
+unreviewed. This 15 October snapshot predates R4/R5 closeout; R6 remains open
+for its own release criteria. No tag/publication.
+[Matrix](audit/2026-10-15-r6-release-matrix/README.md).
 
 
 15 Ekim: dinamik CLI ana mod çakışmaları ve DOM ile HTTP oturum seçenekleri
@@ -537,7 +546,8 @@ paketleme kontrolleri**. Bunlar olmadan sürüm etiketi açılmaz. R1 sonrası K
 ve kanıt belgeleri paylaşılabilir araştırma çıktısıdır, kullanılabilir ürün
 sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 
-- [ ] Tek kurulum komutu ve opsiyonel browser extra gerçekten paketlenir; sürüm etiketi/CHANGELOG vardır.
+- [x] Kaynaktan temel kurulum ve opsiyonel browser extra paketlenir; güncel wheel temiz venv'de kuruldu, CLI/help ve config gate'i geçti. [16 Ekim kabulü](audit/2026-10-16-r6-final-readiness/README.md).
+- [ ] Release sürümü seçilir ve release-specific CHANGELOG hazırlanır; sürüm etiketi/yayın yalnız son kabul ve açık release yetkisiyle yapılır. `0.0.0.dev0` geliştirici sürümüdür.
 - [x] Config önceliği CLI > config > varsayılan olarak testlidir.
 - [x] JSON şeması sürümlüdür; HTML aynı kanıttan üretilir; rapor test girdisini güvenli escape eder.
 - [x] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
@@ -548,8 +558,8 @@ ve kurulu CLI/demo kanıtına dayanır; yeni test koşusu değildir. Kalıcı
 kurulu-wheel CI kontrolü ayrıca temiz venv'de 7 kontrolü ve dokuz modülün
 kaynak/wheel eşleşmesini doğruladı; değiştirilmiş wheel reddedildi.
 [Yeni kapı](audit/2026-10-15-r6-installed-ci/README.md).
-Paket 0.0.0.dev0; etiket/yayın açık kalır. R4/R5 teknik kapsam kararı 16 Ekim
-kapanış kaydında güncellenmiştir.
+Paket 0.0.0.dev0; etiket/yayın açık kalır. R4/R5 bağımlılığı 16 Ekim teknik
+kapanış kararıyla karşılandı; R6'nın kendi release ölçütleri hâlâ sürüyor.
 
 SARIF sonraki küçük teslim olabilir. Plugin API/Marketplace, ihtiyaç gösterilmeden bu sürümü geciktirmez.
 

@@ -26,7 +26,9 @@ edildi ve uzak ref eşleşti. Genel CI run `38887832797` üç job'da başarılı
 K01 run `38887832998` başarılı. Bunlar workflow/job sonuçlarıdır; artifact
 içerikleri bu commit için indirilmedi.
 
-## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
+16 Ekim koordinatör yeniden kontrolü, kaynak commit `f1fb6556b930d683b7b47fd0c6b04d6f8703053b`, Python 3.10.11: R4 replay/oracle **57/57**, R5 fixture/gate **22/22**, sıfır failure/error/skip. R4 specialist kod/test hashlerini final audit ile eşleştirdi; R5 specialist proof kaynak hashlerini eşleştirdi. Yeni R4/R5 teknik kusur bulunmadı. Hosted CI bu yeniden kontrolde tekrar çalıştırılmadı.
+
+## Tarihsel yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar (15 Ekim durumu; 16 Ekim kapanışı supersede eder)
 
 Kod/kanıt commit'i `157a4387a1c60fd4520c25cb5477ec266518835f`
 origin/main'e push edildi ve uzak ref hash'i doğrulandı.
@@ -115,7 +117,7 @@ izinli test kapsamı dışındaki işleri şimdilik erteledi. Ertelenen kabul
 başarılı sayılmaz; genel R4/R5 yerine doğrulanmış yerel kapsam ayrı belirtilir.
 R6 paket/CI ilerlemesi korunur; yeni sürüm yayını yapılmadı.
 
-## Son doğrulanmış iş — R4 ayrı oturum ve CID/browser incelemesi, 16 Ekim
+## Ara R4 incelemesi — ayrı oturum ve CID/browser, 16 Ekim (sonraki R4 kapanışı supersede eder)
 
 Engine teslimi her scanner koşusunda ayrı writer ve reader-admin login,
 ön/son principal doğrulaması ve dört çapraz-rol negatif kontrolü ekledi.
@@ -390,14 +392,17 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
 ## Açık işler ve sıradaki adım
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
-- R4 bağımsız gerçek ürün lifecycle kabulü ve yerel opt-in runner entegrasyonu
-  tamamlandı. Runtime follow-up 3ca474a için yerel 208 test, hosted CI 3/3
-  ve indirilen artifact kabulü geçti. Genel corpus/coverage ve karşılaştırma
-  metodolojisi açık.
-- Zorunlu r3-proof continue-on-error kullanmaz; ayrı opt-in browser-tests kullanır.
-  Yeni R4 uzak artifact kabulü genel R4/R9 kutularını kapatmaz.
+- R4 teknik kapanış, R5/K01 teknik kabul tamam. İnsan triage'ı, genel ürün
+  doğruluğu, araç sıralaması ve geniş corpus başarısı kapanış iddiası değildir;
+  kullanıcı kararıyla R4/R5 zorunlu backlog'undan çıkarılmıştır. R4 test tekrarları
+  ve R5 fixture/gate tekrarları yukarıda kaydedildi.
+- WebSocket/genel ağ sandboxı ile diğer operasyon sınırları R9 kapsamındadır;
+  R4/R5 kapanışı bunları çözülmüş saymaz. CI job başarısı ve artifact içeriği
+  doğrulaması ayrı tutulur.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
   birleşik kabul işleri açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
-- R5 bağımsız temiz ortam tekrarı, R6 paketleme ve C/K/P/S/A işleri ROADMAP'te.
+- R6'nın güncel wheel smoke ve CLI/config kapsamı geçti; release sürümü ve
+  release-specific changelog/etiket kararı kaldı. Ayrıntı ROADMAP ve VALIDATION'da.
+- R8/R9 ve C/K/P/S/A işleri ROADMAP'te açık.
 - Çalışma yeri için en üstteki güncel kullanıcı yönlendirmesi geçerlidir.
   C:\xss\xss-github içindeki commit edilmemiş işler korunmalıdır.

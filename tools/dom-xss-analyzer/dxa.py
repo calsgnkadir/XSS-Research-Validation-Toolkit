@@ -801,10 +801,19 @@ def _load_cli_config(path, parser):
     """Load the small, versioned static CLI config without echoing its contents."""
     if path is None:
         return {}
+
+    def unique_object(pairs):
+        config = {}
+        for key, value in pairs:
+            if key in config:
+                raise ValueError("duplicate config key")
+            config[key] = value
+        return config
+
     try:
         with open(path, encoding="utf-8-sig") as stream:
-            config = json.load(stream)
-    except (OSError, UnicodeError, json.JSONDecodeError):
+            config = json.load(stream, object_pairs_hook=unique_object)
+    except (OSError, UnicodeError, ValueError):
         parser.error("--config must name a readable UTF-8 JSON file")
     if (not isinstance(config, dict)
             or type(config.get("schema_version")) is not int
