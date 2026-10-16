@@ -1,10 +1,11 @@
 import json
 import html
+import http.server
 import os
 from pathlib import Path
 import subprocess
 import sys
-from urllib.parse import quote
+import threading
 
 import pytest
 import dxaprove
@@ -103,9 +104,33 @@ def test_dxadom_direct_eval_keeps_function_lexical_scope(browser_path):
         "document.title = eval('localValue'); })();"
         "</script>"
     )
-    session = dxadom.BrowserSession(executable_path=browser_path)
-    with session:
-        summary = session.visit("data:text/html," + quote(html))
+    class DirectEvalHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format, *args):
+            return
+
+    server = http.server.ThreadingHTTPServer(
+        ("127.0.0.1", 0), DirectEvalHandler)
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+    try:
+        session = dxadom.BrowserSession(executable_path=browser_path)
+        with session:
+            summary = session.visit(
+                f"http://127.0.0.1:{server.server_address[1]}/direct-eval")
+    finally:
+        server.shutdown()
+        server.server_close()
+        server_thread.join(timeout=2)
+        assert not server_thread.is_alive(), (
+            "direct eval fixture server thread did not stop")
     assert summary["errors"] == []
     assert summary["title"] == "function-local"
     assert "eval-not-instrumented-to-preserve-lexical-scope" in summary["limitations"]

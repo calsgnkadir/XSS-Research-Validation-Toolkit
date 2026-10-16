@@ -262,24 +262,24 @@
                                                           },
                            "intermittent_root_cause_established":  true,
                            "full_dom_fixture_recheck":  {
-                                                              "base_commit":  "dcd019d93e852cf26f3d562b0fd5f35f2435e7d0",
-                                                              "test_only":  true,
-                                                              "fixture_server":  "All local test HTTP fixtures use ThreadingHTTPServer; teardown joins and asserts server threads exit.",
-                                                              "prompt_serial_trials_failed":  5,
-                                                              "prompt_threaded_trials_passed":  5,
-                                                              "document_write_serial_trials_failed":  5,
-                                                              "focused_passed":  14,
-                                                              "focused_deselected":  66,
-                                                              "focused_duration_seconds":  58.68,
-                                                              "full_suite_command":  "$env:DXA_BROWSER='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'; $env:DXA_REQUIRE_BROWSER='1'; py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadom.py -q -p no:cacheprovider --tb=short",
-                                                              "full_suite_passed":  80,
-                                                              "full_suite_failed":  0,
-                                                              "full_suite_skipped":  0,
-                                                              "full_suite_duration_seconds":  91.29,
-                                                              "dxadom_py_changed":  false,
-                                                              "test_dxadom_py_sha256":  "a53e3e6a1c8273336f9e1a82d3575a3c041b5613786b8c76cd407889398a3879",
-                                                              "hosted_ci":  "pending delivery"
-                                                          },
+                                                            "base_commit":  "dcd019d93e852cf26f3d562b0fd5f35f2435e7d0",
+                                                            "test_only":  true,
+                                                            "fixture_server":  "All local test HTTP fixtures use ThreadingHTTPServer; teardown joins and asserts server threads exit.",
+                                                            "prompt_serial_trials_failed":  5,
+                                                            "prompt_threaded_trials_passed":  5,
+                                                            "document_write_serial_trials_failed":  5,
+                                                            "focused_passed":  14,
+                                                            "focused_deselected":  66,
+                                                            "focused_duration_seconds":  58.68,
+                                                            "full_suite_command":  "$env:DXA_BROWSER=\u0027C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\u0027; $env:DXA_REQUIRE_BROWSER=\u00271\u0027; py -3.10 -m pytest tools/dom-xss-analyzer/test_dxadom.py -q -p no:cacheprovider --tb=short",
+                                                            "full_suite_passed":  80,
+                                                            "full_suite_failed":  0,
+                                                            "full_suite_skipped":  0,
+                                                            "full_suite_duration_seconds":  91.29,
+                                                            "dxadom_py_changed":  false,
+                                                            "test_dxadom_py_sha256":  "a53e3e6a1c8273336f9e1a82d3575a3c041b5613786b8c76cd407889398a3879",
+                                                            "hosted_ci":  "pending delivery"
+                                                        },
                            "full_dom_suite_gate":  "local pass; hosted CI pending"
                        },
     "source_sha256":  {
@@ -325,5 +325,45 @@
                                            "url":  "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38923418259",
                                            "conclusion":  "success"
                                        }
-                     }
+                     },
+    "verification_followup":  {
+                                  "date":  "2026-10-17",
+                                  "based_on_commit":  "221baa5621fc26a8eb581b4d88410b2e0a66e77b",
+                                  "test_only_changes":  {
+                                                            "tools/dom-xss-analyzer/test_browser_proof.py":  "fead2559b7cd0e945ca73771c368f7f6eb0c70f3a6eff633844339bb01fdd78f",
+                                                            "tools/dom-xss-analyzer/test_dxadyn_report_identity.py":  "4fe1ee72a18761740f9a2949be3bbe78b3fa09b89481b5e0ff7935ff06f82603"
+                                                        },
+                                  "local_required_chrome_suite":  {
+                                                                      "passed":  218,
+                                                                      "failed":  0,
+                                                                      "errors":  0,
+                                                                      "skipped":  0
+                                                                  },
+                                  "local_full_analyzer_suite":  {
+                                                                    "passed":  788,
+                                                                    "failed":  0,
+                                                                    "skipped":  38,
+                                                                    "duration_seconds":  183.55,
+                                                                    "os":  "Windows",
+                                                                    "python":  "3.10.11",
+                                                                    "skip_names_reported":  false
+                                                                },
+                                  "hosted_general_ci":  {
+                                                            "run_id":  "38974413648",
+                                                            "conclusion":  "failure",
+                                                            "jobs":  {
+                                                                         "opt_in_browser_harness":  "success",
+                                                                         "dom_xss_analyzer_tests":  "failure",
+                                                                         "required_authenticated_browser_proof":  "failure"
+                                                                     },
+                                                            "job_logs_http_status":  403,
+                                                            "failure_causes_verified":  false
+                                                        },
+                                  "hosted_k01_linux":  {
+                                                           "run_id":  "38974413706",
+                                                           "conclusion":  "success"
+                                                       },
+                                  "delivery_of_test_only_changes":  "pending",
+                                  "hosted_rerun":  "pending"
+                              }
 }

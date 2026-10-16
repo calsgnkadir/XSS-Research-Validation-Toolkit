@@ -115,7 +115,19 @@ def test_cli_report_mode_matrix(monkeypatch, tmp_path, mode, outputs):
         else:
             argv += ["--auto-check"]
             monkeypatch.setattr(dxadyn, "probe_stored_auto", lambda *a, **k: (
-                [], "cid-fixture", {"submit_landing": url, "checked_pages": 1, "candidates": 1}))
+                [], "cid-fixture", {
+                    "submit_landing": url,
+                    "checked_pages": 2,
+                    "candidates": 2,
+                    "canary_runs": 1,
+                    "manual_seed_pages": 0,
+                    "submit_landing_pages": 1,
+                    "origin_root_pages": 1,
+                    "link_discovered_pages": 0,
+                    "out_of_scope_seed_count": 0,
+                    "seed_budget_omitted": 0,
+                    "link_budget_omitted": 0,
+                }))
     elif mode == "flow":
         argv += ["--flow", "fixture.json"]
         monkeypatch.setattr(dxadyn, "_load_flow", lambda *a: {})

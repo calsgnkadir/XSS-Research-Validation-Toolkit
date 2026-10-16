@@ -148,6 +148,27 @@ newly passing local DOM fixture change still needs Git delivery and hosted CI.
 The previous full-suite failures remain historical run results; the 17 October
 threaded-fixture rerun is the current local DOM acceptance.
 
+## Delivery and CI follow-up — 2026-10-17
+
+The R9 threaded-fixture DOM test change was delivered as commit
+`221baa5621fc26a8eb581b4d88410b2e0a66e77b`; `origin/main` matched. Its
+general CI run `38974413648` had opt-in Playwright success, while the analyzer
+and required authenticated browser proof jobs failed. K01 Linux run
+`38974413706` succeeded. Job log retrieval returned HTTP 403, so the exact
+hosted failure causes and artifact contents were not verified.
+
+After that CI run, two test-only fixes were added locally: the direct-eval
+browser proof uses a disposable literal-loopback HTTP fixture, and the
+stored-auto report-mode mock supplies the real probe's full metadata contract.
+The direct-eval isolated regression changed from 1 failure to 1 pass; the exact
+11-file Chrome acceptance suite then passed **218/218**. The full analyzer
+suite passed **788**, skipped **38**, failed **0** in 183.55 seconds on Windows
+Python 3.10.11. Quiet pytest output did not identify the skipped tests. These
+two files are not part of `221baa5` and have no hosted result yet. The earlier
+pending-delivery wording below describes the preceding snapshot; current status
+is this follow-up. R9 hosted acceptance remains open pending delivery and a
+successful hosted rerun.
+
 ## Source hashes
 
 The SHA-256 digests for modified source, tests, and documentation are in

@@ -1,5 +1,27 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 221baa5 CI follow-up — 2026-10-17, local Windows and hosted jobs
+
+Commit `221baa5621fc26a8eb581b4d88410b2e0a66e77b` general CI
+`38974413648` completed with opt-in Playwright harness success, but
+`dom-xss-analyzer tests` and required authenticated browser proof failed.
+K01 Linux `38974413706` succeeded. Hosted job logs returned HTTP 403 and were
+not independently retrieved; no exact hosted failure cause or artifact content
+is claimed.
+
+Two test-only fixes were made after that run. The direct-eval browser proof now
+serves its synthetic page from a disposable literal-loopback HTTP server,
+consistent with the browser scope; the `stored-auto` report matrix mock now
+supplies the metadata returned by the real probe. With both fixes, the exact
+11-file required Chrome acceptance suite passed **218/218**, zero failures,
+errors or skips (Windows, Python 3.10.11, Chrome 155.0.8059.82,
+Playwright 1.63.0). The full `tools/dom-xss-analyzer` suite then passed
+**788**, skipped **38**, failed **0** in 183.55 seconds (Windows/Python 3.10.11).
+The quiet full-suite output did not identify skip names/reasons. These two
+test-only changes are not in commit `221baa5`; no hosted CI result applies to
+them. R9's hosted gate remains open until their delivery and a successful
+hosted rerun.
+
 ## R9 DOM fixture recheck — 2026-10-17, local Windows
 
 Base checkout: `dcd019d93e852cf26f3d562b0fd5f35f2435e7d0`; Python 3.10.11,

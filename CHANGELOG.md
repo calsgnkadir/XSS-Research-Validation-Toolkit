@@ -21,6 +21,14 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
+- The 17 October `221baa5` hosted run passed the opt-in DOM browser harness and
+  K01 Linux workflow, but failed the analyzer and required browser proof jobs.
+  Logs were not retrievable (HTTP 403). Two test-only fixes followed: a
+  loopback HTTP fixture for the direct-eval proof and a complete stored-auto
+  report mock. The local required Chrome selection passed 218/218 and the full
+  analyzer suite passed 788 with 38 skips; the corrected snapshot still needs
+  a hosted rerun.
+
 - R9 local DOM test fixtures now use threaded HTTP servers with explicit
   shutdown/join checks. The full Chrome `test_dxadom.py` suite passed 80/80;
   this fixes local test-fixture contention only and does not alter browser

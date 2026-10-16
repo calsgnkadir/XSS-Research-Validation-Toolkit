@@ -141,7 +141,7 @@ Eksik kanıt, geçmiş olayın yaşanmadığının kanıtı değildir. Toplam y�
 1. R1 normal dialog yanlış pozitifi — **tamam**, altı regresyon ve yerel Chrome kaydı var.
 2. R1 callback ≠ JS proof; cid eşleşmesi; gizli veri toplamayan beacon — **tamam**: HTTP ve JS kapalı Chrome negatif kontrolü; test kaydı VALIDATION.md.
 3. R1 yansımasız blind takip — **stored/stored-auto için tamam**; ortak şema, DOM/statik/HTTP/journal raporları ve konservatif dedup — **tamam**. [Kapanış kanıtı](audit/2026-10-05-r1/R1-KAPANIS.md).
-4. R2 JSON/auth/rate/CSRF HTTP kabulü — **tamam**. R8 sanitizer karşı örnekleri — **açık**.
+4. R2 JSON/auth/rate/CSRF HTTP kabulü — **tamam**. R8 sanitizer karşı örnekleri ve sınırlı Python AST pilotu — **tamam**; genel soundness iddiası yok.
 5. R1 sonrası **K01-min**: tek yerel XSS vakası, manuel/browser canary kanıtı, negatif kontrol, fix ve retest. Tam R5/R6 kapanışı sayılmaz. R2→R3→R4 bot hattı devam eder.
 
 R1'in aşağıdaki kabul kapsamı tamamlandı; botun tamamlandığı anlamına gelmez.
@@ -575,13 +575,14 @@ sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 - [x] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
 - [x] Demo sonucu temiz ortamda elde edilir; known limitations ve fixture kapsamı görünürdür.
 
-15 Ekim: Bu dört yerel kabul, yukarıdaki release-matrix kaydındaki 109 test
+15 Ekim tarihli ara durum (sonraki 16–17 Ekim kabulüyle supersede edilmiştir): Bu dört yerel kabul, yukarıdaki release-matrix kaydındaki 109 test
 ve kurulu CLI/demo kanıtına dayanır; yeni test koşusu değildir. Kalıcı
 kurulu-wheel CI kontrolü ayrıca temiz venv'de 7 kontrolü ve dokuz modülün
 kaynak/wheel eşleşmesini doğruladı; değiştirilmiş wheel reddedildi.
 [Yeni kapı](audit/2026-10-15-r6-installed-ci/README.md).
-Paket 0.0.0.dev0; etiket/yayın açık kalır. R4/R5 bağımlılığı 16 Ekim teknik
-kapanış kararıyla karşılandı; R6'nın kendi release ölçütleri hâlâ sürüyor.
+O tarihte paket 0.0.0.dev0 idi; bu sürüm durumu sonradan `0.1.0` adayıyla
+değişti. Etiket/yayın açık kalır. R4/R5 bağımlılığı 16 Ekim teknik kapanış
+kararıyla karşılandı; R6 teknik kabulü STATUS ve VALIDATION'da tamamlandı.
 
 SARIF sonraki küçük teslim olabilir. Plugin API/Marketplace, ihtiyaç gösterilmeden bu sürümü geciktirmez.
 
@@ -593,7 +594,7 @@ Kabul ölçütü CVE sayısı değil: yeniden üretilebilir ve doğru sınıflan
 
 ## Ertelenen işler
 
-Genel subdomain/dizin brute-force motoru, IoT genişlemesi, daha çok mutation sırf sayı için, altı dilde aynı anda AST, plugin pazarı. Statik analiz için önce mevcut sanitizer FN düzeltmesi ve dosya kapsamı; sonra tek dilde AST prototipi. AST kullanmak tek başına sound analiz değildir.
+Genel subdomain/dizin brute-force motoru, IoT genişlemesi, daha çok mutation sırf sayı için, altı dilde aynı anda AST, plugin pazarı. Statik analiz için sanitizer FN düzeltmesi ve tek dilli Python AST pilotu R8 içinde kabul edildi; kapsamı genişletme ertelendi. AST kullanmak tek başına sound analiz değildir.
 
 ## Her teslimin kapanışı
 
@@ -661,10 +662,16 @@ WebSocket DOM sınırı, compose statik kapıları ve self-scan/CI oracle'ı.
 17 Ekim'de test fixture'larındaki seri HTTP sunucuları, aynı scope ve oracle'ları
 koruyarak `ThreadingHTTPServer` kullandı; teardown her server thread'inin
 kapandığını denetliyor. Hata grubu **14/14**, tam Chrome DOM paketi **80/80**
-geçti. `dxadom.py` çalışma davranışı değişmedi. **R9 bütünü açık**: test
-değişikliği henüz push edilmedi ve önceki commit'teki zorunlu hosted CI işleri
-başarısızdı. Yeni teslim için hosted CI sonucu bekleniyor. [Yerel ve uzak kanıt
-sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
+geçti. `dxadom.py` çalışma davranışı değişmedi. Commit `221baa5` push edildi;
+hosted CI `38974413648`'de analyzer ve required browser proof job'ları başarısız,
+opt-in browser harness başarılı; K01 Linux `38974413706` başarılı. Log API 403
+verdi, dolayısıyla job içi hata nedeni doğrulanmadı. Takipte iki test-fixture
+düzeltmesi yapıldı: direct-eval testi loopback HTTP fixture kullanıyor ve
+stored-auto report mock'u üretim metadata alanlarını sağlıyor. Sonraki yerel
+Windows/Python 3.10.11 tam analyzer paketi **788 passed, 38 skipped, 0 failed**;
+11 dosyalı required Chrome kabulü **218/218**. Bu iki test değişikliği henüz
+commit/push ve hosted CI'da doğrulanmadı. **R9 hosted CI kapısı açık.** [Yerel ve
+uzak kanıt sınırları](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
 
@@ -728,7 +735,7 @@ Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araş
 
 ## Ertelenen ama kaybolmayan işler
 
-- E01 Tek dil AST pilotu: R8'in ölçümü sonrası; diğer dillere yalnız kapsam kanıtıyla genişleme.
+- E01 Tek dil AST pilotu: R8'de Python için tamamlandı; diğer dillere yalnız kapsam kanıtıyla genişleme ertelendi.
 - E02 SARIF: R6'nın ortak kanıt şeması sonrası; schema validation ve doğru seviye eşlemesi.
 - E03 Genel subdomain/dizin recon ve IoT: mevcut XSS ürün hedefi için düşük öncelik.
 - E04 Plugin API/Marketplace ve topluluk kampanyası: kullanıcı ihtiyacı ve tekrarlanabilir sürüm sonrası.

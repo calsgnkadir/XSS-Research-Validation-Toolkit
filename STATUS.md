@@ -13,14 +13,18 @@ CVE aidiyeti doğrulanmış değil; A03'ün eski program/90 gün ifadeleri günc
 scope veya izin kanıtı değil. Yetkili ürün ve program scope'u olmadan dış hedef
 testi yapılmadı.
 
-R9 tam DOM Chrome paketi, yalnız test fixture sunucularını threaded yapıp her
-teardown'da thread kapanışını denetledikten sonra **80/80** geçti; tarihsel hata
-grubu **14/14** geçti. `dxadom.py` değişmedi. Değişiklik ve bu kanıt henüz
-commit edilmedi; önceki `f4d8bdf` hosted run'daki ana test ve required browser
-proof job'ları başarısızdı. R9 genel kapanışı yeni değişiklik push edilip
-hosted CI doğrulanana kadar açık.
+R9 DOM fixture düzeltmesi `221baa5621fc26a8eb581b4d88410b2e0a66e77b` ile
+push edildi. Yerel Chrome DOM paketi **80/80**, tarihsel hata grubu **14/14**
+geçti. Bu commit'in hosted CI run `38974413648` başarısız: opt-in browser
+harness başarılı, analyzer ve required browser proof job'ları başarısız; K01
+Linux `38974413706` başarılı. Job logları 403 nedeniyle alınamadı. İki test
+fixture düzeltmesi bu hosted koşuda yoktu: direct-eval loopback fixture'ı ve
+stored-auto metadata test double'ı. Düzeltmeler sonrası 11 dosyalı Chrome
+kabulü **218/218**, tam analyzer paketi **788 geçti, 38 atlandı, hata yok**
+(Windows/Python 3.10.11) oldu. Son iki düzeltme henüz commit/push edilmedi;
+R9 kapanışı yeni push ve hosted genel CI doğrulanana kadar açık.
 
-## R6 / R8 devamı — 16 Ekim 2026
+## Tarihsel R6 / R8 devamı — 16 Ekim 2026 (sonraki kayıtlarla güncellendi)
 
 R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü ve changelog
 hazırlandı. Son R9 kaynaklarıyla yeniden üretilen wheel, temiz geçici venv'e
@@ -50,11 +54,12 @@ birleşik paket **103/103**, CI/compose
 `test_dxadyn.py` + HTTP evidence **194/194**, rapor privacy **23/23** ve yeni DOM
 scope regresyonları **5/5**, credential masking + `dxa2dyn` compatibility
 **58/58** geçti. Tam `test_dxadom.py` paketi önceki üç koşuda
-77/80, 79/80 ve 78/80; son tekil koşuda **70/80** geçti. Son koşudaki 10
+77/80, 79/80 ve 78/80; son tekil koşuda **70/80** geçti. Bu DOM suite durumu
+17 Ekim threaded-fixture 80/80 tekrarıyla supersede edilmiştir. Son koşudaki 10
 başarısızlığın çoğunda fixture sunucusu `ConnectionAbortedError` aldı; ikisinde
 `goto` 15 saniye timeout verdi. Son iki önceki hata focused koşuda 2/2 geçti,
-ancak tam suite kabul edilmedi ve ortak kök neden doğrulanmadı. Genel R9
-kapanışı veya tam DOM suite kabulü iddia edilmiyor. `dxa.py --json` artık
+ancak o tarihte tam suite kabul edilmedi. Genel R9 kapanışı için hosted CI
+kapısı sürüyor. `dxa.py --json` artık
 credential etiketli API key/Bearer/Cookie/token literal'larını CLI ve JSON
 snippet'lerinde maskeliyor; paylaşım `--json-out` ham kaynak yerine fingerprint
 taşır. Keyfi serbest metin ve özel etiketler garanti kapsamında değildir. Yerel koşular ve kalan R9 maddeleri [audit kaydında]
@@ -280,9 +285,11 @@ temiz venv'de kaynak dışından çalıştı. [Devam raporu](audit/2026-10-14-r3
 Kod commit'i a0cf348 push edildi; uzak main eşleşti, genel CI 38637484190
 3/3 ve K01 Linux 38637484214 başarılı. K01 artifact'i bu turda yeniden
 indirilmedi. [Uzak CI](audit/2026-10-14-r3-r6-continuation/remote-ci.json).
-Önceki iki uzman kod ve testini tamamladı. R3 header adları
-gözlemi rol/token kanıtı değil. Genel R4/R6, R5 bağımsız insan tekrarı,
-R8/R9 ve C/K/P/S/A maddeleri açık. Son doğrulanmış kod a0cf348.
+Bu 14 Ekim tarihli snapshot'ta önceki iki uzman kod ve testi tamamlamıştı.
+R3 header adları gözlemi rol/token kanıtı değil. O tarihte genel R4/R6, R5
+bağımsız insan tekrarı, R8/R9 ve C/K/P/S/A maddeleri açık görünüyordu; sonraki
+kapanışlar için üstteki 16–17 Ekim güncel kayıtlarını esas al. Son doğrulanmış
+kod a0cf348 idi.
 
 Son yeniden denetim: R8 modül düzeyi encoder rebinding karşı örneği düzeltildi;
 92 ilgili test geçti. R6 wheel temiz venv'de kaynak dizini dışında kuruldu.
@@ -459,7 +466,7 @@ Native roller çağrıldı, beş kalıcı TOML korundu. En fazla iki uzman eşza
 çalıştı. R9 bağımsız specialist QA finali yok; koordinatör kod/oracle, eski-kod
 karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi yok.
 
-## Açık işler ve sıradaki adım
+## Tarihsel özet — 15 Ekim (güncel durum üstte supersede eder)
 
 - R1/R2 ve R3 loopback kabulü tamam; genel ürün tamam değil.
 - R4 teknik kapanış, R5/K01 teknik kabul tamam. İnsan triage'ı, genel ürün
@@ -471,15 +478,15 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
   doğrulaması ayrı tutulur.
 - R8 tamamlandı: dar Python AST pilotu ve regression corpus kabulü yukarıdadır.
   R9 credential-labeled CLI redaction, evidence output sınırları ve browser
-  channel scope yerel kabul aldı. Genel DOM browser suite gate'i kararsız,
-  son Git/hosted CI provenance henüz kaydedilmedi. Dar redaction genel sır
-  tespit garantisi değildir.
+  channel scope yerel kabul aldı. Bu tarihte genel DOM browser suite gate'i
+  kararsızdı; 17 Ekim 80/80 yerel sonucu ve son hosted CI için en üstteki
+  güncel kaydı kullan. Dar redaction genel sır tespit garantisi değildir.
 - R6 `0.1.0` sürüm ve release-specific changelog hazırlığı, 7/7 wheel gate'iyle
   tamamlandı; kod commit'i `401e6bf`, AST sonrası R8 kaynak commit'i `ab91b09`
   ve hosted CI kayıtları başarılıdır (ayrıntı üstte ve VALIDATION.md'de).
   Artifact içeriği bağımsız indirilip doğrulanmadı. Release tag'i/paketi
   yayımlanmadı. Son R9 çalışma ağacı wheel'i ayrıca yeniden üretildi; güncel
   digest ve kaynak hashleri üstteki audit kaydında bulunur.
-- R8/R9 ve C/K/P/S/A işleri ROADMAP'te açık.
+- R9 ve C/K/P/S/A işleri ROADMAP'te açıktı; R8 bounded pilotu tamamlandı.
 - Çalışma yeri için en üstteki güncel kullanıcı yönlendirmesi geçerlidir.
   C:\xss\xss-github içindeki commit edilmemiş işler korunmalıdır.
