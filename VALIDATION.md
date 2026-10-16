@@ -1,5 +1,21 @@
 ﻿# Doğrulama kaydı — 2026-10-15
 
+## 16 October R4/R5 closure review at `d9db15b`
+
+Native Engine ran `py -3.10 -m pytest bench/test_r4_compare_local.py
+bench/test_r4_cid_oracle.py -q -p no:cacheprovider --tb=short` on Windows with
+installed Chrome: **48 passed, zero failed/error/skipped**. These are focused
+fixture and oracle regressions, not a fresh scanner comparison. The prior
+8/8 scanner manifest's stored strings were inspected; none satisfied the
+exact-CID JavaScript proof contract. See
+[R4 review](audit/r4-closure-2026-10-16/README.md).
+
+Native QA recomputed 16 hashes in the existing R5 local proof acceptance
+package; all matched current bytes. No new R5 browser run, pytest run or hosted
+CI was performed in this review. The independent human repeat remains open.
+See [R5 review](audit/r5-closure-2026-10-16/README.md). The prior results below
+retain their original commit and scope. Git delivery is tracked separately.
+
 ## 16 October local R4/R5 resume in the OneDrive copy
 
 Commit `157a4387a1c60fd4520c25cb5477ec266518835f` was pushed to

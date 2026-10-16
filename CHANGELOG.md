@@ -2,6 +2,13 @@
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
+- Native R4 closure review found that none of the eight prior scanner rows
+  carries the exact CID/browser proof binding. Focused fixture/oracle tests
+  passed 48/48; comparison ranking and general R4 acceptance remain open.
+- Native R5 review matched all 16 bound local proof hashes. No new browser
+  run occurred; the independent second-person repeat remains open. These
+  review notes describe local evidence; Git delivery is tracked separately.
+
 - Code/evidence commit `157a438` was pushed and remote main hash verified.
   General CI 38806623338 passed all three jobs; K01 Linux 38806623393 passed.
   Artifact contents were not independently downloaded in this follow-up.

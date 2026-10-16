@@ -289,6 +289,13 @@ Tek bir hook'a güvenmek yerine kaynak girdisi ve olay arasındaki ilişki kayde
 
 ## R4 — Küçük, doğru ve tekrar üretilebilir ölçüm — devam
 
+16 Ekim kapanış denetimi: native Engine mevcut 8/8 tamamlanmış eşit bütçeli
+scanner koşusundaki gerçek depolanan dizeleri CID/browser oracle'sıyla
+karşılaştırdı. Hiçbir satır oracle'nın exact-CID JS proof sözleşmesini taşımıyor;
+48/48 odaklı yerel fixture/oracle testi geçti. Bu, scanner execution veya
+TP/FP/FN kanıtı değildir. Genel R4 karşılaştırması ve insan triage'ı açık.
+[Gerekçe ve kanıt matrisi](audit/r4-closure-2026-10-16/README.md).
+
 15 October resumed delivery: corpus v4 adds comment/template negatives and
 activated-template positive. Required Chrome suite 254 passed; strict CLI
 17/17, TP8 FP0 FN0. General admin/controlled-comparison criteria remain open.
@@ -425,6 +432,12 @@ kanıtıyla türü dahil eşleştiriyor. Sekiz yanlış JSON/Markdown çifti ön
 [R4 kabul eşlemesi](audit/2026-10-15-r4-acceptance/README.md).
 
 ## R5 — Stajın devamı olan güçlü vaka
+
+16 Ekim kapanış denetimi: native QA tarihsel yerel proof paketindeki 16 bağlı
+hashi güncel baytlarla eşleştirdi; yeni browser/CI koşusu yapmadı. Uygulama
+ve bağımsız tekrar formunda somut kusur bulunmadı. İkinci kişinin temiz ortam
+tekrarı halen açık ve ertelenmiş; genel R5 kapanışı yok.
+[Kabul matrisi](audit/r5-closure-2026-10-16/README.md).
 
 15 October human handoff: [independent-repeat form](cases/k01-stored-comment/INDEPENDENT-REPEAT.md)
 is ready and explicitly unfilled. Coordinator reviewed the handoff; no new

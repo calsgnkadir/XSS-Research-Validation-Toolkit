@@ -1,5 +1,27 @@
 # Güncel devam noktası — 16 Ekim 2026
 
+## R4/R5 kapanış incelemesi — 16 Ekim
+
+Çalışma kökündeki `.git` zaten mevcuttu. Başlangıçta temiz `main` ve fetch
+sonrasında `HEAD`/`origin/main` `d9db15ba2094b44c27870a311959de1d1dad15f6`
+ile eşleşti (0/0). Bu ilk incelemenin Git teslimi sonraki commit ve CI
+kayıtlarında ayrıca izlenir.
+
+Native Engine uzmanı R4'ün mevcut sekiz tamamlanmış scanner koşusunun depolanan
+payloadlarını CID/browser oracle'sıyla karşılaştırdı: sekiz satırın hiçbirinde
+aynı `?cid=` ve `window.__dxaProof` bağı yok. Yeni yerel odaklı paket **48/48**
+geçti; bu fixture/oracle testidir, scanner execution sonucu değildir.
+[R4 incelemesi](audit/r4-closure-2026-10-16/README.md). Mevcut kıyasta TP/FP/FN,
+araç sıralaması ve genel R4 kapanışı desteklenmiyor. Sonraki teknik iş iki araç
+için önceden tanımlı eşit payload/proof protokolüyle **yeni** izinli loopback
+deneyi; insan triage'ı ayrı açık kalır.
+
+Native QA uzmanı R5 proof paketindeki 12 üye, üç kaynak ve gate hashini mevcut
+baytlarla eşleştirdi. Vaka kodu veya bağımsız insan formunda kusur bulmadı;
+bu turda yeni browser testi/CI koşmadı. [R5 incelemesi](audit/r5-closure-2026-10-16/README.md).
+İkinci bağımsız kişinin temiz ortam tekrarı açık ve ertelenmiş; sonuç formu boş.
+Mevcut yerel otomatik kabul korunur, genel R5 kapanışı ilan edilmez.
+
 ## Son yerel teslim — R4 ölçüm kapısı ve R5/K01 tekrar
 
 Kod/kanıt commit'i `157a4387a1c60fd4520c25cb5477ec266518835f`
