@@ -1,11 +1,21 @@
 # XSS Research Lab & Bot
 
-This is a research prototype for finding and validating possible cross-site scripting (XSS) issues.
-It combines source-code review, HTTP reflection checks, and browser observations in controlled labs.
-Reports keep observations and evidence separate from confirmed JavaScript execution.
-Use it only on systems you own or are explicitly authorized to test.
-The project includes repeatable test cases and fix-and-retest examples.
-It does not claim broad detection accuracy or confirmed new vulnerability discoveries.
+An experimental Python CLI toolkit for XSS research and evidence collection.
+Project work combines static source/sink candidate analysis, bounded HTTP
+reflection checks, and browser observations in controlled labs. Reports keep
+those observations separate from CID-matched JavaScript execution and from
+vulnerability triage. The project is a research-support prototype, not a
+general-purpose autonomous scanner.
+
+**Project summary:** The work focuses on implementing and validating a
+repeatable analysis workflow: inspect candidate source/sink paths, observe
+bounded HTTP/browser behavior, preserve evidence boundaries, and test fixes in
+local fixtures. The retained acceptance includes controlled corpus and
+loopback-fixture checks; it does not establish broad real-world detection
+accuracy, independent product findings, competitor superiority, or newly
+discovered CVEs. The `0.1.0` package is an unreleased candidate: no release tag
+or package publication is claimed. Use the tools only on systems you own or are
+explicitly authorized to test.
 
 ## Current status
 
@@ -80,8 +90,10 @@ encoding sonrası düz metin kaldı. Bu vaka kanıtıdır; genel bot execution m
 | `dxa_callback.py` | Local callback collection and lookup | A matched callback is `resource-callback`, not JavaScript execution |
 | `dxa2dyn.py` | Parameter hints from static candidates | A hint is not a complete source-to-sink proof |
 
-50 temel varyant ve 18 mutation, 950 üretim oluşturur; cid çıkarılınca
-895 benzersiz dize vardır. Bu sayılar çalışan exploit veya WAF bypass sayısı değildir.
+Payload corpus metadata includes 50 base variants and 18 mutation definitions.
+The historical generator count of 950 payload strings (895 after removing
+CID-specific uniqueness) describes generated test inputs only; it is not a
+count of working exploits, successful executions, WAF bypasses, or findings.
 HTTP/statik çekirdek stdlib kullanır; testler pytest, tarayıcı gözlemcisi Playwright ve uygun browser gerektirir.
 
 ## Yerel kurulum ve smoke kontrolü

@@ -5,8 +5,9 @@
 C01–C13 editoryal kabulü tamamlandı: tarihsel iddialar eldeki kanıta bağlandı
 veya yazar beyanı/doğrulanmamış olarak etiketlendi. K01–K05 envanter ve rapor
 kabulü tamamlandı; K03'te SQLi/JWT/BOLA için eşleşen ham kanıt yok, K04 de
-tarihsel düzeltmelerin yeniden test edildiğini iddia etmiyor. P01 ve P04 kendi
-kapsamlarında tamamlandı. Temiz Python 3.10 ortamına paket ve browser extra
+tarihsel düzeltmelerin yeniden test edildiğini iddia etmiyor. P01–P04 kendi
+kapsamlarında tamamlandı. S01/S03 oturum ve teknik devam kayıtları hazır; S02
+beceri/kanıt matrisi açık. Temiz Python 3.10 ortamına paket ve browser extra
 kuruldu; kurulu loopback demo `execution-observed` verdi, K01 yerel tekrarında
 5/5 kontrol ve 5/5 port temizliği geçti. Son analyzer paketi: **789 geçti, 38
 atlandı, 0 hata**. Commit `362d4d6` genel CI'si üç job'da, K01 Linux workflow'u
@@ -15,8 +16,9 @@ da başarılı; artifact içerikleri indirilip incelenmedi. Ayrıntılar:
 [C/K inventory](audit/2026-10-17-k-evidence/README.md),
 [VALIDATION](VALIDATION.md).
 
-Sıradaki roadmap işleri P02/P03, sonra S01–S03. Yetkili ürün kapsamı
-seçilmediği için R7 başlamadı; bu portfolyo turunda hedef taranmadı.
+Sıradaki staj işi S02 beceri/kanıt matrisi. Yetkili ürün kapsamı seçilmediği
+için R7 başlamadı; bu portfolyo turunda hedef taranmadı. P02/P03 değişiklikleri
+ve son commit test matrisi [retest kaydında](audit/2026-10-17-final-commit-retest/README.md).
 
 ## R6 / R7 / R8 / R9 devamı — 17 Ekim 2026
 

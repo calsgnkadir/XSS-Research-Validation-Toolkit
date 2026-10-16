@@ -1,5 +1,32 @@
 # Doğrulama kaydı — 2026-10-17
 
+## Final source commit retest and P02/P03 — 2026-10-17
+
+The final code/evidence source commit `3ef8499bc56827614602540d962eb4ab0ea9bdca`
+was retested locally on Windows/Python 3.10.11. The full analyzer suite passed
+**789**, skipped **38**, failed **0**. The selected 10-file benchmark/CI
+acceptance matrix passed **520/520**. `bench/ci_self_scan.py` succeeded; the
+strict three-target mock smoke was TP=2/FP=0/FN=0; required 11-file R3/R4
+Chrome acceptance passed **218/218**; strict proof suite TP=8/FP=0/FN=0;
+auth controls TP=1; installed `dxaprove --demo` returned
+`execution-observed`; K01 fixture/gate tests passed **22/22**; fresh K01 local
+profile passed **5/5 controls** and closed **5/5 fixture ports**; full Chrome
+`test_dxadom.py` passed **80/80**. Results are separate suite measurements and
+must not be added together or interpreted as real-world scanner accuracy.
+
+The local `bench/check_ci_acceptance.py` rejected the locally generated proof
+artifacts because its provenance contract requires Linux/Python 3.12 while
+this run was Windows/Python 3.10.11. This local artifact gate is therefore
+not recorded as passed. Hosted general CI
+[run 38982247229](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38982247229)
+passed all three jobs and K01 Linux
+[run 38982247201](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38982247201)
+passed; artifacts were not downloaded or independently inspected.
+
+P02/P03 changed only README and writeup index wording/grouping. `git diff
+--check` and relative-link review passed; runtime behavior did not change.
+The detailed matrix and scope are in the [retest audit](audit/2026-10-17-final-commit-retest/README.md).
+
 ## Portfolio/evidence closeout — 2026-10-17, local Windows
 
 The C/K evidence review updated historical claims and report labels without

@@ -7,9 +7,8 @@ Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
 doğruluğu veya vulnerability iddiası oluşturmaz. Bot işlerinde R7/A01–A05 için
-yetkili araştırma kapsamı seçimi açık. 17 Ekim'de C01–C13 ve K01–K05
-kanıt-sınırlı içerik kabulü ile P01/P04 demo/portfolyo kabulü tamamlandı;
-P02/P03 ve S01–S03 sırada.
+yetkili araştırma kapsamı seçimi açık. 17 Ekim'de C01–C13, K01–K05, P01–P04,
+S01 ve S03 kabulü tamamlandı; S02 beceri/kanıt matrisi sırada.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
 “genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
@@ -131,8 +130,8 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 |---|---|---|---|
 | 1 | Bot R0–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 17 Ekim kanıt-sınırlı editoryal/indeks kabulü tamam; tarihsel SQLi/JWT/BOLA ve eski saha iddiaları doğrulanmadı | İddia sınırları, yayın kopyaları, K01 ve arşiv rapor etiketleri kaydedildi; eksik tarihsel ham kanıt yeni bulgu sayılmaz |
-| 3 | Portfolyo P01–P04 | P01/P04 tamam; P02/P03 açık | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; CV/proje tanımı ile 06–10 serisi ayrıca düzenlenecek |
-| 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
+| 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
+| 4 | Staj S01–S03 | S01/S03 tamam; S02 açık | Oturum kaydı ve teknik devam özeti hazır; 11 yazının beceri/kanıt matrisi kaldı |
 | 5 | Araştırma/CVE A01–A05 / R7 | Plan ve doğrulanmamış tarihsel beyanlar | Ürün/sürüm/rol/yenilik/kanal doğrulaması; kanıtlı sonuç durumu |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
@@ -165,7 +164,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
-| C/K/P | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md) | C01–C13 ve K01–K05 kanıt-sınırlı içerik kabulü; P01/P04 tamam. Tarihsel ürün iddiaları doğrulanmış bulguya çevrilmedi. | P02/P03 portfolyo düzenlemesine, ardından S01–S03'e geç |
+| C/K/P | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [P02/P03 ve son commit retesti](audit/2026-10-17-final-commit-retest/README.md) | C01–C13, K01–K05 ve P01–P04 tamam. P02/P03 README ve writeup indeksinde kapatıldı; yerel son kaynak matrisi ve hosted iş sonuçları ayrıca kaydedildi. | S02 beceri/kanıt matrisi; tarihsel ürün iddiaları doğrulanmış bulguya çevrilmedi |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
@@ -719,22 +718,22 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | K04 — tamam, dokümantasyon | defense/README.md, methodology, writeup savunmaları | Bağlama uygun encoding, CSP ve HttpOnly sınırları; recursive filtre genellemesi kaldırıldı; tarihsel remediation retest iddiası yok |
 | K05 — tamam | reports/*.html, dinamik HTML/JSON üretici, preview'lar | 50 JSON-only + 2 Bludit + 78 statik satır ayrı etiketlendi; “no findings” güvenlik sayılmaz; raw eski raporlar değişmedi |
 
-## Portfolyo — P01–P04 (P01/P04 tamam; P02/P03 açık)
+## Portfolyo — P01–P04 (tamam, 17 Ekim)
 
 | Kimlik | İş | Kabul ölçütü |
 |---|---|---|
 | P01 — tamam, 17 Ekim | README/writeup indeksini üç seçilmiş vaka etrafında düzenle | K01 proof→fix, R9 test-fixture hatası→regresyon, R4 kontrollü araştırma replay'i; sınırlar ve C/K bağlantıları [kabul kaydında](audit/2026-10-17-p01-p04/README.md) |
-| P02 | 06–10'u araç geliştirme serisi olarak grupla, tekrarları azalt | Tarihsel içerik korunur; aynı başarı beş ayrı başarı gibi sunulmaz; gereksiz dosya silinmez |
-| P03 | CV/proje tanımını gerçek yetenekle sınırla | 950 exploit/tam otomatik proof/rakip üstünlüğü/yeni CVE iddiası kanıtsız yok; deneysel destek ve rol açık |
+| P02 — tamam, 17 Ekim | 06–10'u araç geliştirme serisi olarak grupla, tekrarları azalt | Tarihsel içerik korundu; indeks bunları ayrı başarı ölçümleri gibi sunmuyor; dosyalar silinmedi. [Son retest kaydı](audit/2026-10-17-final-commit-retest/README.md) |
+| P03 — tamam, 17 Ekim | CV/proje tanımını gerçek yetenekle sınırla | README araştırma prototipi ve rol/sınırları belirtiyor; 950 sayısı üretilen test girdisi olarak tanımlanıyor. Accuracy, exploit, üstünlük veya CVE iddiası yok. [Son retest kaydı](audit/2026-10-17-final-commit-retest/README.md) |
 | P04 — tamam, 17 Ekim | Paylaşılabilir demo ve ilk sürüm paketi | Temiz Python 3.10 venv kurulumu, installed `dxaprove --demo` ve K01 local profile 5/5 tekrarlandı; release note, limitations ve kanıt bağlantısı var. `0.1.0` yayınlanmadı. |
 
-## Stajın devamı — S01–S03 (açık)
+## Stajın devamı — S01–S03 (S01/S03 tamam; S02 açık)
 
 | Kimlik | İş | Kabul ölçütü |
 |---|---|---|
-| S01 — başlandı | Geliştirme oturumu öğrenme kayıtları | Gerçek tarih, amaç, yapılan işlem, test kanıtı, hata, çözüm, öğrenilen ve kalan iş; çalışma saati/başarı uydurulmaz |
+| S01 — tamam, 17 Ekim | Geliştirme oturumu öğrenme kayıtları | [S01/S03 kaydı](staj/2026-10-17-p02-p03-s01-s03.md) amaç, yapılan işlem, test kanıtı, hata, çözüm, öğrenilen ve kalan işi içeriyor; çalışma saati uydurulmuyor |
 | S02 | Mevcut 11 yazıyı beceri ve kanıt matrisiyle ilişkilendir | XSS/SQLi/JWT/BOLA, debugging, test, raporlama becerileri kanıtlı; teori/deney/araç geliştirme ayrı; C/K'ya bağlı |
-| S03 | Teknik devam özeti ve teslim kontrolü | Önce/sonra yetenek, ölçülen fark, sınırlamalar ve sonraki adım; resmi okul formatı/onay şartı biliniyormuş gibi doldurulmaz; dış staj PDF'leri kapsam dışı |
+| S03 — tamam, 17 Ekim | Teknik devam özeti ve teslim kontrolü | [S01/S03 kaydı](staj/2026-10-17-p02-p03-s01-s03.md) önce/sonra, ölçülen test farkı, sınırlamalar ve sonraki adımı içeriyor; resmi okul formatı/onay şartı varsayılmıyor |
 
 ## Araştırma ve CVE — A01–A05 (açık / tarihsel kanıt bekliyor)
 

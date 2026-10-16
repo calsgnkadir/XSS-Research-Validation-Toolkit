@@ -2,6 +2,17 @@
 
 ## Unreleased — 2026-10-17 portfolio and evidence review
 
+- P02/P03 closeout: README now describes the bounded experimental Python CLI,
+  and writeups 06–10 are grouped as one historical tool-development series.
+  Generated corpus totals are not described as exploit or execution counts.
+- S01/S03 session and continuation notes include the final local retest matrix,
+  hosted workflow outcomes, and the local artifact-provenance limitation. S02
+  remains open.
+- Final source commit `3ef8499` local retest: analyzer 789 passed/38 skipped;
+  selected benchmark acceptance 520 passed; required Chrome acceptance
+  218/218; DOM Chrome 80/80; K01 fixture tests 22/22 and local profile 5/5.
+  Details and scope are in `audit/2026-10-17-final-commit-retest/README.md`.
+
 - C01–C13 writeups and methodology now separate author-reported history from
   retained evidence; the writeup index no longer repeats old target, accuracy,
   WAF-bypass, or execution claims as current proof.
@@ -15,8 +26,8 @@
   K01 local reproduction passed 5/5 controls with 5/5 fixture ports closed.
   No package release or historical target finding is claimed.
 - Final local analyzer suite after the report-renderer regression: 789 passed,
-  38 skipped, zero failures (Windows/Python 3.10.11). Hosted CI has not run for
-  this delivery.
+  38 skipped, zero failures (Windows/Python 3.10.11). Hosted CI for this source
+  commit passed; artifact contents were not independently inspected.
 
 ## 0.1.0 — 2026-10-16 (release adayı; yayımlanmadı)
 
