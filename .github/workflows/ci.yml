@@ -44,7 +44,7 @@ jobs:
         run: python bench/ci_self_scan.py
 
       - name: Benchmark harness tests
-        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py bench/test_bludit_adapter.py bench/test_bludit_ingress.py bench/test_r4_compare_local.py bench/test_r4_comparison_acceptance.py bench/test_r4_scanner_sessions.py -q
+        run: pytest bench/test_bench.py bench/test_proof_adapter.py bench/test_ci_self_scan.py bench/test_ci_acceptance.py bench/test_bludit_adapter.py bench/test_bludit_ingress.py bench/test_r4_compare_local.py bench/test_r4_comparison_acceptance.py bench/test_r4_scanner_sessions.py bench/test_check_installed_cli.py -q
 
       - name: Benchmark smoke run (dxadyn on mock corpus, strict)
         env:

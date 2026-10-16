@@ -48,6 +48,11 @@
     "python": "3.10.11",
     "platform": "Windows"
   },
+  "distribution": {
+    "name": "dxa-research-toolkit",
+    "version": "0.1.0",
+    "installed_version": "0.1.0"
+  },
   "packaged_module_sha256": {
     "dxa": "d81b9bc05fe199672404e4be9c6dd03e0fa2328a4f6c59e9ecc1cfc5e19e144b",
     "dxadyn": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497",
@@ -59,7 +64,7 @@
     "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
     "dxa2dyn": "d7083188cde6e2672d4696b3ed2a97a17e5c2d01598943427b879b0270ac898f"
   },
-  "wheel_sha256": "0edea5d639183f2088739241ec9b985cb7a39f0b43e33cc73a1ec8494675a07f",
+  "wheel_sha256": "75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719",
   "source_sha256": {
     "tools/dom-xss-analyzer/dxadyn.py": "35e3b524141ac4971772949893ccd14f61ee5311ee1e55d2c91ba554e748c497"
   },

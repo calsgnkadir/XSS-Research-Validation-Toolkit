@@ -25,7 +25,7 @@ Result: **22 passed**, zero failures/errors/skips. This Windows test run does
 not establish a second human run or replace the historical Linux artifact
 provenance. No hosted CI was run for this documentation/recheck turn.
 
-## R6 current-source CLI/package readiness — 2026-10-16
+## R6 current-source CLI/package readiness — 2026-10-16 (initial 0.0.0.dev0 run)
 
 The R6 specialist reproduced duplicate JSON keys being accepted by the static
 CLI config loader, added a regression, and changed the loader to reject the
@@ -44,7 +44,34 @@ This packaging script run is not pytest, browser proof or hosted CI. Its base
 HEAD and source-snapshot limits, the initial `bdist_wheel` failure, and the
 cached `wheel==0.48.0` install into system Python are recorded in the
 [R6 readiness audit](audit/2026-10-16-r6-final-readiness/README.md). No release
-tag or publication was made; the version remains `0.0.0.dev0`.
+tag or publication was made in this initial run; the later selected `0.1.0`
+candidate and final wheel check are recorded below.
+
+## R6 0.1.0 release-candidate gate and R8 current review — 2026-10-16
+
+The installed-wheel gate was strengthened after review found that it checked
+module bytes and launchers but not wheel distribution identity/version or the
+exact three console-script mappings. Synthetic-wheel regressions cover valid
+metadata and rejection of wrong name, missing/wrong script targets and duplicate
+dist-info metadata. The focused R6 metadata/config and R8 static suites ran on
+Windows / Python 3.10.11:
+
+```powershell
+py -3.10 -m pytest bench/test_check_installed_cli.py tools/dom-xss-analyzer/test_r8_sanitizer.py tools/dom-xss-analyzer/test_static_context.py tools/dom-xss-analyzer/test_dxa_config.py tools/dom-xss-analyzer/test_r6_cli_modes.py tools/dom-xss-analyzer/test_dxadyn_config.py tools/dom-xss-analyzer/test_dxadyn_report_identity.py -q -p no:cacheprovider --tb=short
+```
+
+Result: **156 passed**, zero failures/errors/skips (R8 subset 41). The selected
+`0.1.0` wheel was rebuilt, installed offline in a fresh temporary venv, and the
+full installed CLI gate passed **7/7**; all nine module hashes matched source,
+wheel and installation. Wheel SHA-256:
+`75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719`.
+The JSON acceptance is [here](audit/2026-10-16-r6-final-readiness/acceptance.json).
+This is local Windows evidence; hosted CI has not yet run on these working-tree
+changes. The wheel is not tagged or published.
+
+R8 source/test review found no new reproducible issue; the AST pilot and labeled
+positive/negative corpus measurement remain open. See
+[R8 review](audit/2026-10-16-r8-current-review/README.md).
 
 ## 16 October final R4/R5 technical closeout
 

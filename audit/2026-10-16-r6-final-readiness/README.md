@@ -55,13 +55,53 @@ py -3.10 -m venv $venv
 ```
 
 The checker ran with its working directory set to the temporary `work`
-directory. `bench/check_installed_cli.py` and application code were not edited
-by this task. No release tag, publication, external target test, browser
-execution claim, or vulnerability result is part of this check.
+directory. The original readiness run did not edit
+`bench/check_installed_cli.py` or application code. A follow-up acceptance
+review later added distribution metadata checks; see below. No release tag,
+publication, external target test, browser execution claim, or vulnerability
+result is part of this check.
 
 ## Limits
 
 This confirms installability and the bounded CLI/config behavior exercised by
 the installed-wheel gate on this Windows/Python 3.10.11 host. It does not
 validate browser execution, an end-user release workflow, broad scanner
-accuracy, or a fresh hosted CI run. The wheel version remains `0.0.0.dev0`.
+accuracy, or a fresh hosted CI run. The initial readiness wheel version was
+`0.0.0.dev0`; the later `0.1.0` release-candidate check is recorded below.
+
+## Acceptance metadata follow-up
+
+Source review found the original checker verified shipped module bytes and
+exercised installed script launchers, but did not verify wheel `METADATA`
+identity/version or that `entry_points.txt` mapped the expected three CLI
+commands. A wheel with matching module bytes but unrelated project metadata
+could therefore satisfy those earlier checks. The checker now requires one
+`.dist-info/METADATA` for `dxa-research-toolkit`, a nonempty version, and the
+exact `dxa`, `dxadyn`, and `dxaprove` console-script mappings. It also compares
+the installed distribution name/version with the supplied wheel and records
+that identity in result JSON.
+
+On 2026-10-16, the metadata helper ran against the existing wheel and returned
+`dxa-research-toolkit` version `0.0.0.dev0`. This was a helper-level check only;
+the full installed CLI gate was not rerun after this edit. Reusing the old venv
+failed because its base Python path was unavailable; a new venv was created,
+but its interpreter had the same issue. An offline `pip --target` install
+succeeded in a temporary directory without a global install, but did not
+provide the interpreter layout needed to rerun the complete gate. Hosted CI
+has not run with this follow-up.
+
+## Coordinator verification of the metadata follow-up
+
+Run date: 2026-10-16, Windows / Python 3.10.11. The coordinator built the
+selected `0.1.0` wheel from the current working tree in `%TEMP%`, installed it
+offline into a fresh venv, and ran the full checker from that venv. The updated
+gate passed **7/7** checks, including `dxa-research-toolkit` metadata and
+matching installed version `0.1.0`. All nine module hashes matched source,
+wheel, and installed copies. Wheel SHA-256:
+`75bfd32fc355f9b48417c371ed126c7867aa48edabe0b3acd8a1098dc091c719`;
+the refreshed [acceptance.json](acceptance.json) binds the result.
+
+The run used only an offline temporary venv; no global package install was
+performed for this rerun. It is local Windows evidence, not hosted CI. The
+version and release-specific changelog are prepared, but the wheel was not
+tagged or published.

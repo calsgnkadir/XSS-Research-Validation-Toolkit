@@ -1,5 +1,22 @@
 # Güncel devam noktası — 16 Ekim 2026
 
+## R6 / R8 devamı — 16 Ekim 2026
+
+R6 için `dxa-research-toolkit 0.1.0` ilk araştırma sürümü seçildi; sürüme özel
+changelog hazırlandı. Wheel geçici temiz Windows venv'e offline kuruldu; yeni
+metadata/entry-point kapısı dahil installed CLI **7/7**, dokuz modül hash'i
+kaynak/wheel/kurulu kopyada eşleşti. R6 metadata/config ve R8 statik
+regresyonları birlikte **156/156** geçti; R8 alt kümesi 41/41. Güncel kanıt
+[R6](audit/2026-10-16-r6-final-readiness/README.md) ve
+[R8](audit/2026-10-16-r8-current-review/README.md) kayıtlarında. Bu çalışma
+henüz commit/push/hosted CI görmedi; release tag'i veya dış paket yayını yok.
+
+R6 teknik hazırlığı tamamlandı; yayın ayrıca yetki gerektirir. R8 açık kalır:
+tek dilli AST pilotu ve etiketli pozitif/negatif corpus ölçümü yapılmadı.
+R8 uzmanı yeni, yeniden üretilebilir kusur bulmadı; bu kapsam inceleme sonucu,
+genel analiz doğruluğu iddiası değildir. Sıradaki teknik iş R8 AST pilotunu
+küçük bir pozitif/negatif fixture corpusuyla ölçmek; ardından R9 kapsamıdır.
+
 ## R4/R5 kapanışı — 16 Ekim 2026
 
 **R4 tamamlandı, teknik kapsamla sınırlı.** Yeni replay kapısı report hash'i ve
@@ -401,8 +418,9 @@ karşı örneği ve 126-test kabulünü tamamladı. Çalışan arka plan görevi
   doğrulaması ayrı tutulur.
 - R8 regex/tek dil AST; R9 genel rapor/konsol mahremiyeti, ağ/WebSocket ve diğer
   birleşik kabul işleri açık. Dar exporter düzeltmesi genel sır tespit garantisi değildir.
-- R6'nın güncel wheel smoke ve CLI/config kapsamı geçti; release sürümü ve
-  release-specific changelog/etiket kararı kaldı. Ayrıntı ROADMAP ve VALIDATION'da.
+- R6 `0.1.0` sürüm ve release-specific changelog hazırlığı, 7/7 wheel gate'iyle
+  tamamlandı; hosted CI henüz bu working-tree değişikliklerini çalıştırmadı.
+  Release tag'i/paketi yayımlanmadı.
 - R8/R9 ve C/K/P/S/A işleri ROADMAP'te açık.
 - Çalışma yeri için en üstteki güncel kullanıcı yönlendirmesi geçerlidir.
   C:\xss\xss-github içindeki commit edilmemiş işler korunmalıdır.

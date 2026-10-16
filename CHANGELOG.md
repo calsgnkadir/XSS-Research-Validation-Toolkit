@@ -1,5 +1,20 @@
 # Değişiklik kaydı
 
+## 0.1.0 — 2026-10-16 (release adayı; yayımlanmadı)
+
+- İlk kurulabilir araştırma sürümü için paket sürümü `0.1.0` seçildi. Temel
+  kurulum, üç CLI, config önceliği/validasyonu, JSON/HTML raporları ve isteğe
+  bağlı pinned Playwright browser extra belgelenip kurulu wheel üzerinden
+  doğrulandı.
+- Installed-wheel kabul kapısı dağıtım adını/sürümünü ve üç console-script
+  eşlemesini de denetliyor; 7/7 CLI/config kontrolleri ve dokuz modül için
+  kaynak/wheel/kurulu kopya hash eşleşmesi geçti.
+- R4 teknik kabul ve R5/K01 vaka kanıtı release önkoşulu olarak kaydedildi.
+  R8 regex kapsamı, R9 ağ/operasyon sınırları ve genel scanner doğruluğu bu
+  sürümün iddiası değildir. XSS sonuçları aday veya sınırlı lab kanıtı olarak
+  kalır; genel ürün doğruluğu/başarılı CVE iddiası yoktur.
+- Bu kayıt release hazırlığıdır; tag veya paket yayını yapılmadı.
+
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 
 - R6 static CLI now rejects duplicate JSON config keys before scanning; a

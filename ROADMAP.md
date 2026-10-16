@@ -1,11 +1,12 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-16 Ekim güncel durum: R4 teknik teslimi ve R5/K01 teknik kabulü tamamlandı.
+16 Ekim güncel durum: R4 teknik teslimi ve R5/K01 teknik kabulü tamamlandı;
+R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
 Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
-doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot teslimi R6
-paketleme/release hazırlığıdır; R8/R9 ve portfolyo/kanıt işleri ayrıca açıktır.
+doğruluğu veya vulnerability iddiası oluşturmaz. Sıradaki bot işleri R8/R9;
+portfolyo/kanıt işleri ayrıca açıktır.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
 “genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
@@ -125,7 +126,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R6, R8–R9 | R0–R5 tamam (R4/R5 teknik kapsam); R6, R8, R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R6, R8–R9 | R0–R5 tamam (R4/R5 teknik kapsam); R6 0.1.0 release hazırlığı tamam/yayımlanmadı; R8/R9 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 75→50 sayımı düzeldi; kalanlar açık | Her iddia kanıtlı veya kapsamı daraltılmış; yeniden üretim paketi |
 | 3 | Portfolyo P01–P04 | Güncel giriş var; düzenleme açık | Üç seçilmiş vaka, dürüst yetenek ve sürüm anlatısı |
 | 4 | Staj S01–S03 | Geçmiş teknik yazılar var; devam planı açık | Gerçek çalışmayla bağlantılı öğrenme kayıtları ve sonuç özeti |
@@ -205,7 +206,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
-| R6 Kullanılabilir ilk sürüm | Açık | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
+| R6 Kullanılabilir ilk sürüm | Teknik hazırlık tamam; release adayı yayımlanmadı | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
@@ -500,13 +501,21 @@ yapılmadı; kullanıcı kararıyla bu R5 kapanış şartı değildir.
 
 ## R6 — Kullanılabilir ilk sürüm
 
-16 Ekim güncel R6 devamı: README'ye temiz venv, temel CLI, opsiyonel browser
-extra ve loopback demo adımları eklendi. Statik `dxa` config'inde tekrarlanan
-JSON anahtarları reddedilecek şekilde düzeltildi; ilgili config/mode/report
-paketi **110/110** geçti. Güncel kaynakla oluşturulan wheel temiz venv'e offline
-kuruldu; üç CLI ve yedi installed-wheel kontrolü geçti, dokuz modülün kaynak,
-wheel ve kurulu kopya hashleri eşleşti. [16 Ekim R6 kabulü](audit/2026-10-16-r6-final-readiness/README.md).
-Sürüm `0.0.0.dev0`; release etiketi veya yayın yapılmadı. R6 release kabulü açık.
+16 Ekim R6: README kurulum/config/demo kapsamı ve temiz wheel kabulü gözden
+geçirildi. Metadata kapısındaki eksik dağıtım kimliği/entry point kontrolü
+eklenip regresyonlandı; son wheel temiz Windows venv'e offline kuruldu ve 7/7
+kontrol geçti, dokuz modül kaynak/wheel/kurulu kopya hashleri eşleşti.
+[16 Ekim R6 kabulü](audit/2026-10-16-r6-final-readiness/README.md).
+İlk araştırma sürümü `0.1.0` seçildi ve bu sürüme özel changelog hazırlandı.
+Release tag'i ve dış paket yayını yapılmadı; bunlar için ayrıca açık yayın
+yetkisi ve son kabul gerekir.
+
+R8 güncel kaynak denetimi: security uzmanı mevcut taint/rebinding, context,
+template ve destek sınırı regresyonlarını inceledi; koordinatör odaklı paketi
+41/41 çalıştırdı. Yeni kusur veya kod değişikliği yok.
+[R8 inceleme kaydı](audit/2026-10-16-r8-current-review/README.md). Tek dilli
+AST pilotu ve etiketli pozitif/negatif corpus ölçümü açık kalır; R8 kapanmış
+sayılmaz.
 
 15 October resumed delivery: dynamic config supports depth/parallel/rate with
 CLI > config > defaults, strict validation and per-mode applicability. Focused
@@ -547,7 +556,8 @@ ve kanıt belgeleri paylaşılabilir araştırma çıktısıdır, kullanılabili
 sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 
 - [x] Kaynaktan temel kurulum ve opsiyonel browser extra paketlenir; güncel wheel temiz venv'de kuruldu, CLI/help ve config gate'i geçti. [16 Ekim kabulü](audit/2026-10-16-r6-final-readiness/README.md).
-- [ ] Release sürümü seçilir ve release-specific CHANGELOG hazırlanır; sürüm etiketi/yayın yalnız son kabul ve açık release yetkisiyle yapılır. `0.0.0.dev0` geliştirici sürümüdür.
+- [x] İlk araştırma release sürümü `0.1.0` seçilir ve release-specific CHANGELOG hazırlanır; hazırlık commit'i tag veya dış paket yayını değildir.
+- [ ] Release tag'i veya dış paket yayını yalnız son kabul ve açık release yetkisiyle yapılır.
 - [x] Config önceliği CLI > config > varsayılan olarak testlidir.
 - [x] JSON şeması sürümlüdür; HTML aynı kanıttan üretilir; rapor test girdisini güvenli escape eder.
 - [x] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
@@ -584,6 +594,11 @@ dar kapsamda düzeltildi; önce/sonra ve gerçek encoder karşı örnekleriyle
 91 odaklı test geçti; d41c1cd genel CI 38596197488 3/3 başarılı.
 Dinamik alias/branch ve genel AST ölçümü açık.
 [Dar R8 kanıtı](audit/2026-10-14-r8-rebound/README.md).
+
+16 Ekim güncel kaynak incelemesinde yeni karşı örnek bulunmadı; focused R8
+paketi 41/41 geçti. Mevcut regex yaklaşımının alias/import/branch sınırları
+korunur; tek dil AST pilotu ve etiketli pozitif/negatif corpus ölçümü hâlâ
+açık. [Güncel inceleme](audit/2026-10-16-r8-current-review/README.md).
 
 
 Dosyalar: `dxa.py`, `test_dxa.py`, `examples/safe.py`, diğer dil fixture'ları.

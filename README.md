@@ -109,10 +109,12 @@ için `dxaprove --spec <yerel-json>` kullanılabilir; bu proof sözleşmesi `dxa
 ve `dxadyn` tarama config'lerinden ayrıdır. Tarama komutlarını yalnız kendi
 yerel fixture'larında veya açıkça yetkili hedeflerde çalıştır.
 
-Depo kaynak kodundan kurulan paket `dxa-research-toolkit` adıyla
-`0.0.0.dev0` geliştirici sürümüdür. Bu sürüm kurulum ve smoke kontrolü içindir;
-PyPI yayını veya Git release etiketi değildir ve R6 release kabulü anlamına
-gelmez. CLI'ları kaynak dosyalarından doğrudan çalıştırmak da mümkündür.
+Depo metadata'sında ilk araştırma sürümü `dxa-research-toolkit 0.1.0` olarak
+seçilmiştir. Bu checkout sürüm ve release notlarını hazırlar; PyPI yayını veya
+Git release etiketi yapıldığı anlamına gelmez. Ürün deneysel bir araştırma
+yardımcısıdır; kapsam ve kanıt sınırları için aşağıdaki notları ve ilgili audit
+kayıtlarını inceleyin. CLI'ları kaynak dosyalarından doğrudan çalıştırmak da
+mümkündür.
 
 `dxadyn` için `--dom`, `--stored` ve `--flow` ana modları birlikte seçilemez.
 Stored/flow hedefi kendi seçeneklerinden verilir; positional URL eklenmez.

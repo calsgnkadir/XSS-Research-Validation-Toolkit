@@ -1,5 +1,6 @@
 """Exercise the installed CLI from outside the source tree using loopback only."""
 import argparse
+import email.parser
 import hashlib
 import http.server
 import json
@@ -12,6 +13,29 @@ import urllib.parse
 import zipfile
 
 
+def distribution_identity(wheel_path):
+    """Return and validate the wheel's distribution metadata and scripts."""
+    with zipfile.ZipFile(wheel_path) as wheel:
+        metadata_paths = [name for name in wheel.namelist()
+                          if name.endswith(".dist-info/METADATA")]
+        assert len(metadata_paths) == 1, "wheel must contain exactly one dist-info METADATA"
+        metadata = email.parser.Parser().parsestr(
+            wheel.read(metadata_paths[0]).decode("utf-8")
+        )
+        assert (metadata.get("Name") or "").lower().replace("_", "-") == \
+            "dxa-research-toolkit", "unexpected wheel distribution name"
+        version = metadata.get("Version")
+        assert version, "wheel distribution version is missing"
+        entry_paths = [name for name in wheel.namelist()
+                       if name.endswith(".dist-info/entry_points.txt")]
+        assert len(entry_paths) == 1, "wheel must contain exactly one console-script table"
+        entry_points = wheel.read(entry_paths[0]).decode("utf-8")
+        expected = "[console_scripts]\ndxa = dxa:main\ndxadyn = dxadyn:main\ndxaprove = dxaprove:main\n"
+        normalized = "\n".join(line.strip() for line in entry_points.splitlines() if line.strip()) + "\n"
+        assert normalized == expected, "wheel console-script metadata mismatch"
+    return {"name": "dxa-research-toolkit", "version": version}
+
+
 def main():
     if not __debug__:
         raise SystemExit("installed CLI gate requires assertions; do not use optimized Python")
@@ -22,6 +46,7 @@ def main():
     args = parser.parse_args()
     if args.output.exists():
         parser.error("output must not exist")
+    wheel_identity = distribution_identity(args.wheel)
     suffix = ".exe" if platform.system() == "Windows" else ""
     executables = {name: args.bin_dir.resolve() / (name + suffix)
                    for name in ("dxa", "dxadyn", "dxaprove")}
@@ -46,6 +71,16 @@ def main():
         installed = json.loads(identity.stdout)
         assert installed["under_venv"] is True, "module was not imported from the venv"
         assert installed["sha256"] == source_hash, "installed module differs from tested source"
+        metadata_probe = subprocess.run([
+            str(installed_python), "-I", "-c",
+            "import importlib.metadata,json; d=importlib.metadata.distribution('dxa-research-toolkit'); "
+            "print(json.dumps({'name':d.metadata['Name'],'version':d.version}))"
+        ], cwd=directory, capture_output=True, text=True, timeout=30)
+        assert metadata_probe.returncode == 0, "installed distribution metadata unavailable"
+        installed_identity = json.loads(metadata_probe.stdout)
+        assert installed_identity["name"].lower().replace("_", "-") == wheel_identity["name"]
+        assert installed_identity["version"] == wheel_identity["version"], \
+            "installed distribution version differs from supplied wheel"
         # Check every shipped module, not just the HTTP entry point. Isolated
         # imports must resolve inside the supplied environment.
         modules = ("dxa", "dxadyn", "dxaprove", "dxadom", "dxa_evidence",
@@ -149,6 +184,7 @@ def main():
     output = {"schema_version": 1, "python": platform.python_version(),
               "platform": platform.system(), "results": results,
               "installed_module": installed,
+              "distribution": {**wheel_identity, "installed_version": installed_identity["version"]},
               "packaged_module_sha256": module_hashes,
               "wheel_sha256": hashlib.sha256(args.wheel.read_bytes()).hexdigest(),
               "source_sha256": {"tools/dom-xss-analyzer/dxadyn.py":
