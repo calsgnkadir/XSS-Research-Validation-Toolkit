@@ -1,5 +1,12 @@
 # XSS Research Lab & Bot
 
+This is a research prototype for finding and validating possible cross-site scripting (XSS) issues.
+It combines source-code review, HTTP reflection checks, and browser observations in controlled labs.
+Reports keep observations and evidence separate from confirmed JavaScript execution.
+Use it only on systems you own or are explicitly authorized to test.
+The project includes repeatable test cases and fix-and-retest examples.
+It does not claim broad detection accuracy or confirmed new vulnerability discoveries.
+
 Stajda başlayan web güvenliği çalışmalarının devamı: kaynak→sink incelemesi,
 Python ile XSS aday tespiti ve tekrar üretilebilir laboratuvar doğrulaması.
 Amaç, sonuçlarını kanıtla açıklayan ve başka bir araştırmacının da çalıştırabildiği bir araç geliştirmek.

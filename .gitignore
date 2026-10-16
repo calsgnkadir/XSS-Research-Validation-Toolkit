@@ -11,3 +11,15 @@ bench/history.jsonl
 **/proof-results.md
 build/
 *.egg-info/
+
+# Local agent instructions and configuration
+AGENTS.md
+.codex/
+docs/AGENT-WORKFLOW.md
+
+# Historical agent review and repeat records retained locally
+audit/2026-10-05-r1/AGENT-YORUMU.md
+audit/2026-10-06-agent-review/
+audit/2026-10-06-multi-agent-round1/
+audit/2026-10-14-r5-independent-agent-repeat/
+staj/2026-10-06-multi-agent-round1.md
