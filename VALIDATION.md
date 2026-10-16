@@ -12,8 +12,12 @@ py -3.10 -m pytest tools/dom-xss-analyzer -q -p no:cacheprovider --tb=short
 ```
 
 Result: **789 passed, 38 skipped, 0 failed** in 186.48 seconds, Windows,
-Python 3.10.11. This run covers local analyzer regressions; hosted CI has not
-run for the current portfolio/evidence delivery.
+Python 3.10.11. For commit `362d4d610430ae4111cfdf662559efacb695edc2`, hosted
+general CI [run 38981902539](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38981902539)
+passed all three jobs, including analyzer tests and authenticated browser proof.
+K01 Linux [run 38981902461](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38981902461)
+also succeeded. These are workflow/job outcomes; artifacts were not downloaded
+or independently inspected.
 
 P04 was reproduced from a fresh `.venv-p04-20261017` environment. The package
 and `.[browser]` extra installed, Playwright 1.63.0 installed Chromium

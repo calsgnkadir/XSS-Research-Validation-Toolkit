@@ -9,7 +9,8 @@ tarihsel düzeltmelerin yeniden test edildiğini iddia etmiyor. P01 ve P04 kendi
 kapsamlarında tamamlandı. Temiz Python 3.10 ortamına paket ve browser extra
 kuruldu; kurulu loopback demo `execution-observed` verdi, K01 yerel tekrarında
 5/5 kontrol ve 5/5 port temizliği geçti. Son analyzer paketi: **789 geçti, 38
-atlandı, 0 hata**. Bu teslim için hosted CI henüz çalışmadı. Ayrıntılar:
+atlandı, 0 hata**. Commit `362d4d6` genel CI'si üç job'da, K01 Linux workflow'u
+da başarılı; artifact içerikleri indirilip incelenmedi. Ayrıntılar:
 [P01/P04 audit](audit/2026-10-17-p01-p04/README.md),
 [C/K inventory](audit/2026-10-17-k-evidence/README.md),
 [VALIDATION](VALIDATION.md).
