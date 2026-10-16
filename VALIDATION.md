@@ -97,6 +97,20 @@ test load; its isolated rerun passed before the context-matrix change. No hosted
 dirty working-tree snapshot, and the earlier R6/R8 CI records do not apply to
 these R9 edits. Full evidence and source hashes are linked above.
 
+The tested source snapshot was delivered as commit
+`f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a`; `origin/main` was queried and
+returned the exact same hash. Hosted GitHub Actions for that commit:
+
+- [General CI run `38923418347`](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38923418347): opt-in `dxadom` Playwright harness **success**;
+  `dom-xss-analyzer tests` **failure**; required authenticated browser proof
+  **failure**.
+- [K01 Linux run `38923418259`](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38923418259): **success**.
+
+These are job-level results only. The failed job logs and uploaded artifacts
+were not independently retrieved, so their specific failure causes and proof
+contents remain unverified. This hosted CI result does not replace the local
+test counts above.
+
 ## R6 0.1.0 release-candidate gate and R8 current review — 2026-10-16
 
 The installed-wheel gate was strengthened after review found that it checked

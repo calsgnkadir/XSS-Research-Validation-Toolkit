@@ -2,7 +2,7 @@
     "schema_version":  1,
     "date":  "2026-10-16",
     "base_commit":  "f89058e74194f60de8ec9cd3db701e6c6254253c",
-    "working_tree_committed":  false,
+    "working_tree_committed":  true,
     "environment":  {
                         "os":  "Windows",
                         "python":  "3.10.11",
@@ -261,8 +261,28 @@
                           "tools/dom-xss-analyzer/README.md":  "43498f362b264724213610bc36bd86c055af8e06c4a2d2ffe9cde1fb9cf8d6cd"
                       },
     "git_delivery":  {
-                         "commit_created":  false,
-                         "push_performed":  false,
-                         "remote_verified":  false
+                         "commit_created":  true,
+                         "commit":  "f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a",
+                         "push_performed":  true,
+                         "remote_verified":  true,
+                         "origin_main":  "f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a",
+                         "general_ci":  {
+                                            "run_id":  "38923418347",
+                                            "url":  "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38923418347",
+                                            "conclusion":  "failure",
+                                            "jobs":  {
+                                                         "dxadom_browser_harness":  "success",
+                                                         "dom_xss_analyzer_tests":  "failure",
+                                                         "required_authenticated_browser_proof":  "failure"
+                                                     },
+                                            "failed_logs_retrieved":  false,
+                                            "job_log_api_status":  403,
+                                            "artifacts_independently_downloaded":  false
+                                        },
+                         "k01_linux":  {
+                                           "run_id":  "38923418259",
+                                           "url":  "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38923418259",
+                                           "conclusion":  "success"
+                                       }
                      }
 }

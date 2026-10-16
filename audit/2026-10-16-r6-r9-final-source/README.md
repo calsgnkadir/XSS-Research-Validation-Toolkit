@@ -1,8 +1,10 @@
 # R6 final wheel and R9 local continuation
 
-Run date: 2026-10-16, Windows / Python 3.10.11. The shared working tree was
-based on `main` at `f89058e74194f60de8ec9cd3db701e6c6254253c`; R9 files were
-modified locally and were not committed or pushed for these checks.
+Run date: 2026-10-16, Windows / Python 3.10.11. Tests and wheel acceptance
+were run on the working tree based on `main` at
+`f89058e74194f60de8ec9cd3db701e6c6254253c`, before delivery. The tested
+source was then committed and pushed as `f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a`;
+the remote `main` hash was verified equal.
 
 ## R6 technical acceptance
 
@@ -39,8 +41,9 @@ py -3.10 -m venv --system-site-packages <temp venv>
 The [final-source gate result](r6-installed-wheel-gate-final-source.json) and
 [packaged demo result](r6-packaged-demo-final-source.json) are retained; the
 [acceptance manifest](acceptance.json) binds the new wheel and mapped source
-hashes. No dependency download, release tag, package publication or hosted CI
-run occurred. No remote CI result is claimed for this working tree. The local
+hashes. No dependency download, release tag or package publication occurred.
+Hosted CI ran after this source snapshot was pushed; its results are recorded
+in the Git delivery section below. The local
 R6 install and demo acceptance are complete for this candidate snapshot; the
 ROADMAP release tag/publication row remains outside this local acceptance.
 ## R9 implementation slices and local tests
@@ -116,5 +119,10 @@ full DOM suite is still unstable and final Git provenance is not yet recorded.
 ## Source hashes
 
 The SHA-256 digests for modified source, tests, and documentation are in
-[`acceptance.json`](acceptance.json). These bind the local review state only;
-there is no commit or remote ref for this R9 work yet.
+[`acceptance.json`](acceptance.json). The tested source was delivered in commit
+`f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a` and the remote hash matched. General
+CI run `38923418347` had the opt-in browser harness succeed but the analyzer
+test and required authenticated browser proof jobs fail; K01 Linux run
+`38923418259` succeeded. Failed logs and artifacts were not independently
+retrieved, so no specific failure cause or artifact contents are claimed. The
+full local DOM suite remains open.

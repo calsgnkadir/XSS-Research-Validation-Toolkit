@@ -16,6 +16,14 @@ tamam; tag/PyPI yayını yapılmadı. Açık R6 satırı yalnızca açık releas
 gerektiren yayın adımıdır. Son wheel ve modül hashleri [R6/R9 audit kaydında]
 (audit/2026-10-16-r6-r9-final-source/README.md).
 
+R6/R9 güncel yerel teslim commit'i `f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a`
+origin/main ile birebir eşleşti. GitHub Actions run `38923418347`: opt-in
+Playwright harness **success**, fakat `dom-xss-analyzer tests` ve `Required
+local authenticated browser proof` job'ları **failure**; K01 Linux run
+`38923418259` **success**. Bu job sonuçları yerel testlerden ayrıdır; failed
+job log/artifact içeriği bağımsız doğrulanmadı. Tam DOM browser gate bu nedenle
+açık kalıyor.
+
 R9 açık ve kısmi teslim aşamasında. Callback boundary **82/82**, callback/journal
 birleşik paket **103/103**, CI/compose
 **133/133**, dynamic analyzer **182/182** (context matrisi dahil),

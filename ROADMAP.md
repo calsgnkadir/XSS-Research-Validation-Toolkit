@@ -652,13 +652,13 @@ teslimle kapanmaz; aşağıdaki birleşik kabul maddeleri açık kalır.
 - [x] Docker readiness daemon ve uygulama seviyesinde ayrılır; bootstrap/login/lesson ve own-hardened adapter'ı olmadan hedef hazır sayılmaz.
 - [x] Compose portları yerel arayüzle sınırlı, sürümler sabit; `down -v` veri etkisi açık ve kontrollüdür.
 - [x] Self-scan beklenen finding exit kodu ile crash'i ayırır; browser skip ve bench FP/error CI tarafından denetlenir.
-- [ ] Paket/runtime sürümü, komut, ortam ve kaynak provenance kayıtlıdır; commit/push iddiası yalnız gerçek Git kontrolüyle yapılır.
+- [x] Paket/runtime sürümü, komut, ortam ve kaynak provenance kayıtlıdır; commit/push iddiası yalnız gerçek Git kontrolüyle yapılır. Commit `f4d8bdf50dcdd8fc93814e9d10adcab650a30d5a` origin/main ile eşleşti; GitHub Actions sonuçları ayrı kaydedildi.
 
 16 Ekim R9 yerel devamı yukarıdaki kapalı dilimleri doğruladı: mutation ve
 stored-auto fixture'ları, callback'in loopback çalışma sınırı, loopback/redirect/
 WebSocket DOM sınırı, compose statik kapıları ve self-scan/CI oracle'ı.
-**R9 bütünü açık**: temiz tam DOM browser suite ve son Git provenance teslimi hâlâ
-kapanış incelemesi bekliyor. Tam suite'teki aralıklı hatalar ve yerel kanıt
+**R9 bütünü açık**: temiz tam DOM browser suite kabulü kapanış incelemesi
+bekliyor. Tam suite'teki aralıklı hatalar ve hosted CI sonuçlarıyla yerel kanıt
 sınırları [audit kaydında](audit/2026-10-16-r6-r9-final-source/README.md).
 
 ## Rapor düzeltmeleri — C01–C13
