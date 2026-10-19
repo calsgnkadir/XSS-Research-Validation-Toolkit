@@ -1,14 +1,20 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-17 Ekim güncel durum: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
+**19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
+kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla
+tekrarlandı; bu geçmiş writeup olaylarının doğrulanması veya K04 remediation
+retesti değildir. Kanıt ve sınırlar
+[K03 audit'inde](audit/2026-10-19-k03-loopback-reproduction/README.md).
+
+17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
 Bu turdaki yeniden kontroller de R4 için 57/57, R5 fixture/gate için 22/22
 geçti. İnsan triage'ı, ikinci insan tekrarı ve scanner üstünlük sıralaması
 kullanıcı kapsam kararıyla zorunlu kapanış ölçütü değildir. Sonuçlar genel ürün
 doğruluğu veya vulnerability iddiası oluşturmaz. Bot işlerinde R7/A01–A05 için
-yetkili araştırma kapsamı seçimi açık. 17 Ekim'de C01–C13, K01–K05, P01–P04,
-S01 ve S03 kabulü tamamlandı; S02 beceri/kanıt matrisi sırada.
+yetkili araştırma kapsamı seçimi açık. 17 Ekim'de C/K/P, S01 ve S03 kabulü
+kaydedildi; C10/C13 editoryal takipleri ve S02 matrisi 19 Ekim'de ayrıca kabul edildi.
 
 14–15 Ekim devam teslimi aşağıdaki tarihli kayıtlarda korunur; o tarihteki
 “genel R4/R6 ve R5 ikinci insan kabulü açık” durumu 16 Ekim kapanışından önceki
@@ -129,9 +135,9 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
 | 1 | Bot R0–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
-| 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 17 Ekim kanıt-sınırlı editoryal/indeks kabulü tamam; tarihsel SQLi/JWT/BOLA ve eski saha iddiaları doğrulanmadı | İddia sınırları, yayın kopyaları, K01 ve arşiv rapor etiketleri kaydedildi; eksik tarihsel ham kanıt yeni bulgu sayılmaz |
+| 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
-| 4 | Staj S01–S03 | S01/S03 tamam; S02 açık | Oturum kaydı ve teknik devam özeti hazır; 11 yazının beceri/kanıt matrisi kaldı |
+| 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
 | 5 | Araştırma/CVE A01–A05 / R7 | Plan ve doğrulanmamış tarihsel beyanlar | Ürün/sürüm/rol/yenilik/kanal doğrulaması; kanıtlı sonuç durumu |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
@@ -164,7 +170,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | R3 | 2026-10-07, [yeniden doğrulama](audit/2026-10-07-r3-r4-revalidation/README.md) | Loopback kabulü PASS; eval/canary/evidence yeniden sınandı, cleanup/state restorasyonu düzeltildi |
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
-| C/K/P | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [P02/P03 ve son commit retesti](audit/2026-10-17-final-commit-retest/README.md) | C01–C13, K01–K05 ve P01–P04 tamam. P02/P03 README ve writeup indeksinde kapatıldı; yerel son kaynak matrisi ve hosted iş sonuçları ayrıca kaydedildi. | S02 beceri/kanıt matrisi; tarihsel ürün iddiaları doğrulanmış bulguya çevrilmedi |
+| C/K/P/S02 | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [19 Ekim K03 tekrarı](audit/2026-10-19-k03-loopback-reproduction/README.md); [S02 matrisi](staj/2026-10-17-s02-beceri-kanit-matrisi.md) | C10/C13 ve S02 tamam. K03 envanterine yeni sürümlü loopback tekrarları eklendi; historical writeup session'ları hâlâ author-reported. Diğer C/K/P kabulleri kendi sınırlarında korunuyor. |
 | A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
@@ -698,10 +704,10 @@ sonuçlar içerik ve iddia sınırı kabulüdür; eksik tarihsel kanıtlar yenid
 | C07 / writeup 07 | 0 HIGH≠güvenli; sanitizer adı≠fonksiyon analizi; Bludit aidiyetini düzelt | **Tamam:** heuristic HIGH and sanitizer limits stated; no CVE attribution or general safety claim |
 | C08 / writeup 08 | Ham JSON≠HTML injection/XSS; çok URL≠çok açık; target sonuçlarını daralt | **Tamam:** counts and JSON reflections are not findings; unavailable target artifacts and triage limits stated |
 | C09 / writeup 09 | 3→1 düşüşünü precision ölçümü sanma; sanitizer FN ve kalan HIGH yorumunu düzelt | **Tamam:** reduction not precision; R8 example and R4 candidate boundary linked |
-| C10 / writeup 10 | Marker/mutation/execution ayrımı; ineffective/legacy şekilleri etiketle | **Tamam:** variants/mutations are not parser, execution or WAF proof; current gate behavior described |
+| C10 / writeup 10 | Marker/mutation/execution ayrımı; ineffective/legacy şekilleri etiketle | **Tamam, 19 Ekim:** gövde ve `_WAF_MUTATIONS` kaynak yorumları parser/execution/bypass çıkarımlarını ham yansıma kanıtından ayırıyor; probe adları yürütme kanıtı değil. [Kabul](audit/2026-10-17-c10-c13/README.md) |
 | C11 / writeup 11 | 50 JSON-only; Bludit label≠proof; local patch and target settings | **Tamam:** 50 JSON rows + 2 Bludit labels qualified; D2 has no attached browser proof; K01/K05 linked |
 | C12 / methodology.md | Kaynak→sink→kanıt yöntemini gerçek uygulama sınırlarıyla düzelt | **Tamam:** HTTP/DOM overlap, reflection, sink, callback, execution and triage separated; negative/role limits stated |
-| C13 / README/index | Güncel status, sürüm/test sayısı, links and historical completion language | **Tamam:** root README and writeup index reflect current evidence and link selected P01 cases |
+| C13 / README/index | Güncel status, sürüm/test sayısı, links and historical completion language | **Tamam, 19 Ekim:** README `451361b` hosted CI, yerel test ve artifact incelemesi sınırlarını 17 Ekim kanıtına göre verir; sonraki belge değişikliklerine CI iddiası yok. [Kabul](audit/2026-10-17-c10-c13/README.md) |
 
 ## Kanıt ve savunma — K01–K05
 
@@ -714,7 +720,7 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 |---|---|---|
 | K01 / R5 — tamam | XSS vaka paketi; writeup 01/10/11, reports, araştırma labı | Temiz Windows venv 5/5 ve 5/5 port cleanup; proof/source/gate hashleri ve önceki Linux gate kaydı [R5 audit'inde](audit/r5-final-acceptance-2026-10-16/README.md) |
 | K02 — tamam | screenshots 01–08 + report-preview.png ve indeks | Kaynak/filtre/proof seviyesi ve eksik CSP/dialog kanıtı yazılı; sekiz maskeli PNG türevi, orijinaller korunmuş [K audit'i](audit/2026-10-17-k-evidence/README.md) |
-| K03 — tamam, kanıt envanteri | SQLi/JWT/BOLA vakalarının kanıt envanteri | Mevcut bağlantılar ve bulunmayan istek/yanıt/A-B proof açıkça listelendi; historical claims yazar beyanı olarak kaldı; yeniden üretim yapılmadı |
+| K03 — tamam, envanter + bounded local repeat | SQLi/JWT/BOLA vakalarının kanıt envanteri | Tarihsel ham paketlerin yokluğu açık; 19 Ekim yeni Juice Shop 20.2.0 loopback request/response kaydı, sürüm/image/source hashleri ve negatif kontroller var. Eski olaylar doğrulanmış sayılmaz. [Yeni audit](audit/2026-10-19-k03-loopback-reproduction/README.md) |
 | K04 — tamam, dokümantasyon | defense/README.md, methodology, writeup savunmaları | Bağlama uygun encoding, CSP ve HttpOnly sınırları; recursive filtre genellemesi kaldırıldı; tarihsel remediation retest iddiası yok |
 | K05 — tamam | reports/*.html, dinamik HTML/JSON üretici, preview'lar | 50 JSON-only + 2 Bludit + 78 statik satır ayrı etiketlendi; “no findings” güvenlik sayılmaz; raw eski raporlar değişmedi |
 
@@ -727,12 +733,12 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | P03 — tamam, 17 Ekim | CV/proje tanımını gerçek yetenekle sınırla | README araştırma prototipi ve rol/sınırları belirtiyor; 950 sayısı üretilen test girdisi olarak tanımlanıyor. Accuracy, exploit, üstünlük veya CVE iddiası yok. [Son retest kaydı](audit/2026-10-17-final-commit-retest/README.md) |
 | P04 — tamam, 17 Ekim | Paylaşılabilir demo ve ilk sürüm paketi | Temiz Python 3.10 venv kurulumu, installed `dxaprove --demo` ve K01 local profile 5/5 tekrarlandı; release note, limitations ve kanıt bağlantısı var. `0.1.0` yayınlanmadı. |
 
-## Stajın devamı — S01–S03 (S01/S03 tamam; S02 açık)
+## Stajın devamı — S01–S03 (tamam, 19 Ekim)
 
 | Kimlik | İş | Kabul ölçütü |
 |---|---|---|
 | S01 — tamam, 17 Ekim | Geliştirme oturumu öğrenme kayıtları | [S01/S03 kaydı](staj/2026-10-17-p02-p03-s01-s03.md) amaç, yapılan işlem, test kanıtı, hata, çözüm, öğrenilen ve kalan işi içeriyor; çalışma saati uydurulmuyor |
-| S02 | Mevcut 11 yazıyı beceri ve kanıt matrisiyle ilişkilendir | XSS/SQLi/JWT/BOLA, debugging, test, raporlama becerileri kanıtlı; teori/deney/araç geliştirme ayrı; C/K'ya bağlı |
+| S02 — tamam, 19 Ekim | Mevcut 11 yazıyı beceri ve kanıt matrisiyle ilişkilendir | 11/11 yazı için beceri, teori/tarihsel deney/araç geliştirme, mevcut/eksik kanıt ve C/K bağı. [Matris](staj/2026-10-17-s02-beceri-kanit-matrisi.md) |
 | S03 — tamam, 17 Ekim | Teknik devam özeti ve teslim kontrolü | [S01/S03 kaydı](staj/2026-10-17-p02-p03-s01-s03.md) önce/sonra, ölçülen test farkı, sınırlamalar ve sonraki adımı içeriyor; resmi okul formatı/onay şartı varsayılmıyor |
 
 ## Araştırma ve CVE — A01–A05 (açık / tarihsel kanıt bekliyor)

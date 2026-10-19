@@ -1,5 +1,47 @@
 # Doğrulama kaydı — 2026-10-17
 
+## K03 local reproduction, 2026-10-19
+
+Local-only lab: OWASP Juice Shop **20.2.0**, Docker image
+`sha256:0cec496d878c6855a1c81694c9f91564082f418b84aece87538adb8850d2437e`.
+The request run used a Docker `--internal` network, no mounted volumes and
+synthetic disposable users. Its raw request/response file contains their
+passwords and JWTs and stays under ignored `.dxa/`; SHA-256
+`f8858b7340f7bf4443ab94a2baa7494c43be9c241ab9aee3c0f7083c1e7d274f`. The
+shareable, secret-free summary and handler source hashes are in the
+[K03 audit](audit/2026-10-19-k03-loopback-reproduction/README.md).
+
+Observed: invalid login 401; the SQLi login shape 200 and current-user identity
+matched the local admin. `alg:none` also returned admin identity; a modified
+signature returned no identity. Two distinct accounts were independently
+identified; A read A's basket and B's seeded basket using the same A session,
+including the product B added. Anonymous access to B's basket returned 401.
+This is new behavior on the specified image, not reproduction of the old
+writeup session, CVE attribution, or a remediation retest. Analyzer tests and
+CI were not run for this lab/document pass.
+
+## Son teslimlerin bağımsız incelemesi — 2026-10-17
+
+Test edilen kaynak `451361b9f8faef3f328b13468d8d3f6a040c7d2c`, Windows /
+Python 3.10.11. Yeni analyzer koşusu **789 passed, 38 skipped, 0 failed**;
+38 skip'in tamamı otomatik Chromium keşfi olmayan DOM testleri. Açık Chrome
+155.0.8059.82 ve required-browser ayarıyla yeni birleşik koşu **298 passed,
+0 skipped, 0 failed**: tam DOM 80 ve gerekli R3/R4 seçimi 218. Bunlar aynı
+testleri kısmen yeniden içerir; sayıları toplanmaz. Komutlar, JUnit ve skip
+gerekçeleri [inceleme paketinde](audit/2026-10-17-delivery-review/README.md).
+Aynı kaynakta CI workflow'undaki 10 dosyalı benchmark/kabul matrisi yeniden
+**520 passed, 0 skipped, 0 failed** verdi (91.74 saniye); JUnit saklandı.
+Ortam ayrıca sorgulandı: Python 3.10.11, Playwright 1.63.0, pytest 9.1.1.
+
+Son HEAD'in genel CI `38984494777` üç job'ı ve K01 Linux `38984494765`
+doğrudan sorgulandı: success. Bu tur indirilen R3/R4 artifact'i mevcut
+checker'dan geçti: 218 sıfır-skip test, corpus 17/17, TP8/FP0/FN0 ve
+JSON/Markdown provenance eşleşmesi. İndirilen K01 paketinde 22 sıfır-skip
+JUnit testi, 12 proof hash'i, üç kaynak ve gate hash'i eşleşti; beş kontrol
+sonucu uyumlu. Uzak port cleanup yalnız CI'nin kaydettiği sonuçtur.
+Önceki bölümlerdeki 'artifact indirilmedi' ifadeleri o tarihli incelemenin
+sınırıdır; bu yeni inceleme yalnız son HEAD'in belirtilen iki paketini kapsar.
+
 ## Final source commit retest and P02/P03 — 2026-10-17
 
 The final code/evidence source commit `3ef8499bc56827614602540d962eb4ab0ea9bdca`

@@ -1,0 +1,154 @@
+﻿[
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_scope_blocks_cross_origin_http",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_scope_reports_and_closes_websocket_attempt",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_session_visits_a_page",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_session_captures_console_log",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_session_captures_page_error",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_session_records_unreachable_target",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_browser_session_reuses_browser_across_visits",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_innerHTML_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_outerHTML_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_document_write_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_document_writeln_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_eval_is_not_wrapped",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_function_constructor_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_ccf_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_page_with_no_sinks_returns_empty_sinks_list",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_hits_for_correlates_canary_across_many_sinks",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_record_carries_stack_and_timestamp",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_sink_arg_is_truncated_beyond_4k",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_alert_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_confirm_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_prompt_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_multiple_dialogs_all_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_page_with_no_dialogs_returns_empty_list",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_from_onerror_handler_captured",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_hits_for_correlates_canary_across_many_dialogs",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_record_carries_timestamp",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_dialog_capture_does_not_hang_on_unhandled_prompt",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_route_capture_pushstate",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_route_capture_replacestate",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_route_capture_hashchange",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_static_route_extraction_end_to_end",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_no_routes_returns_empty_lists",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_mixed_page_captures_both_runtime_and_static",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_route_record_carries_timestamp",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_xhr_headers_captured_and_auth_extracted",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_requests_list_captures_xhr_only_not_document",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_page_with_no_xhr_yields_empty_auth_headers",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    },
+    {
+        "test":  "tools.dom-xss-analyzer.test_dxadom.test_xhr_with_only_unknown_headers_yields_empty_auth",
+        "reason":  "chromium binary not found in any known location - run `playwright install chromium`"
+    }
+]

@@ -1,5 +1,13 @@
 > **Historical lab account — evidence limit.** This writeup mixes SQLi concepts, illustrative queries, and a historical author-reported Juice Shop challenge. The retained repository does not contain the matching masked request/response, database/version, or reproducible challenge record needed to independently verify the claimed login bypass. The `UNION` and blind sections are theory/examples, not results. See [C03 in the roadmap](../ROADMAP.md), the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), and [status](../STATUS.md).
 
+> **New local repetition — 19 October 2026.** On an isolated OWASP Juice Shop
+> 20.2.0 image, the same login shape returned 200 and a separate identity check
+> matched the local admin account; a normal invalid login returned 401. The
+> versioned request/response record and source hash are in the
+> [K03 audit](../audit/2026-10-19-k03-loopback-reproduction/README.md). This is
+> a new controlled reproduction; it does not identify the older session's
+> version or recover its original HTTP exchange.
+
 # SQL Injection: when your input becomes part of the query
 
 > **TL;DR** — A SQL query is usually built by *gluing your input into a string*.

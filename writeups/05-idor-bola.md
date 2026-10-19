@@ -1,5 +1,14 @@
 > **Historical lab account — proof limit.** The text reports changing basket IDs while authenticated and receiving different `UserId` values, but the retained evidence does not include a masked A/B account-control pair or request/response set proving which object belonged to which user. The historical BOLA claim is therefore not independently verified here. Vertical privilege escalation was not demonstrated. See [C05](../ROADMAP.md) and the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md).
 
+> **New local repetition — 19 October 2026.** On an isolated OWASP Juice Shop
+> 20.2.0 image, two newly registered local accounts were identified separately.
+> Account A read its own basket and account B's basket with the same A session;
+> the latter response matched B's owner ID and included a product B had added.
+> The same request without a session returned 401. The versioned request/
+> response record and source hash are in the
+> [K03 audit](../audit/2026-10-19-k03-loopback-reproduction/README.md). This
+> is a new controlled repeat, not proof of the older basket IDs or session.
+
 # IDOR / BOLA: the server checks *who you are*, not *what's yours*
 
 > **TL;DR** — Most injection bugs are about a value being *parsed* in the wrong

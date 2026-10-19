@@ -27,13 +27,21 @@ R7 product research has not started because no authorized product scope was
 selected. See [STATUS](STATUS.md), the [roadmap](ROADMAP.md), and the
 [validation log](VALIDATION.md) for current limits and evidence.
 
-The latest local Windows/Python 3.10.11 analyzer suite passed **789 tests**,
-with **38 skipped and no failures**. The 11-file required Chrome selection
-passed **218/218**; the full Chrome DOM suite passed **80/80**. General hosted
-CI passed all three jobs and K01 Linux CI succeeded for the preceding R9
-delivery. This current documentation/report-renderer change has local test
-results only. These are bounded regression and workflow results, not broad detection-accuracy
-or vulnerability-discovery measurements.
+The 17 October review retested source commit `451361b` locally on
+Windows/Python 3.10.11: the analyzer suite passed **789 tests**, with **38
+skipped and no failures**. The required Chrome selection passed **218/218**;
+the full Chrome DOM suite passed **80/80**. For that same commit,
+[general hosted CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38984494777)
+passed all three jobs and
+[K01 Linux CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38984494765)
+succeeded. The downloaded R3/R4 artifact passed its acceptance checker;
+the K01 artifact's hashes, JUnit and five control outcomes were inspected.
+The full K01 validation function was not rerun during that artifact review.
+See the [review evidence](audit/2026-10-17-delivery-review/README.md) for
+provenance and limits. These results belong to `451361b`; subsequent
+documentation and comment-only source edits do not have a new CI result yet. These are bounded
+regression and workflow results, not broad detection-accuracy or
+vulnerability-discovery measurements.
 
 ## Selected evidence-backed cases
 

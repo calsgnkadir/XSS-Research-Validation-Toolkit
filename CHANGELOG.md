@@ -1,5 +1,20 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-19 C10/C13, S02 and K03 continuation
+
+- C10 body wording and dynamic probe source comments, plus C13 README
+  provenance, now match the reviewed `451361b` evidence; no new CI run is
+  claimed. S02 maps all 11 writeups to
+  skills, evidence limits, work type, and C/K items.
+- K03 has a new isolated OWASP Juice Shop 20.2.0 loopback reproduction for
+  SQLi, unsigned JWT acceptance and two-account basket access, with negative
+  controls, image/source hashes and a masked summary. Historical writeup
+  sessions remain distinct. Raw request/response data with synthetic local
+  credentials and tokens stays under ignored `.dxa/`.
+- No analyzer regression suite or hosted CI ran for these document, source
+  comment and lab updates. The exact scope and evidence are in
+  `audit/2026-10-19-k03-loopback-reproduction/README.md`.
+
 ## Unreleased — 2026-10-17 portfolio and evidence review
 
 - P02/P03 closeout: README now describes the bounded experimental Python CLI,

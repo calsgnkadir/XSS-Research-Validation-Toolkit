@@ -1,5 +1,14 @@
 > **Historical lab account — evidence limit.** The `alg:none` challenge success and the unsuccessful key-confusion attempt are author-reported historical results. Retained evidence does not include the exact masked token exchange, target build, or verifier configuration needed to independently reproduce either outcome. The HS256 failure's cause is unknown; newline/key encoding below is a hypothesis, not an observed diagnosis. See the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md) and [roadmap](../ROADMAP.md).
 
+> **New local repetition — 19 October 2026.** On an isolated OWASP Juice Shop
+> 20.2.0 image, an unsigned `alg:none` token identifying the local admin was
+> accepted by the current-user endpoint. A token with a modified signed-token
+> signature returned no identity. The versioned request/response record and
+> source hashes are in the
+> [K03 audit](../audit/2026-10-19-k03-loopback-reproduction/README.md). This
+> repeat does not recover the earlier challenge exchange and says nothing
+> about why the historical HS256 attempt failed.
+
 # Forging JWTs: when the token decides how it's checked
 
 > **TL;DR** — A JSON Web Token carries its own claims (*who you are*) **and a

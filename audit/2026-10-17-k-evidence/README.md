@@ -32,6 +32,13 @@ not product evidence or a new scan.
 
 ## K03 — SQLi, JWT, and BOLA evidence inventory
 
+This section records the 17 October inventory snapshot. A separately scoped
+19 October local repetition now supplies versioned request/response evidence
+for SQLi, unsigned JWT acceptance, and two-account basket access on OWASP Juice
+Shop 20.2.0. See the [K03 loopback audit](../2026-10-19-k03-loopback-reproduction/README.md).
+That new evidence does not identify or recreate the historical writeup sessions;
+the historical claims remain author-reported.
+
 The historical writeups are author records, not raw reproduction packages.
 The [report publication preview](../../reports/publication-preview.html) is
 limited to archived XSS reports and does not add evidence for these three cases.

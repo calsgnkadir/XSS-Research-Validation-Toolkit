@@ -13,11 +13,9 @@ No stored report here demonstrates that a WAF was bypassed or that the marker
 executed in a browser.
 
 > **TL;DR** — Up through v3.9 the bot sent exactly one canary shape:
-> `cid"<dXsS>`. It's fine for body-context reflections, but a value that
-> lands inside `<title>` / `<script>` / an HTML attribute only scores
-> `breakout-req` with that shape — the marker survives raw but the
-> browser doesn't execute the class without a follow-on breakout payload
-> that must be separately checked. The historical v3.10 notes proposed
+> `cid"<dXsS>`. A value inside `<title>` / `<script>` / an HTML attribute
+> could receive the legacy `breakout-req` label. That marker and label
+> provide no browser execution evidence. The historical v3.10 notes proposed
 > variants and mutations; they do not establish parser escape or execution.
 > **Payload variants** send five context-tuned shapes (body, title-break,
 > attr-break, script-break, url-scheme) — each with its own cid so
@@ -27,19 +25,18 @@ executed in a browser.
 > proof. **Payload mutations** add alternate strings; their presence does not
 > demonstrate bypass of any WAF. Same
 > flags work in reflected + stored + header-probe modes; total shapes
-> per round is `variants × (1 + 4 if waf-bypass else 1)`.
+> per round in that snapshot was `variants × (1 + 4 if waf-bypass else 1)`.
 
-This is the pass that turns the bot from a *"one payload, hope it fires"*
-tool into a *"try what the target actually accepts"* tool. Same source→sink
-discipline, more of the surface actually reached.
+The historical design expanded the strings submitted to a target. Its
+retained reports measure reflections and scanner classifications; they do
+not establish additional executable contexts or successful WAF bypasses.
 
 ## What one shape couldn't tell you
 
-Writeup 09 walked one target's HIGH count from 3 → 1 by making the bot
-quieter. Payload variants are the mirror: making the bot **more specific**
-so real HIGHs surface where they belong. The Bludit tag-XSS from
-[writeup 06](06-building-an-xss-bot.md) is the clearest example. Bludit
-stores the tag value verbatim and renders it on `/tag/<slug>`:
+Writeup 09 reported a historical scanner HIGH count changing from 3 → 1;
+that is a classification change, not a confirmed-vulnerability measurement.
+The title-context scenario from [writeup 06](06-building-an-xss-bot.md)
+motivated the variant proposal. Its reported response shape was:
 
 ```html
 <title>tag: <STORED_VALUE> | Site</title>
@@ -53,9 +50,8 @@ Send the historical body-shape canary `cid"<dXsS>`, and the response has:
 
 `<dXsS>` survives raw. `verdict()` says **unencoded**. `find_context()`
 says **title**. The v3.5 severity ladder says **breakout-req** — the
-marker is real but the *browser* won't run `<img onerror>` there without
-a `</title>` first. That's an accurate statement but a frustrating one:
-the exploit is one payload change away.
+marker is present in title text. That legacy label does not establish how
+the complete document parses or whether any event handler can execute.
 
 If you send `cid</title><dXsS>` instead, the response becomes:
 
@@ -63,32 +59,41 @@ If you send `cid</title><dXsS>` instead, the response becomes:
 <title>tag: dxaXX</title><dXsS> | Site</title>
 ```
 
-Now the browser closes the title at the injected `</title>`, and
-`<dXsS>` renders in body context. If the marker were `<img onerror=...>`
-it *would* execute — the class is now **executable**. Same target, same
-sink, different payload shape, different verdict.
-
-v3.10 stops making the operator do that payload change by hand.
+In this isolated HTML example, `</title>` can end the title element.
+`<dXsS>` itself contains no JavaScript or event handler. Its raw presence
+does not prove execution, and substituting a different payload would require
+a separate browser observation under the actual document and policy.
+The historical `executable` classification based on the variant name was
+an unsupported upgrade; it has been withdrawn.
 
 ## The five payload variants
 
-`PAYLOAD_VARIANTS` is a small dict at the top of `dxadyn.py`. Each entry
-is `(suffix_appended_to_cid, marker_that_must_survive_raw)`:
+The historical five-entry `PAYLOAD_VARIANTS` dictionary used
+`(suffix_appended_to_cid, marker_that_must_survive_raw)`. The following
+strings describe marker probes, not five working execution payloads:
 
 ```
 body            cid"<dXsS>               (default; body/free context)
-title-breakout  cid</title><dXsS>        (closes <title> then marker)
-attr-breakout   cid"><dXsS>              (closes attr quote + attr tag)
-script-breakout cid';<dXsS>//            (closes JS string, // eats tail)
-url-scheme      cidjavascript:/*<dXsS>*/ (href/src -> javascript: URL)
+title-breakout  cid</title><dXsS>        (title-closing probe)
+attr-breakout   cid"><dXsS>              (quote/markup probe)
+script-breakout cid';<dXsS>//            (legacy string probe; not valid JS proof)
+url-scheme      cidjavascript:/*<dXsS>*/ (legacy ineffective URL-execution probe)
 ```
 
-The **cid** is a random 8-hex-char prefix; the **suffix** is what actually
-does the context work; the **marker** is what `verdict()` looks for
-immediately after the cid in the response body. Because each variant
-carries its own cid *and* its own marker, they never confuse each other's
-verdicts — a single stored round can run all five in parallel and grade
-them independently.
+**Legacy/ineffective shapes:** `script-breakout` does not close an HTML
+script element, and the literal `<dXsS>` is not executable JavaScript.
+For `url-scheme`, the CID precedes `javascript:`, so the URL does not begin
+with the `javascript:` scheme. The suffix also contains only a comment,
+with no executable canary. Neither shape proves script or URL execution.
+The current separate [R3 browser proof](../tools/dom-xss-analyzer/BROWSER-PROOF.md)
+uses an executable CID-matched canary; its `href` option performs a real
+click and uses `void(...)`. That is not the marker probe shown here.
+
+The CID is `dxa` plus eight random hex characters. The suffix is appended
+to it; `verdict()` looks for the marker immediately after a returned CID.
+Separate CIDs distinguish attempts, not independent vulnerabilities, and
+do not establish parallel HTTP execution. Context parsing and executable
+behavior cannot be inferred from the suffix name.
 
 CLI:
 
@@ -103,16 +108,12 @@ one after the other. Every probe path — stored, stored-auto, reflected
 crawl, header probe — iterates the yield, so *anywhere* a canary was
 being made, N canaries are made now.
 
-## Variant-aware severity: the upgrade rule
+## Historical variant-aware severity: withdrawn upgrade rule
 
-The old severity ladder classified by *where the cid landed*
-(`find_context`). That's still what happens: cid position drives context.
-But for a `-breakout` variant whose marker survived raw, the marker has
-*already escaped* that surrounding context — the whole point of the
-breakout was to move the marker into body. So the severity should reflect
-executability of the *marker*, not of the cid.
-
-The v3.7 CT gate grew a fourth argument:
+**Obsolete implementation excerpt — do not copy as a current contract.**
+The old rule inferred parser escape and execution from the variant name
+and raw marker. Neither input establishes those facts. The current
+`_apply_ct_gate()` does not perform this upgrade:
 
 ```python
 def _apply_ct_gate(reflection, context, content_type, variant="body"):
@@ -123,17 +124,14 @@ def _apply_ct_gate(reflection, context, content_type, variant="body"):
     ...
 ```
 
-Concretely:
+The `executable` return above is a legacy false inference. Current HTTP
+classification reports `html-reflection` for an unencoded HTML marker,
+including a `title-breakout` marker. A JSON response is `json-only` and
+remains a reflection observation; later DOM consumption would need separate
+analysis. See the [HTTP evidence contract](../tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
 
-- `body` variant + `title` context on HTML → `breakout-req` (no
-  breakout was attempted; marker is stuck).
-- `title-breakout` variant + `title` context on HTML → **`executable`**
-  (the marker cleared `</title>`; the class runs).
-- Any variant + `json-body` (Content-Type: application/json) → stays
-  `json-only` — the browser doesn't parse JSON as HTML no matter what
-  the variant did.
-
-Locked in tests:
+**Historical test excerpt — the first expectation is obsolete and must
+not be restored.** These snippets are not newly run test evidence:
 
 ```python
 def test_ct_gate_breakout_variant_upgrades_to_executable():
@@ -147,34 +145,43 @@ def test_ct_gate_breakout_variant_does_not_bypass_json_downgrade():
     assert sev == "json-only"
 ```
 
-## WAF-bypass mutations
+## Historical WAF-bypass mutation hypotheses
 
 Some targets sit behind a regex WAF that anchors on the literal marker
 (`<dXsS>` or common event handlers). If the base variant is blocked, no
-variant reaches the sink and the tool goes silent — an ambiguous result.
-`--waf-bypass` fans each variant into four alternate shapes that keep
-the same `cid` prefix but obfuscate the marker so different WAF rules
-apply:
+variant may reach the observed response and the tool can go silent — an
+ambiguous result. The historical `--waf-bypass` option added four string
+transforms; their names do not establish WAF bypass or equivalent parsing:
 
 ```
 case        <dXsS> -> <DxSs>          (case-swap)
-split-cmt   <dXsS> -> <d<!---->XsS>   (HTML comment splits the tag;
-                                      the parser re-forms it downstream)
+split-cmt   <dXsS> -> <d<!---->XsS>   (legacy ineffective tag-reconstruction claim)
 whitespace  <dXsS> -> <dXsS  >        (extra trailing space in tag)
 url-encode  <dXsS> -> %3CdXsS%3E      (URL-encoded angle brackets)
 ```
+
+**`split-cmt` correction:** inserting a comment-like string inside a tag
+name does not make the HTML parser reassemble the original `<dXsS>` tag.
+Raw survival of `<d<!---->XsS>` proves only that those bytes returned.
+URL-encoded brackets likewise require an observed decoding step before any
+HTML interpretation can be inferred. No retained WAF/browser comparison
+demonstrates bypass for these transforms.
 
 Each mutation gets its own fresh cid (re-embedded via a single
 `.replace(cid, mut_cid, 1)`), so the four mutations of a single variant
 have four independent verdicts. Output tags the mutation on the variant
 name: `body/case`, `title-breakout/split-cmt`, etc.
 
-Fan-out math: `len(variants) × (1 + 4 if waf-bypass else 1)`. So
+Historical fan-out math: `len(variants) × (1 + 4 if waf-bypass else 1)`. So
 `--variants all --waf-bypass` = 5 × 5 = 25 submits per stored round.
-Not a default; use it when you actually suspect a WAF, not on every
-target.
+This is the five-variant/four-mutation snapshot only. The current registry
+has expanded; 25 is not its present attempt count or a bypass count.
+Transforms can be no-ops or duplicates for particular variants; current
+`_mutation_outcomes()` records that distinction. Fresh CIDs alone do not
+make wire shapes meaningfully different.
 
-Two representative tests:
+Two historical test excerpts (the four-name/five-output expectations are
+snapshot-specific, not current registry assertions or new test results):
 
 ```python
 def test_make_canaries_for_waf_bypass_multiplies_by_five():
@@ -192,8 +199,8 @@ def test_waf_mutations_return_named_triples():
 
 ## Everywhere, not somewhere
 
-The same two flags — `--variants` and `--waf-bypass` — work in every
-probe path:
+The historical design threaded `--variants` and `--waf-bypass` through
+these probe paths:
 
 - **Stored mode** (`--stored --check` or `--stored --auto-check`):
   each variant × mutation is a separate submit, own cid, own verdict.
@@ -204,60 +211,58 @@ probe path:
   `probe_form` and `probe_link` iterate variants × field / variants ×
   param. The `crawl()` dedup key now includes the variant name, so a
   body + attr-breakout reflection on the same param stays as two rows
-  (correctly — they're different exploits).
+  (different attempts; neither row establishes an exploit).
 - **Header probe** (`--probe-headers` + `--variants`): each header × each
   variant × each mutation is a separate probe. Bludit-shape stored
   header XSS (`True-Client-IP` → Last Login IP) can now be tried with
-  attr-breakout automatically if the base doesn't fire.
+  a different marker shape. This is a historical scenario proposal, not a
+  retained browser execution result.
 
-## Honest boundaries this pass doesn't cross
+## Scope boundaries of the historical pass
+
+The following boundaries describe the old proposal. Current DOM inspection,
+callback journaling and browser proof are documented separately in
+[STATUS](../STATUS.md); they do not retroactively validate old observations.
 
 - **`--waf-bypass` is opt-in.** The four mutations are not defaults
   because a 5× cost multiplier on every stored round is aggressive
   bandwidth on friendly targets. It exists for the case where the base
   clearly isn't reaching (all reflections silent, but you know user
   data lands somewhere).
-- **DOM XSS is still out of scope.** All variants inspect the server
-  response body — a `location.hash` → `innerHTML` sink executes only in
-  the browser's DOM and this bot doesn't drive a browser. Playwright is
-  the honest fix; not shipped.
-- **Blind XSS is still out of scope.** No callback server, no out-of-band
-  channel — the variant that fires on an admin panel viewed by another
-  user hours later stays invisible.
-- **Variant coverage is HTML-only for now.** JSON API responses always
-  stay `json-only` regardless of variant (correctly — no HTML parsing).
+- **DOM observations were outside this snapshot.** The historical probes
+  inspected server response bodies and did not drive a browser. A
+  `location.hash` → `innerHTML` path requires separate browser analysis;
+  a sink name alone does not establish execution. The current observer and
+  CID-matched proof command are separate implementations.
+- **Blind observations were outside this snapshot.** It had no callback
+  server or out-of-band channel. A delayed read by another user could go
+  unobserved; the current callback journal does not retroactively prove it.
+- **The historical variant gate covered HTML responses.** JSON reflections
+  stayed `json-only` regardless of variant; this classified the HTTP response.
   A future round could add JSON-specific *client-side* variants (a value
   that a React frontend hands to `dangerouslySetInnerHTML`), but that
   needs browser rendering to verify — same Playwright thread.
 
-Total pytest cases after this pass: **101**, all green, CI-gated,
-still zero third-party dependencies.
+The original note reported **101 pytest cases**, ten added tests and zero
+third-party dependencies for that snapshot. A matching run/commit package
+is not attached here; these are historical author-reported counts, not a
+new test run or the current dependency/test inventory. The generated
+950-shape total mentioned in the series is also a registry/attempt count,
+not 950 distinct working exploits, verified parser behaviors or WAF bypasses.
 
 ## Takeaway
 
-A single payload was never going to be enough. The historical `body`
-canary was a strong signal *when it fired*, but silence didn't distinguish
-"no reflection" from "reflection I chose the wrong shape for" from
-"reflection blocked by a filter I didn't try to defeat." v3.10 answers
-all three:
+Alternate marker shapes can reveal different reflection observations.
+Silence remains inconclusive: it does not identify the filtering stage or
+prove safety. A returned marker also does not prove parser escape or
+execution. The historical change from `breakout-req` to `executable` was a
+scanner label change whose execution implication has been withdrawn.
 
-- If the base shape didn't fire, one of five variants might.
-- If a variant fires and the marker escaped the surrounding context,
-  the class is executable — no operator payload composition step
-  between the tool and a real exploit.
-- If everything is silent and the target has a WAF, the four mutations
-  per variant probe the shape the filter didn't anchor on.
-
-The bot's HIGH-count on Bludit-shape title reflections goes from
-`breakout-req` (which most operators would triage as "worth eyes-on
-but maybe not exploit") to `executable` (which most operators would
-triage as "confirm this in the browser now"). Same reach, cleaner
-verdict — and 10 new tests locking the behaviour so tomorrow's change
-doesn't undo it.
-
-Same source→sink methodology as the rest of the repo — with the honest
-edges of what a regex-plus-canary approach can and cannot see drawn
-in ink.
+Current execution evidence needs an actual executable canary and a matching
+browser observation. Vulnerability impact still requires separate triage.
+The [K01 local fixture](../cases/k01-stored-comment/README.md) demonstrates
+that evidence chain and fix/retest for its own controlled case; it does
+not validate the historical Bludit or WAF claims in this note.
 
 ---
 
@@ -267,8 +272,9 @@ title-context scenario this variant addresses; [writeup 09 (hotel-platform
 3 → 1)](09-three-high-to-one-a-precision-journey.md) for the precision
 work that preceded this shape-diversity pass; and
 [writeup 08 (what doesn't shout matters)](08-what-does-not-shout-matters.md)
-for the CT gate the v3.10 upgrade rides on. Tool sources:
+for the historical Content-Type gate discussion. Current tool sources:
 [`tools/dom-xss-analyzer/dxa.py`](../tools/dom-xss-analyzer/dxa.py) +
 [`dxadyn.py`](../tools/dom-xss-analyzer/dxadyn.py) +
-[`dxa2dyn.py`](../tools/dom-xss-analyzer/dxa2dyn.py) — 101 pytest cases,
-CI-gated, zero third-party dependencies.*
+[`dxa2dyn.py`](../tools/dom-xss-analyzer/dxa2dyn.py). Current test provenance
+and dependency scope: [VALIDATION](../VALIDATION.md) and
+[installation guide](../docs/PORTFOLIO-DEMO.md).*
