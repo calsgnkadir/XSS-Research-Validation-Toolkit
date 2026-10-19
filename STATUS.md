@@ -22,9 +22,12 @@ istek deneyleri egress olmayan `internal=true` Docker ağında yürütüldü.
 Test konteyneri veri korunarak durduruldu.
 
 Kod/analyzer testi veya CI koşusu yok; belge ve loopback laboratuvarı kanıtı
-ayrıdır. Uzak main `451361b9f8faef3f328b13468d8d3f6a040c7d2c` olarak
-salt-okunur sorguyla doğrulandı; yerel commit/push yapılmadı. Bu oturumda
-başlangıç çalışma ağacı C10/C13, S02 ve önceki review değişikliklerini içerdi.
+ayrıdır. Commit `c58c74bdadd6d14f14e0da0f7af017b97096799a` origin/main'e
+push edildi ve uzak hash eşleşti. Push sonrası hosted CI `39322029249` içinde
+`dxadom browser harness` ve K01 Linux `39322029200` success; tam analyzer ve
+required authenticated browser proof son kontrol anında in progress idi.
+Bunlar yerel test sonucu değildir. Bu oturumda başlangıç çalışma ağacı
+C10/C13, S02 ve önceki review değişikliklerini içerdi.
 
 ## Önceki devam noktası — 17 Ekim (aşağıdaki kayıt tarihsel)
 

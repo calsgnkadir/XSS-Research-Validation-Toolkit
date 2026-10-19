@@ -17,8 +17,11 @@ signature returned no identity. Two distinct accounts were independently
 identified; A read A's basket and B's seeded basket using the same A session,
 including the product B added. Anonymous access to B's basket returned 401.
 This is new behavior on the specified image, not reproduction of the old
-writeup session, CVE attribution, or a remediation retest. Analyzer tests and
-CI were not run for this lab/document pass.
+writeup session, CVE attribution, or a remediation retest. No local analyzer
+suite ran for this lab/document pass. Push commit `c58c74b` triggered hosted
+workflows: K01 Linux and the opt-in browser harness succeeded; the full
+analyzer and required authenticated browser proof were in progress at the last
+check. Job state and remote commit verification are in [STATUS](STATUS.md).
 
 ## Son teslimlerin bağımsız incelemesi — 2026-10-17
 

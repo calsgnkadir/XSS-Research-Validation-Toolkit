@@ -11,8 +11,10 @@
   controls, image/source hashes and a masked summary. Historical writeup
   sessions remain distinct. Raw request/response data with synthetic local
   credentials and tokens stays under ignored `.dxa/`.
-- No analyzer regression suite or hosted CI ran for these document, source
-  comment and lab updates. The exact scope and evidence are in
+- No analyzer regression suite ran locally for these document, source comment
+  and lab updates. Commit `c58c74b` was pushed; hosted jobs were in progress
+  except K01 Linux and the opt-in browser harness, which succeeded. The exact
+  scope and evidence are in
   `audit/2026-10-19-k03-loopback-reproduction/README.md`.
 
 ## Unreleased — 2026-10-17 portfolio and evidence review
