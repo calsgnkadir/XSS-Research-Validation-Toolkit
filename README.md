@@ -39,9 +39,9 @@ the K01 artifact's hashes, JUnit and five control outcomes were inspected.
 The full K01 validation function was not rerun during that artifact review.
 See the [review evidence](audit/2026-10-17-delivery-review/README.md) for
 provenance and limits. These results belong to `451361b`. Commit `c58c74b`
-later pushed the C10/C13, S02 and K03 follow-up; its hosted CI was still in
-progress at the last check. See [STATUS](STATUS.md) for remote hashes and job
-state. These are bounded
+later pushed the C10/C13, S02 and K03 follow-up; commit `2650ede` records its
+remote delivery status. Hosted CI completed successfully for both commits.
+See [STATUS](STATUS.md) for remote hashes, run IDs and scope. These are bounded
 regression and workflow results, not broad detection-accuracy or
 vulnerability-discovery measurements.
 

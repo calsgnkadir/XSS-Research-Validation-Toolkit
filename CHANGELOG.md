@@ -12,9 +12,8 @@
   sessions remain distinct. Raw request/response data with synthetic local
   credentials and tokens stays under ignored `.dxa/`.
 - No analyzer regression suite ran locally for these document, source comment
-  and lab updates. Commit `c58c74b` was pushed; hosted jobs were in progress
-  except K01 Linux and the opt-in browser harness, which succeeded. The exact
-  scope and evidence are in
+  and lab updates. Commits `c58c74b` and `2650ede` were pushed; all four hosted
+  jobs passed on both. The exact scope and evidence are in
   `audit/2026-10-19-k03-loopback-reproduction/README.md`.
 
 ## Unreleased — 2026-10-17 portfolio and evidence review

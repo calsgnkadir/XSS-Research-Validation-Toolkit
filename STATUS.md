@@ -21,11 +21,13 @@ retesti değildir. İlk image başlangıç health-check'i dış alan adı denedi
 istek deneyleri egress olmayan `internal=true` Docker ağında yürütüldü.
 Test konteyneri veri korunarak durduruldu.
 
-Kod/analyzer testi veya CI koşusu yok; belge ve loopback laboratuvarı kanıtı
-ayrıdır. Commit `c58c74bdadd6d14f14e0da0f7af017b97096799a` origin/main'e
-push edildi ve uzak hash eşleşti. Push sonrası hosted CI `39322029249` içinde
-`dxadom browser harness` ve K01 Linux `39322029200` success; tam analyzer ve
-required authenticated browser proof son kontrol anında in progress idi.
+Yerel analyzer test paketi bu oturumda çalıştırılmadı; belge ve loopback
+laboratuvarı kanıtı ayrıdır. Commit `c58c74bdadd6d14f14e0da0f7af017b97096799a`
+ve takip belgesi commit'i `2650ede8343f2e00af80e61b33181d7282932c74`
+origin/main'e push edildi; uzak HEAD ikinci hash ile eşleşti. Her iki commit
+için GitHub hosted CI 4/4 job success verdi: analyzer, authenticated browser,
+K01 Linux ve opt-in browser harness. Workflow run'ları c58 için
+`39322029249` / `39322029200`, 2650 için `39322424482` / `39322424890`.
 Bunlar yerel test sonucu değildir. Bu oturumda başlangıç çalışma ağacı
 C10/C13, S02 ve önceki review değişikliklerini içerdi.
 
