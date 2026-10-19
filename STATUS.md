@@ -13,8 +13,9 @@ K03 QA uzmanı salt-okunur capture kontrolünde 17 istek/yanıt kaydı ve audit
 hashlerini eşleştirdi; tarihsel oturum/CVE/remediation sınırları değişmedi.
 K04 uzmanı writeup 01'de kalan recursive sanitizer ve `textContent` escaping
 ifadelerini buldu; koordinatör belgeyi düzeltti. K04 dokümantasyon kabulü
-kanıtla tutarlı, tarihsel remediation retesti yapılmadı. Bu teslim için runtime
-test/CI çalıştırılmadı.
+kanıtla tutarlı, tarihsel remediation retesti yapılmadı. Yerel runtime test
+paketi çalıştırılmadı; `366b01c` için hosted genel CI 3/3 ve ayrı K01 Linux işi
+başarılı oldu.
 
 ## 19 Ekim kabulü ve K03 yerel tekrar
 

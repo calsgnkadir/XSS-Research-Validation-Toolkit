@@ -57,8 +57,10 @@ and regression tests. No historical target fix was applied or retested.
 
 ## Validation and limits
 
-Documentation review only. `git diff --check` passed; no runtime or security
-tests are applicable to these prose edits. K03 capture hashes were checked by
-the QA specialist. These results do not establish general
-Juice Shop behavior, CVE attribution, external program eligibility, or a new
-vulnerability.
+Documentation review only. `git diff --check` passed; no separate local runtime
+or security test suite was run. After delivery, hosted CI for commit `366b01c`
+passed its three jobs ([general CI run 39332180912](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39332180912));
+the separate K01 Linux run also passed ([39332180858](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39332180858)).
+K03 capture hashes were checked by the QA specialist. These results do not
+establish general Juice Shop behavior, CVE attribution, external program
+eligibility, or a new vulnerability.

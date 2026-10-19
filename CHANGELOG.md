@@ -12,8 +12,9 @@
   no lab rerun was performed.
 - K04 review found and corrected the remaining recursive-sanitizer recommendation
   and inaccurate `textContent` escaping statement in writeup 01. Historical
-  remediation was not retested. This was documentation/evidence work only; no
-  analyzer or browser test suite was run.
+  remediation was not retested. No local analyzer/browser suite was run; hosted
+  general CI passed 3/3 jobs and the separate K01 Linux workflow passed for
+  commit `366b01c`.
 
 ## Unreleased — 2026-10-19 C10/C13, S02 and K03 continuation
 
