@@ -1,4 +1,20 @@
-# Güncel devam noktası — 19 Ekim 2026
+# Güncel devam noktası — 20 Ekim 2026
+
+## 20 Ekim R7 hazırlığı ve K03/K04 takibi
+
+R7/A01–A03 belge hazırlığında tarihsel Patchstack duplicate ve SQLi/CVE
+iddiaları `research/README.md` içinde author-reported olarak sınırlandı; sprint
+planındaki eski genel disclosure/90 gün ifadeleri güncellendi. Resmî
+CVE-2026-4420 kaydı 3.17.2 ve 3.18.0 sürümlerini doğruluyor; yerel Bludit
+3.16.2 gözlemiyle CVE eşlemesi kurulmadı. R7 gerçek ürün araştırması, güncel ve
+açıkça yetkili ürün/program kapsamı seçilene kadar başlamaz. [R7/K03/K04 takibi](audit/2026-10-20-r7-k03-k04-followup/README.md).
+
+K03 QA uzmanı salt-okunur capture kontrolünde 17 istek/yanıt kaydı ve audit
+hashlerini eşleştirdi; tarihsel oturum/CVE/remediation sınırları değişmedi.
+K04 uzmanı writeup 01'de kalan recursive sanitizer ve `textContent` escaping
+ifadelerini buldu; koordinatör belgeyi düzeltti. K04 dokümantasyon kabulü
+kanıtla tutarlı, tarihsel remediation retesti yapılmadı. Bu teslim için runtime
+test/CI çalıştırılmadı.
 
 ## 19 Ekim kabulü ve K03 yerel tekrar
 

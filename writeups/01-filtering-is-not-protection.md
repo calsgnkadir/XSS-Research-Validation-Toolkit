@@ -89,15 +89,16 @@ Every one of these is the same failure: **one pass, no re-check, input ≠ outpu
 Stop trying to enumerate "bad." Two controls do the real work:
 
 1. **Context-aware output encoding — the default.** If the value only needs to be
-   *text*, render it as text (`textContent`, template auto-escaping). The browser
-   escapes `< > & "` and nothing can parse into a tag. Most "sanitisation" is
+   *text*, render it as text (`textContent`, template auto-escaping). `textContent`
+   places the value in a text node instead of parsing it as markup. Most "sanitisation" is
    solving a problem you created by choosing an HTML sink for text.
 
 2. **Allowlist parsing for genuine rich HTML.** If users truly need some HTML,
    parse it into a DOM, keep only a known-safe set of tags/attributes, drop the
-   rest, and **apply it until the output is stable** (idempotent / recursive) so a
-   single pass can't leave a re-formed tag. Use a maintained library —
-   **DOMPurify**, `sanitize-html` — never a hand-rolled regex.
+   rest, using the correct output context and a maintained parser-based allowlist
+   library — **DOMPurify**, `sanitize-html` — never a hand-rolled regex. Add
+   regression tests for supported markup and avoid transforming sanitized output
+   afterward.
 
 Then layer defense in depth; neither control replaces correct output handling:
 

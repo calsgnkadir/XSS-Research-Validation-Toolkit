@@ -1,5 +1,20 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-20 R7 prep, K03 evidence review and K04 correction
+
+- R7/A01 historical Patchstack duplicate and SQLi/CVE outcomes are labeled as
+  author-reported where their supporting packages are absent. The historical
+  sprint plan no longer implies current disclosure-program eligibility or a
+  universal 90-day deadline. Official CVE-2026-4420 provenance is linked; the
+  local Bludit 3.16.2 result is not attributed to that CVE.
+- QA reviewed the private K03 capture locally and matched its recorded hashes
+  and masked SQLi/JWT/BOLA observations. Raw credentials/tokens remain private;
+  no lab rerun was performed.
+- K04 review found and corrected the remaining recursive-sanitizer recommendation
+  and inaccurate `textContent` escaping statement in writeup 01. Historical
+  remediation was not retested. This was documentation/evidence work only; no
+  analyzer or browser test suite was run.
+
 ## Unreleased — 2026-10-19 C10/C13, S02 and K03 continuation
 
 - C10 body wording and dynamic probe source comments, plus C13 README

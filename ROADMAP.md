@@ -6,6 +6,12 @@ tekrarlandı; bu geçmiş writeup olaylarının doğrulanması veya K04 remediat
 retesti değildir. Kanıt ve sınırlar
 [K03 audit'inde](audit/2026-10-19-k03-loopback-reproduction/README.md).
 
+**20 Ekim takip:** K03 capture QA tarafından salt-okunur hash/claim kontrolünden
+geçti; K04 writeup 01'de kalan recursive sanitizer ve `textContent` açıklama
+çelişkisi düzeltildi. R7/A01–A03 tarihsel iddia ve CVE sınırları güncellendi;
+R7 ürün araştırması için seçilmiş, açıkça yetkili kapsam hâlâ gerekli. Ayrıntı:
+[takip kaydı](audit/2026-10-20-r7-k03-k04-followup/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -138,7 +144,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
-| 5 | Araştırma/CVE A01–A05 / R7 | Plan ve doğrulanmamış tarihsel beyanlar | Ürün/sürüm/rol/yenilik/kanal doğrulaması; kanıtlı sonuç durumu |
+| 5 | Araştırma/CVE A01–A05 / R7 | 20 Ekim'de tarihsel iddialar ve CVE eşlemesi belgelere göre sınırlandı; R7 ürün kapsamı seçilmedi | Ürün/sürüm/rol/yenilik/kanal doğrulaması; yetkili kapsamda kanıtlı sonuç durumu |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
 **kanıt bekliyor** tarihsel iddia bağımsız doğrulanamıyor; **ertelendi** kapsamdan silinmedi.
@@ -171,7 +177,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
 | C/K/P/S02 | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [19 Ekim K03 tekrarı](audit/2026-10-19-k03-loopback-reproduction/README.md); [S02 matrisi](staj/2026-10-17-s02-beceri-kanit-matrisi.md) | C10/C13 ve S02 tamam. K03 envanterine yeni sürümlü loopback tekrarları eklendi; historical writeup session'ları hâlâ author-reported. Diğer C/K/P kabulleri kendi sınırlarında korunuyor. |
-| A01–A05 | Yeni dış triage/CVE kanıtı yok | Kanıt bekliyor / plan; scope ve kaynak doğrulaması gerekli |
+| A01–A05 | 20 Ekim doküman güncellemesi; yeni dış triage/CVE kanıtı yok. [Takip kaydı](audit/2026-10-20-r7-k03-k04-followup/README.md) | A01–A03 tarihsel claim/scope etiketleri güncellendi; eski olaylar kanıt bekliyor. A04/R7 seçilmiş yetkili ürün/program scope'u bekliyor. A05'e sonuç kaydı için yeni araştırma gerekir. |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
 yalnız düzenleme yapıldığı için güncellenmiş sayılmaz. Her teslimde bu tabloya

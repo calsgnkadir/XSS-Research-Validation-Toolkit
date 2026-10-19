@@ -1,4 +1,4 @@
-> **Historical / experimental reference — 2026-09-28 audit.** Capability and completion claims below are not a current guarantee. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
+> **Historical / experimental reference — evidence review updated 2026-10-20.** Outcomes below are author-reported unless their supporting artifacts are present. They do not establish current program scope, CVE credit, or general scanner capability. See [verified status](../STATUS.md) and [current acceptance criteria](../ROADMAP.md). A raw marker, scanner severity, callback or zero findings alone does not establish execution, a vulnerability or safety.
 
 # Beyond the Lab — Independent Vulnerability Research
 
@@ -6,10 +6,11 @@ After building the foundation in this repository (OWASP Juice Shop, PortSwigger 
 the same **source → sink** discipline to *real, third-party open-source software*: plugins published
 in the WordPress.org directory.
 
-> ⚠️ **Scope & ethics.** Only **publicly distributed open-source code** was analysed. Every candidate
-> was reproduced **only** in a private, local, Dockerized WordPress instance I control — never against
-> any live or third-party site. Findings were handled through **coordinated disclosure** (Patchstack,
-> a CVE Numbering Authority). No details of any unpatched issue are published here.
+> ⚠️ **Historical scope statement.** This describes the author's account of earlier work. The
+> repository does not contain complete target/version, reproduction, submission, and triage packages
+> needed to independently verify each outcome. It does not establish current permission, program
+> scope, disclosure-channel eligibility, or a universal disclosure deadline. No new product research
+> or external submission is recorded here.
 
 ---
 
@@ -53,19 +54,28 @@ Confirmed issues are reported through Patchstack; unpatched details are never di
 
 ---
 
-## Results
+## Historical author-reported outcomes (not independently verified)
 
-- **Independently discovered** a Broken-Access-Control vulnerability in a WordPress plugin, built a
-  working local proof-of-concept, and reported it through **Patchstack**, which **validated it as a
-  genuine issue** (resolved as a concurrent duplicate — i.e. a second, independent report of a real,
-  accepted vulnerability).
-- **Independently re-derived, via patch-diffing,** a SQL-injection variant that was subsequently
-  **published as a CVE** — confirming the method surfaces real, CVE-class bugs, not false positives.
-- Produced reusable, iteratively-hardened **auditing tooling** and a repeatable workflow.
+The outcomes below reflect the author's account. The retained repository does not include the
+matching product/version, source diff, independent reproduction, submission receipt, triage decision,
+or CVE attribution needed to verify them.
 
-The honest takeaway: the methodology **works** — it produced real, externally-validated findings. The
-remaining gap between "valid finding" and "first-to-report CVE" is timing and target selection, not
-detection capability.
+- The author reports a WordPress-plugin access-control finding and says Patchstack marked the
+  submission as a concurrent duplicate. The local PoC, submission receipt, and triage record are not
+  present in this repository, so the outcome is not independently verified here.
+- The author reports re-deriving a SQL-injection variant by patch-diffing and later associating it
+  with a published CVE. The product/version, patch lineage, and CVE attribution are not present here;
+  no CVE credit is claimed.
+- The repository contains reusable **auditing tooling** and a documented workflow.
+
+These accounts do not independently establish that the methodology produced externally validated
+findings or establish general product-level detection capability.
+
+For the Bludit comparison in this repository, CERT Polska's [CVE-2026-4420 advisory](https://cert.pl/en/posts/2026/04/CVE-2026-4420/)
+credits Yassin Abdelrazek and confirms versions 3.17.2 and 3.18.0 as tested and vulnerable. The local
+Bludit 3.16.2 behavior recorded elsewhere here is a separate observation; it does not establish that
+the local path, root cause, or report matches CVE-2026-4420. The advisory says other versions were not
+tested, so this distinction does not establish that 3.16.2 is safe.
 
 ---
 
