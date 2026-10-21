@@ -1,13 +1,6 @@
 # Değişiklik kaydı
 
-## Unreleased — 2026-10-21 R6 source gate and R7 advisory lookup
-
-- Rebuilt and installed the current-source `0.1.0` wheel. The installed-wheel
-  gate passed 7/7, the focused `dxadyn` suite passed 271/271, and all nine
-  packaged module hashes matched source, wheel, and installed environment.
-  Current-commit hosted general CI and K01 Linux jobs succeeded. The user has
-  authorized the `v0.1.0` tag and GitHub Release; PyPI publication is excluded.
-  See the [R6 revalidation](audit/2026-10-21-r6-current-source/README.md).
+## Unreleased — 2026-10-21 R7 advisory lookup
 - Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive
   results could not be verified because official search/API pages were
   inaccessible. R7 remains inconclusive; this is not a “no advisory” finding.
@@ -131,6 +124,10 @@
   GitHub Release varlığı olarak dağıtılır; PyPI'ye yüklenmez. Tag, Release URL'si
   ve final artifact hash'i STATUS/VALIDATION kayıtlarında tutulur. Final wheel
   SHA-256: `111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`.
+- 21 Ekim'de `v0.1.0` tag'i commit `d7d1bd6`'ya işaret edecek şekilde push edildi
+  ve [GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0)
+  yayımlandı. Hosted genel CI ve K01 Linux işleri başarılıydı; PyPI'ye yükleme
+  yapılmadı. Ayrıntı: [R6 release audit](audit/2026-10-21-r6-release/README.md).
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 

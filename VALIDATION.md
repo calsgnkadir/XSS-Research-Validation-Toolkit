@@ -31,6 +31,21 @@ geçti; final artifact JSON'u ve wheel rebuild ayrıntısı aynı R6 audit'inded
 Bu paket yeniden üretiminde uygulama modülleri değişmedi; 271 odaklı testin
 kaydı yukarıdaki aynı kaynak kodu içindir.
 
+## R6 GitHub Release — 2026-10-21
+
+Annotated tag `v0.1.0` targets commit
+`d7d1bd666ae4fe5643bf0574658d8d8a0f4411a0`. The [GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0)
+was published with one wheel asset. The public release API reported 104,949
+bytes and SHA-256
+`111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`, matching
+the locally gated artifact. Hosted general CI
+[39650964831](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39650964831)
+and K01 Linux
+[39650964757](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39650964757)
+completed successfully for the tagged source commit. PyPI publication was
+explicitly excluded. Full publication details are in the
+[R6 release audit](audit/2026-10-21-r6-release/README.md).
+
 ## K03 local reproduction, 2026-10-19
 
 Local-only lab: OWASP Juice Shop **20.2.0**, Docker image

@@ -13,16 +13,17 @@ bounded HTTP/browser behavior, preserve evidence boundaries, and test fixes in
 local fixtures. The retained acceptance includes controlled corpus and
 loopback-fixture checks; it does not establish broad real-world detection
 accuracy, independent product findings, competitor superiority, or newly
-discovered CVEs. The accepted `0.1.0` wheel is prepared for distribution through
-GitHub Releases; PyPI publication is excluded. Current tag and artifact status
-is recorded in [STATUS](STATUS.md). Use the tools only on systems you own or
-are explicitly authorized to test.
+discovered CVEs. The accepted `0.1.0` wheel is available through the
+[GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0);
+PyPI publication is excluded. Current tag and artifact status is recorded in
+[STATUS](STATUS.md). Use the tools only on systems you own or are explicitly
+authorized to test.
 
 ## Current status
 
 This is an experimental research toolkit, not a general-purpose vulnerability
-scanner. Technical acceptance for R0–R6 is complete. The selected distribution
-channel for `0.1.0` is GitHub Releases; PyPI publication is excluded. The
+scanner. Technical acceptance for R0–R6 is complete. The `0.1.0` GitHub Release
+is available; PyPI publication is excluded. The
 bounded Python AST pilot (R8) and declared operational/reproducibility scope
 (R9) are complete. R7 research uses the authorized local Kadrom scope: the
 tested two-role list routes had no observed candidate, and the advisory lookup
