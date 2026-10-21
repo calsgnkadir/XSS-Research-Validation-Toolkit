@@ -53,6 +53,26 @@ Changed module SHA-256, current source = wheel = installed venv:
 `6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e`.
 The gate JSON records hashes for all nine packaged modules and the wheel.
 
+## GitHub Release artifact rebuild
+
+After the release channel was selected, the README and release changelog were
+updated to describe GitHub Releases and exclude PyPI. The wheel was rebuilt
+from the release-preparation working tree based on commit `632a756`; its
+embedded project README reflects the selected channel. Artifact:
+`dxa_research_toolkit-0.1.0-py3-none-any.whl`,
+104,949 bytes, SHA-256
+`111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`.
+Temporary path was `%TEMP%\r6-github-release-0.1.0-632a\wheelhouse\`.
+
+It was installed offline into a fresh Python 3.10 venv. The repeat installed-
+wheel gate returned `status=passed`, **7/7**, exit code 0. All nine module
+hashes still match source, wheel, and installed copy. The gate output for this
+exact release artifact is retained as
+[`release-installed-wheel-gate.json`](release-installed-wheel-gate.json).
+No application module changed after the focused 271-test run above; this
+rebuild only changed packaged README metadata. The final package wheel is the
+artifact selected for the GitHub Release.
+
 ## Focused changed-module tests
 
 Command:
@@ -77,7 +97,7 @@ both completed successfully. These hosted results are separate from the local
 wheel gate and pytest run; this specialist did not query or download the CI
 artifacts.
 
-R6's current-source technical wheel and focused changed-module acceptance now
-pass. This does not authorize or perform release tagging or package
-publication; no tag or publication was made. The gate's loopback fixture is
+At the time of the local test run, no tag or publication had been made. The
+user subsequently authorized the `v0.1.0` GitHub Release with PyPI excluded;
+the final artifact and gate are recorded above. The gate's loopback fixture is
 not a vulnerability result or general scanner accuracy claim.

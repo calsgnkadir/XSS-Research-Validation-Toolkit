@@ -23,6 +23,14 @@ Bu commit'in hosted genel CI [39615470595](https://github.com/calsgnkadir/XSS-Re
 ve K01 Linux [39615470859](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39615470859)
 işleri başarılı; bunlar yerel testlerden ayrı workflow sonuçlarıdır.
 
+GitHub Release'e eklenecek son wheel, README'nin dağıtım kanalını açıklaması
+sonrasında yeniden üretildi: SHA-256
+`111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`, 104,949
+byte. Yeni çevrimdışı venv kurulumunda installed-wheel gate tekrar **7/7**
+geçti; final artifact JSON'u ve wheel rebuild ayrıntısı aynı R6 audit'indedir.
+Bu paket yeniden üretiminde uygulama modülleri değişmedi; 271 odaklı testin
+kaydı yukarıdaki aynı kaynak kodu içindir.
+
 ## K03 local reproduction, 2026-10-19
 
 Local-only lab: OWASP Juice Shop **20.2.0**, Docker image

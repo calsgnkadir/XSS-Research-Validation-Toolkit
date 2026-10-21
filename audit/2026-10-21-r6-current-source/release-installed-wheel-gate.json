@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "python": "3.10.11",
+  "platform": "Windows",
+  "results": {
+    "dxa_help": {
+      "exit_code": 0
+    },
+    "dxadyn_help": {
+      "exit_code": 0
+    },
+    "dxaprove_help": {
+      "exit_code": 0
+    },
+    "static_config": {
+      "configured_findings": 1,
+      "override_findings": 2
+    },
+    "config": {
+      "exit_code": 0,
+      "depth": 1,
+      "observed_routes": [
+        "/",
+        "/child",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "cli_override": {
+      "exit_code": 0,
+      "depth": 0,
+      "observed_routes": [
+        "/",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "invalid_config": {
+      "exit_code": 2,
+      "secret_not_echoed": true
+    }
+  },
+  "installed_module": {
+    "sha256": "6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e",
+    "under_venv": true,
+    "python": "3.10.11",
+    "platform": "Windows"
+  },
+  "distribution": {
+    "name": "dxa-research-toolkit",
+    "version": "0.1.0",
+    "installed_version": "0.1.0"
+  },
+  "packaged_module_sha256": {
+    "dxa": "36bfc0f768edea63e0d167d3bf2b56df6da493b558229ccfa4a75fead27aca7a",
+    "dxadyn": "6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e",
+    "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "dxadom": "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+    "dxa_evidence": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "dxa_callback": "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+    "dxa_attempts": "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+    "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+    "dxa2dyn": "d7083188cde6e2672d4696b3ed2a97a17e5c2d01598943427b879b0270ac898f"
+  },
+  "wheel_sha256": "111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxadyn.py": "6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e"
+  },
+  "limits": [
+    "No browser execution claimed",
+    "No release tag created",
+    "Loopback fixture only; not a vulnerability result"
+  ]
+}

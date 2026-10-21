@@ -5,9 +5,9 @@
 - Rebuilt and installed the current-source `0.1.0` wheel. The installed-wheel
   gate passed 7/7, the focused `dxadyn` suite passed 271/271, and all nine
   packaged module hashes matched source, wheel, and installed environment.
-  Current-commit hosted general CI and K01 Linux jobs succeeded. No tag or
-  package publication was made; explicit release authorization remains
-  required. See the [R6 revalidation](audit/2026-10-21-r6-current-source/README.md).
+  Current-commit hosted general CI and K01 Linux jobs succeeded. The user has
+  authorized the `v0.1.0` tag and GitHub Release; PyPI publication is excluded.
+  See the [R6 revalidation](audit/2026-10-21-r6-current-source/README.md).
 - Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive
   results could not be verified because official search/API pages were
   inaccessible. R7 remains inconclusive; this is not a “no advisory” finding.
@@ -109,7 +109,7 @@
   38 skipped, zero failures (Windows/Python 3.10.11). Hosted CI for this source
   commit passed; artifact contents were not independently inspected.
 
-## 0.1.0 — 2026-10-16 (release adayı; yayımlanmadı)
+## 0.1.0 — 2026-10-21 (GitHub Release; PyPI yayını hariç)
 
 - İlk kurulabilir araştırma sürümü için paket sürümü `0.1.0` seçildi. Temel
   kurulum, üç CLI, config önceliği/validasyonu, JSON/HTML raporları ve isteğe
@@ -126,7 +126,11 @@
   tuple/list assignment flow. A tiny labeled positive/negative corpus catches
   one prior false negative and one false positive; this is not an accuracy
   benchmark or a sound-analysis claim.
-- Bu kayıt release hazırlığıdır; tag veya paket yayını yapılmadı.
+- Güncel kaynakta wheel/gate kabulü 7/7, değişen `dxadyn` odaklı regresyonlar
+  271/271 geçti; dokuz modül kaynak/wheel/kurulum hashleri eşleşti. Wheel
+  GitHub Release varlığı olarak dağıtılır; PyPI'ye yüklenmez. Tag, Release URL'si
+  ve final artifact hash'i STATUS/VALIDATION kayıtlarında tutulur. Final wheel
+  SHA-256: `111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`.
 
 ## Unreleased — 2026-10-16 local R4/R5 follow-up
 

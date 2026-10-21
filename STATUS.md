@@ -4,15 +4,17 @@
 
 QA + Security Lab uzmanı R6 `dxa-research-toolkit 0.1.0` wheel'ini güncel
 `6928fd6ffd8557a311b06b2b22f33fd6a2ac0b71` kaynağından yeniden üretti. Wheel
-SHA-256 `ffab49944876bca0b5362dd22c5a220aec62a09fbe962a390fcb16064c80ad91`;
+final GitHub Release wheel SHA-256
+`111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`;
 çevrimdışı yeni venv kurulumu ve installed-wheel gate 7/7 geçti. Dokuz modül
 source/wheel/install arasında eşleşti; `dxadyn.py` hash'i
 `6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e`. Üç
 odaklı `dxadyn` paketi 271/271 geçti (Windows, Python 3.10.11). Aynı commit'in
 GitHub genel CI işi [39615470595](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39615470595)
 ve K01 Linux işi [39615470859](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39615470859)
-başarılı. R6'nın güncel kaynak teknik wheel kabulü yenilendi; tag/yayın hâlâ
-ayrı açık kullanıcı yetkisi bekliyor. [Yerel gate/test kanıtı](audit/2026-10-21-r6-current-source/README.md).
+başarılı. R6'nın güncel kaynak teknik wheel kabulü yenilendi. Kullanıcı
+`v0.1.0` tag'i ve GitHub Release'i açıkça yetkilendirdi; PyPI yayını kapsam
+dışı. Release hazırlığı sürüyor. [Yerel gate/test kanıtı](audit/2026-10-21-r6-current-source/README.md).
 
 R7 uzmanı aynı gün 14:28 UTC'de GitHub Advisory/NVD için dört exact-name araması
 yaptı; eşleşme görünmedi, fakat arama toplamı doğrulanamadı ve resmi query/API
