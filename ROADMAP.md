@@ -55,6 +55,14 @@ bilinen kayıt durumu inconclusive. R7 açık; test adayı veya advisory yokluğ
 iddia edilmiyor. [A04 aynı-rol takip](audit/2026-10-21-a04-same-role-followup/README.md) ·
 [A05 kayıt takibi](audit/2026-10-21-a05-known-records-followup/README.md).
 
+**21 Ekim A04/A05 devamı:** İkinci Docker read-only inspect denemesi de permission
+denied ile engine durumunu alamadı; servis ve HTTP isteği çalıştırılmadı. GitHub
+public REST üzerinden issues/releases/tags boş, dört exact Maven GHSA filtresi
+boş döndü; repo-özel advisory 404. NVD 406 challenge verdi, CVE.org query
+render etmedi. A05 kısmi/inconclusive, A04 runtime testi bekliyor; R7 açık.
+[A04 runtime](audit/2026-10-21-a04-runtime-followup/README.md) ·
+[A05 resmi API takibi](audit/2026-10-21-a05-public-records-followup/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -797,8 +805,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 | Kadrom local demo list/role testine ek olarak ID tabanlı work-session GET yolları kaynakta incelendi; [aynı-rol takip](audit/2026-10-21-a04-same-role-followup/README.md) | Önceki no-candidate sonucu yalnız denenmiş liste/rol uçları için. Docker API erişim engeli nedeniyle aynı-rol runtime kontrolü yapılmadı; A04 açık |
-| A05 | Sınırlı resmi GitHub/NVD ve indeksli kayıt araması; [takip](audit/2026-10-21-a05-known-records-followup/README.md) | API uçları erişilemedi, indeks sonuç kümesi doğrulanamadı; bilinen kayıt durumu inconclusive. Önceki no-candidate sonucu yalnız denenmiş yerel uçlarla sınırlı; A05 açık |
+| A04 | Kadrom local demo list/role testine ek olarak ID tabanlı work-session GET yolları kaynakta incelendi; iki Docker inspect denemesi permission denied; [runtime takip](audit/2026-10-21-a04-runtime-followup/README.md) | Güvenli ağ/port/volume durumu doğrulanamadığından aynı-rol GET testi yapılmadı. Önceki no-candidate sonucu yalnız denenmiş liste/rol uçları için; A04 açık |
+| A05 | Public GitHub REST: issue/release/tag koleksiyonları ve dört Maven GHSA filtresi; [resmi API takibi](audit/2026-10-21-a05-public-records-followup/README.md) | Bu filtrelerde kayıt dönmedi; repo advisory 404, NVD 406 ve CVE.org query render edilmedi. Kayıt durumu partial/inconclusive; “yok” sonucu değil; A05 açık |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 

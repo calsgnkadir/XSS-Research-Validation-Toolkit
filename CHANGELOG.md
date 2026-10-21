@@ -11,12 +11,13 @@
 ## Unreleased — 2026-10-21 A04/A05 follow-up
 
 - Source review found candidate work-session GET routes for a bounded same-role
-  ownership check, but Docker API permission denial prevented safe runtime
+  ownership check, but Docker API permission denial again prevented safe runtime
   verification; no service was started and no request was sent.
-- Official GitHub/NVD API URLs were inaccessible and indexed results were not
-  exhaustive. Known-record status remains inconclusive; R7 stays open. See the
-  [A04 follow-up](audit/2026-10-21-a04-same-role-followup/README.md) and
-  [A05 follow-up](audit/2026-10-21-a05-known-records-followup/README.md).
+- Public GitHub REST returned empty issue/release/tag collections and zero exact
+  Maven-filtered GHSA results. The repository advisory endpoint returned 404;
+  NVD returned a 406 challenge. A05 remains partial/inconclusive and R7 stays
+  open. See the [A04 runtime follow-up](audit/2026-10-21-a04-runtime-followup/README.md)
+  and [A05 API follow-up](audit/2026-10-21-a05-public-records-followup/README.md).
 
 ## Unreleased — 2026-10-21 R7 advisory lookup
 - Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive

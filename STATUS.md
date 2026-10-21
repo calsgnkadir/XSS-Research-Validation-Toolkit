@@ -8,19 +8,24 @@ wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
 `76aff5a8d725dc0547b4887c30547ab064fd6945` commit'inde origin/main ile
 eşleşmişti. Ayrıntı ve digest [R6 release kaydında](audit/2026-10-21-r6-release/README.md).
 
-A04 aynı-rol takibi Kadrom kaynağındaki ID tabanlı work-session GET yollarını
-ve servis sahiplik filtresini buldu; bu yalnız kaynak incelemesidir. Docker API
-`permission denied` verdiği için mevcut ağ/port/volume güvenliği doğrulanamadı;
-servis başlatılmadı ve HTTP/test çalıştırılmadı. A04 runtime takip kapısı açık.
-[A04 takip kaydı](audit/2026-10-21-a04-same-role-followup/README.md).
+A04 aynı-rol runtime takibi yine Docker `npipe` permission denied nedeniyle
+durdu. `ps`, network ve volume inspect verisi alınamadığı için override'ın etkin
+olduğu ve volume'un korunduğu doğrulanamadı; servis başlatılmadı ve HTTP/test
+çalıştırılmadı. Kaynakta aynı-rol GET yolları ve aday-ID filtresi mevcut; bu
+runtime kanıtı değildir. [A04 takip](audit/2026-10-21-a04-runtime-followup/README.md).
 
-A05 resmi GitHub/NVD API uçları okunamadığı ve indeksli aramalar tam sonuç
-vermediği için **inconclusive** kaldı; advisory/CVE/issue yokluğu çıkarılamaz.
+A05 public GitHub REST'te repo metadata 200, all-issues `[]`, releases `[]`, tags
+`[]`; Maven artifact adına göre dört global GHSA filtresi 200 ve sıfır sonuç
+döndürdü. Repo-özel advisories 404; NVD 406 challenge, CVE.org ise yalnız SPA
+iskeleti döndürdü. Bu, bazı public GitHub kayıtlarının kontrol edildiğini
+destekler; NVD ve repo-özel kayıtlar için tamlık sağlamaz. **Known-record status
+partial / inconclusive; R7 açık.** [A05 takip](audit/2026-10-21-a05-public-records-followup/README.md).
+
 Önceki `no-candidate-observed` sonucu yalnız denenmiş liste/rol uçlarıyla
-sınırlı. [A05 takip kaydı](audit/2026-10-21-a05-known-records-followup/README.md).
-R7 açık; sıradaki dar adım, Docker güvenlik sınırlarını okuyabilen bir ortamda
-aynı-rol GET karşılaştırmasını doğrulamak ve resmi kayıt API'lerine erişilebilir
-bir yöntemle bakmak. Dış disclosure veya yayın yapılmadı.
+sınırlı. Sıradaki adım: Docker engine'i okuyabilen ortamda mevcut volume'u ve
+internal/loopback ağ sınırlarını doğrulayıp aynı-rol GET karşılaştırmasını
+yapmak; NVD'nin JSON sonuçlarını 406 vermeyen bir istemci/ağdan almak. Dış
+disclosure veya yayın yapılmadı.
 
 ## 21 Ekim R6 v0.1.0 release ve R7 kayıt araması
 
