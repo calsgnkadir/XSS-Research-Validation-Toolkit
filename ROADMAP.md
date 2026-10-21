@@ -47,6 +47,14 @@ sonuçlar erişilemedi ve arama toplamı doğrulanamadı; advisory yokluğu
 GitHub API digest'i yerel SHA-256 ile eşleşti. PyPI'ye yükleme yapılmadı.
 [R6 release kaydı](audit/2026-10-21-r6-release/README.md).
 
+**21 Ekim A04/A05 takip:** Aynı-rol ID tabanlı work-session GET uçları ve
+aday-ID sahiplik filtresi kaynakta bulundu; Docker API izin hatası nedeniyle
+lab güvenlik durumu doğrulanamadı ve runtime isteği gönderilmedi. A05 resmi
+GitHub/NVD API kontrolü erişilemez kaldı; indeksli sonuçlar kapsamlı olmadığından
+bilinen kayıt durumu inconclusive. R7 açık; test adayı veya advisory yokluğu
+iddia edilmiyor. [A04 aynı-rol takip](audit/2026-10-21-a04-same-role-followup/README.md) ·
+[A05 kayıt takibi](audit/2026-10-21-a05-known-records-followup/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -789,8 +797,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 | Kadrom local demo temiz kurulumunda iki rolün uygulama listesi sınırı denetlendi; 21 Ekim kaydı | Bu uçlarda aday gözlenmedi; aynı rol IDOR'u ve diğer rotalar kapsam dışı. Bilinen advisory sayfaları cache miss nedeniyle tamamlanmış değil; bu nedenle A04/R7 açık |
-| A05 | 21 Ekim bounded outcome kaydedildi | `no-candidate-observed` yalnız test edilen list/role uçları için; valid/invalid/duplicate/cannot-reproduce sonucu uydurulmadı. Bilinen kayıt kontrolü ve daha geniş kapsam için takip açık; dış gönderim/yayın ayrıca yetki ister |
+| A04 | Kadrom local demo list/role testine ek olarak ID tabanlı work-session GET yolları kaynakta incelendi; [aynı-rol takip](audit/2026-10-21-a04-same-role-followup/README.md) | Önceki no-candidate sonucu yalnız denenmiş liste/rol uçları için. Docker API erişim engeli nedeniyle aynı-rol runtime kontrolü yapılmadı; A04 açık |
+| A05 | Sınırlı resmi GitHub/NVD ve indeksli kayıt araması; [takip](audit/2026-10-21-a05-known-records-followup/README.md) | API uçları erişilemedi, indeks sonuç kümesi doğrulanamadı; bilinen kayıt durumu inconclusive. Önceki no-candidate sonucu yalnız denenmiş yerel uçlarla sınırlı; A05 açık |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 

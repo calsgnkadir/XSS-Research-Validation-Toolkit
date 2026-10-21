@@ -1,5 +1,23 @@
 # Değişiklik kaydı
 
+## 0.1.0 — 2026-10-21
+
+- Published the `v0.1.0` GitHub Release with the validated wheel asset. The
+  release tag points to `d7d1bd666ae4fe5643bf0574658d8d8a0f4411a0`; the wheel
+  SHA-256 is `111a0f6c43c3d6710c9c30434fb402604cec9fa5ee69845a44b6d14023195399`.
+  PyPI upload was explicitly excluded. See the
+  [release audit](audit/2026-10-21-r6-release/README.md).
+
+## Unreleased — 2026-10-21 A04/A05 follow-up
+
+- Source review found candidate work-session GET routes for a bounded same-role
+  ownership check, but Docker API permission denial prevented safe runtime
+  verification; no service was started and no request was sent.
+- Official GitHub/NVD API URLs were inaccessible and indexed results were not
+  exhaustive. Known-record status remains inconclusive; R7 stays open. See the
+  [A04 follow-up](audit/2026-10-21-a04-same-role-followup/README.md) and
+  [A05 follow-up](audit/2026-10-21-a05-known-records-followup/README.md).
+
 ## Unreleased — 2026-10-21 R7 advisory lookup
 - Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive
   results could not be verified because official search/API pages were

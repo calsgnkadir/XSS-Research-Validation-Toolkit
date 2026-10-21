@@ -1,5 +1,27 @@
 # Güncel devam noktası — 21 Ekim 2026
 
+## En son durum: R6 yayımlandı; R7/A04–A05 açık
+
+Kullanıcının açık yetkisiyle `v0.1.0` tag'i ve GitHub Release yayımlandı;
+wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
+`d7d1bd666ae4fe5643bf0574658d8d8a0f4411a0`; release sonrası belgeler
+`76aff5a8d725dc0547b4887c30547ab064fd6945` commit'inde origin/main ile
+eşleşmişti. Ayrıntı ve digest [R6 release kaydında](audit/2026-10-21-r6-release/README.md).
+
+A04 aynı-rol takibi Kadrom kaynağındaki ID tabanlı work-session GET yollarını
+ve servis sahiplik filtresini buldu; bu yalnız kaynak incelemesidir. Docker API
+`permission denied` verdiği için mevcut ağ/port/volume güvenliği doğrulanamadı;
+servis başlatılmadı ve HTTP/test çalıştırılmadı. A04 runtime takip kapısı açık.
+[A04 takip kaydı](audit/2026-10-21-a04-same-role-followup/README.md).
+
+A05 resmi GitHub/NVD API uçları okunamadığı ve indeksli aramalar tam sonuç
+vermediği için **inconclusive** kaldı; advisory/CVE/issue yokluğu çıkarılamaz.
+Önceki `no-candidate-observed` sonucu yalnız denenmiş liste/rol uçlarıyla
+sınırlı. [A05 takip kaydı](audit/2026-10-21-a05-known-records-followup/README.md).
+R7 açık; sıradaki dar adım, Docker güvenlik sınırlarını okuyabilen bir ortamda
+aynı-rol GET karşılaştırmasını doğrulamak ve resmi kayıt API'lerine erişilebilir
+bir yöntemle bakmak. Dış disclosure veya yayın yapılmadı.
+
 ## 21 Ekim R6 v0.1.0 release ve R7 kayıt araması
 
 `dxa-research-toolkit 0.1.0` final wheel'i release README güncellemesiyle
