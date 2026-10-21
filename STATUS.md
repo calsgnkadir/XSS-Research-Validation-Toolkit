@@ -1,6 +1,6 @@
 # Güncel devam noktası — 21 Ekim 2026
 
-## En son durum: R6 yayımlandı; R7/A04–A05 açık
+## En son durum: R6 yayımlandı; R7/A05 açık — 21 Ekim 2026
 
 Kullanıcının açık yetkisiyle `v0.1.0` tag'i ve GitHub Release yayımlandı;
 wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
@@ -39,11 +39,28 @@ erişilemedi ve hiçbir sorgu gönderilmedi. Bu, kayıt yokluğu sonucu değildi
 [OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md) ·
 [CVEProject alternatifi](audit/2026-10-21-a05-cveproject-alternate-followup/README.md).
 
-`no-candidate-observed` sonucu, önceki liste/rol uçları ve yeni aynı-rol
-work-session GET karşılaştırmasıyla sınırlı; güvenlik garantisi değildir.
-Sıradaki adım A05 için erişilebilir, yetkili bir known-record veri kaynağı
-bulunursa dar sorguyu tamamlamak; eski volume korunur. Dış disclosure veya
-yayın yapılmadı.
+Üç GET rotası için QA kaynak kodu sahiplik filtrelerini operatörün kaydettiği
+altı runtime sonucu ile tutarlı buldu; ancak maskeli istek/yanıt kaydı ve hash
+olmadığından runtime bağımsız doğrulanmadı. Sentetik work-session doğrudan yeni
+test veritabanına eklendi; normal clock-in akışı sınanmadı. Bu nedenle A04'ün
+bounded sonucu koordinatörün run kaydı ve kaynak incelemesiyle destekleniyor,
+bağımsız tekrar kanıtı değil. [QA incelemesi](audit/2026-10-21-a04-runtime-qa/README.md).
+
+A05 için GitHub Advisory ve OSV resmi API girişimleri dokuz explicit-version
+doğrudan Maven bağımlılığını ve Log4j pozitif kontrolünü kapsadı; iki API yolu da
+değerlendirilebilir yanıt vermedi. Bu nedenle sonuçlar **inconclusive**, sıfır
+advisory sonucu değildir. Inherited/BOM ve transitif bağımlılıklar henüz
+çözülmedi. [GHSA denemesi](audit/2026-10-21-a05-ghsa-dependency-sweep/README.md) ·
+[OSV denemesi](audit/2026-10-21-a05-osv-dependency-sweep/README.md).
+
+`no-candidate-observed` sonucu yalnızca test edilen yerel uçlarla sınırlı;
+güvenlik garantisi değildir. **Sıradaki adım:** A05 envanterini effective Maven
+dependency tree'ye genişletmek ve erişilebilir, pozitif kontrolü geçen bir
+advisory kaynağıyla sürüm bazında tamamlamak; ardından R7 için tested source
+version, ürün kapsamı/izin ve araştırma sonucunu tek triage kaydında bağlamak.
+Kaynak/API erişimi doğrulanamazsa A05 açık ve inconclusive kalır. A01–A03'ün eski
+iddiaları için eksik özgün kanıt paketi bulunmadıkça doğrulama beklemede kalır.
+Dış disclosure veya yayın yapılmadı.
 
 ## 21 Ekim R6 v0.1.0 release ve R7 kayıt araması
 

@@ -212,11 +212,11 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R9 | R0–R6 teknik kapsam tamam (R6 adayı yayımlanmadı); R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R9 | R0–R6 tamam; `v0.1.0` GitHub Release yayımlandı (PyPI hariç). R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
-| 5 | Araştırma/CVE A01–A05 / R7 | 20 Ekim'de tarihsel iddialar ve CVE eşlemesi belgelere göre sınırlandı; R7 ürün kapsamı seçilmedi | Ürün/sürüm/rol/yenilik/kanal doğrulaması; yetkili kapsamda kanıtlı sonuç durumu |
+| 5 | Araştırma/CVE A01–A05 / R7 | A01–A03 tarihsel iddia sınırları yazıldı; A04 Kadrom local iki-hesap GET karşılaştırması tamamlandı; A05 bilinen-kayıt kontrolü kısmi/inconclusive; R7 açık | Ürün/sürüm/rol/yenilik/kanal doğrulaması; yetkili kapsamda kanıtlı sonuç durumu |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
 **kanıt bekliyor** tarihsel iddia bağımsız doğrulanamıyor; **ertelendi** kapsamdan silinmedi.
@@ -249,7 +249,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
 | C/K/P/S02 | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [19 Ekim K03 tekrarı](audit/2026-10-19-k03-loopback-reproduction/README.md); [S02 matrisi](staj/2026-10-17-s02-beceri-kanit-matrisi.md) | C10/C13 ve S02 tamam. K03 envanterine yeni sürümlü loopback tekrarları eklendi; historical writeup session'ları hâlâ author-reported. Diğer C/K/P kabulleri kendi sınırlarında korunuyor. |
-| A01–A05 | 20–21 Ekim doküman güncellemesi; yeni dış triage/CVE kanıtı yok. [Takip kaydı](audit/2026-10-20-r7-k03-k04-followup/README.md) | A01–A03 tarihsel claim/scope ve evidence etiketleri güncellendi; eski olaylar kanıt bekliyor. A04/R7 seçilmiş yetkili ürün/program scope'u bekliyor. A05'e sonuç kaydı için yeni araştırma gerekir. |
+| A01–A05 | 20–21 Ekim tarihsel iddia düzeltmeleri ve Kadrom yerel lab kontrolü. [Güncel A04/A05 durumu](audit/2026-10-21-a04-same-role-runtime/README.md) | A01–A03 iddiaları kanıt yokluğunda author-reported/tarihsel olarak sınırlandı; A04 bounded iki-hesap GET runtime kaydı kaynak incelemesiyle tutarlı, ancak bağımsız runtime QA kanıtı yok; A05 GHSA/OSV API denemeleri inconclusive. R7'nin kalan kapısı effective dependency tree ve pozitif kontrollü bilinen-kayıt sorgusu, ardından kapsam/sürüm ve sonuç triage'ıdır. |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
 yalnız düzenleme yapıldığı için güncellenmiş sayılmaz. Her teslimde bu tabloya
@@ -293,7 +293,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
 | R6 Kullanılabilir ilk sürüm | **Tamam — v0.1.0 GitHub Release ve wheel asset 21 Ekim'de yayımlandı; PyPI hariç** | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
-| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom yerel rol/list testinde bulgu adayı yok; exact-name advisory araması inconclusive; R7 açık | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
+| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom same-role GET karşılaştırması operatör kaydı ve kaynak incelemesiyle destekli, bulgu adayı yok; A05 GitHub Advisory/OSV sorguları API yanıtı alınamadığı için inconclusive; R7 açık | Effective dependency tree, pozitif kontrollü bilinen-kayıt araması ve ürün sürüm/program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
 
@@ -655,7 +655,7 @@ sürümü değildir. Etiket numarası R6 sürümleme incelemesinde belirlenecek.
 
 - [x] Kaynaktan temel kurulum ve opsiyonel browser extra paketlenir; güncel wheel temiz venv'de kuruldu, CLI/help ve config gate'i geçti. [16 Ekim kabulü](audit/2026-10-16-r6-final-readiness/README.md).
 - [x] İlk araştırma release sürümü `0.1.0` seçilir ve release-specific CHANGELOG hazırlanır; hazırlık commit'i tag veya dış paket yayını değildir.
-- [ ] Release tag'i veya dış paket yayını yalnız son kabul ve açık release yetkisiyle yapılır.
+- [x] `v0.1.0` GitHub Release tag'i ve wheel asset'i son teknik kabul ve açık yetki sonrası yayımlandı; PyPI'ye yayın yapılmadı. [R6 release kaydı](audit/2026-10-21-r6-release/README.md).
 - [x] Config önceliği CLI > config > varsayılan olarak testlidir.
 - [x] JSON şeması sürümlüdür; HTML aynı kanıttan üretilir; rapor test girdisini güvenli escape eder.
 - [x] Belgelenmiş CLI seçenekleri help ile uyumludur; unsupported birleşimler açık hata verir.
