@@ -1,5 +1,18 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-21 R6 source gate and R7 advisory lookup
+
+- Rebuilt and installed the current-source `0.1.0` wheel. The installed-wheel
+  gate passed 7/7, the focused `dxadyn` suite passed 271/271, and all nine
+  packaged module hashes matched source, wheel, and installed environment.
+  Current-commit hosted general CI and K01 Linux jobs succeeded. No tag or
+  package publication was made; explicit release authorization remains
+  required. See the [R6 revalidation](audit/2026-10-21-r6-current-source/README.md).
+- Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive
+  results could not be verified because official search/API pages were
+  inaccessible. R7 remains inconclusive; this is not a “no advisory” finding.
+  See the [R7 lookup](audit/2026-10-21-r7-advisory-lookup/README.md).
+
 ## Unreleased — 2026-10-21 R7 records and R6 release decision
 
 - The R7 public-record/version review found no GitHub issues, tags or releases

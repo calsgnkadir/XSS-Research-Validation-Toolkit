@@ -1,5 +1,28 @@
 # Doğrulama kaydı — 2026-10-17
 
+## R6 güncel kaynak wheel kabulü — 2026-10-21
+
+Test edilen toolkit commit'i `6928fd6ffd8557a311b06b2b22f33fd6a2ac0b71`,
+Windows 10.0.26200 / Python 3.10.11, pytest 9.1.1. Yerel paket build'i:
+
+```powershell
+py -3.10 -m pip wheel --no-deps --no-build-isolation --wheel-dir <temp> .
+```
+
+Çıkış 0; `dxa-research-toolkit 0.1.0` wheel SHA-256
+`ffab49944876bca0b5362dd22c5a220aec62a09fbe962a390fcb16064c80ad91`. Wheel
+çevrimdışı yeni venv'e kuruldu ve `bench/check_installed_cli.py` installed-wheel
+gate'i 7/7 geçti. `test_dxadyn.py`, `test_dxadyn_report_identity.py` ve
+`test_dxadyn_config.py`: **271 passed, 0 failed/error/skip** (24.87 s). Dokuz
+paket modülünün source/wheel/install hashleri eşleşti; güncellenmiş `dxadyn.py`
+hash'i `6864971fbf0bd152bcbffef2a98c6fb783f8397447fabaa8f36c8876c31e509e`.
+Bu odaklı yerel koşudur; tam analyzer suite yeniden koşulmadı. Ayrıntılı gate
+çıktısı ve sınırlar [R6 revalidation audit'inde](audit/2026-10-21-r6-current-source/README.md).
+
+Bu commit'in hosted genel CI [39615470595](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39615470595)
+ve K01 Linux [39615470859](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39615470859)
+işleri başarılı; bunlar yerel testlerden ayrı workflow sonuçlarıdır.
+
 ## K03 local reproduction, 2026-10-19
 
 Local-only lab: OWASP Juice Shop **20.2.0**, Docker image

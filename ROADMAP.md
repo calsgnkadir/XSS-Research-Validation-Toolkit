@@ -32,6 +32,16 @@ değişti; güncel kaynak hash'i wheel kabulinden farklı. Karar: güncel wheel/
 yenilenene kadar release tag'i beklet; ayrıca açık yayın yetkisi gerekir.
 [R7/R6 incelemesi](audit/2026-10-21-r7-r6-decision/README.md).
 
+**21 Ekim R6/R7 devamı:** Güncel `6928fd6` kaynağından 0.1.0 wheel yeniden
+üretildi; kurulum ve installed-wheel gate 7/7, değişen `dxadyn` odaklı testler
+271/271 geçti, dokuz paket modülünün source/wheel/install hashleri eşleşti.
+Aynı commit'in genel CI ve K01 Linux işleri de başarılı. Bu R6 teknik kabulünü
+güncel kaynak için yeniler; tag/yayın için ayrı açık kullanıcı yetkisi gerekir.
+R7 exact-name GitHub Advisory/NVD aramaları eşleşme göstermedi, fakat resmi
+sonuçlar erişilemedi ve arama toplamı doğrulanamadı; advisory yokluğu
+çıkarılamaz, R7 açık kalır. [R6 kanıtı](audit/2026-10-21-r6-current-source/README.md) ·
+[R7 arama kaydı](audit/2026-10-21-r7-advisory-lookup/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -240,8 +250,8 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
-| R6 Kullanılabilir ilk sürüm | 0.1.0 wheel teknik kabulü 16 Ekim'de tamam; sonrasında dxadyn.py değiştiği için güncel kaynak için wheel/gate yenileme gerekli; tag/yayın beklemede | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
-| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom yerel rol/list testinde bulgu adayı yok; bilinen kayıt kontrolü inconclusive; R7 açık | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
+| R6 Kullanılabilir ilk sürüm | Güncel kaynak 0.1.0 wheel/gate teknik kabulü 21 Ekim'de yenilendi; tag/yayın için ayrıca açık kullanıcı yetkisi bekliyor | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
+| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom yerel rol/list testinde bulgu adayı yok; exact-name advisory araması inconclusive; R7 açık | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
 
