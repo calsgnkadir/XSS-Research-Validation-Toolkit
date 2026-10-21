@@ -15,9 +15,13 @@
   verification; no service was started and no request was sent.
 - Public GitHub REST returned empty issue/release/tag collections and zero exact
   Maven-filtered GHSA results. The repository advisory endpoint returned 404;
-  NVD returned a 406 challenge. A05 remains partial/inconclusive and R7 stays
-  open. See the [A04 runtime follow-up](audit/2026-10-21-a04-runtime-followup/README.md)
-  and [A05 API follow-up](audit/2026-10-21-a05-public-records-followup/README.md).
+  NVD returned a 406 challenge and the exact-PURL OSV request failed before an
+  HTTP response. A05 remains partial/inconclusive and R7 stays open. Existing
+  Kadrom tests do not cover same-role GET ownership; no test was run. See the
+  [A04 runtime follow-up](audit/2026-10-21-a04-runtime-followup/README.md),
+  [A04 test inventory](audit/2026-10-21-a04-testability-followup/README.md),
+  [A05 API follow-up](audit/2026-10-21-a05-public-records-followup/README.md),
+  and [A05 OSV attempt](audit/2026-10-21-a05-osv-followup/README.md).
 
 ## Unreleased — 2026-10-21 R7 advisory lookup
 - Exact-name GitHub Advisory/NVD searches surfaced no match, but exhaustive

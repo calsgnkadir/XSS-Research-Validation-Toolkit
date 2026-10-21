@@ -11,15 +11,20 @@ eşleşmişti. Ayrıntı ve digest [R6 release kaydında](audit/2026-10-21-r6-re
 A04 aynı-rol runtime takibi yine Docker `npipe` permission denied nedeniyle
 durdu. `ps`, network ve volume inspect verisi alınamadığı için override'ın etkin
 olduğu ve volume'un korunduğu doğrulanamadı; servis başlatılmadı ve HTTP/test
-çalıştırılmadı. Kaynakta aynı-rol GET yolları ve aday-ID filtresi mevcut; bu
-runtime kanıtı değildir. [A04 takip](audit/2026-10-21-a04-runtime-followup/README.md).
+çalıştırılmadı. Ayrı test envanteri de mevcut Mockito testlerinin aynı-rol GET
+sahipliğini doğrulamadığını, in-memory Spring testinin de aynı sınırı
+karşılamadığını gösterdi; uygun birim testi bulunmadığı için test çalıştırılmadı.
+[A04 envanter](audit/2026-10-21-a04-testability-followup/README.md) ·
+[runtime kaydı](audit/2026-10-21-a04-runtime-followup/README.md).
 
 A05 public GitHub REST'te repo metadata 200, all-issues `[]`, releases `[]`, tags
 `[]`; Maven artifact adına göre dört global GHSA filtresi 200 ve sıfır sonuç
 döndürdü. Repo-özel advisories 404; NVD 406 challenge, CVE.org ise yalnız SPA
-iskeleti döndürdü. Bu, bazı public GitHub kayıtlarının kontrol edildiğini
-destekler; NVD ve repo-özel kayıtlar için tamlık sağlamaz. **Known-record status
-partial / inconclusive; R7 açık.** [A05 takip](audit/2026-10-21-a05-public-records-followup/README.md).
+iskeleti döndürdü. Resmi OSV API'ye exact PURL sorgusu HTTP yanıtından önce
+bağlantı hatası aldı. Bu, bazı public GitHub kayıtlarının kontrol edildiğini
+destekler; NVD/CVE/OSV ve repo-özel kayıtlar için tamlık sağlamaz. **Known-record
+status partial / inconclusive; R7 açık.** [A05 GHSA/API](audit/2026-10-21-a05-public-records-followup/README.md) ·
+[OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md).
 
 Önceki `no-candidate-observed` sonucu yalnız denenmiş liste/rol uçlarıyla
 sınırlı. Sıradaki adım: Docker engine'i okuyabilen ortamda mevcut volume'u ve
