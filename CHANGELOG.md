@@ -1,5 +1,18 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-21 R7 records and R6 release decision
+
+- The R7 public-record/version review found no GitHub issues, tags or releases
+  for the selected Kadrom repository in the public API results, and its POM
+  identifies `0.0.1-SNAPSHOT`; the advisory check remains inconclusive because
+  the advisory API/page could not be retrieved. A04 remains partial and A05's
+  `no-candidate-observed` status remains limited to the tested routes.
+- R6 remains on hold: the accepted 0.1.0 wheel predates a change to packaged
+  `dxadyn.py`, so current source-to-wheel identity must be rebuilt and accepted
+  before a tag is proposed. No tests or wheel rebuild were run in this review;
+  no tag or publication was made. See the
+  [R7/R6 decision audit](audit/2026-10-21-r7-r6-decision/README.md).
+
 ## Unreleased — 2026-10-21 bounded R7/A04 local role check
 
 - Selected the user's Kadrom repository as a local-only research scope and

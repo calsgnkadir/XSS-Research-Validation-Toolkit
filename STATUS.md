@@ -1,5 +1,25 @@
 # Güncel devam noktası — 21 Ekim 2026
 
+## 21 Ekim R7/A04-A05 bağımsız incelemesi ve R6 release kararı
+
+XSS Security Researcher, Kadrom'un güncel upstream kaynak başını
+`ba38bd3a5fde6ea57089ab04eb38f58829110096` olarak doğruladı; bu, lab'da test
+edilen `ae4aebbf8963f550f6bb7c3465fb1270d677af1c` commit'inden sonra ve yalnızca
+frontend `vite.config.js` değişikliğini içeriyor. Issues API boş; repository
+tag/release listeleri boş. Maven `0.0.1-SNAPSHOT`, Spring Boot 3.2.5/Java 17
+bildiriyor. Advisory API/page erişimi sonuçsuz olduğundan CVE/advisory yokluğu
+iddia edilmiyor. QA A04'ü kısmi, A05 `no-candidate-observed` kaydını doğru
+sınırlı buldu; R7 açık.
+
+R6 `0.1.0` wheel'i 16 Ekim'de 7/7 installed gate ve dokuz modül hash eşleşmesi
+almıştı, ancak `dxadyn.py` o wheel'den sonra değişmiş. Güncel modül hash'i
+`6864971f…e509e`, kabul edilen wheel kaydındaki `723d527c…3ebf2` hash'inden
+farklı; kalan sekiz modül eşleşiyor. Uzak `git ls-remote --tags origin` tag
+döndürmedi. GitHub Releases/PyPI sayfaları bu oturumda erişilemedi; PyPI
+yayımlanma durumu kesinleştirilmedi. Karar: güncel kaynak için wheel ve installed
+gate yenilenene kadar R6 tag/yayını beklet. Testler bu incelemede koşulmadı;
+tag/yayın için ayrı açık kullanıcı yetkisi gerekli. [Karar ve kanıt](audit/2026-10-21-r7-r6-decision/README.md).
+
 ## 21 Ekim R7/A04 yerel Kadrom kontrolü
 
 Kullanıcının verdiği kapsam yanıtına göre bir GitHub deposu yerel ürün lab'ı

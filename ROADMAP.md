@@ -23,6 +23,15 @@ araçta cache miss verdiği için A04/A05 ve R7 açık kalıyor. Ayrıntı:
 incelemesini tamamladı; K03 kapsamı kabul edildi, tarihsel oturum/CVE/remediation
 iddiaları doğrulanmış sayılmıyor.
 
+**21 Ekim R7/R6 incelemesi:** Kadrom upstream main `ba38bd3` sürümü test edilen
+`ae4aebbf` parent'ından yalnız frontend ayarıyla ayrılıyor; GitHub issue API boş,
+`0.0.1-SNAPSHOT` ürün release'i değil. Advisory API erişimi inconclusive. A04/A05
+incelemesi mevcut iki-rol kanıtını kısmi ve `no-candidate-observed` sonucunu
+sınırlı buldu. R6'nın kabul edilmiş `0.1.0` wheel'inden sonra `dxadyn.py`
+değişti; güncel kaynak hash'i wheel kabulinden farklı. Karar: güncel wheel/gate
+yenilenene kadar release tag'i beklet; ayrıca açık yayın yetkisi gerekir.
+[R7/R6 incelemesi](audit/2026-10-21-r7-r6-decision/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -231,7 +240,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
-| R6 Kullanılabilir ilk sürüm | Teknik hazırlık tamam; release adayı yayımlanmadı | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
+| R6 Kullanılabilir ilk sürüm | 0.1.0 wheel teknik kabulü 16 Ekim'de tamam; sonrasında dxadyn.py değiştiği için güncel kaynak için wheel/gate yenileme gerekli; tag/yayın beklemede | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom yerel rol/list testinde bulgu adayı yok; bilinen kayıt kontrolü inconclusive; R7 açık | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
