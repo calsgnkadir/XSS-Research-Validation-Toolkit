@@ -8,14 +8,23 @@ wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
 `76aff5a8d725dc0547b4887c30547ab064fd6945` commit'inde origin/main ile
 eşleşmişti. Ayrıntı ve digest [R6 release kaydında](audit/2026-10-21-r6-release/README.md).
 
-A04 aynı-rol runtime takibi yine Docker `npipe` permission denied nedeniyle
-durdu. `ps`, network ve volume inspect verisi alınamadığı için override'ın etkin
-olduğu ve volume'un korunduğu doğrulanamadı; servis başlatılmadı ve HTTP/test
-çalıştırılmadı. Ayrı test envanteri de mevcut Mockito testlerinin aynı-rol GET
-sahipliğini doğrulamadığını, in-memory Spring testinin de aynı sınırı
-karşılamadığını gösterdi; uygun birim testi bulunmadığı için test çalıştırılmadı.
-[A04 envanter](audit/2026-10-21-a04-testability-followup/README.md) ·
-[runtime kaydı](audit/2026-10-21-a04-runtime-followup/README.md).
+A04 Docker `npipe` izinleri için read-only escalation ile incelendi. Eski
+`a04-kadrom-20261021_mysql_data` volume'una bağlı stopped konteynerler var;
+startup Flyway V19 ile tablo silebilir, her açılışta ALTER çalıştırabilir,
+seeder/scheduler veriyi değiştirebilir. Bu konteynerler ve volume başlatılmadı.
+`a04-kadrom-disposable-20261021` proje, volume ve internal network adları
+Docker'da boşta doğrulandı; yeni Compose config'i ayrı volume/network,
+`internal=true` ve host portu olmayan servisleri kullandı. Bu yeni disposable
+proje çalıştırıldı; testten sonra backend/MySQL durduruldu, volume korundu.
+
+Aynı-rol GET için taze demo seed'inde work-session kaydı yoktu; yalnız yeni
+disposable volume'a bir sentetik pozitif kontrol eklendi. İki aday hesabıyla
+list/active/batch GET uçlarının altı oracle'ı beklenen sonuçla eşleşti: kendi
+kaydına erişim var, diğer hesabın kaydı dönmedi. Yeni konteynerler durduruldu,
+volume korundu. Bu normal clock-in akışını veya diğer uçları test etmez; ürün
+test suite'i çalıştırılmadı. [A04 runtime](audit/2026-10-21-a04-same-role-runtime/README.md) ·
+[test envanteri](audit/2026-10-21-a04-testability-followup/README.md) ·
+[startup güvenliği](audit/2026-10-21-a04-startup-safety-review/README.md).
 
 A05 public GitHub REST'te repo metadata 200, all-issues `[]`, releases `[]`, tags
 `[]`; Maven artifact adına göre dört global GHSA filtresi 200 ve sıfır sonuç
@@ -23,14 +32,18 @@ döndürdü. Repo-özel advisories 404; NVD 406 challenge, CVE.org ise yalnız S
 iskeleti döndürdü. Resmi OSV API'ye exact PURL sorgusu HTTP yanıtından önce
 bağlantı hatası aldı. Bu, bazı public GitHub kayıtlarının kontrol edildiğini
 destekler; NVD/CVE/OSV ve repo-özel kayıtlar için tamlık sağlamaz. **Known-record
-status partial / inconclusive; R7 açık.** [A05 GHSA/API](audit/2026-10-21-a05-public-records-followup/README.md) ·
-[OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md).
+status partial / inconclusive; R7 açık. Resmi CVEProject dokümanlarında Maven
+koordinatı/PURL araması doğrulanamadı; beta Search API'nin Swagger şeması
+erişilemedi ve hiçbir sorgu gönderilmedi. Bu, kayıt yokluğu sonucu değildir.
+[A05 GHSA/API](audit/2026-10-21-a05-public-records-followup/README.md) ·
+[OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md) ·
+[CVEProject alternatifi](audit/2026-10-21-a05-cveproject-alternate-followup/README.md).
 
-Önceki `no-candidate-observed` sonucu yalnız denenmiş liste/rol uçlarıyla
-sınırlı. Sıradaki adım: Docker engine'i okuyabilen ortamda mevcut volume'u ve
-internal/loopback ağ sınırlarını doğrulayıp aynı-rol GET karşılaştırmasını
-yapmak; NVD'nin JSON sonuçlarını 406 vermeyen bir istemci/ağdan almak. Dış
-disclosure veya yayın yapılmadı.
+`no-candidate-observed` sonucu, önceki liste/rol uçları ve yeni aynı-rol
+work-session GET karşılaştırmasıyla sınırlı; güvenlik garantisi değildir.
+Sıradaki adım A05 için erişilebilir, yetkili bir known-record veri kaynağı
+bulunursa dar sorguyu tamamlamak; eski volume korunur. Dış disclosure veya
+yayın yapılmadı.
 
 ## 21 Ekim R6 v0.1.0 release ve R7 kayıt araması
 

@@ -71,6 +71,19 @@ known-record doğrulaması açık; R7 açık.
 [A04 test envanteri](audit/2026-10-21-a04-testability-followup/README.md) ·
 [A05 OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md).
 
+**21 Ekim A04/A05 devamı:** QA, eski stopped Kadrom konteynerlerini başlatmanın
+Flyway V19 tablo düşürme, startup ALTER, DemoSeeder ve scheduler veri etkileri
+olabileceğini doğruladı; eski volume korunuyor. Yeni project/volume/internal
+network adları Docker'da boş, izole Compose config'i port yayınlamıyor. Yalnız
+bu yeni volume'a sentetik work-session kontrolü eklendikten sonra, iki adayla
+list/active/batch GET karşılaştırmasının altı oracle'ı beklenen sonuçla
+eşleşti; yeni konteynerler durduruldu, volume korundu. Normal clock-in akışı ve
+ürün test suite'i çalıştırılmadı. CVEProject resmi belgelerinde Maven/PURL
+lookup doğrulanamadı ve beta Swagger şeması erişilemedi; A05 inconclusive.
+[A04 runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [A04 startup](audit/2026-10-21-a04-startup-safety-review/README.md) ·
+[A04 Docker config](audit/2026-10-21-a04-docker-config-followup/README.md) ·
+[A05 CVEProject](audit/2026-10-21-a05-cveproject-alternate-followup/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -813,8 +826,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 | Kadrom local demo list/role testine ek olarak ID tabanlı work-session GET yolları ve mevcut test kapsamı incelendi; [runtime](audit/2026-10-21-a04-runtime-followup/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Mevcut testler aynı-rol sahiplik sınırını kapsamıyor; Docker erişimi yok. Aynı-rol GET runtime testi yapılmadı. Önceki no-candidate sonucu yalnız denenmiş liste/rol uçları için; A04 açık |
-| A05 | Public GitHub REST sonuç kümeleri ve dört Maven GHSA filtresi; NVD/CVE ve [OSV takibi](audit/2026-10-21-a05-osv-followup/README.md) | GHSA exact filtreleri boş; repo advisory 404; NVD 406; CVE.org shell; OSV HTTP yanıtı vermedi. Kayıt durumu kısmi/inconclusive, “yok” sonucu değil; A05 açık |
+| A04 | Kadrom local demo list/role ve aynı-rol work-session GET yolları iki adayla sınandı; [runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Üç read-only GET uçta kendi kayıt/başka hesap kontrolü beklenen sonucu verdi; yalnız sentetik DB fixture, ürün sürümü ve normal clock-in akışı doğrulanmadı. Bu sınırlı kapsamda aday gözlenmedi |
+| A05 | Public GitHub REST sonuç kümeleri, dört Maven GHSA filtresi, NVD, OSV ve [CVEProject alternatifi](audit/2026-10-21-a05-cveproject-alternate-followup/README.md) | GHSA exact filtreleri boş; repo advisory 404; NVD 406/UI erişilemiyor; CVE.org shell; OSV bağlantı yanıtı yok; CVEProject package query belgesi/Swagger şeması doğrulanamadı. Kayıt durumu kısmi/inconclusive; A05 açık |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 
