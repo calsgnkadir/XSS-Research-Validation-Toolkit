@@ -1,4 +1,15 @@
-# Güncel devam noktası — 20 Ekim 2026
+# Güncel devam noktası — 21 Ekim 2026
+
+## 21 Ekim R7/A03 hazırlık düzeltmesi
+
+A04 salt-okunur hazırlık incelemesi, tarihsel sprint prosedüründeki alert veya
+callback'i doğrudan `proven-executable` / `proven-blind` sayan satırı buldu.
+Prosedür şimdi CID eşleşmeli browser canary'yi `execution-observed`, callback
+tek başına ise `resource-callback` olarak ayırıyor; ikisi de tek başına
+vulnerability kanıtı değildir. Ürün araştırması hâlâ seçilmiş ve açıkça yetkili
+ürün/scope bekliyor. K03 bağımsız QA tekrar incelemesi capture hashlerini ve
+17 kayıtlık maskeli özeti doğruladı; Docker veya test çalıştırılmadı. [R7/K03/K04
+kaydı](audit/2026-10-20-r7-k03-k04-followup/README.md).
 
 ## 20 Ekim R7 hazırlığı ve K03/K04 takibi
 

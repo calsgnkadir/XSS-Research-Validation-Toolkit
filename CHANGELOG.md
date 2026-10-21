@@ -1,5 +1,17 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-21 R7/A03 evidence-label correction
+
+- The historical sprint procedure now distinguishes CID-matched browser
+  `execution-observed` from callback-only `resource-callback`; neither alone
+  establishes a vulnerability. No product scope or target was selected, and
+  no lab or product test was run. See the A04 readiness note in the
+  [R7/K03/K04 audit](audit/2026-10-20-r7-k03-k04-followup/README.md).
+- The second read-only QA review matched the private K03 capture and script
+  hashes and the 17-record masked summary. It was not a Docker or product
+  rerun; historical sessions, CVE attribution, and remediation remain
+  unsupported.
+
 ## Unreleased — 2026-10-20 R7 prep, K03 evidence review and K04 correction
 
 - R7/A01 historical Patchstack duplicate and SQLi/CVE outcomes are labeled as

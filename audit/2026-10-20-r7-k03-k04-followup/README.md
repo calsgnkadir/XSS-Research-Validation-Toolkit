@@ -25,6 +25,18 @@ program scope was selected, and no external target was contacted.
 - R7 product research remains at preparation pending a selected, authorized
   product/program scope. No CVE or disclosure outcome was added.
 
+## 21 October A03 evidence-label correction
+
+The A04 readiness review found that the historical sprint procedure still
+mapped an alert or callback hit directly to `proven-executable` /
+`proven-blind`, which conflicts with the current evidence contract. The
+procedure now labels CID-matched browser canary evidence as
+`execution-observed` and callback-only evidence as `resource-callback`; neither
+alone confirms a vulnerability. Role, impact, by-design behavior, and
+authorization remain separate triage questions. This was a documentation-only
+correction: no target, browser, lab, or product test was run, and no product
+scope was selected.
+
 ## K03 evidence audit
 
 QA + Security Lab specialist `/root/k03_evidence_check` reviewed the masked
@@ -41,6 +53,21 @@ CVE attribution, and remediation retest remain outside this proof.
 Evidence type: local raw-capture review and hash verification, not an independent
 lab rerun or Docker-network revalidation. K03 acceptance remains inventory plus
 bounded local reproduction.
+
+### 21 October independent QA follow-up
+
+QA + Security Lab specialist `/root/k03_followup_qa` performed a separate,
+read-only review. The private capture was present; its SHA-256 matched the
+19 October audit and `VALIDATION.md`, and the `capture_local.js` hash matched
+as well. Metadata inspection confirmed 17 unique request/response records and
+the masked SQLi, unsigned-JWT, BOLA, and negative-control summaries. The
+modified-signature control returned HTTP 200 with no `user.email`, supporting
+“no identity returned,” not “401/rejected.”
+
+Evidence type: private capture/hash inspection, not a Docker or product rerun.
+Historical sessions, CVE attribution, remediation retest, general Juice Shop
+behavior, and independent Docker-network provenance remain unverified. No raw
+credentials, tokens, or bodies were copied into this audit.
 
 ## K04 documentation audit and correction
 
