@@ -1,6 +1,6 @@
-# Güncel devam noktası — 21 Ekim 2026
+# Güncel devam noktası — 22 Ekim 2026
 
-## En son durum: R6 yayımlandı; R7/A05 açık — 21 Ekim 2026
+## En son durum: R6 yayımlandı; A04 bounded kabul, R7/A05 açık — 22 Ekim 2026
 
 Kullanıcının açık yetkisiyle `v0.1.0` tag'i ve GitHub Release yayımlandı;
 wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
@@ -22,45 +22,98 @@ disposable volume'a bir sentetik pozitif kontrol eklendi. İki aday hesabıyla
 list/active/batch GET uçlarının altı oracle'ı beklenen sonuçla eşleşti: kendi
 kaydına erişim var, diğer hesabın kaydı dönmedi. Yeni konteynerler durduruldu,
 volume korundu. Bu normal clock-in akışını veya diğer uçları test etmez; ürün
-test suite'i çalıştırılmadı. [A04 runtime](audit/2026-10-21-a04-same-role-runtime/README.md) ·
+test suite'i çalıştırılmadı. QA ek olarak iki business-owner ID GET yolunu
+disposable lab'da karşılaştırdı: kendi listing'i için owner1 `/attendance`
+200 (boş kayıt) ve `/roster` 200 (3948 bayt XLSX); owner2 aynı ID'lerde iki
+uçtan da 403 aldı. Yalnız yeni volume kullanıldı; backend/MySQL durduruldu,
+volume korundu, önceki volume'a dokunulmadı. Bu, yalnız test edilen route ve
+sentetik listing için bounded A04 kabulüdür. [A04 ek runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) ·
+[A04 kapsam incelemesi](audit/2026-10-22-a04-scope-completeness/README.md) ·
+[A04 runtime](audit/2026-10-21-a04-same-role-runtime/README.md) ·
 [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) ·
 [startup güvenliği](audit/2026-10-21-a04-startup-safety-review/README.md).
 
-A05 public GitHub REST'te repo metadata 200, all-issues `[]`, releases `[]`, tags
-`[]`; Maven artifact adına göre dört global GHSA filtresi 200 ve sıfır sonuç
-döndürdü. Repo-özel advisories 404; NVD 406 challenge, CVE.org ise yalnız SPA
-iskeleti döndürdü. Resmi OSV API'ye exact PURL sorgusu HTTP yanıtından önce
-bağlantı hatası aldı. Bu, bazı public GitHub kayıtlarının kontrol edildiğini
-destekler; NVD/CVE/OSV ve repo-özel kayıtlar için tamlık sağlamaz. **Known-record
-status partial / inconclusive; R7 açık. Resmi CVEProject dokümanlarında Maven
-koordinatı/PURL araması doğrulanamadı; beta Search API'nin Swagger şeması
-erişilemedi ve hiçbir sorgu gönderilmedi. Bu, kayıt yokluğu sonucu değildir.
-[A05 GHSA/API](audit/2026-10-21-a05-public-records-followup/README.md) ·
-[OSV denemesi](audit/2026-10-21-a05-osv-followup/README.md) ·
-[CVEProject alternatifi](audit/2026-10-21-a05-cveproject-alternate-followup/README.md).
+R7 scope'u kullanıcı seçimiyle Kadrom'un sabitlenmiş yerel kaynak ağacı
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c` ve sentetik hesaplarla yalnız local
+lab karşılaştırmasıdır. A04 list/role, üç candidate work-session GET ve iki
+business-owner (`attendance`, `roster`) ID GET yolunda test edilen koşulda
+aday gözlenmedi. Bu ürün-geneli güvenlik sonucu değildir; normal clock-in ve
+diğer controller uçları çalıştırılmadı. [A04 kapsam](audit/2026-10-22-a04-scope-completeness/README.md) ·
+[owner runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) ·
+[QA](audit/2026-10-21-a04-runtime-qa/README.md).
 
-Üç GET rotası için QA kaynak kodu sahiplik filtrelerini operatörün kaydettiği
-altı runtime sonucu ile tutarlı buldu; ancak maskeli istek/yanıt kaydı ve hash
-olmadığından runtime bağımsız doğrulanmadı. Sentetik work-session doğrudan yeni
-test veritabanına eklendi; normal clock-in akışı sınanmadı. Bu nedenle A04'ün
-bounded sonucu koordinatörün run kaydı ve kaynak incelemesiyle destekleniyor,
-bağımsız tekrar kanıtı değil. [QA incelemesi](audit/2026-10-21-a04-runtime-qa/README.md).
+A05 için offline Maven çözümlemesi 21 doğrudan compile/runtime kökünü ve
+Actuator alt ağacını verdi. Pozitif kontrollü deps.dev v3 sorgusunda bu 21
+kökün 21'i tam sürüm anahtarıyla döndü: POI 5.3.0 için CVE-2025-31672/GHSA
+eşleşmesi; Actuator starter 3.2.5 için GHSA-mgvc-8q2h-5pgc eşleşmesi; diğer 19
+kök için boş `advisoryKeys`. Bu indeks sıfırlarını güvenlik sonucu saymıyoruz.
+POI kaynağında kullanıcı OOXML'inin POI parser'ına ulaştığı yol bulunmadı.
+Actuator için GitHub'ın geniş aralığı 3.2.5'i kapsarken Spring vendor listesi
+3.2.x'i saymıyor; ayrıca vendor'ın gerektirdiği `/cloudfoundryapplication`
+altındaki korumalı uygulama rotası kaynakta bulunmadı. Uygulanabilirlik ve
+127 transitif koordinatın pozitif kontrollü sorgusu tamamlandı; 18 satırda 92
+distinct advisory anahtarı çıktı. Resmî GHSA aralık kontrolünde 93 koordinat-
+advisory eşleşmesinin tamamı sabit sürümü etkilenen aralıkta gösterdi. Kadrom
+source triage'i tamamlandı. Spring RFD ek/indirme akışına yönelik dar H2 testinde
+anonim 401, üye olmayan 403, üye 200 aldı; inert gövde ve UTF-8 dosya adı
+encoded `Content-Disposition` ile döndü. Bu yanıt başlığı/erişim kontrolü
+gözlemidir; browser yorumu veya RFD exploitability kanıtı değildir. Nimbus için
+pinned OAuth2 yapılandırmasında etkilenebilir parser'a giden source-supported
+yol bulunmadı; yalnız source ve cached bytecode incelendi. Ek kaynak triage'i
+BCrypt login ve Spring Data Sort için plausible input path buldu; multipart
+koşulları ile Micrometer instrumentation etkinliği unresolved. X.509 advisory
+range'i 6.2.4 için GHSA prose/vendor listesiyle çelişiyor; Tomcat WebSocket
+client path'i app source'ta bulunmadı. Micrometer 1.12.5 ve checked-in profiller
+source-level HTTP instrumentation yolunu destekliyor, fakat effective runtime
+bean/DoS sonucu yok. Multipart/Tomcat upload yolu ve byte limitleri source'ta
+var; part-count/temp cleanup/proxy-WAF koşulları belirsiz. Ürün-kimliği advisory
+araması partial/inconclusive. A05/R7 açık;
+BCrypt için advisory ile eşleşen yerel auth davranışı yeniden üretildi; gerçek
+hesap etkisi kanıtlanmadı. Sort kontrolünde StackOverflow/availability etkisi
+görülmedi. Bu bounded sonuçlar A05/R7'yi kapatmıyor.
+[transitif aralık](audit/2026-10-21-a05-transitive-range-review/README.md) ·
+[transitif sorgu](audit/2026-10-21-a05-transitive-advisories/README.md) ·
+[Spring/Tomcat triage](audit/2026-10-21-a05-spring-tomcat-source-review/README.md) ·
+[diğer triage](audit/2026-10-21-a05-other-source-review/README.md) ·
+[bağımsız kabul](audit/2026-10-21-a05-acceptance-review/README.md) ·
+[effective tree](audit/2026-10-21-a05-effective-dependency-tree/README.md) ·
+[21 kök sorgusu](audit/2026-10-21-a05-managed-direct-advisories/README.md) ·
+[range incelemesi](audit/2026-10-21-a05-advisory-range-review/README.md) ·
+[POI triage](audit/2026-10-21-r7-poi-source-triage/README.md) ·
+[Actuator triage](audit/2026-10-21-r7-actuator-source-triage/README.md) ·
+[RFD local check](audit/2026-10-21-a05-rfd-local-check/README.md) ·
+[Nimbus path review](audit/2026-10-21-a05-nimbus-path-review/README.md).
 
-A05 için GitHub Advisory ve OSV resmi API girişimleri dokuz explicit-version
-doğrudan Maven bağımlılığını ve Log4j pozitif kontrolünü kapsadı; iki API yolu da
-değerlendirilebilir yanıt vermedi. Bu nedenle sonuçlar **inconclusive**, sıfır
-advisory sonucu değildir. Inherited/BOM ve transitif bağımlılıklar henüz
-çözülmedi. [GHSA denemesi](audit/2026-10-21-a05-ghsa-dependency-sweep/README.md) ·
-[OSV denemesi](audit/2026-10-21-a05-osv-dependency-sweep/README.md).
+[Kalan advisory source triage](audit/2026-10-22-a05-remaining-paths/README.md).
 
-`no-candidate-observed` sonucu yalnızca test edilen yerel uçlarla sınırlı;
-güvenlik garantisi değildir. **Sıradaki adım:** A05 envanterini effective Maven
-dependency tree'ye genişletmek ve erişilebilir, pozitif kontrolü geçen bir
-advisory kaynağıyla sürüm bazında tamamlamak; ardından R7 için tested source
-version, ürün kapsamı/izin ve araştırma sonucunu tek triage kaydında bağlamak.
-Kaynak/API erişimi doğrulanamazsa A05 açık ve inconclusive kalır. A01–A03'ün eski
-iddiaları için eksik özgün kanıt paketi bulunmadıkça doğrulama beklemede kalır.
-Dış disclosure veya yayın yapılmadı.
+BCrypt için odaklı H2 MockMvc doğrulaması 1/1 geçti. İlk testte sentetik
+kullanıcı için 72 ASCII bayt ve aynı ilk 72 baytı taşıyan tek 73 baytlık login
+aynı principal'ı verdi; hash doğrudan 72 bayttan kurulmuştu. Takip testi gerçek
+registration endpoint'ine bir sentetik 73 bayt parola gönderdi (`200`), sonra
+farklı suffix ama aynı 72-byte prefix ile login yaptı (`200`, aynı hesap).
+Böylece pinned `spring-security-crypto:6.2.4` üzerinde CVE-2025-22228'de tarif
+edilen suffix eşdeğerliği yerel registration/login yolunda gözlendi. Bu
+remediation gerektiren uygulama kusuru adayıdır; pratik gerçek-hesap etkisi,
+Unicode sınırları ve parola kurtarma etkisi doğrulanmadı. Kaynak kod değişmedi.
+[BCrypt kontrolü](audit/2026-10-22-a05-bcrypt-local-check/README.md) ·
+[bağımsız triage](audit/2026-10-22-a05-bcrypt-triage/README.md).
+
+Tek bounded Sort kontrolünde sentetik aday hesabıyla malformed 231-karakterli
+property path HTTP 500 (`UnknownPathException`) verdi; StackOverflow görülmedi,
+hemen sonraki `/actuator/health` 200 döndü. Bu input hatası gözlemidir, advisory
+DoS doğrulaması değildir. Tek geçici test 1/1 geçti; test kaynağı kaldırıldı ve
+Kadrom checkout'u pinned/clean doğrulandı. [Sort audit](audit/2026-10-22-a05-sort-local-check/README.md).
+
+**Sıradaki adım:** gerekirse effective local bean/connector ayarlarını salt
+okunur incele; bu kanıt olmadan Micrometer veya multipart için yeni request
+gönderme. BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
+ayrı ürün-kod değişikliği yetkisi gerektirir; bu turda ürün kaynağına dokunulmadı.
+Tek Sort isteği dışında yük/tekrar trafiği yok.
+Direct Actuator ve X.509 sürüm aralığı uyuşmazlıkları, Micrometer runtime,
+multipart part-count/temp/proxy koşulları ve Kadrom ürün-kimliği kayıt aramasının inconclusive oluşu açıkça
+korunacak. A01–A03'ün eski
+iddiaları özgün kanıt bulunmadıkça author-reported/tarihsel sınırında kalır. Dış
+disclosure, dış ürün endpoint'i veya yeni yayın bu turda yapılmadı.
 
 ## 21 Ekim R6 v0.1.0 release ve R7 kayıt araması
 

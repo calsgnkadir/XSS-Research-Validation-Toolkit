@@ -1,5 +1,41 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-22 R7/A04–A05 continuation
+
+- Bounded A04 local ownership coverage now includes the three candidate
+  work-session GET routes and two business-owner listing GET routes. In the new
+  isolated Kadrom lab, owner 1 received `200` for its attendance and roster;
+  owner 2 received `403` on both. Only synthetic seed data was used; the new
+  containers were stopped and the new volume retained. This is not product-wide
+  coverage. See the [runtime audit](audit/2026-10-22-a04-owner-read-runtime/README.md)
+  and [scope inventory](audit/2026-10-22-a04-scope-completeness/README.md).
+- A05 source triage added the remaining Micrometer, X.509, BCrypt, Sort,
+  multipart, and Tomcat WebSocket path conditions. BCrypt has a reproduced
+  advisory-matching application behavior; practical account impact remains
+  unverified. Sort's tested malformed request did not reproduce its advisory
+  condition. Other applicability limits remain explicit. See the
+  [source-path audit](audit/2026-10-22-a05-remaining-paths/README.md).
+- A focused H2 follow-up confirmed the registration endpoint accepted a
+  synthetic 73-byte password and a different-suffix login with the same first
+  72 bytes authenticated to that account. The pinned
+  `spring-security-crypto:6.2.4` is in the published affected range. This is an
+  advisory-matching local defect candidate; real-account impact was not tested.
+  See the [local check](audit/2026-10-22-a05-bcrypt-local-check/README.md) and
+  [triage](audit/2026-10-22-a05-bcrypt-triage/README.md).
+- One bounded local Sort request returned HTTP 500 for an invalid property;
+  the following health check returned 200. No StackOverflow or availability
+  effect was observed. See the
+  [Sort check](audit/2026-10-22-a05-sort-local-check/README.md).
+- Read-only A05 configuration reviews found checked-in Micrometer 1.12.5
+  instrumentation prerequisites, while effective runtime beans and any DoS
+  remain unverified. Multipart/Tomcat upload paths and byte limits are present;
+  part-count, temp-file cleanup, and intermediary conditions remain unknown.
+  No further request was sent. See the [Micrometer review](audit/2026-10-22-a05-micrometer-config-review/README.md)
+  and [multipart review](audit/2026-10-22-a05-multipart-config-review/README.md).
+- RFD's harmless H2 check verifies only attachment response encoding and the
+  exercised membership controls; Nimbus review found no source-supported path
+  to its affected parser in the pinned OAuth2 config. A05/R7 remain open.
+
 ## 0.1.0 — 2026-10-21
 
 - Published the `v0.1.0` GitHub Release with the validated wheel asset. The

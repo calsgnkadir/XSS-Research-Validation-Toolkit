@@ -84,6 +84,74 @@ lookup doğrulanamadı ve beta Swagger şeması erişilemedi; A05 inconclusive.
 [A04 Docker config](audit/2026-10-21-a04-docker-config-followup/README.md) ·
 [A05 CVEProject](audit/2026-10-21-a05-cveproject-alternate-followup/README.md).
 
+**21 Ekim R7/A05 güncel devam:** Kullanıcının seçtiği Kadrom yerel kapsamı
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c` sürümüne sabitlenmiştir. Offline
+Maven çözümlemesi 21 doğrudan compile/runtime kökünü verdi. Pozitif kontrollü
+deps.dev v3 sorgusunda POI 5.3.0 ve Actuator starter 3.2.5 için advisory anahtarı
+döndü; POI parser'ına kullanıcı OOXML girdisi ulaşan kaynak yolu bulunmadı,
+Actuator GHSA sürüm aralığı ile Spring vendor sürüm listesi çelişiyor ve vendor'ın
+route önkoşulu kaynakta görülmedi. 127 transitif bağımlılığın pozitif kontrollü
+sorgusu tamamlandı; 18 satırda 92 distinct advisory anahtarı var. Resmî GHSA
+sayfalarının aralık kontrolünde 93 koordinat-advisory eşleşmesinin tamamı sabit
+sürümü etkilenmiş aralıkta gösterdi. İki kaynak taraması toplam 92 distinct
+anahtarın tamamını kapsadı. Spring RFD için ek/indirme akışı kaynakta olası
+koşulları karşılıyor; zararsız local doğrulama yapılmadı ve aday doğrulanmış
+bulgu değil. Nimbus/Micrometer ve birkaç Spring/Tomcat koşulu kaynakta açık
+kalmış durumda. A05/R7 açık; ürün açığı, istismar veya advisory yokluğu sonucu
+çıkarılmadı. Ayrıntı:
+[etkin ağaç](audit/2026-10-21-a05-effective-dependency-tree/README.md) ·
+[21 kök sorgusu](audit/2026-10-21-a05-managed-direct-advisories/README.md) ·
+[transitif aralık](audit/2026-10-21-a05-transitive-range-review/README.md) ·
+[Spring/Tomcat kaynak taraması](audit/2026-10-21-a05-spring-tomcat-source-review/README.md) ·
+[diğer kaynak taraması](audit/2026-10-21-a05-other-source-review/README.md) ·
+[POI triage](audit/2026-10-21-r7-poi-source-triage/README.md) ·
+[Actuator triage](audit/2026-10-21-r7-actuator-source-triage/README.md).
+
+**22 Ekim R7/A05 devamı:** Önceki Spring RFD kaynağı adayı için Kadrom'un
+pinned commit'inde yalnız H2 in-memory ve inert dosya kullanan odaklı kontrol
+geçti: anonim `401`, üye olmayan `403`, üye `200`; UTF-8 dosya adı encoded
+`Content-Disposition` ile döndü. Bu, browser yorumu veya RFD istismarı kanıtı
+değildir. Nimbus yapılandırma/source/JAR incelemesi, bu pinned OAuth2 yolunda
+etkilenebilir Nimbus parser'a giden bir zinciri desteklemedi; kaynak JAR'ları
+mevcut değildi ve deployment override'ları incelenmedi. A04 kaynak/test
+envanteri iki ek business-owner ID GET yolunu (`attendance`, `roster`) önceki
+runtime karşılaştırmasının dışında buldu. Yeni disposable lab'da owner1 kendi
+listing'i için `/attendance` 200 (boş kayıt) ve `/roster` 200 (3948 bayt XLSX)
+aldı; owner2 iki yolda da 403 aldı. Yeni backend/MySQL durduruldu ve volume
+korundu; eski volume'a dokunulmadı. Bu, test edilen A04 yolları için bounded
+kabul, ürün-geneli sonuç değil. [A04 ek runtime](audit/2026-10-22-a04-owner-read-runtime/README.md).
+A05 source triage'i BCrypt login ve Spring Data Sort için
+plausible input path buldu; multipart/Micrometer koşulları belirsiz, X.509 range
+verisi çelişkili. Odaklı H2 login kontrolünde 72-byte ve aynı ilk 72 byte'ı
+paylaşan tek 73-byte input aynı synthetic principal için `200` aldı; testte
+hash ilk testte doğrudan 72-byte değerden kuruldu. Takip testi gerçek
+registration endpoint'inin bir 73-byte ASCII değeri kabul ettiğini ve farklı
+suffix'li girişin aynı hesapta başarılı olduğunu gösterdi. Pinned
+`spring-security-crypto:6.2.4`, CVE-2025-22228/GHSA-mg83-c7gq-rv5c etkilenen
+aralığında; bu, yerel uygulama yolunda advisory ile eşleşen kusur adayıdır.
+Gerçek kullanıcı etkisi/hesap ele geçirme kanıtlanmadı. [BCrypt kontrolü](audit/2026-10-22-a05-bcrypt-local-check/README.md) ·
+[BCrypt triage](audit/2026-10-22-a05-bcrypt-triage/README.md) ·
+[resmî GHSA](https://github.com/advisories/GHSA-mg83-c7gq-rv5c).
+Bir sentetik hesapla tek Sort isteği 231 karakterlik malformed property için
+HTTP 500 verdi (`UnknownPathException`); sonraki health kontrolü 200, StackOverflow
+gözlenmedi. Bu, advisory DoS koşulunu doğrulamaz. [Sort kontrolü](audit/2026-10-22-a05-sort-local-check/README.md) ·
+[A04 kapsam incelemesi](audit/2026-10-22-a04-scope-completeness/README.md) ·
+[A05 kalan source yolları](audit/2026-10-22-a05-remaining-paths/README.md).
+A04 seçilmiş rotalarda bounded tamam; A05/R7 açık. Sonuç yeni CVE iddiası veya
+gerçek hesap ele geçirme kanıtı değildir; ürün-kimliği advisory araması inconclusive.
+[RFD kontrolü](audit/2026-10-21-a05-rfd-local-check/README.md) ·
+[Nimbus incelemesi](audit/2026-10-21-a05-nimbus-path-review/README.md).
+
+**22 Ekim A05 config takibi:** Salt okunur kaynak/config incelemesinde pinned
+`micrometer-core:1.12.5`, Actuator/Prometheus bağımlılıkları ve checked-in local,
+test, production profilleri Micrometer advisory önkoşullarını kaynak düzeyinde
+destekliyor; etkin runtime bean'leri, deployed override'lar ve DoS davranışı
+doğrulanmadı. Multipart/Tomcat için Spring MVC 6.1.6 ve Tomcat 10.1.20 ile upload
+yolu ve 20/25 MB YAML limitleri var; part-count, geçici dosya cleanup ve proxy/WAF
+koşulları belirlenmedi. Bu koşullar için malformed istek çalıştırılmadı. [Micrometer
+incelemesi](audit/2026-10-22-a05-micrometer-config-review/README.md) ·
+[multipart incelemesi](audit/2026-10-22-a05-multipart-config-review/README.md).
+
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
 R6 ilk araştırma sürümü için release hazırlığı yapıldı, yayımlanmadı.
@@ -216,7 +284,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
-| 5 | Araştırma/CVE A01–A05 / R7 | A01–A03 tarihsel iddia sınırları yazıldı; A04 Kadrom local iki-hesap GET karşılaştırması tamamlandı; A05 bilinen-kayıt kontrolü kısmi/inconclusive; R7 açık | Ürün/sürüm/rol/yenilik/kanal doğrulaması; yetkili kapsamda kanıtlı sonuç durumu |
+| 5 | Araştırma/CVE A01–A05 / R7 | A01–A03 tarihsel iddia sınırları yazıldı; A04 seçili local iki-hesap list/work-session/owner-read GET kontrolleri bounded olarak tamamlandı; test edilmeyen uçlar açık. A05 21 direct + 127 transitive sorgu, 93 range eşleşmesi ve 92 advisory source triage tamamlandı. BCrypt: synthetic registration + different-suffix login reproduced advisory-matching behavior on pinned 6.2.4; real-account impact not tested. Sort: one malformed input returned 500, no StackOverflow, health 200. Micrometer pinned config supports instrumentation prerequisites but runtime beans/impact unverified. Multipart version/path confirmed; part-count/temp cleanup/proxy conditions unknown. RFD/Nimbus limits retained; X.509 range conflict remains. R7/A05 open | Product/commit/role/scope/record triage; any Kadrom source remediation requires a distinct, explicit target-change authorization |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
 **kanıt bekliyor** tarihsel iddia bağımsız doğrulanamıyor; **ertelendi** kapsamdan silinmedi.
@@ -249,7 +317,7 @@ A01–A05 kapsamdan çıkarılmadı; aşağıdaki kabul koşulları geçerlidir.
 | K01-min / R5 | [16 Ekim teknik kabul](audit/r5-final-acceptance-2026-10-16/README.md) | Tamam; temiz Windows venv 5/5 ve tarihsel Linux artifact gate 5/5; ikinci insan koşusu zorunlu kapsamdan çıkarıldı |
 | R4 | [16 Ekim kapanış kanıtı](audit/r4-proof-experiment-2026-10-16/README.md) | **Kapsamlı teknik teslim tamamlandı:** kimlik scorer/gate, browser CI/artifact, Bludit lifecycle ve exact-payload replay kabul edildi. Ürün doğruluğu veya araç sıralaması iddiası yok. |
 | C/K/P/S02 | [17 Ekim C/K/P kabulü](audit/2026-10-17-p01-p04/README.md); [19 Ekim K03 tekrarı](audit/2026-10-19-k03-loopback-reproduction/README.md); [S02 matrisi](staj/2026-10-17-s02-beceri-kanit-matrisi.md) | C10/C13 ve S02 tamam. K03 envanterine yeni sürümlü loopback tekrarları eklendi; historical writeup session'ları hâlâ author-reported. Diğer C/K/P kabulleri kendi sınırlarında korunuyor. |
-| A01–A05 | 20–21 Ekim tarihsel iddia düzeltmeleri ve Kadrom yerel lab kontrolü. [Güncel A04/A05 durumu](audit/2026-10-21-a04-same-role-runtime/README.md) | A01–A03 iddiaları kanıt yokluğunda author-reported/tarihsel olarak sınırlandı; A04 bounded iki-hesap GET runtime kaydı kaynak incelemesiyle tutarlı, ancak bağımsız runtime QA kanıtı yok; A05 GHSA/OSV API denemeleri inconclusive. R7'nin kalan kapısı effective dependency tree ve pozitif kontrollü bilinen-kayıt sorgusu, ardından kapsam/sürüm ve sonuç triage'ıdır. |
+| A01–A05 | 20–22 Ekim tarihsel iddia düzeltmeleri ve Kadrom yerel lab kontrolü. [Güncel A04/A05 durumu](audit/2026-10-22-a04-owner-read-runtime/README.md) | A01–A03 iddiaları kanıt yokluğunda author-reported/tarihsel olarak sınırlandı; A04 seçili iki-hesap GET yollarında bounded olarak tamamlandı; ürün-geneli iddia yok. A05 direct/transitive sorgu, GHSA range ve 92 anahtarın source triage'i tamamlandı. BCrypt synthetic registration+login, pinned 6.2.4 üzerinde advisory-matching 72-byte suffix equivalence gösterdi; gerçek hesap etkisi kanıtlanmadı. Sort tek malformed inputta 500 verdi, StackOverflow görülmedi ve health 200 kaldı. Micrometer 1.12.5 + checked-in config source-level instrumentation path'ini destekliyor, effective runtime/impact bilinmiyor. Multipart/Tomcat affected path ve byte limits var, part-count/temp-cleanup/proxy conditions unresolved. RFD H2 yalnız header/erişim; Nimbus parser path pinned config'te source-supported değil. X.509 range çelişkili; product-identity advisory search inconclusive. R7/A05 açık. |
 
 Kanıt tarihi belgeye son dokunulma tarihi değildir. Kabul kanıtı eklenmeyen iş
 yalnız düzenleme yapıldığı için güncellenmiş sayılmaz. Her teslimde bu tabloya
@@ -293,7 +361,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
 | R6 Kullanılabilir ilk sürüm | **Tamam — v0.1.0 GitHub Release ve wheel asset 21 Ekim'de yayımlandı; PyPI hariç** | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
-| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom same-role GET karşılaştırması operatör kaydı ve kaynak incelemesiyle destekli, bulgu adayı yok; A05 GitHub Advisory/OSV sorguları API yanıtı alınamadığı için inconclusive; R7 açık | Effective dependency tree, pozitif kontrollü bilinen-kayıt araması ve ürün sürüm/program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
+| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 same-role list/work-session/owner-read GET karşılaştırmaları iki hesap ve sentetik fixture ile bounded tamamlandı. A05 dependency inventory/range/source triage tamamlandı. BCrypt registration+login davranışı CVE-2025-22228 ile uyumlu 72-byte eşdeğerliği pinned 6.2.4'te yeniden üretti; pratik gerçek-hesap etkisi test edilmedi. Sort'ta tek malformed request 500, StackOverflow yok, health 200. Micrometer source/config prerequisites support path; effective beans/DoS unverified. Multipart/Tomcat feature and versions match; part-count/temp cleanup/proxy conditions unknown. RFD browser/RFD istismarı göstermedi; Nimbus yolu pinned config'te source-supported değil. X.509 range çelişkili; product identity search inconclusive. R7/A05 açık | Effective local config'i yalnız gerektiği kadar incele; Kadrom kaynak düzeltmesi ve retest için ayrı hedef-değişikliği yetkisi al; dış disclosure/yayın yetkisi ayrı kalır | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
 
@@ -809,7 +877,7 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | P01 — tamam, 17 Ekim | README/writeup indeksini üç seçilmiş vaka etrafında düzenle | K01 proof→fix, R9 test-fixture hatası→regresyon, R4 kontrollü araştırma replay'i; sınırlar ve C/K bağlantıları [kabul kaydında](audit/2026-10-17-p01-p04/README.md) |
 | P02 — tamam, 17 Ekim | 06–10'u araç geliştirme serisi olarak grupla, tekrarları azalt | Tarihsel içerik korundu; indeks bunları ayrı başarı ölçümleri gibi sunmuyor; dosyalar silinmedi. [Son retest kaydı](audit/2026-10-17-final-commit-retest/README.md) |
 | P03 — tamam, 17 Ekim | CV/proje tanımını gerçek yetenekle sınırla | README araştırma prototipi ve rol/sınırları belirtiyor; 950 sayısı üretilen test girdisi olarak tanımlanıyor. Accuracy, exploit, üstünlük veya CVE iddiası yok. [Son retest kaydı](audit/2026-10-17-final-commit-retest/README.md) |
-| P04 — tamam, 17 Ekim | Paylaşılabilir demo ve ilk sürüm paketi | Temiz Python 3.10 venv kurulumu, installed `dxaprove --demo` ve K01 local profile 5/5 tekrarlandı; release note, limitations ve kanıt bağlantısı var. `0.1.0` yayınlanmadı. |
+| P04 — tamam, 17 Ekim | Paylaşılabilir demo ve ilk sürüm paketi | Temiz Python 3.10 venv kurulumu, installed `dxaprove --demo` ve K01 local profile 5/5 tekrarlandı; release note, limitations ve kanıt bağlantısı var. `0.1.0` GitHub Release olarak yayımlandı; PyPI hariç. |
 
 ## Stajın devamı — S01–S03 (tamam, 19 Ekim)
 
@@ -826,8 +894,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 | Kadrom local demo list/role ve aynı-rol work-session GET yolları iki adayla sınandı; [runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Üç read-only GET uçta kendi kayıt/başka hesap kontrolü beklenen sonucu verdi; yalnız sentetik DB fixture, ürün sürümü ve normal clock-in akışı doğrulanmadı. Bu sınırlı kapsamda aday gözlenmedi |
-| A05 | Public GitHub REST sonuç kümeleri, dört Maven GHSA filtresi, NVD, OSV ve [CVEProject alternatifi](audit/2026-10-21-a05-cveproject-alternate-followup/README.md) | GHSA exact filtreleri boş; repo advisory 404; NVD 406/UI erişilemiyor; CVE.org shell; OSV bağlantı yanıtı yok; CVEProject package query belgesi/Swagger şeması doğrulanamadı. Kayıt durumu kısmi/inconclusive; A05 açık |
+| A04 — bounded tamam | Kadrom local demo list/role, üç candidate work-session GET ve iki business-owner ID GET iki hesapla sınandı; [owner runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) · [kapsam](audit/2026-10-22-a04-scope-completeness/README.md) · [work-session runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Seçilen/sınanan yollar sentetik local veride beklenen sahiplik/403 davranışını verdi; attendance pozitif kontrolü boş kayıt döndürdü. Normal clock-in, diğer rol/uçlar, ürün sürümü ve ürün-geneli güvenlik kapsam dışı. Bu sınırlı kabulde aday gözlenmedi |
+| A05 | Kadrom effective Maven runtime tree and known-advisory lookup: [tree](audit/2026-10-21-a05-effective-dependency-tree/README.md) · [direct lookup](audit/2026-10-21-a05-managed-direct-advisories/README.md) · [transitive lookup](audit/2026-10-21-a05-transitive-advisories/README.md) · [range triage](audit/2026-10-21-a05-transitive-range-review/README.md) · [Spring/Tomcat source](audit/2026-10-21-a05-spring-tomcat-source-review/README.md) · [other source](audit/2026-10-21-a05-other-source-review/README.md) · [remaining paths](audit/2026-10-22-a05-remaining-paths/README.md) · [BCrypt check](audit/2026-10-22-a05-bcrypt-local-check/README.md) · [BCrypt triage](audit/2026-10-22-a05-bcrypt-triage/README.md) · [Sort check](audit/2026-10-22-a05-sort-local-check/README.md) · [Micrometer config](audit/2026-10-22-a05-micrometer-config-review/README.md) · [multipart config](audit/2026-10-22-a05-multipart-config-review/README.md) · [RFD check](audit/2026-10-21-a05-rfd-local-check/README.md) · [Nimbus](audit/2026-10-21-a05-nimbus-path-review/README.md) | 21 direct + 127 transitive coordinates exact-key queried; all 93 associations were range-matched; source triage covered 92 distinct IDs. BCrypt registration+login reproduced the advisory-matching 72-byte suffix equivalence for pinned `spring-security-crypto:6.2.4`; real-account impact was not tested. Sort: one 231-character malformed property returned 500, no StackOverflow, health 200. Micrometer: pinned 1.12.5 and checked-in configs support the HTTP instrumentation path, but runtime beans/DoS are unverified. Multipart/Tomcat: affected versions and upload path, 20/25 MB limits; part-count, temp cleanup and proxy/WAF conditions unresolved. RFD inert H2 check header/authorization only; Nimbus parser path not source-supported in pinned config. X.509 range conflict and product-identity lookup partial/inconclusive remain; A05/R7 open. |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 

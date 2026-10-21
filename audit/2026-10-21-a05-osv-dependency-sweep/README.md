@@ -31,7 +31,7 @@ versions, plugin dependencies, and transitive dependencies were excluded.
 
 OSV's official [`POST /v1/querybatch` documentation](https://google.github.io/osv.dev/post-v1-querybatch/)
 describes batching multiple package/version lookups, ordered results, and
-versioned package URLs. One bounded batch payload contained the eight PURLs
+versioned package URLs. One bounded batch payload contained the nine PURLs
 above and this known-positive control:
 
 `pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1`
