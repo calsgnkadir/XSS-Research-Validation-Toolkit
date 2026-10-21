@@ -1,5 +1,15 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-21 bounded R7/A04 local role check
+
+- Selected the user's Kadrom repository as a local-only research scope and
+  pinned the run to commit `ae4aebbf8963f550f6bb7c3465fb1270d677af1c`. Two
+  seeded synthetic accounts produced expected own-list, cross-role and
+  unauthenticated results. No candidate was observed in those routes; same-role
+  IDOR and other routes remain untested. Known-record lookup was inconclusive
+  because the advisory/issue pages were unavailable to the browsing source.
+  R7 remains open. See the [A04 audit](audit/2026-10-21-a04-kadrom/README.md).
+
 ## Unreleased — 2026-10-21 R7/A03 evidence-label correction
 
 - The historical sprint procedure now distinguishes CID-matched browser

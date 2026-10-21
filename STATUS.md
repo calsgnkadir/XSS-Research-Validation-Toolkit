@@ -1,5 +1,24 @@
 # Güncel devam noktası — 21 Ekim 2026
 
+## 21 Ekim R7/A04 yerel Kadrom kontrolü
+
+Kullanıcının verdiği kapsam yanıtına göre bir GitHub deposu yerel ürün lab'ı
+olarak seçildi: Kadrom (`calsgnkadir/hotel-platform`), kaynak commit
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c`. Temiz ve benzersiz demo volume'unda
+bir aday ve bir işletme hesabıyla uygulama liste uçları sınandı. İki kendi-liste
+isteği 200 döndü ve tüm satırlar oturum sahibiyle eşleşti; iki çapraz rol isteği
+403, iki oturumsuz istek 401 döndü. Test edilen bu uçlarda aday gözlenmedi.
+Container portu host'a yayımlanmadığından istekler backend container içindeki
+loopback'e gönderildi; Docker ağı internal olarak kaldı. Maven imaj derlemesi
+`-DskipTests` ile yapıldı; test suite koşulmadı. Aynı-rol IDOR'u, mutasyonlar ve
+diğer rotalar test edilmedi. GitHub bilinen advisory/issue sayfaları tarayıcı
+cache miss verdiğinden bilinen-kayıt kontrolü inconclusive; R7/A04–A05 açık.
+[Ayrıntılı kanıt ve sınırlar](audit/2026-10-21-a04-kadrom/README.md).
+
+K03 QA takip denetimi 17 kayıtlık yerel capture özeti ve hashleri doğruladı;
+K03'ün bounded kabulü tamam. Geçmiş oturumlar, CVE atıfları ve remediation
+retesti bu kanıta dahil değil.
+
 ## 21 Ekim R7/A03 hazırlık düzeltmesi
 
 A04 salt-okunur hazırlık incelemesi, tarihsel sprint prosedüründeki alert veya

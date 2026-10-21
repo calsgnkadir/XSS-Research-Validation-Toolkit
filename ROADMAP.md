@@ -12,11 +12,16 @@ geçti; K04 writeup 01'de kalan recursive sanitizer ve `textContent` açıklama
 R7 ürün araştırması için seçilmiş, açıkça yetkili kapsam hâlâ gerekli. Ayrıntı:
 [takip kaydı](audit/2026-10-20-r7-k03-k04-followup/README.md).
 
-**21 Ekim R7 hazırlığı:** A04 incelemesi tarihsel sprint prosedüründe callback'i
-execution ile karıştıran bir satır buldu; A03 düzeltmesi evidence etiketlerini
-ayırıyor. Ürün/scope seçilene kadar hedef araştırması başlamaz. K03 bağımsız QA
-incelemesi capture hashlerini ve 17 kayıtlık özeti doğruladı; laboratuvar
-yeniden çalıştırılmadı.
+**21 Ekim R7/A04:** Kullanıcının seçtiği yerel ürün kapsamı için koordinatör,
+kullanıcıya ait Kadrom deposunu `ae4aebbf8963f550f6bb7c3465fb1270d677af1c`
+commit'inde inceledi. Bir aday ve bir işletme sentetik hesabıyla uygulama listesi
+role/sahiplik sınırı tekrarlandı: kendi listeleri 200 ve tüm satırlar ilgili
+hesapla eşleşti; çapraz rol 403, oturumsuz 401. Bu sınırlı koşuda bulgu adayı
+gözlenmedi; aynı rol IDOR'u ve diğer uçlar test edilmedi. Bilinen kayıt sayfaları
+araçta cache miss verdiği için A04/A05 ve R7 açık kalıyor. Ayrıntı:
+[A04 Kadrom kaydı](audit/2026-10-21-a04-kadrom/README.md). K03 uzmanı hash/capture
+incelemesini tamamladı; K03 kapsamı kabul edildi, tarihsel oturum/CVE/remediation
+iddiaları doğrulanmış sayılmıyor.
 
 17 Ekim tarihli durum snapshot'ı: R4/R5 teknik kapanışı, R6 yerel paket kabulü, R8 bounded
 pilot ve R9 operasyon/CI kabulü tamamlandı;
@@ -227,7 +232,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
 | R6 Kullanılabilir ilk sürüm | Teknik hazırlık tamam; release adayı yayımlanmadı | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
-| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Hazırlık; otomatik kanıta bağlı değil | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı |
+| R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | A01–A03 belge sınırları düzeltildi; A04 Kadrom yerel rol/list testinde bulgu adayı yok; bilinen kayıt kontrolü inconclusive; R7 açık | Temiz repro ve program kapsamı | Bir ürün/rol için kontrollü araştırma ve dürüst triage kaydı; test edilmemiş alanlar açıkça belirtilir |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
 
@@ -760,8 +765,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 | Tek gerçek ürün araştırması / R7 | Yetkili lokal temiz kurulum, kaynak→sink, role/boundary, bilinen kayıt kontrolü, bağımsız PoC; admin-only/by-design otomatik bug veya otomatik risksiz sayılmaz |
-| A05 | Sonuç ve takip kaydı | submitted/valid/duplicate/invalid/cannot-reproduce ayrı ve kanıtlı; boş sprint results.md tamamlanmış iş sayılmaz; dış gönderim/yayın açık yetkiyle |
+| A04 | Kadrom local demo temiz kurulumunda iki rolün uygulama listesi sınırı denetlendi; 21 Ekim kaydı | Bu uçlarda aday gözlenmedi; aynı rol IDOR'u ve diğer rotalar kapsam dışı. Bilinen advisory sayfaları cache miss nedeniyle tamamlanmış değil; bu nedenle A04/R7 açık |
+| A05 | 21 Ekim bounded outcome kaydedildi | `no-candidate-observed` yalnız test edilen list/role uçları için; valid/invalid/duplicate/cannot-reproduce sonucu uydurulmadı. Bilinen kayıt kontrolü ve daha geniş kapsam için takip açık; dış gönderim/yayın ayrıca yetki ister |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 
