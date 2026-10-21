@@ -69,6 +69,22 @@ Historical sessions, CVE attribution, remediation retest, general Juice Shop
 behavior, and independent Docker-network provenance remain unverified. No raw
 credentials, tokens, or bodies were copied into this audit.
 
+## 21 October assignments and delivery validation
+
+Starting source was `9a39d4fc3e0df3b559d5859b40c24e50cef6f329` (`main`, matching
+`origin/main`; clean working tree). The XSS Security Researcher
+`/root/a04_scope_readiness` completed a read-only A04 readiness review. The
+QA + Security Lab specialist `/root/k03_followup_qa` then completed the
+read-only K03 capture review. Both tasks were limited to repository evidence;
+neither agent edited files, ran tests or Docker, contacted a target, or selected
+a product scope. The coordinator corrected the historical evidence-label step
+and recorded the review outcomes above.
+
+`git diff --check` passed. No local runtime, analyzer, browser, or lab test ran.
+Commit `acc3f38f706c86819eafd434a308ad29d9901851` was pushed, and a subsequent
+fetch confirmed that `origin/main` matched it. Hosted CI was not verified for
+that commit; no CI result is claimed.
+
 ## K04 documentation audit and correction
 
 XSS Security Researcher specialist `/root/k04_defense_review` performed a
