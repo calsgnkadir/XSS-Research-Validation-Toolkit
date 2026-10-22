@@ -63,23 +63,47 @@ wrong-password rejection, registration/login/change/reset guards, and a
 MockMvc login with a 73-byte password returning 400 before authentication. A
 separate anonymous `/api/me` control returned 401. `git diff --check` passed.
 
-`CheckInServiceTest` was included in the final selector: all 15 tests passed,
-including the owner-denial/no-roster-read regression. An earlier run on the old
+`CheckInServiceTest` was included in the original combined selector: all 15
+tests passed, including the owner-denial/no-roster-read regression. An earlier run on the old
 3.2.5/6.2.4 dependency set passed 32 focused tests, but predates the final
-assertions and is not counted as final verification. No source files changed
-during the final combined run. A SHA-256 manifest lists all **41 modified or
-new target files** in that tested working tree:
+assertions and is not counted as final verification. After that combined run,
+the BCrypt follow-up specialist added a positive exact-72-byte multibyte
+change-password regression in `AuthServiceTest`. The auth-only selector then
+passed **37 tests, 0 failures/errors/skips**, compiling all 91 test sources.
+The added test checks matching the existing password, encoding/saving the new
+password, and refresh-token revocation. Its source SHA-256 is
+`192b46948859ab81efa6c95b542d10a7b1d5f40edfc799af1b704860206d44e9`.
+The earlier combined 51-test result remains valid for the earlier exact source
+state, but was not rerun after this test-only addition. A SHA-256 manifest lists
+all **41 modified or new target files** in the current tested source tree:
 [source-hashes.json](source-hashes.json), SHA-256
-`47a6fcb05eb036ba53b66e38a140dbf431d7b6771ec86014f0ed1bd8e03a0b88`.
+`6654b61818574f6bcc40492796e07a3679070c59c6effe07ba346f9a34224cf7`.
+
+## Coordinator final verification follow-up — 22 October 2026
+
+The POM hash mismatch noticed in the first independent review was corrected;
+the current manifest now matches all 41 target files. The final POM also
+aligns Resilience4j to its Boot 4 module and includes the Boot 4 AspectJ
+starter. A full in-memory-H2 Maven run passed **665 tests, 0 failures, 0 errors,
+0 skipped** after test-only H2 was pinned to 2.3.232 to avoid the known H2
+2.4.240 CHECK/enum regression. The full result and final 246-coordinate OSV
+snapshot are recorded in [VALIDATION](../../VALIDATION.md) and the
+[A05 dependency follow-up](../2026-10-22-a05-dependency-refresh/README.md).
+The target remains uncommitted and undeployed; recovery planning for existing
+over-72-byte passwords, production applicability, CI and the user-reserved
+multipart test remain unverified.
 
 ## Limits and disposition
 
 This remediation closes the reproduced overlong-input path in this local
-source state, but is not deployed or committed. The full 91-test suite, Docker
-runtime, production accounts, effective production deployment tree and existing
-long-password account population were not tested. Users with existing
+source state, but is not deployed or committed. The final full local test suite
+passed as recorded below; Docker runtime, production accounts, effective
+production deployment tree and existing long-password account population were
+not tested. Users with existing
 over-limit passwords need an explicit reset/recovery path before rollout.
-No data was migrated or deleted. A05/R7 remain open for other dependency leads,
-product-identity advisory uncertainty and broader acceptance. The user reserved
-multipart testing for their own later work; it was not executed here. No external
-disclosure or communication occurred.
+No data was migrated or deleted. The BCrypt remediation subtask is complete for
+this local source state. The A05 umbrella remains partial for multipart,
+effective-runtime and advisory/applicability follow-up; R7 separately remains
+open for product-identity evidence and owner/disclosure disposition. The user
+reserved multipart testing for their own later work; it was not executed here.
+No external disclosure or communication occurred.

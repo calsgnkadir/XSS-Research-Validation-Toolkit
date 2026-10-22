@@ -1,7 +1,7 @@
 [
     {
         "path":  "hotelapp/pom.xml",
-        "sha256":  "c14e5debafc799942a918701494363162f92e0fb596440b897aa7452ae0ef111"
+        "sha256":  "a5450329ba365c8f459f6e9b59c1433eff085a83bbde51f7352a7387603af74b"
     },
     {
         "path":  "hotelapp/src/main/java/com/hotelapp/config/AppConfig.java",
@@ -129,7 +129,7 @@
     },
     {
         "path":  "hotelapp/src/test/java/com/hotelapp/service/AuthServiceTest.java",
-        "sha256":  "1ce2894c7880266c163b2e1a909300daef0a01233420ec4ce0942075f462a65f"
+        "sha256":  "192b46948859ab81efa6c95b542d10a7b1d5f40edfc799af1b704860206d44e9"
     },
     {
         "path":  "hotelapp/src/test/java/com/hotelapp/service/CheckInConcurrencyTest.java",

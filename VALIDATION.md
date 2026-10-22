@@ -1,4 +1,65 @@
-# Doğrulama kaydı — 2026-10-17
+# Doğrulama kaydı — 2026-10-22
+
+## Kadrom final Boot 4 / BCrypt / A04 full suite — 2026-10-22
+
+Pinned target baseline: `.dxa/a04-kadrom-source`, commit
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c`, Windows, Java 17.0.18, Maven
+3.9.16, in-memory H2 `test` profile. The final POM resolves Spring Boot
+4.1.1/Security 7.1.1, Resilience4j Boot 4 module 2.4.0 with AspectJ starter,
+H2 2.3.232 test-only, Jackson 2.21.8/3.1.8, Tomcat 11.0.27, POI 5.4.0 and
+HttpClient 4.5.14. The POM and 40 other changed/new source files are listed in
+the [source-hash manifest](audit/2026-10-22-a05-bcrypt-remediation/source-hashes.json).
+
+Command, run from `hotelapp/`:
+
+```powershell
+& 'C:\Users\user\.m2\wrapper\dists\apache-maven-3.9.16\56ba1f9f\bin\mvn.cmd' -ntp '-Dmaven.repo.local=C:\Users\user\.m2\repository' test
+```
+
+Result: **665 tests, 0 failures, 0 errors, 0 skipped; BUILD SUCCESS**. Maven
+compiled all 247 main source files and 91 test source files. Earlier in this
+same review, the full suite ran with Boot-managed H2 2.4.240 and reported 665
+tests with six errors, all from H2's known generated `CHECK`/enum connection
+regression. The project now pins H2 2.3.232 only for test scope; rerunning the
+full suite cleared all six errors. See upstream H2
+[issue #4320](https://github.com/h2database/h2database/issues/4320) and
+[issue #4302](https://github.com/h2database/h2database/issues/4302). This
+workaround does not change the production database.
+
+After adding the Boot 4-specific Resilience4j module and AspectJ starter, a
+selected compatibility/auth/A04/POI/email run also passed **63/63**; the final
+665-test run supersedes it for overall local suite status. `git diff --check`
+passed in the target checkout.
+
+The final Maven tree had 246 distinct JAR coordinates. OSV `v1/querybatch`
+returned 246 response rows and 0 matched coordinates at
+`2026-10-22T13:26:35Z`; this is a known-record snapshot, not evidence that no
+vulnerability exists or that the graph matches a deployed release. Details and
+the dependency disposition are in
+[the A05 dependency audit](audit/2026-10-22-a05-dependency-refresh/README.md).
+
+No full Docker/runtime/deployment test, CI result, production-account check or
+multipart request is claimed. The user reserved multipart testing for a later
+session. The Kadrom target changes remain local and uncommitted.
+
+## Kadrom BCrypt follow-up — exact-72 change-password — 2026-10-22
+
+Pinned Kadrom source baseline: `ae4aebbf8963f550f6bb7c3465fb1270d677af1c`;
+checkout `.dxa/a04-kadrom-source`, Windows, Java 17.0.18, Maven 3.9.16,
+H2 test profile. A follow-up added a positive service regression for changing
+from and to passwords each exactly 72 UTF-8 bytes, with multibyte characters.
+It checks existing-password match, new hash save, and refresh-token revocation.
+
+```powershell
+mvn -ntp -Dmaven.repo.local=C:/Users/user/.m2/repository '-Dtest=InputPolicyTest,AuthServiceTest,AuthServiceLoginLimitTest,PasswordResetServiceTest,BcryptPasswordHttpTest' test
+```
+
+Result: **37 passed, 0 failures, 0 errors, 0 skipped**; all 91 test sources
+compiled. `git diff --check` passed. The earlier 51-test combined run also
+covered A04 and passed before this test-only addition; it was not rerun on the
+new source hash. No Docker, multipart, full product suite, CI, commit, or target
+push is claimed. Updated source-hash manifest and limits are in the linked
+remediation audit. A04's doc-only acceptance cross-check did not rerun tests.
 
 ## Kadrom A05 BCrypt remediation ve A04 regresyon retesti — 2026-10-22
 

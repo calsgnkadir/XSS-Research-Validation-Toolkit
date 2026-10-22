@@ -1,5 +1,48 @@
 # Güncel devam noktası — 22 Ekim 2026
 
+## Koordinatörün son doğrulaması — 22 Ekim, 16:27 Europe/Istanbul
+
+- **A04:** ROADMAP’in seçilmiş list/role, üç candidate work-session GET ve iki
+  business-owner ID GET ölçütü sentetik local hesap/fixture’larla karşılandı;
+  uzman kabul incelemesi de bounded tamam kararını destekledi. Son ürün
+  değişiklikleri sonrası HTTP retesti yapılmadı; bu ürün-geneli yetki sonucu
+  değildir. Kadrom `CheckInServiceTest` içindeki owner-red/no-roster-read
+  regresyonu da son suite’te geçti.
+- **A05 / BCrypt:** UTF-8 72-bayt sınırı kayıt, giriş, parola değiştirme ve reset
+  sınırlarında; Boot 4 bağımlılık uyumu da düzenlendi. Resilience4j Boot 4
+  entegrasyonu 2.4.0 + AspectJ starter’a alındı. H2 2.4.240’ın bilinen CHECK /
+  enum test regresyonu nedeniyle yalnız test kapsamındaki H2 2.3.232 pinlendi.
+  Final Maven full suite **665/665**, sıfır hata/skip; ayrıca tam graph’tan 246
+  Maven koordinatı OSV’ye gönderildi, 246 yanıt satırında sıfır bilinen eşleşme
+  döndü. Bu sınırlı snapshot CVE yokluğu/production sürümü kanıtı değildir.
+  Ayrıntı: [VALIDATION](VALIDATION.md) ·
+  [A05 dependency audit](audit/2026-10-22-a05-dependency-refresh/README.md).
+- **R7:** Owner-review rapor paketi hazır alt teslim. GitHub repo metadata’sı
+  200 döndü; issues/releases/tags boş. Exact Maven coordinate GHSA ve OSV
+  sorguları 200 ve 0 sonuç verdi; repo security-advisories endpoint’i 404
+  (private advisory durumu için inconclusive). Bu, desteklenen ürün sürümünü
+  veya deploy edilmiş graph’ı belirlemiyor; “üründe advisory yok” sonucu
+  çıkarılamaz. R7, desteklenen ürün kimliği ve uygun kanal/owner disposition
+  tamamlanana kadar açık. A05 remediation ayrı tutuluyor.
+- **Kadrom Git:** target checkout `ae4aebbf` üzerinde 41 kaynak dosyası değişik;
+  cached `origin/main` `ba38bd3` bir commit ileride. Bilinen fark frontend
+  `vite.config.js`; güncel upstream’e merge/rebase yapılmadı. Target commit/push
+  veya deployment yapılmadı. Toolkit `main`/`origin/main` `7a6de28` eşit; bu
+  oturumun roadmap, status, validation ve audit değişiklikleri yerel.
+- **Multipart:** kullanıcı sonraki oturuma ayırdı; burada hiçbir upload isteği
+  çalıştırılmadı. Aktif agent/arka plan işi yok.
+
+### Sıradaki iş
+
+Kullanıcı multipart retestini kendi sonraki adımında tamamlayacak. Ardından
+multipart sonucunu A05’e ekleyip supported-release/effective graph sorularını
+yeniden değerlendir. Bot roadmap sırası içinde kalan ana teknik iş R4
+corpus/coverage genişletmesi. R7 için public exact-coordinate advisory lookup
+artık kaydedildi; sıradaki adım Kadrom’un desteklenen ürün sürümünü ve
+yayınlanan artifact koordinatını doğrulamak, sonra owner’ın uygun disclosure
+kanalına karar vermesidir. A04’ü tekrar açmak için yeni yetki bulgusu veya
+seçili route regression gerekir.
+
 ## Son teslim — A04 regresyonu, Kadrom BCrypt düzeltmesi ve R7 devamı
 
 Kullanıcı 22 Ekim'de ayrıca Kadrom kaynak/dependency değişikliği yetkisi verdi.
@@ -14,14 +57,19 @@ ve R7 report/evidence. Multipart test kullanıcıya ait ve bu oturumda
   7.1.1'e hizalandı. Boot 4 uyumluluğu için test modülleri/importları,
   `@MockitoBean` ve Tomcat 11 test adapter'ı güncellendi. Odaklı BCrypt/auth
   ve A04 `CheckInServiceTest` birleşik koşusu 51/51 geçti. 91 test kaynağı
-  derlendi, fakat tam ürün suite'i çalışmadı. Gerçek hesap/production/rollout
+  derlendi. Sonraki BCrypt uzmanı, `AuthServiceTest` içine her ikisi de tam
+  72 UTF-8 bayt olan multibyte current/new parola için pozitif change-password
+  regresyonu ekledi; auth odaklı yeniden koşu 37/37 geçti, yine 91 test kaynağı
+  derlendi. Önceki 51/51 birleşik koşu bu yeni test eklenmeden önceki kaynak
+  durumudur ve tekrar edilmedi. Tam ürün suite'i çalışmadı. Gerçek hesap/production/rollout
   etkisi bilinmiyor; uzun parola kullanan mevcut hesaplar reset gerektirebilir.
   Ürün kodu commit edilmedi/push edilmedi.
 - **A04:** `CheckInServiceTest`'te başka işletme sahibinin attendance reddi ve
   roster satırı hiç okunmaması için regresyon eklendi. Boot 3.2.5 koşusunda
   15/15, final Boot 4 birleşik koşusunda da aynı sınıf 15/15 geçti. Seçilmiş
-  HTTP GET rotalarının bounded önceki kanıtı genişletilmedi; ürün-geneli
-  kapanış yok.
+  HTTP GET rotalarının bounded önceki kanıtı genişletilmedi; A04 uzmanı roadmap
+  kabulini çapraz kontrol edip ek oracle açığı bulmadı ve sınırları A04 audit'ine
+  kaydetti. Bu dokümantasyon takibinde test çalıştırılmadı; ürün-geneli kapanış yok.
 - **R7:** [triage raporu](research/kadrom-local-triage.md) yeni remediation
   yetkisini yansıtıyor. Resmî ürün-kimliği uçları erişilemez kaldığından
   advisory yokluğu çıkarılmadı; R7 açık. Dış disclosure/mesajlaşma yapılmadı.

@@ -151,8 +151,12 @@ A preliminary GitHub global API URL using `keyword=Kadrom` was inaccessible
 as well; this review did not validate that parameter as an API search filter
 and gives it no query-result weight. No endpoint was repeatedly retried.
 **Known-record lookup remains partial/inconclusive**; no zero-result or
-absence-of-advisory claim follows. Earlier successful GitHub filtered results
-are historical observations, not fresh results in this assignment.
+absence-of-advisory claim follows from this bounded attempt. A later
+coordinator follow-up successfully queried the exact GitHub and OSV Maven
+coordinates and the public repository metadata; results and limits are in the
+[R7 lookup audit](../2026-10-22-r7-authorization-followup/README.md). Those
+fresh queries returned zero exact-coordinate records but do not identify a
+supported product release or resolve private advisory status.
 
 ## Disposition
 

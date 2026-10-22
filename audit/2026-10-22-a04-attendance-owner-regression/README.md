@@ -63,3 +63,36 @@ accepted only for the selected routes and fixtures already named in those
 records. The new unit test strengthens the attendance denial regression but
 does not expand the tested product surface, establish product-wide safety, or
 close R7/A05. No multipart test was run.
+
+## Acceptance cross-check and remaining boundary
+
+The current A04 row in `ROADMAP.md` defines bounded acceptance as the selected
+local demo list/role checks, three candidate work-session GETs, and two
+business-owner ID GETs (`attendance` and `roster`) using two accounts. The
+linked runtime records contain those route/account comparisons and positive
+controls; the attendance positive fixture was empty, as documented in the
+owner-read audit. Therefore no additional A04 authorization oracle required by
+that bounded roadmap criterion was missing at this follow-up. The persistent
+unit test is complementary: it verifies that the service rejects a foreign
+owner before collecting roster rows, but it is not a substitute for the
+two-account HTTP observation.
+
+The remaining boundary is explicit: this evidence does not cover normal
+clock-in, mutation routes, every ID-addressed resource, every role, deployed
+configuration, supported product releases, or product-wide authorization
+safety. Those are outside the selected A04 acceptance recorded in the roadmap;
+source/test inventory leads in the separate scope-completeness audit are not
+runtime findings. The test class was not rerun for this documentation-only
+follow-up, and no new pass/failure/timeout/skip is claimed. The previously
+recorded focused results remain 15/15 for `CheckInServiceTest` and 51/51 for
+the combined auth/A04 selector.
+
+## Coordinator full-suite update — 22 October 2026
+
+The coordinator later ran the final Kadrom full Maven suite after the Boot 4
+dependency updates: **665 tests, 0 failures, 0 errors, 0 skipped**. All 15
+`CheckInServiceTest` tests passed, including this owner-denial/no-roster-read
+regression. The suite uses the in-memory H2 test profile; the full command,
+H2 test-version workaround and limits are recorded in
+[VALIDATION](../../VALIDATION.md). This does not repeat or widen the selected
+two-owner HTTP route checks described above.

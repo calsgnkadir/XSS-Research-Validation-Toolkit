@@ -2,6 +2,15 @@
 
 **Date:** 22 October 2026. **Roadmap:** R7 / A04 / A05. **Status:** draft prepared for the product owner in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. A local BCrypt byte-boundary remediation and focused tests are now recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); the target checkout remains uncommitted and undeployed. Other A05/R7 questions remain open.
 
+**Coordinator update — 22 October 2026:** The final local Kadrom source tree now
+uses Boot 4.1.1 / Security 7.1.1, the Boot 4 Resilience4j integration and
+additional dependency fixes. Its complete Maven test suite passed 665/665
+after the test-only H2 2.3.232 pin. OSV querybatch checked the resulting 246
+Maven coordinates and returned 246 rows with zero matches. This snapshot does
+not establish an advisory-free product or deployed graph; official
+product-identity queries remain inconclusive and multipart testing is reserved
+for the user. See the [A05 dependency follow-up](../audit/2026-10-22-a05-dependency-refresh/README.md).
+
 The strongest supported result is a reproduced password-equivalence defect in the pinned local application's registration/login flow, matching known Spring Security BCrypt advisory CVE-2025-22228. A synthetic 73-byte ASCII password was accepted at registration, and a different suffix sharing its first 72 bytes authenticated to the same synthetic account. Practical compromise of a real account was not demonstrated. Other dependency leads have the narrower dispositions below.
 
 ## Product, authorization and artifact identity
@@ -90,7 +99,7 @@ outstanding.
 
 ## Record search, communication and follow-up status
 
-Product-identity known-record searches remain **partial/inconclusive**. Earlier API/tool access failures did not supply evaluable totals for every source; no absence of Kadrom advisories is inferred. Dependency advisories are known records for upstream components, not identifiers assigned to Kadrom. The two Actuator/X.509 range conflicts remain explicitly unresolved. This report performs no repeated product-identity API loop.
+Product-identity known-record searches remain **partial/inconclusive**. A later coordinator follow-up received HTTP 200 for the public GitHub repository metadata and exact Maven-coordinate GitHub GHSA and OSV queries; both advisory sources returned zero rows for `com.hotelapp:hotel-student-platform:0.0.1-SNAPSHOT`. Public issues/releases/tags were empty, while the repository security-advisories endpoint returned 404. These lookups do not identify a supported product release or deployed dependency graph, and the 404 does not establish private-advisory absence. No absence of Kadrom advisories is inferred. Dependency advisories are known records for upstream components, not identifiers assigned to Kadrom. The two Actuator/X.509 range conflicts remain explicitly unresolved. Query details and timestamps are in the [R7 lookup audit](../audit/2026-10-22-r7-authorization-followup/README.md).
 
 The intended review recipient is the user/product owner in the current authorized workspace. Review status is **prepared for coordinator/owner disposition**; no contact or transmission occurred. The user's new authorization covers local Kadrom remediation work, not external disclosure or messaging. A private maintainer/program disclosure endpoint and its current policy have not been verified. No external channel is selected or used based merely on a repository URL. If the owner later requests external submission, verify the product's private reporting route and permission before preparing the destination-specific message. No bounty eligibility, duplicate acceptance, maintainer acknowledgement or public disclosure status is claimed.
 
