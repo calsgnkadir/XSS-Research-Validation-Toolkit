@@ -104,9 +104,19 @@ hemen sonraki `/actuator/health` 200 döndü. Bu input hatası gözlemidir, advi
 DoS doğrulaması değildir. Tek geçici test 1/1 geçti; test kaynağı kaldırıldı ve
 Kadrom checkout'u pinned/clean doğrulandı. [Sort audit](audit/2026-10-22-a05-sort-local-check/README.md).
 
-**Sıradaki adım:** gerekirse effective local bean/connector ayarlarını salt
-okunur incele; bu kanıt olmadan Micrometer veya multipart için yeni request
-gönderme. BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
+**22 Ekim effective-config takibi:** XSS Security ve Storage/Docker uzmanları
+Micrometer ve multipart/Tomcat ayarlarını salt okunur inceledi. Kadrom pinned
+checkout'u temiz ve doğru commit'te. Host'ta Java/Docker/Podman süreci veya
+8080/8081/3306 listener'ı bulunmadı; ayrıca onaylı salt-okunur `docker ps`
+denemesi Docker Desktop Linux engine pipe'inin bulunmadığını gösterdi. Bu yüzden
+container envanteri okunamadı; etkin Micrometer bean/metric, Tomcat connector,
+part-count ve temp/cleanup ayarları doğrulanmadı. İki inceleme de runtime
+başlatmadı, build/test/request yapmadı. [Micrometer runtime](audit/2026-10-22-a05-micrometer-effective-review/README.md) ·
+[multipart runtime](audit/2026-10-22-a05-multipart-effective-review/README.md).
+
+**Sıradaki adım:** Docker/local uygulama runtime'ı yetkili ve erişilebilir
+olduğunda effective bean/connector ayarlarını salt okunur incele; bu kanıt
+olmadan Micrometer veya multipart için yeni request gönderme. BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
 ayrı ürün-kod değişikliği yetkisi gerektirir; bu turda ürün kaynağına dokunulmadı.
 Tek Sort isteği dışında yük/tekrar trafiği yok.
 Direct Actuator ve X.509 sürüm aralığı uyuşmazlıkları, Micrometer runtime,

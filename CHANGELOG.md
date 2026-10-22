@@ -30,8 +30,13 @@
   instrumentation prerequisites, while effective runtime beans and any DoS
   remain unverified. Multipart/Tomcat upload paths and byte limits are present;
   part-count, temp-file cleanup, and intermediary conditions remain unknown.
-  No further request was sent. See the [Micrometer review](audit/2026-10-22-a05-micrometer-config-review/README.md)
-  and [multipart review](audit/2026-10-22-a05-multipart-config-review/README.md).
+  Follow-up experts found no local Java process and the Docker Desktop Linux
+  engine pipe was unavailable, so effective settings and container inventory
+  could not be read. No runtime was started and no further request was sent.
+  See the [Micrometer source review](audit/2026-10-22-a05-micrometer-config-review/README.md),
+  [Micrometer runtime check](audit/2026-10-22-a05-micrometer-effective-review/README.md),
+  [multipart source review](audit/2026-10-22-a05-multipart-config-review/README.md),
+  and [multipart runtime check](audit/2026-10-22-a05-multipart-effective-review/README.md).
 - RFD's harmless H2 check verifies only attachment response encoding and the
   exercised membership controls; Nimbus review found no source-supported path
   to its affected parser in the pinned OAuth2 config. A05/R7 remain open.
