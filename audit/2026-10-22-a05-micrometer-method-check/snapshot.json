@@ -1,0 +1,217 @@
+{
+  "activeProfiles": [
+    "dev",
+    "demo"
+  ],
+  "observationRegistryClass": "io.micrometer.observation.SimpleObservationRegistry",
+  "meterRegistryClass": "io.micrometer.prometheus.PrometheusMeterRegistry",
+  "io.micrometer.observation.ObservationRegistry": [
+    "observationRegistry"
+  ],
+  "org.springframework.web.filter.ServerHttpObservationFilter": [],
+  "io.micrometer.core.instrument.MeterRegistry": [
+    "prometheusMeterRegistry"
+  ],
+  "org.springframework.web.multipart.MultipartResolver": [
+    "multipartResolver"
+  ],
+  "servletFilters": {
+    "Tomcat WebSocket (JSR356) Filter": {
+      "class": "org.apache.tomcat.websocket.server.WsFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "characterEncodingFilter": {
+      "class": "org.springframework.boot.web.servlet.filter.OrderedCharacterEncodingFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "correlationIdFilter": {
+      "class": "com.hotelapp.security.CorrelationIdFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "formContentFilter": {
+      "class": "org.springframework.boot.web.servlet.filter.OrderedFormContentFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "idempotencyFilter": {
+      "class": "com.hotelapp.security.IdempotencyFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "jwtAuthFilter": {
+      "class": "com.hotelapp.security.JwtAuthFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "rateLimitFilter": {
+      "class": "com.hotelapp.security.RateLimitFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "requestContextFilter": {
+      "class": "org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "springSecurityFilterChain": {
+      "class": "org.springframework.boot.web.servlet.DelegatingFilterProxyRegistrationBean$1",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    },
+    "webMvcObservationFilter": {
+      "class": "org.springframework.web.filter.ServerHttpObservationFilter",
+      "urlPatterns": [
+        "/*"
+      ],
+      "servletNames": []
+    }
+  },
+  "multipartProperties": {
+    "class": "org.springframework.boot.autoconfigure.web.servlet.MultipartProperties",
+    "isEnabled": "METHOD_ABSENT",
+    "getMaxFileSize": {
+      "negative": false
+    },
+    "getMaxRequestSize": {
+      "negative": false
+    },
+    "getFileSizeThreshold": {
+      "negative": false
+    },
+    "getLocation": null,
+    "isResolveLazily": false
+  },
+  "multipartConfig": {
+    "class": "jakarta.servlet.MultipartConfigElement",
+    "getMaxFileSize": 20971520,
+    "getMaxRequestSize": 26214400,
+    "getFileSizeThreshold": 0,
+    "getLocation": ""
+  },
+  "java.io.tmpdir": "/tmp",
+  "servletTempDir": "/tmp/tomcat.8080.5847406789653694223/work/Tomcat/localhost/ROOT",
+  "tempFilesystem": {
+    "usableBytes": 985456955392,
+    "readable": true,
+    "totalBytes": 1081101176832,
+    "exists": true,
+    "writable": true
+  },
+  "tomcatConnector": {
+    "class": "org.apache.catalina.connector.Connector",
+    "getPort": 8080,
+    "getMaxParameterCount": 10000,
+    "getMaxPostSize": 2097152,
+    "getMaxSavePostSize": 4096,
+    "getMaxPartCount": "METHOD_ABSENT",
+    "getMaxPartHeaderSize": "METHOD_ABSENT",
+    "getParseBodyMethods": "POST"
+  },
+  "tomcatProtocol": {
+    "class": "org.apache.coyote.http11.Http11NioProtocol",
+    "getMaxSwallowSize": 2097152,
+    "getMaxHttpRequestHeaderSize": 8192,
+    "getMaxHeaderCount": 100,
+    "getConnectionTimeout": 60000,
+    "getMaxConnections": 8192,
+    "getMaxThreads": 200
+  },
+  "requestStage": "complete",
+  "healthBefore": {
+    "status": 200,
+    "method": "GET",
+    "path": "/actuator/health"
+  },
+  "metersBeforeCustom": [
+    {
+      "tags": {
+        "error": "none",
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/actuator/health"
+      },
+      "count": 1
+    }
+  ],
+  "customRequest": {
+    "status": 400,
+    "method": "A05CHECK",
+    "path": "/actuator/health"
+  },
+  "metersAfterCustom": [
+    {
+      "tags": {
+        "error": "RequestRejectedException",
+        "exception": "RequestRejectedException",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      },
+      "count": 1
+    },
+    {
+      "tags": {
+        "error": "none",
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/actuator/health"
+      },
+      "count": 1
+    }
+  ],
+  "healthAfter": {
+    "status": 200,
+    "method": "GET",
+    "path": "/actuator/health"
+  },
+  "metersAfterHealth": [
+    {
+      "tags": {
+        "error": "RequestRejectedException",
+        "exception": "RequestRejectedException",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      },
+      "count": 1
+    },
+    {
+      "tags": {
+        "error": "none",
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/actuator/health"
+      },
+      "count": 2
+    }
+  ]
+}

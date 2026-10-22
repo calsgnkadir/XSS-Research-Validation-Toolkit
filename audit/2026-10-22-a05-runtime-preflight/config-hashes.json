@@ -1,0 +1,14 @@
+{
+  "application.yml": {
+    "packagedSha256": "2ac8088c1bd346174b851d2edd046a6303b8bf0a77035ec6a272b247840e1d76",
+    "sourceSha256": "2ac8088c1bd346174b851d2edd046a6303b8bf0a77035ec6a272b247840e1d76"
+  },
+  "application-dev.yml": {
+    "packagedSha256": "7e2dc476a1de2f6cc3e4d2f4729f4a20a82dd9c9b0c86a3b46fe5d41798e21d1",
+    "sourceSha256": "7e2dc476a1de2f6cc3e4d2f4729f4a20a82dd9c9b0c86a3b46fe5d41798e21d1"
+  },
+  "application-prod.yml": {
+    "packagedSha256": "ceaa25212a67fabb4caec3ea8d67d73e2b32bc854f43a312e361669df2a07799",
+    "sourceSha256": "ceaa25212a67fabb4caec3ea8d67d73e2b32bc854f43a312e361669df2a07799"
+  }
+}

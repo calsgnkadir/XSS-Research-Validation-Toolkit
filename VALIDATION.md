@@ -1,5 +1,45 @@
 # Doğrulama kaydı — 2026-10-17
 
+## R7/A05 local diagnostic controls — 2026-10-22
+
+Toolkit baseline `2bf3b8e`; selected Kadrom source
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c`. Cached backend image
+`sha256:773ffd3a73373b974b80fab06897640a4c65bde044f9a246e22834853d2065a5`,
+app JAR SHA-256 `e564ab781100246897733a9367cd64ef76251a6d77272d73243c0174154ff608`.
+Packaged Spring Boot 3.2.5/MVC 6.1.6/Tomcat 10.1.20/Micrometer 1.12.5.
+Host javac 21.0.11 compiled exact published diagnostic sources with `--release 17`;
+PropertiesLauncher invoked the packaged application through those helpers.
+Base/dev/prod YAML bytes match pinned source; full build attestation/original
+entrypoint/production equivalence was not reproduced.
+
+- Preflight helper SHA-256
+  `69d0e37715ef76d6c51627f0322e8353025241f7e9c645549bfed16d7ccc3030`:
+  actual observation filter registration, one ordinary health GET 200 and timer
+  absent→1; effective MultipartConfigElement limits 20971520/26214400 bytes,
+  threshold 0, blank location, writable servlet temp dir. Dedicated part-count
+  getters absent; generic DataSize JSON and missing isEnabled accessor are not
+  numeric/disabled evidence. No upload or parser-error cleanup test.
+- Method helper SHA-256
+  `b919641be52041775bbc1b7232532b4b5cb751248960aa3a681b3b1ae2086d7e`:
+  exactly GET health 200→bodyless A05CHECK 400→GET health 200. Rejection timer
+  method=UNKNOWN/count1; GET timer 1→1→2. No raw A05CHECK method tag observed.
+  This bounded path did not reproduce raw-method retention or DoS; no broad
+  safety, production or entire-advisory conclusion follows.
+
+Each successful run used a fresh internal network/new MySQL volume and no host
+port publishing. Both backend/MySQL pairs stopped (143/0), volumes retained;
+old data was not mounted. An initial Windows path-length setup error occurred
+before either first-attempt container started; those unused resources remain.
+QA independently checked hashes, actual Docker metadata and output oracles.
+Package-local `.gitattributes` preserves Java/JSON bytes so recorded artifact
+hashes survive Git checkout newline settings; coordinator checks index/raw
+blob identity before commit.
+No toolkit/Kadrom test suite or fresh CI result is claimed. Exact code, selected
+commands, JSON evidence, launch differences and failure limits:
+[preflight](audit/2026-10-22-a05-runtime-preflight/README.md),
+[method check](audit/2026-10-22-a05-micrometer-method-check/README.md),
+[QA](audit/2026-10-22-a05-runtime-qa/README.md).
+
 ## R6 güncel kaynak wheel kabulü — 2026-10-21
 
 Test edilen toolkit commit'i `6928fd6ffd8557a311b06b2b22f33fd6a2ac0b71`,

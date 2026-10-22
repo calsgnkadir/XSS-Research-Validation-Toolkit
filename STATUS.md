@@ -1,6 +1,38 @@
 # Güncel devam noktası — 22 Ekim 2026
 
-## En son durum: R6 yayımlandı; A04 bounded kabul, R7/A05 açık — 22 Ekim 2026
+## Son teslim — A05 effective runtime ve tek yöntem kontrolü
+
+Kullanıcının Docker'ı açmasıyla engel kalktı; başlangıç `2bf3b8e` fetch sonrası
+`origin/main` ile eşleşiyordu ve çalışma ağacı temizdi. Security, Storage/Docker
+ve ardından QA gerçek specialist `agent_type` çağrılarıyla çalıştı; en fazla
+iki uzman eşzamanlıydı. Rol TOML'larının runtime tarafından yüklenmesi ayrıca
+kanıtlanmadı. Görevler tamamlandı; aktif uzman veya çalışan yeni lab yok.
+
+- **A04:** QA önceki kabulü kontrol etti; seçilmiş list/work-session/owner-read
+  GET kapsamı bounded tamam. Normal clock-in ve bütün controller'lar dahil değil.
+- **Micrometer:** Yeni diagnostic context'te observation filtresi `/*` kayıtlı;
+  tek normal health GET `200`, ilgili timer `0→1`. Ayrı fresh lab'da tek gövdesiz
+  `A05CHECK` isteği `400`, metrik `method=UNKNOWN` ve count `1`; health önce/sonra
+  `200`, GET timer `1→2`. Ham özel-yöntem etiketi/DoS yeniden üretilmedi.
+- **Multipart/Tomcat:** Etkin file/request limitleri `20.971.520/26.214.400`
+  bayt, eşik `0`, temp dir okunabilir/yazılabilir. Connector maxParameterCount
+  `10000`, maxPostSize `2097152`; part-count getter'ları yok. Getter yokluğu
+  tüm parser limitlerinin yokluğu değildir; upload/cleanup/proxy testi yapılmadı.
+- **Kanıt sınırı:** Aynı immutable image/JAR ve pinned kaynakla eşleşen üç YAML
+  hash'i var. Dış diagnostic launcher kullanıldı; tam source/build eşdeğerliği
+  veya production ayarları kanıtlanmadı. Yeni backend/MySQL durduruldu (143/0),
+  volume'lar korundu; eski A04 verisi kullanılmadı.
+- **A05/R7 açık:** Actuator/X.509 sürüm çelişkileri resmî kayıtlarda sürüyor;
+  ürün-kimliği sorguları evaluable sonuç vermedi. Mevcut BCrypt yerel kusur
+  adayının düzeltmesi/kalıcı retesti için ayrı hedef-kod yetkisi gerekiyor.
+
+[Preflight](audit/2026-10-22-a05-runtime-preflight/README.md) ·
+[Yöntem kontrolü](audit/2026-10-22-a05-micrometer-method-check/README.md) ·
+[Advisory](audit/2026-10-22-a05-advisory-disposition/README.md) ·
+[Bağımsız QA](audit/2026-10-22-a05-runtime-qa/README.md).
+Tam toolkit/Kadrom suite'i çalıştırılmadı; önceki test sayıları yeni koşu değildir.
+
+## Genel durum ve önceki kanıtlar — 22 Ekim 2026
 
 Kullanıcının açık yetkisiyle `v0.1.0` tag'i ve GitHub Release yayımlandı;
 wheel GitHub Release asset'i olarak eklendi, PyPI'ye yüklenmedi. Tag commit'i
@@ -61,12 +93,14 @@ gözlemidir; browser yorumu veya RFD exploitability kanıtı değildir. Nimbus i
 pinned OAuth2 yapılandırmasında etkilenebilir parser'a giden source-supported
 yol bulunmadı; yalnız source ve cached bytecode incelendi. Ek kaynak triage'i
 BCrypt login ve Spring Data Sort için plausible input path buldu; multipart
-koşulları ile Micrometer instrumentation etkinliği unresolved. X.509 advisory
+parser koşulları ve Micrometer production ayarları açık kalıyor. X.509 advisory
 range'i 6.2.4 için GHSA prose/vendor listesiyle çelişiyor; Tomcat WebSocket
-client path'i app source'ta bulunmadı. Micrometer 1.12.5 ve checked-in profiller
-source-level HTTP instrumentation yolunu destekliyor, fakat effective runtime
-bean/DoS sonucu yok. Multipart/Tomcat upload yolu ve byte limitleri source'ta
-var; part-count/temp cleanup/proxy-WAF koşulları belirsiz. Ürün-kimliği advisory
+client path'i app source'ta bulunmadı. Micrometer'ın yerel diagnostic context'inde
+filter registration ve normal GET
+metric recording doğrulandı; tek A05CHECK `400` ve `method=UNKNOWN`, health-after
+`200` verdi. Bu raw-method retention/DoS doğrulaması değildir. Multipart/Tomcat
+effective file/request limitleri 20/25 MiB ve threshold 0 okundu; part-count
+getter'ları yok, parser cleanup/proxy-WAF koşulları test edilmedi. Ürün-kimliği advisory
 araması partial/inconclusive. A05/R7 açık;
 BCrypt için advisory ile eşleşen yerel auth davranışı yeniden üretildi; gerçek
 hesap etkisi kanıtlanmadı. Sort kontrolünde StackOverflow/availability etkisi
@@ -104,7 +138,7 @@ hemen sonraki `/actuator/health` 200 döndü. Bu input hatası gözlemidir, advi
 DoS doğrulaması değildir. Tek geçici test 1/1 geçti; test kaynağı kaldırıldı ve
 Kadrom checkout'u pinned/clean doğrulandı. [Sort audit](audit/2026-10-22-a05-sort-local-check/README.md).
 
-**22 Ekim effective-config takibi:** XSS Security ve Storage/Docker uzmanları
+**22 Ekim effective-config takibi — Docker açılmadan önceki kayıt:** XSS Security ve Storage/Docker uzmanları
 Micrometer ve multipart/Tomcat ayarlarını salt okunur inceledi. Kadrom pinned
 checkout'u temiz ve doğru commit'te. Host'ta Java/Docker/Podman süreci veya
 8080/8081/3306 listener'ı bulunmadı; ayrıca onaylı salt-okunur `docker ps`
@@ -114,12 +148,13 @@ part-count ve temp/cleanup ayarları doğrulanmadı. İki inceleme de runtime
 başlatmadı, build/test/request yapmadı. [Micrometer runtime](audit/2026-10-22-a05-micrometer-effective-review/README.md) ·
 [multipart runtime](audit/2026-10-22-a05-multipart-effective-review/README.md).
 
-**Sıradaki adım:** Docker/local uygulama runtime'ı yetkili ve erişilebilir
-olduğunda effective bean/connector ayarlarını salt okunur incele; bu kanıt
-olmadan Micrometer veya multipart için yeni request gönderme. BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
+**Sıradaki adım:** Yeni diagnostic sonuçlarını bounded aday triage'ında koru;
+tek UNKNOWN gözlemiyle advisory'nin bütün yollarını reddetme. Multipart
+parser-error cleanup veya production proxy koşulları bu snapshot ile kapanmaz.
+BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
 ayrı ürün-kod değişikliği yetkisi gerektirir; bu turda ürün kaynağına dokunulmadı.
-Tek Sort isteği dışında yük/tekrar trafiği yok.
-Direct Actuator ve X.509 sürüm aralığı uyuşmazlıkları, Micrometer runtime,
+Bu Docker takibinde preflight tek normal GET; yöntem koşusu GET→A05CHECK→GET ile sınırlıydı. Yük/çoklu özel yöntem veya multipart isteği yok.
+Direct Actuator ve X.509 sürüm aralığı uyuşmazlıkları, Micrometer production koşulları,
 multipart part-count/temp/proxy koşulları ve Kadrom ürün-kimliği kayıt aramasının inconclusive oluşu açıkça
 korunacak. A01–A03'ün eski
 iddiaları özgün kanıt bulunmadıkça author-reported/tarihsel sınırında kalır. Dış

@@ -2,6 +2,22 @@
 
 ## Unreleased — 2026-10-22 R7/A04–A05 continuation
 
+- After Docker became available, new isolated diagnostic runtimes confirmed
+  servlet observation registration and ordinary HTTP metric recording. Effective
+  multipart file/request limits are 20/25 MiB, threshold 0; dedicated Tomcat
+  part-count getters are absent. One bodyless `A05CHECK` returned 400 and recorded
+  `method=UNKNOWN`, with health GETs 200 before/after. Raw method retention and
+  DoS were not reproduced. Exact Java helpers, allowlisted snapshots, immutable
+  image/JAR identities and independent QA are recorded in the
+  [preflight](audit/2026-10-22-a05-runtime-preflight/README.md),
+  [method check](audit/2026-10-22-a05-micrometer-method-check/README.md), and
+  [QA](audit/2026-10-22-a05-runtime-qa/README.md). Diagnostic launch and source/build
+  provenance limits remain explicit; fresh containers stopped, volumes retained.
+- Current primary advisory review preserves the Actuator/X.509 version-range
+  discrepancies and inconclusive product-identity lookup. A04 remains bounded
+  complete; A05/R7 remains open. See the
+  [advisory follow-up](audit/2026-10-22-a05-advisory-disposition/README.md).
+
 - Bounded A04 local ownership coverage now includes the three candidate
   work-session GET routes and two business-owner listing GET routes. In the new
   isolated Kadrom lab, owner 1 received `200` for its attendance and roster;
@@ -26,13 +42,13 @@
   the following health check returned 200. No StackOverflow or availability
   effect was observed. See the
   [Sort check](audit/2026-10-22-a05-sort-local-check/README.md).
-- Read-only A05 configuration reviews found checked-in Micrometer 1.12.5
+- Earlier read-only A05 configuration reviews found checked-in Micrometer 1.12.5
   instrumentation prerequisites, while effective runtime beans and any DoS
-  remain unverified. Multipart/Tomcat upload paths and byte limits are present;
+  were unverified at that checkpoint. Multipart/Tomcat upload paths and byte limits are present;
   part-count, temp-file cleanup, and intermediary conditions remain unknown.
   Follow-up experts found no local Java process and the Docker Desktop Linux
   engine pipe was unavailable, so effective settings and container inventory
-  could not be read. No runtime was started and no further request was sent.
+  could not be read. No runtime was started or request sent in that earlier attempt.
   See the [Micrometer source review](audit/2026-10-22-a05-micrometer-config-review/README.md),
   [Micrometer runtime check](audit/2026-10-22-a05-micrometer-effective-review/README.md),
   [multipart source review](audit/2026-10-22-a05-multipart-config-review/README.md),
