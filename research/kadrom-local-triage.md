@@ -1,6 +1,6 @@
 # Kadrom local security triage — owner review draft
 
-**Date:** 22 October 2026. **Roadmap:** R7 / A04 / A05. **Status:** draft prepared for the product owner in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. A local BCrypt byte-boundary remediation and focused tests are now recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); the target checkout remains uncommitted and undeployed. Other A05/R7 questions remain open.
+**Date:** 22 October 2026. **Roadmap:** R7 / A04 / A05. **Status:** draft prepared for the product owner in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. The BCrypt byte-boundary remediation and tests are recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); target commit `6be6a07` was merged with upstream Vite commit `ba38bd3` and pushed as `c3ce102`. The target remains undeployed. Other A05/R7 questions remain open.
 
 **Coordinator update — 22 October 2026:** The final local Kadrom source tree now
 uses Boot 4.1.1 / Security 7.1.1, the Boot 4 Resilience4j integration and
@@ -86,10 +86,10 @@ The demonstrated consequence is a wider accepted credential equivalence class th
 
 ### Minimum remediation and retest proposal
 
-This was the review proposal. A local implementation and focused retest are now
-recorded in the [remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md).
-It remains uncommitted and undeployed. Full-suite acceptance, an explicit
-existing-account recovery rollout plan, and broader A05/R7 disposition remain
+This was the review proposal. The implementation and final full-suite result
+are recorded in the [remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md).
+The fix is committed and pushed but remains undeployed. An explicit
+existing-account recovery rollout plan and broader A05/R7 disposition remain
 outstanding.
 
 1. Select a supported, compatible Boot/Security dependency set containing the vendor fix; confirm module alignment with the effective runtime tree. The advisory's 6.2.10 entry is enterprise-only, so this report does not prescribe that artifact or infer current support eligibility.

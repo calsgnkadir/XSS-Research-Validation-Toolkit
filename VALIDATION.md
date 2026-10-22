@@ -40,7 +40,9 @@ the dependency disposition are in
 
 No full Docker/runtime/deployment test, CI result, production-account check or
 multipart request is claimed. The user reserved multipart testing for a later
-session. The Kadrom target changes remain local and uncommitted.
+session. After this suite, target commit `6be6a07` was merged with the
+upstream-only Vite change and pushed as `c3ce102`; the 41-file tested tree is
+unchanged by that merge. It remains undeployed.
 
 ## Kadrom BCrypt follow-up — exact-72 change-password — 2026-10-22
 

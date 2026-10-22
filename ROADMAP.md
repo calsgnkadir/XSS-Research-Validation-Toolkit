@@ -10,12 +10,14 @@ Hibernate enum CHECK hatası 2.3.232 test sürümüyle giderildi. Son Maven ağa
 vardı; bu “CVE yok” veya üretim ağacı sonucu değildir. Ayrıntı:
 [remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) ·
 [bağımlılık taraması](audit/2026-10-22-a05-dependency-refresh/README.md).
-Kadrom değişiklikleri yerel/uncommitted ve deploy edilmemiştir. A05'in BCrypt
+Kadrom düzeltmesi `c3ce102` olarak GitHub `main` dalına push edildi; henüz deploy
+edilmedi. Toolkit kanıt güncellemesi `ee85c4e` olarak push edildi. A05'in BCrypt
 alt işi kapandı; umbrella A05, kullanıcının ayırdığı multipart retesti ve
 kalan runtime/ürün-kimliği belirsizlikleri nedeniyle kısmi kalır. R7 owner-review
 rapor paketi hazır bir alt teslimdir; resmi ürün-kimliği sorguları
-değerlendirilebilir sonuç vermedi ve disclosure kanalı seçilmediği için R7
-takibi açıktır. [R7 durum kaydı](audit/2026-10-22-r7-authorization-followup/README.md).
+exact-coordinate sorgularda 0 sonuç verdi, ancak supported release/deployed
+artifact identity bilinmiyor ve disclosure kanalı seçilmediği için R7 takibi
+açıktır. [R7 durum kaydı](audit/2026-10-22-r7-authorization-followup/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla

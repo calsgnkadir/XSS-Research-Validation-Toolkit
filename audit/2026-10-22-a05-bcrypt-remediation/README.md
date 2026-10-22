@@ -89,14 +89,17 @@ starter. A full in-memory-H2 Maven run passed **665 tests, 0 failures, 0 errors,
 2.4.240 CHECK/enum regression. The full result and final 246-coordinate OSV
 snapshot are recorded in [VALIDATION](../../VALIDATION.md) and the
 [A05 dependency follow-up](../2026-10-22-a05-dependency-refresh/README.md).
-The target remains uncommitted and undeployed; recovery planning for existing
-over-72-byte passwords, production applicability, CI and the user-reserved
-multipart test remain unverified.
+Coordinator delivery update: target commit `6be6a07` was merged with the
+upstream-only `ba38bd3` Vite change and pushed as `c3ce102`; local and fetched
+`origin/main` matched that commit. The source tree covered by the 41-entry hash
+manifest and 665/665 test run is unchanged by the Vite-only merge. It remains
+undeployed; the existing-account reset rollout, CI and multipart follow-up are
+still unverified.
 
 ## Limits and disposition
 
-This remediation closes the reproduced overlong-input path in this local
-source state, but is not deployed or committed. The final full local test suite
+This remediation closes the reproduced overlong-input path in the committed
+source state, but is not deployed. The final full local test suite
 passed as recorded below; Docker runtime, production accounts, effective
 production deployment tree and existing long-password account population were
 not tested. Users with existing

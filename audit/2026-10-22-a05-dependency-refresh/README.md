@@ -84,6 +84,7 @@ Disposition:
   is claimed. R7 remains open for supported-release identity and owner
   disposition. See the [R7 follow-up](../2026-10-22-r7-authorization-followup/README.md).
 
-No application data was migrated or deleted. The target changes have not been
-committed, pushed or deployed. No CI, production runtime or multipart test is
-claimed.
+No application data was migrated or deleted. Target commit `6be6a07` was merged
+with upstream Vite commit `ba38bd3` and pushed as `c3ce102`; fetched
+`origin/main` matched. The tested 41-file target source remains undeployed. No
+CI, production runtime or multipart test is claimed.
