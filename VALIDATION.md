@@ -1,5 +1,37 @@
 # Doğrulama kaydı — 2026-10-17
 
+## Kadrom A05 BCrypt remediation ve A04 regresyon retesti — 2026-10-22
+
+Ürün checkout'u `.dxa/a04-kadrom-source`, branch `main`, baseline source commit
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c`. Bu kayıttaki değişiklikler yerel
+uncommitted çalışma ağacında test edildi; upstream target `main` bir commit daha
+ileride ve yalnız `hotel-web/vite.config.js` farkı olduğu görülmüştü. O fark
+birleştirilmedi. Güncel remediation ayrıntısı:
+[audit/2026-10-22-a05-bcrypt-remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md).
+
+Host: Windows, Java 17, Maven 3.9.16, test DB: Spring `test` profili H2 in-memory.
+Dependency baseline: Spring Boot `4.1.1`, springdoc `3.1.1`; resolved Spring
+Security config/oauth2-client/oauth2-jose/core/test/crypto/web modules `7.1.1`.
+Boot 4 test module/import and Tomcat 11 fixture compatibility edits are included.
+Focused command:
+
+```powershell
+mvn -ntp -Dmaven.repo.local=C:\Users\user\.m2\repository -Dtest=InputPolicyTest,AuthServiceTest,AuthServiceLoginLimitTest,PasswordResetServiceTest,BcryptPasswordHttpTest,CheckInServiceTest test
+```
+
+Result reported by the specialist: **51 tests passed, 0 failures, 0 errors,
+0 skipped**; all 91 test sources compiled. HTTP MockMvc confirmed a synthetic
+73-byte login is rejected with `400` before auth; unit oracles cover ASCII,
+2/4-byte UTF-8 boundaries, supported encoder max-length behavior and controls.
+`git diff --check` passed. No full Kadrom suite, Docker, production account,
+migration or CI run is claimed. A04's additional `CheckInServiceTest` was run
+before the Boot 4 migration (15 passed) and again in the final combined
+selector (15 passed).
+
+The test confirms selected remediation code and boundary behavior only. It does
+not prove deployment, existing-account inventory/recovery completion, or broad
+R7/A05 closure. Multipart was not tested by coordinator or specialists.
+
 ## R7/A05 offline UTF-8 assay and blocked multipart task — 2026-10-22
 
 Toolkit baseline `6167fa8361fd9f02b1a9e859152117639c855540`; product source

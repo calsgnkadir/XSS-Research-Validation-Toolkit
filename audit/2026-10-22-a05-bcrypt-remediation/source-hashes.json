@@ -1,0 +1,166 @@
+[
+    {
+        "path":  "hotelapp/pom.xml",
+        "sha256":  "c14e5debafc799942a918701494363162f92e0fb596440b897aa7452ae0ef111"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/config/AppConfig.java",
+        "sha256":  "8bec272ba9732085ed7febbb1e8661d944221ac4dc5e5b4a0bb3ee814a7159ee"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/config/SecurityConfig.java",
+        "sha256":  "c036809d4666a7b860a524bbdfdcdbb21265db14d3af67f8c1a00b6a1f947bff"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/controller/PasswordResetController.java",
+        "sha256":  "b057ddda3935d16697849b2c3e7edcadf87cd08e0446aaa5db819265aee81c00"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/dto/LoginRequest.java",
+        "sha256":  "c49e572e5481e292998c63b4227c0f98ea4ab3b96d7bce90e24fcd3ae122dea4"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/dto/RegisterRequest.java",
+        "sha256":  "5d790ad8cd1735b60ade69a01401fca0a4d480f56c6c43c20efd4e99c4807ffb"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/service/AuthService.java",
+        "sha256":  "a044451bdd944f40a50beeb7e9f81190d25e4c26fa2ab6a75cb75e27c3fe9d54"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/service/GeoSearchService.java",
+        "sha256":  "92922a92f06662c7c85df85385904f9b919c56c233973a0810b808d7c043ed2b"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/service/SmsService.java",
+        "sha256":  "6cc78ed913c23b363eef29fe135b4981e5cfdbf286bfb634601b9a07863f377b"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/validation/PasswordPolicy.java",
+        "sha256":  "0067fd3aa24d4fd258b46c3ca9cd4fad2f9aa2f04181ed59022ce3fc304f1737"
+    },
+    {
+        "path":  "hotelapp/src/main/resources/messages_en.properties",
+        "sha256":  "53dafdb541172a7f5b406fcc16a3812f4942d8cfe44b4d9c363e515f20942f02"
+    },
+    {
+        "path":  "hotelapp/src/main/resources/messages_tr.properties",
+        "sha256":  "85e6831dc7116cec782584324d13f969f4430299a3e15fc69cf9f3ecbfec3f27"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/config/DemoSeederCapacityTest.java",
+        "sha256":  "1a51b58414a801ab34e8ec3ddca38d2119fc36fc6d6b963b383aedca2abcea7a"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/ApplicationFlowIT.java",
+        "sha256":  "510e140e3a410a6ce8e6037385f0ac84885ece82f0d5a0e2dc1a41d29a3e44a3"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/AuthFlowIT.java",
+        "sha256":  "7482bf56297ed67ec92249ff3366d14ba2a83935d50af1eedbbf2c216952ff66"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/AuthProvidersHttpTest.java",
+        "sha256":  "b05d2a3844a3b0a1a4e8888af0d733b7fdb1f4e019d4c315299cc53688e8e55b"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/CandidateBlockFlowIT.java",
+        "sha256":  "942e4fa4fb018bfdc3ad32a6208ec703df140b093d7ea4a9c0bd24abc2cb2bad"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/ListingAutoCloseFlowIT.java",
+        "sha256":  "76c6b56512d2c3008ef9d15de242699177b4d7d7f80180a62916ceab54392cc5"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/MessageFlowIT.java",
+        "sha256":  "2a39163f32bdc00472f5c68a9b7e0fc7e53cb1af5abcfebb1da807ad3dadd2d5"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/PrivateAttachmentHttpTest.java",
+        "sha256":  "63549cce00f3ccb80f2568213a48806f9dae94fbd29587a4cd90982f29d67433"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/PushSubscriptionHttpTest.java",
+        "sha256":  "19dce21ae97835316af40f77c7cea26ce878788ea4e04323230130f8cb1be4ab"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/SecurityFixesIT.java",
+        "sha256":  "26d70101340aa4052d4728cda210d9603364dbbb8b9671b261af060f0d72d1c4"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/SecurityHardeningIT.java",
+        "sha256":  "c9f90daf591d7c0d855c8f104bc8555d10a45c6bee4630e66a8d7572dfb79cf9"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/SecurityHeadersIT.java",
+        "sha256":  "9afead340532ef4f2a9b0a4e7d216d9252d9bd0f739fc0f9e4fc5c2d2ff09342"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/ShiftCapacityFlowIT.java",
+        "sha256":  "8a5a9ce4f2763a638989db91f47846452aaf0996d46390761e5d28870059e8f3"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/repository/ApplicationCompletedJobsCountTest.java",
+        "sha256":  "0afeac192132c915d19f145fa1382d371e7c60ef93077e2f172be754bec1c206"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/repository/JobListingRepositoryEntityGraphTest.java",
+        "sha256":  "5d054fe5d9ae2dca8ec5e7eb5e6eb2ccf8a81f2a238255412106b740049461e4"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/repository/OutboxEventRepositoryDueTest.java",
+        "sha256":  "bf7550b1287ff09c9b161f5ef58cb56c174f84e2dafed0ce82f3ec3a288594b2"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/repository/ShiftSlotCapacityRepositoryTest.java",
+        "sha256":  "cec43b55833c359f312bf645f3ad47811d190924b0dd447585948e4e726fb324"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/repository/UserRepositoryCandidatePoolTest.java",
+        "sha256":  "8c5a34e0a3b1cf81c27c633dceb71ac8242b7ca82ff3cc6339c96215e4c43ec1"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/security/ForwardedHeadersConfigTest.java",
+        "sha256":  "0e05c9f8554da9e9d3238903f8fd71e01f29fc1cd5a746079a638a481e40518f"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/AuthServiceLoginLimitTest.java",
+        "sha256":  "ad7bf9c1868c9dc2bd91b06dcd0c44c7ef9424f7b2d97c5770861dd84cbf10eb"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/AuthServiceTest.java",
+        "sha256":  "1ce2894c7880266c163b2e1a909300daef0a01233420ec4ce0942075f462a65f"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/CheckInConcurrencyTest.java",
+        "sha256":  "4c345476f16fc9388706c319815bffd5e96254f790f046a3b032830c401b4df4"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/CheckInServiceTest.java",
+        "sha256":  "d03fc42723a33c1755d8979da81f58fd96f05477f16d3a05d0c6611e1415113e"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/GdprAnonymizeJpaTest.java",
+        "sha256":  "896c2b920d8bf4fde912f88eb17dbf242318e471142ad95fe515f124b81d6dfa"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/service/PasswordResetServiceTest.java",
+        "sha256":  "e4e1fc975ad93f30bcf0791b40197ff6955e5d4a97cf02cae931166f38782fc2"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/validation/InputPolicyTest.java",
+        "sha256":  "263947ba5e762055d320ce97d85c26936470af7e89478d3436344e348e4a87ea"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/validation/PasswordMaxBytes.java",
+        "sha256":  "093ef2fbb0e2bea5d82774e306d281a3c378f5ad09850aa87af0b0498e483b36"
+    },
+    {
+        "path":  "hotelapp/src/main/java/com/hotelapp/validation/PasswordMaxBytesValidator.java",
+        "sha256":  "064cd22a16b8b5dc936b5c061edc8d91dc7708e6b39c13b5ef3f9e8deb37ac0f"
+    },
+    {
+        "path":  "hotelapp/src/test/java/com/hotelapp/integration/BcryptPasswordHttpTest.java",
+        "sha256":  "53494008b3780f096b75cfba59f6594b69e3d83a35529383667df8e41cfeccc8"
+    }
+]

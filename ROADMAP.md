@@ -1,5 +1,19 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**22 Ekim devamı — A04 / A05 BCrypt / R7:** Kullanıcı Kadrom'da belirlenen
+ürün kusurlarını düzeltmek için ayrıca yetki verdi. Kadrom yerel checkout'unda
+BCrypt parolaları UTF-8 bayt cinsinden 72 ile sınırlandı; desteklenen Spring
+Boot 4.1.1 / Security 7.1.1 ailesine geçiş ve auth regresyonları
+`audit/2026-10-22-a05-bcrypt-remediation/README.md` içinde kaydedildi. Bu
+değişiklikler yerel, commit edilmemiştir; dağıtım veya gerçek hesap etkisi
+kanıtı değildir. Odaklı BCrypt/auth ve A04 regresyonları birlikte 51/51 geçti;
+tam ürün suite'i çalıştırılmadı. A04 attendance sahiplik reddi için kalıcı
+servis regresyonu eklendi; önceki seçilmiş HTTP rotaları kabul sınırında kaldı
+(`audit/2026-10-22-a04-attendance-owner-regression/README.md`). R7 raporu yeni
+yetkiyle güncellendi; ürün-kimliği sorgusu araçta yanıt vermediğinden R7 açık
+kaldı (`audit/2026-10-22-r7-authorization-followup/README.md`). Multipart
+testini kullanıcı kendi sonraki çalışmasında ele alacak; burada çalıştırılmadı.
+
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla
 tekrarlandı; bu geçmiş writeup olaylarının doğrulanması veya K04 remediation

@@ -1,5 +1,37 @@
 # Güncel devam noktası — 22 Ekim 2026
 
+## Son teslim — A04 regresyonu, Kadrom BCrypt düzeltmesi ve R7 devamı
+
+Kullanıcı 22 Ekim'de ayrıca Kadrom kaynak/dependency değişikliği yetkisi verdi.
+Üç uzmanı eşzamanlı görevlendirdim: BCrypt remediation, A04 acceptance regression
+ve R7 report/evidence. Multipart test kullanıcıya ait ve bu oturumda
+çalıştırılmadı.
+
+- **BCrypt/A05:** Target checkout `.dxa/a04-kadrom-source`, pinned `ae4aebbf`;
+  çalışma ağacı şimdi yerel değişiklikli. UTF-8 `<=72` bayt kuralı registration,
+  login, current/new password change ve reset DTO/service sınırlarına eklendi.
+  Spring Boot 4.1.1 / springdoc 3.1.1 ile managed Spring Security modülleri
+  7.1.1'e hizalandı. Boot 4 uyumluluğu için test modülleri/importları,
+  `@MockitoBean` ve Tomcat 11 test adapter'ı güncellendi. Odaklı BCrypt/auth
+  ve A04 `CheckInServiceTest` birleşik koşusu 51/51 geçti. 91 test kaynağı
+  derlendi, fakat tam ürün suite'i çalışmadı. Gerçek hesap/production/rollout
+  etkisi bilinmiyor; uzun parola kullanan mevcut hesaplar reset gerektirebilir.
+  Ürün kodu commit edilmedi/push edilmedi.
+- **A04:** `CheckInServiceTest`'te başka işletme sahibinin attendance reddi ve
+  roster satırı hiç okunmaması için regresyon eklendi. Boot 3.2.5 koşusunda
+  15/15, final Boot 4 birleşik koşusunda da aynı sınıf 15/15 geçti. Seçilmiş
+  HTTP GET rotalarının bounded önceki kanıtı genişletilmedi; ürün-geneli
+  kapanış yok.
+- **R7:** [triage raporu](research/kadrom-local-triage.md) yeni remediation
+  yetkisini yansıtıyor. Resmî ürün-kimliği uçları erişilemez kaldığından
+  advisory yokluğu çıkarılmadı; R7 açık. Dış disclosure/mesajlaşma yapılmadı.
+
+Kadrom upstream `main`, pinned checkout'tan 1 commit ileride ve bilinen tek fark
+`hotel-web/vite.config.js`; yerel kod değişikliği varken checkout güncellenmedi.
+Toolkit `main` HEAD ve yerel `origin/main` `a578d7b` eşleşiyor; toolkit remote
+fetch `.git/FETCH_HEAD` izni nedeniyle doğrulanamadı. Bu teslim için toolkit
+ROADMAP/STATUS/VALIDATION/audit değişti; commit/push yapılmadı. CI çalışmadı.
+
 ## Son teslim — üç ajanla A05/R7 devamı
 
 Başlangıç `6167fa8` fetch sonrasında `origin/main` ile eşleşiyordu; çalışma
