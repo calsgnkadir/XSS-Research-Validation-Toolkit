@@ -1,5 +1,38 @@
 # Doğrulama kaydı — 2026-10-17
 
+## R7/A05 offline UTF-8 assay and blocked multipart task — 2026-10-22
+
+Toolkit baseline `6167fa8361fd9f02b1a9e859152117639c855540`; product source
+`ae4aebbf8963f550f6bb7c3465fb1270d677af1c` remained read-only. Host Java/javac
+21.0.11, compiled `--release 17`, cached packaged Crypto 6.2.4. Crypto JAR
+SHA-256 `5a36c1f29d11f0b9ce4b7c54886bd909499eadb0b19be507b6b3992830af23b6`;
+parent app JAR identity matches the preceding runtime audit.
+
+New direct-library assay: exactly 9 BCrypt calls (4 encode, 5 matches). Three
+different Unicode pairs had equal first72 UTF-8 bytes and lengths 73/74/75
+bytes versus 72/72/73 UTF-16 units; all different-suffix matches returned true.
+The extracted packaged PasswordPolicy admitted both inputs in each pair.
+Exactly72-byte control: correct true, first-byte substitution false. Independent
+shape/control assertions passed; no error/timeout/skip in the successful run.
+No new application context/account/endpoint, Docker lifecycle or network request
+ran. Per-pair original/negative controls, below72-byte samples and normalization
+were not tested; these are not application suite results.
+
+Exact Java SHA-256 `9ac1efa55f5b642aaaf959c0cb5a4c27e1f15c3d5e5e4cf7a8c2380a488410ca`;
+allowlisted JSON SHA-256 `c2b63515a1fe3b8b9bba90d499a46351ed0ccb992c045897f82b1080a6eddc3d`.
+Initial Python process launch was denied before execution; explicit escalated
+retry completed the offline assay. Coordinator independently checked artifact
+hashes, manifest6.2.4, source/JSON oracles and operation accounting without rerun.
+Exact commands, source, hashes and control limits: [Unicode audit](audit/2026-10-22-a05-bcrypt-utf8/README.md).
+
+Multipart helper compilation succeeded, but automated possible-cybersecurity-risk
+flag stopped its specialist before application/runtime traffic. A bookkeeping-only
+follow-up also hit the flag; no blocked test retry was made. Read-only proposed
+resource name filters returned no containers/networks/volumes. No multipart test,
+cleanup observation or passing outcome is claimed. [Blocked-state record](audit/2026-10-22-a05-multipart-bounded/README.md).
+No full toolkit/product suite or fresh CI result was run/inspected in this
+continuation. The R7 report is document production, not a new endpoint retest.
+
 ## R7/A05 local diagnostic controls — 2026-10-22
 
 Toolkit baseline `2bf3b8e`; selected Kadrom source

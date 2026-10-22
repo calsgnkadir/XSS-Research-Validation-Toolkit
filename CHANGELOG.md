@@ -2,6 +2,22 @@
 
 ## Unreleased — 2026-10-22 R7/A04–A05 continuation
 
+- Three specialists were invoked concurrently under the user's updated limit;
+  local ignored role/workflow instructions now say three. The ignore rules,
+  model and sandbox settings were preserved. Outcomes and the automatic runtime
+  block are recorded in the [coordination audit](audit/2026-10-22-three-agent-continuation/README.md).
+- New offline packaged Crypto 6.2.4/PasswordPolicy assay confirmed three Unicode
+  prefix-equivalent pairs (73/74/75 UTF-8 bytes versus 72/72/73 UTF-16 units),
+  with an exactly-72-byte correct/wrong control and nine BCrypt operations.
+  This is library/policy behavior, separate from prior ASCII endpoint evidence.
+  [Source, hashes and output](audit/2026-10-22-a05-bcrypt-utf8/README.md).
+- Prepared a concrete [R7 owner-review report](research/kadrom-local-triage.md)
+  with candidate dispositions, impact limits and remediation/retest proposal.
+  No external submission or target-code fix occurred. Multipart runtime was
+  stopped before execution by an automated possible-cybersecurity-risk gate;
+  [blocked state](audit/2026-10-22-a05-multipart-bounded/README.md) is not a test
+  result. A04 remains bounded complete; A05/R7 remain open.
+
 - After Docker became available, new isolated diagnostic runtimes confirmed
   servlet observation registration and ordinary HTTP metric recording. Effective
   multipart file/request limits are 20/25 MiB, threshold 0; dedicated Tomcat

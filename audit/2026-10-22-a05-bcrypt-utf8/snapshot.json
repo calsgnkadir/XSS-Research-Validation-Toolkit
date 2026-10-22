@@ -1,0 +1,64 @@
+{
+  "control": {
+    "utf16Units": 71,
+    "utf8Bytes": 72,
+    "knownMatches": true,
+    "wrongMatches": false
+  },
+  "pairs": [
+    {
+      "codepointBytes": 2,
+      "leftUtf16Units": 72,
+      "rightUtf16Units": 72,
+      "leftUtf8Bytes": 73,
+      "rightUtf8Bytes": 73,
+      "sameFirst72Bytes": true,
+      "fullInputsDiffer": true,
+      "packagedPolicyAllowsBoth": true,
+      "differentSuffixMatches": true
+    },
+    {
+      "codepointBytes": 3,
+      "leftUtf16Units": 72,
+      "rightUtf16Units": 72,
+      "leftUtf8Bytes": 74,
+      "rightUtf8Bytes": 74,
+      "sameFirst72Bytes": true,
+      "fullInputsDiffer": true,
+      "packagedPolicyAllowsBoth": true,
+      "differentSuffixMatches": true
+    },
+    {
+      "codepointBytes": 4,
+      "leftUtf16Units": 73,
+      "rightUtf16Units": 73,
+      "leftUtf8Bytes": 75,
+      "rightUtf8Bytes": 75,
+      "sameFirst72Bytes": true,
+      "fullInputsDiffer": true,
+      "packagedPolicyAllowsBoth": true,
+      "differentSuffixMatches": true
+    }
+  ],
+  "bcryptOperations": 9,
+  "independentOraclesPassed": true,
+  "identity": {
+    "appJarSha256": "e564ab781100246897733a9367cd64ef76251a6d77272d73243c0174154ff608",
+    "helperSha256": "9ac1efa55f5b642aaaf959c0cb5a4c27e1f15c3d5e5e4cf7a8c2380a488410ca",
+    "artifacts": [
+      {
+        "entry": "BOOT-INF/lib/spring-security-crypto-6.2.4.jar",
+        "sha256": "5a36c1f29d11f0b9ce4b7c54886bd909499eadb0b19be507b6b3992830af23b6"
+      },
+      {
+        "entry": "BOOT-INF/lib/spring-jcl-6.1.6.jar",
+        "sha256": "bfbd972fbd94dfb40cc2b19de21b769e8157497cf55555523a0e01b468b8e9b8"
+      },
+      {
+        "entry": "BOOT-INF/classes/com/hotelapp/validation/PasswordPolicy.class",
+        "sha256": "88045e52ceb4a2f3e2b4b0c8a726f84327745703d3d5feea9cc32893423e5d4c"
+      }
+    ],
+    "javaRelease": 17
+  }
+}

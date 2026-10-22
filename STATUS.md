@@ -1,6 +1,41 @@
 # Güncel devam noktası — 22 Ekim 2026
 
-## Son teslim — A05 effective runtime ve tek yöntem kontrolü
+## Son teslim — üç ajanla A05/R7 devamı
+
+Başlangıç `6167fa8` fetch sonrasında `origin/main` ile eşleşiyordu; çalışma
+ağacı temizdi. Güncel kullanıcı talimatıyla üç uzman eşzamanlı başlatıldı.
+Yerel AGENTS/iş akışı/beş rol TOML'undaki concurrency sınırı üçe güncellendi;
+bu dosyalar mevcut `.gitignore` gereği yerel kaldı. Model/sandbox değişmedi.
+Gerçek specialist `agent_type` çağrıları yapıldı; TOML loader ayrıca kanıtlanmadı.
+
+- **A04:** seçilmiş list/work-session/owner-read GET kapsamı bounded tamam;
+  bu tur yeni A04 veya ürün-geneli kapanış iddiası yok.
+- **BCrypt UTF-8:** packaged Crypto 6.2.4 ile üç Unicode çiftinin farklı
+  tamamları aynı ilk 72 baytı paylaştığında matches `true`. UTF-8 uzunlukları
+  73/74/75 bayt, UTF-16 uzunlukları 72/72/73. Packaged PasswordPolicy hepsini
+  kabul etti. Tam 72 baytlık kontrol doğru `true`, yanlış ilk bayt `false`;
+  toplam 9 BCrypt çağrısı. Bu doğrudan kütüphane/policy kanıtıdır; Unicode
+  uygulama endpoint'i çalıştırılmadı. Önceki ASCII kayıt/giriş kanıtı ayrıdır.
+- **R7 raporu:** [owner-review taslağı](research/kadrom-local-triage.md)
+  aday disposition'ları, kaynak/kanıt, etki sınırları ve minimum düzeltme/retest
+  önerisini tek dosyada topladı. Dış gönderim, ürün değişikliği veya fix yapılmadı.
+- **Multipart engeli:** specialist runtime öncesinde otomatik kontrolün
+  olası siber güvenlik riski mesajıyla durdu; kayıt tutmaya yönelik takip de
+  aynı engelle karşılaştı. Test yeniden çalıştırılmadı. Salt okunur Docker
+  isim filtreleri planlanan yeni kaynakları bulmadı; çalıştırılmamış taslaklar
+  `.dxa` altında korundu. QA'nın iki oracle açığı runtime sonucu değildir.
+
+[Koordinasyon/kabul](audit/2026-10-22-three-agent-continuation/README.md) ·
+[Unicode kanıtı](audit/2026-10-22-a05-bcrypt-utf8/README.md) ·
+[R7 rapor kaydı](audit/2026-10-22-r7-kadrom-report/README.md) ·
+[Multipart engeli](audit/2026-10-22-a05-multipart-bounded/README.md).
+
+Aktif ajan/arka plan görevi yok. Bu devamda uygulama/Docker lab başlatılmadı;
+ürün kaynakları ve eski veriler korundu. Tam suite veya yeni CI sonucu yok.
+A05/R7 açık: somut raporun owner incelemesi, ayrı yetkili Kadrom kaynak/dependency
+düzeltmesi ve kalıcı retest; ayrıca kayıt/range/production belirsizlikleri sürüyor.
+
+## Önceki teslim — A05 effective runtime ve tek yöntem kontrolü
 
 Kullanıcının Docker'ı açmasıyla engel kalktı; başlangıç `2bf3b8e` fetch sonrası
 `origin/main` ile eşleşiyordu ve çalışma ağacı temizdi. Security, Storage/Docker
@@ -128,7 +163,7 @@ farklı suffix ama aynı 72-byte prefix ile login yaptı (`200`, aynı hesap).
 Böylece pinned `spring-security-crypto:6.2.4` üzerinde CVE-2025-22228'de tarif
 edilen suffix eşdeğerliği yerel registration/login yolunda gözlendi. Bu
 remediation gerektiren uygulama kusuru adayıdır; pratik gerçek-hesap etkisi,
-Unicode sınırları ve parola kurtarma etkisi doğrulanmadı. Kaynak kod değişmedi.
+Unicode uygulama uçları ve parola kurtarma etkisi doğrulanmadı; yeni offline UTF-8 assay ayrı kütüphane kanıtıdır. Kaynak kod değişmedi.
 [BCrypt kontrolü](audit/2026-10-22-a05-bcrypt-local-check/README.md) ·
 [bağımsız triage](audit/2026-10-22-a05-bcrypt-triage/README.md).
 
@@ -148,7 +183,7 @@ part-count ve temp/cleanup ayarları doğrulanmadı. İki inceleme de runtime
 başlatmadı, build/test/request yapmadı. [Micrometer runtime](audit/2026-10-22-a05-micrometer-effective-review/README.md) ·
 [multipart runtime](audit/2026-10-22-a05-multipart-effective-review/README.md).
 
-**Sıradaki adım:** Yeni diagnostic sonuçlarını bounded aday triage'ında koru;
+**Sıradaki adım:** Somut R7 owner-review raporunu ve aday dispositionlarını incele;
 tek UNKNOWN gözlemiyle advisory'nin bütün yollarını reddetme. Multipart
 parser-error cleanup veya production proxy koşulları bu snapshot ile kapanmaz.
 BCrypt için Kadrom kaynak/dependency düzeltmesi ve kalıcı retest,
