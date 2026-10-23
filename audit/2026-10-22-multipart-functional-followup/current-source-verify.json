@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "roadmap_id": "A05",
+  "scope": "local Maven verify including ordinary multipart functional controls",
+  "repository": "https://github.com/calsgnkadir/hotel-platform",
+  "source_commit": "1276892bd62eab8838ce5a03b877c545cf67da3f",
+  "verification_tree_parent": "01d5857a1cb6068f1feb731dd5baa3e7b46f849f",
+  "verification_timing": "run completed before commit; committed test file hash and backend tree are identical to verified worktree",
+  "backend_source_matches": "4c9473a68e5378778bb6fdef525b488edba74a21",
+  "upstream_delta_after_backend_source": [
+    "hotel-web/src/components/OnboardingWizard.jsx",
+    "hotel-web/src/pages/candidate/tabs/ProfileTab.jsx"
+  ],
+  "test_file": "hotelapp/src/test/java/com/hotelapp/service/MultipartFunctionalControlsTest.java",
+  "test_sha256": "eb2fa62d9bb6a542f35087d80cdc1378f39d437110f58bb7b450f4e7b4667d8f",
+  "command": "mvn -o -ntp -Dmaven.repo.local=C:\\Users\\user\\.m2\\repository verify",
+  "environment": "Windows; Java 17.0.18; Maven 3.9.16; H2 test profile",
+  "completed_at": "2026-10-23T10:29:45+03:00",
+  "elapsed": "6 minutes 40 seconds",
+  "unit_tests": 725,
+  "integration_tests": 45,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "build": "SUCCESS",
+  "multipart_tests_included": 6,
+  "remote_ci": {
+    "run_id": "39919982298",
+    "completed_at": "2026-10-23T07:55:59Z",
+    "conclusion": "success",
+    "backend": "success",
+    "frontend": "success",
+    "e2e": "success"
+  },
+  "malformed_parser_tested": false,
+  "parser_error_cleanup_verified": false,
+  "production_configuration_verified": false,
+  "deployment_performed": false
+}

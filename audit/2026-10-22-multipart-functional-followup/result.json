@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "completed_at": "2026-10-23T00:09:57+03:00",
+  "roadmap_id": "A05",
+  "scope": "ordinary multipart functional controls",
+  "source_commit": "d96b8359a4121437d45c1ae1a4926f4647f7b00e",
+  "test_file": "hotelapp/src/test/java/com/hotelapp/service/MultipartFunctionalControlsTest.java",
+  "test_sha256": "eb2fa62d9bb6a542f35087d80cdc1378f39d437110f58bb7b450f4e7b4667d8f",
+  "tomcat_version": "11.0.27",
+  "runner": "coordinator-approved local offline Maven focused run",
+  "tests": 6,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "build": "SUCCESS",
+  "ordinary_loopback_multipart_status": 200,
+  "external_storage": "mocked",
+  "product_controller_auth_chain_tested": false,
+  "malformed_parser_tested": false,
+  "parser_error_cleanup_verified": false,
+  "production_configuration_verified": false
+}

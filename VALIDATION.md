@@ -1,4 +1,83 @@
-# Doğrulama kaydı — 2026-10-22
+# Doğrulama kaydı — 2026-10-23
+
+## Kadrom current main with multipart test commit — 23 October 2026
+
+The target advanced while this work was in progress. Source HEAD at final
+verification used source tree committed as `1276892bd62eab8838ce5a03b877c545cf67da3f`.
+Its parent `01d5857a1cb6068f1feb731dd5baa3e7b46f849f` had two frontend copy
+edits after `4c9473a`; backend tests and POM were unchanged. Upstream backend changes
+include Istanbul test timezone setup and acceptance concurrency safeguards.
+The focused multipart
+test remained byte-identical at SHA-256
+`eb2fa62d9bb6a542f35087d80cdc1378f39d437110f58bb7b450f4e7b4667d8f`.
+
+Command from `hotelapp/`:
+
+```powershell
+& 'C:\Users\user\.m2\wrapper\dists\apache-maven-3.9.16\56ba1f9f\bin\mvn.cmd' -o -ntp '-Dmaven.repo.local=C:\Users\user\.m2\repository' verify
+```
+
+Windows, Java 17.0.18, Maven 3.9.16, in-memory H2 `test` profile. Result:
+**725 unit + 45 integration tests, 0 failures, 0 errors, 0 skipped; BUILD
+SUCCESS**, completed `2026-10-23T10:29:45+03:00` after 6 minutes 40 seconds.
+It includes all six
+`MultipartFunctionalControlsTest` methods. The ordinary small PNG request was
+accepted by ephemeral Tomcat 11.0.27; external storage was mocked. Malformed
+parser errors and temp-file cleanup remain untested. Run metadata and
+test-source hash are in [current-source-verify.json](audit/2026-10-22-multipart-functional-followup/current-source-verify.json).
+
+GitHub Actions run [39861668186](https://github.com/calsgnkadir/hotel-platform/actions/runs/39861668186)
+for the backend-equivalent `4c9473a` completed with backend `mvn verify`,
+frontend and E2E jobs all successful. Run
+[39915595907](https://github.com/calsgnkadir/hotel-platform/actions/runs/39915595907)
+completed successfully for the exact two-copy-change `01d5857` source, before
+the multipart test commit. After pushing `1276892`, Actions run
+[39919982298](https://github.com/calsgnkadir/hotel-platform/actions/runs/39919982298)
+completed successfully on test commit `1276892`; backend, frontend and E2E
+jobs all passed at `2026-10-23T07:55:59Z`. The earlier `d96b835`
+backend failure has public log access 403;
+the intervening timezone commit is consistent with resolving UTC-midnight test
+flakiness, but the exact failing test is unconfirmed. This current remote run
+is independent of the Windows local result. Neither is a deployment.
+
+## Kadrom intermediate `d96b835` verification and multipart — 23 October 2026 (superseded)
+
+Source HEAD: `.dxa/a04-kadrom-source` commit
+`d96b8359a4121437d45c1ae1a4926f4647f7b00e` (fast-forward from `c3ce102`).
+The upstream update adds the Boot 4 Flyway starter and subsequent product
+changes; earlier 665/665 results do not describe this source. The current
+uncommitted coordinator regression is
+`hotelapp/src/test/java/com/hotelapp/service/MultipartFunctionalControlsTest.java`,
+SHA-256 `eb2fa62d9bb6a542f35087d80cdc1378f39d437110f58bb7b450f4e7b4667d8f`.
+
+Focused ordinary multipart command from `hotelapp/`:
+
+```powershell
+& 'C:\Users\user\.m2\wrapper\dists\apache-maven-3.9.16\56ba1f9f\bin\mvn.cmd' -o -ntp '-Dmaven.repo.local=C:\Users\user\.m2\repository' '-Dtest=MultipartFunctionalControlsTest' test
+```
+
+Result: **6 tests, 0 failures, 0 errors, 0 skipped; BUILD SUCCESS**. One valid
+1x1 PNG request returned HTTP 200 through ephemeral loopback Tomcat 11.0.27 to
+a diagnostic servlet; real storage-service paths and rejection controls used
+mocked Cloudinary. No product auth/controller chain, production limits,
+malformed input, parser cleanup, database, external provider or Docker was
+tested. Details and structured result:
+[multipart audit](audit/2026-10-22-multipart-functional-followup/README.md).
+
+Afterward the coordinator ran local Maven `verify` on the same source plus the
+same test file:
+
+```powershell
+& 'C:\Users\user\.m2\wrapper\dists\apache-maven-3.9.16\56ba1f9f\bin\mvn.cmd' -o -ntp '-Dmaven.repo.local=C:\Users\user\.m2\repository' verify
+```
+
+Result: **713 unit + 45 integration tests, 0 failures/errors/skips; BUILD
+SUCCESS**, Windows, Java 17.0.18, Maven 3.9.16, test profile H2. GitHub CI run
+39852706081 on this HEAD reported backend failure, frontend/E2E success; the
+public log request returned 403. Local `verify` did not reproduce the remote
+failure, whose cause remains unknown. The test output summary was captured at
+`.dxa/a04-kadrom-source/hotelapp/target/r7-current-verify.log` (ignored local
+build output, not shared). See [remote CI review](audit/2026-10-23-kadrom-current-ci-review/README.md).
 
 ## Kadrom final Boot 4 / BCrypt / A04 full suite — 2026-10-22
 

@@ -1,6 +1,50 @@
-# Güncel devam noktası — 22 Ekim 2026
+# Güncel devam noktası — 23 Ekim 2026
 
-## Koordinatörün son doğrulaması — 22 Ekim, 16:38 Europe/Istanbul
+## Güncel koordinasyon — multipart, R7 kimliği ve R3–R6 kabulü
+
+- **R3/R4/R5/R6 tamam:** QA uzmanı mevcut kabul kayıtlarını ve kaynakları
+  karşılaştırdı; yeni zorunlu açık madde bulmadı. Dokuz paket modülü hash'i
+  release kanıtıyla 9/9 eşleşti. Önceki “R4 corpus/coverage sıradaki iş”
+  ifadem hatalıydı; isteğe bağlı genişleme teknik kapanışı yeniden açmaz.
+  [Kabul uzlaştırması](audit/2026-10-22-r3-r6-acceptance-reconciliation/README.md).
+- **Multipart:** Kullanıcı artık testi uzmana verdi. Küçük geçerli PNG ile
+  loopback Tomcat multipart POST ve mock provider kullanan servis kontrolleri
+  **6/6**, sıfır failure/error/skip geçti. Tanısal servlet ürün controller/auth
+  zinciri değildir. Önceden otomatik kontrolde engellenen malformed-parser
+  senaryosu tekrar edilmedi; parser-error cleanup doğrulanmış değildir.
+  [Yeni kayıt](audit/2026-10-22-multipart-functional-followup/README.md).
+- **R7 bounded araştırma tamam:** Kadrom main `1276892` (bu oturumdaki test-only
+  commit; parent `01d5857` iki frontend metin değişikliği içeriyordu),
+  Maven `com.hotelapp:hotel-student-platform:0.0.1-SNAPSHOT`. Public release/tag
+  yok; resmî destek politikası bulunmadı. Yerel araştırma kaynağı kesin olarak
+  belirlendi; bu snapshot desteklenen semver yayın olarak etiketlenmiyor. Güncel
+  248-coordinate OSV snapshot'ı 248 satır ve 0 eşleşme verdi; R7 owner raporu
+  bu workspace'e teslim edildi. Yeni CVE/disclosure iddiası yok.
+  [Kimlik kaydı](audit/2026-10-23-r7-source-identity/README.md).
+- **Yeni upstream:** Kadrom `d96b835`, `4c9473a` ve sonra frontend-only `01d5857`'ye
+  fast-forward edildi. Aradaki backend değişiklikleri Flyway starter, iş
+  kuralları/eşzamanlılığı ve CI test timezone ayarlarını içeriyor. Önceki 665/665 suite
+  yeni HEAD için geçerli sayılmıyor; güncel verify sonucu aşağıda.
+- **Doğrulama:** Commit `1276892` içeriğiyle aynı çalışma ağacında yerel `mvn verify`
+  **725 unit + 45 integration**, sıfır failure/error/skip, BUILD SUCCESS verdi.
+  GitHub Actions `39915595907` parent `01d5857` commit'inde başarıyla tamamlandı;
+  test commit'i `1276892` için CI `39919982298` backend, frontend ve E2E işleri
+  başarıyla tamamlandı. Önceki
+  `39861668186` backend/frontend/E2E işlerini de geçti. Önceki `d96b835`
+  backend hatasının logu 403
+  nedeniyle erişilemedi; timezone değişikliğiyle çözülmüş olması olası, kesin
+  başarısız test bilinmiyor. [CI incelemesi](audit/2026-10-23-kadrom-current-ci-review/README.md).
+
+### Güncel sonraki adım
+
+Multipart olağan işlevsel kontrolleri A05'e kaydedildi; malformed parser-error
+cleanup hâlâ otomatik güvenlik engeli nedeniyle doğrulanamadı. A05'in kalan
+dar follow-up'ı bu acceptance sınırıdır. R7 bounded yerel araştırması ve R3–R6
+kabulü tamamlandı. Dış disclosure/gönderim yapılmadı. Sıradaki toolkit işi için
+ROADMAP'in açık, uygulanabilir maddeleri arasından yeni kapsam seçilir; R4
+corpus genişletmesi zorunlu bir devam işi değildir.
+
+## Önceki doğrulama — 22 Ekim, 16:38 Europe/Istanbul
 
 - **A04:** ROADMAP’in seçilmiş list/role, üç candidate work-session GET ve iki
   business-owner ID GET ölçütü sentetik local hesap/fixture’larla karşılandı;
@@ -34,14 +78,10 @@
 
 ### Sıradaki iş
 
-Kullanıcı multipart retestini kendi sonraki adımında tamamlayacak. Ardından
-multipart sonucunu A05’e ekleyip supported-release/effective graph sorularını
-yeniden değerlendir. Bot roadmap sırası içinde kalan ana teknik iş R4
-corpus/coverage genişletmesi. R7 için public exact-coordinate advisory lookup
-artık kaydedildi; sıradaki adım Kadrom’un desteklenen ürün sürümünü ve
-yayınlanan artifact koordinatını doğrulamak, sonra owner’ın uygun disclosure
-kanalına karar vermesidir. A04’ü tekrar açmak için yeni yetki bulgusu veya
-seçili route regression gerekir.
+Bu tarihsel devam noktası yukarıdaki 23 Ekim kaydıyla güncellendi. R4'ü açık
+iş olarak gösteren önceki cümle kabul kayıtlarıyla çeliştiği için düzeltildi.
+Multipart artık kullanıcı tarafından uzmana atanmış durumda; güncel kaynak
+kimliği ve gerçek test sonuçları üstteki kayıtlardadır.
 
 ## Son teslim — A04 regresyonu, Kadrom BCrypt düzeltmesi ve R7 devamı
 

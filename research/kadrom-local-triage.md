@@ -2,6 +2,24 @@
 
 **Date:** 22 October 2026. **Roadmap:** R7 / A04 / A05. **Status:** draft prepared for the product owner in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. The BCrypt byte-boundary remediation and tests are recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); target commit `6be6a07` was merged with upstream Vite commit `ba38bd3` and pushed as `c3ce102`. The target remains undeployed. Other A05/R7 questions remain open.
 
+**Coordinator disposition — 23 October 2026:** The local research identity is
+the owner's repository `calsgnkadir/hotel-platform`, `main` at
+`1276892` (the only later changes from `4c9473a` are two frontend text edits
+and the authorized multipart test), backend source coordinate
+`com.hotelapp:hotel-student-platform:0.0.1-SNAPSHOT`. Public tags/releases and a
+formal support policy were not found, so this is recorded as a dated source
+snapshot rather than a supported product release. The [current dependency
+snapshot](../audit/2026-10-23-r7-source-identity/README.md) checked 248 resolved
+Maven coordinates against OSV and returned 248 rows with zero matches; the
+current `1276892` tree was confirmed byte-identical in its resolved dependency
+tree and coordinate set to the queried `d96b835` tree. This is
+not proof of no vulnerability or of a deployed production graph. The earlier
+BCrypt behavior matched Spring's existing CVE-2025-22228 advisory and the fix
+is committed in the current source lineage. This report was handed to the
+product owner in this workspace. **Bounded local R7 research is complete**;
+there was no new CVE, external disclosure, or CVE assignment. A05 remains
+separate because malformed-parser cleanup could not be safely verified.
+
 **Coordinator update — 22 October 2026:** The final local Kadrom source tree now
 uses Boot 4.1.1 / Security 7.1.1, the Boot 4 Resilience4j integration and
 additional dependency fixes. Its complete Maven test suite passed 665/665
@@ -103,6 +121,6 @@ Product-identity known-record searches remain **partial/inconclusive**. A later 
 
 The intended review recipient is the user/product owner in the current authorized workspace. Review status is **prepared for coordinator/owner disposition**; no contact or transmission occurred. The user's new authorization covers local Kadrom remediation work, not external disclosure or messaging. A private maintainer/program disclosure endpoint and its current policy have not been verified. No external channel is selected or used based merely on a repository URL. If the owner later requests external submission, verify the product's private reporting route and permission before preparing the destination-specific message. No bounty eligibility, duplicate acceptance, maintainer acknowledgement or public disclosure status is claimed.
 
-The parallel [multipart task record](../audit/2026-10-22-a05-multipart-bounded/README.md) and helper are preparation only. The specialist was stopped by an automatic possible-cybersecurity-risk flag before runtime execution; the blocked action was not rerun. The user has reserved multipart testing for their own follow-up after this conversation. No request, cleanup result, successful security control or negative advisory result is inferred from that block. The BCrypt local implementation and focused retest are recorded separately; external submission remains outside this authorization.
+The earlier [multipart parser task record](../audit/2026-10-22-a05-multipart-bounded/README.md) was blocked before malformed-input runtime execution and that action was not rerun. A separately scoped [ordinary multipart functional test](../audit/2026-10-22-multipart-functional-followup/README.md) later passed a valid small upload and ordinary validation controls. It does not establish malformed-parser cleanup, production limits or proxy/WAF behavior. The BCrypt remediation and exact current product identity are recorded separately; external submission remains outside this authorization.
 
 The evidence types here are pinned source, dependency metadata, recorded local authentication/HTTP observations, and official advisory/fix text. Reflection, resource callbacks, sink observation and browser execution were not produced by this report or by the BCrypt check. In the toolkit contracts, reflection/callback are not execution; CID-matched browser execution would still require separate vulnerability triage. The HTTP 500 and unresolved checks above are not safe results. The local BCrypt remediation advances this one A05 lead; it does not close A05/R7, establish rollout or production state, resolve remaining dependency/identity questions, or authorize external submission.

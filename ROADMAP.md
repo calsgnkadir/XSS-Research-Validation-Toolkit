@@ -1,23 +1,30 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-**22 Ekim güncel durum — A04 / A05 / R7:** A04'ün roadmap'teki seçilmiş GET
+**23 Ekim güncel durum — A04 / A05 / R7 / R3–R6:** A04'ün roadmap'teki seçilmiş GET
 rotaları için bounded kabulü tamamlandı; ürün-geneli güvenlik iddiası değildir.
 BCrypt'in 72 UTF-8 bayt düzeltmesi ve Boot 4.1.1 / Security 7.1.1 yükseltmesi
-sonrasında 665/665 Kadrom testi geçti. Boot 4 uyumluluğu için Resilience4j
+sonrasında önceki kaynakta 665/665 Kadrom testi geçti; güncel test-only commit
+`1276892` ile toplam verify 770/770 geçti. Boot 4 uyumluluğu için Resilience4j
 2.4.0 Boot 4 modülü ve AspectJ starter eklendi; testlerde H2 2.4.240'ın
 Hibernate enum CHECK hatası 2.3.232 test sürümüyle giderildi. Son Maven ağacının
-246 koordinatlık OSV querybatch snapshot'ında 246 yanıt satırı ve 0 eşleşme
+248 koordinatlık OSV querybatch snapshot'ında 248 yanıt satırı ve 0 eşleşme
 vardı; bu “CVE yok” veya üretim ağacı sonucu değildir. Ayrıntı:
 [remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) ·
 [bağımlılık taraması](audit/2026-10-22-a05-dependency-refresh/README.md).
-Kadrom düzeltmesi `c3ce102` olarak GitHub `main` dalına push edildi; henüz deploy
-edilmedi. Toolkit kanıt güncellemesi `ee85c4e` olarak push edildi. A05'in BCrypt
-alt işi kapandı; umbrella A05, kullanıcının ayırdığı multipart retesti ve
-kalan runtime/ürün-kimliği belirsizlikleri nedeniyle kısmi kalır. R7 owner-review
-rapor paketi hazır bir alt teslimdir; resmi ürün-kimliği sorguları
-exact-coordinate sorgularda 0 sonuç verdi, ancak supported release/deployed
-artifact identity bilinmiyor ve disclosure kanalı seçilmediği için R7 takibi
-açıktır. [R7 durum kaydı](audit/2026-10-22-r7-authorization-followup/README.md).
+Kadrom main `1276892`'ye test-only multipart kontrolü push edildi (parent
+`01d5857` iki frontend metin değişikliği içeriyordu). Aynı çalışma ağacında
+yerel verify 725 unit + 45 integration test ile geçti; GitHub Actions
+39919982298'de backend, frontend ve E2E işleri başarılı oldu.
+Parent commit CI 39915595907 de başarılı oldu. Önceki `d96b835`
+backend hatasının public log erişimi 403 olduğu için kök neden bilinmiyor.
+Multipart olağan işlevsel testleri 6/6 geçti; malformed parser cleanup hâlâ
+doğrulanmadı. A05 bu dar sınır nedeniyle kısmi. R7 bounded yerel araştırması
+tamamlandı: kaynak kimliği `1276892`, public
+tag/release veya formel destek politikası yok; desteklenen semver yayın iddiası
+yok. Güncel 248-coordinate OSV sorgusu 248 satır/0 eşleşme verdi; bu üretim
+ağacı veya CVE yokluğu kanıtı değil. Owner report workspace'e teslim edildi;
+dış disclosure yapılmadı. [R7 kimliği](audit/2026-10-23-r7-source-identity/README.md).
+R3/R4/R5/R6 kabul kapsamı tamam; [uzlaştırma](audit/2026-10-22-r3-r6-acceptance-reconciliation/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla
@@ -335,11 +342,11 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R9 | R0–R6 tamam; `v0.1.0` GitHub Release yayımlandı (PyPI hariç). R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 açık | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R9 | R0–R6 tamam; `v0.1.0` GitHub Release yayımlandı (PyPI hariç). R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 source kimliği ve yerel advisory taraması bounded tamam | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
-| 5 | Araştırma/CVE A01–A05 / R7 | A01–A03 tarihsel iddia sınırları yazıldı; A04 seçili local iki-hesap list/work-session/owner-read GET kontrolleri bounded olarak tamamlandı; test edilmeyen uçlar açık. A05 21 direct + 127 transitive sorgu, 93 range eşleşmesi ve 92 advisory source triage tamamlandı. BCrypt: synthetic registration + different-suffix login reproduced advisory-matching behavior on pinned 6.2.4; real-account impact not tested. New offline UTF-8 library/policy assay: 73/74/75-byte pairs matched with equal first72 bytes; nine calls, no Unicode endpoint run. Sort: one malformed input returned 500, no StackOverflow, health 200. Micrometer local diagnostic filter/metric recording confirmed; one bodyless A05CHECK returned 400, method=UNKNOWN, health-before/after 200; raw-method retention/DoS not reproduced. Multipart effective file/request limits 20/25 MiB, threshold 0, temp/connector values read; dedicated part-count getters absent, parser cleanup/proxy conditions untested. RFD/Nimbus limits retained; X.509 range conflict remains. R7/A05 open | Product/commit/role/scope/record triage; any Kadrom source remediation requires a distinct, explicit target-change authorization |
+| 5 | Araştırma/CVE A01–A05 / R7 | A04 seçilmiş GET rotalarında bounded kabul edildi. BCrypt düzeltmesi test edildi; A05 olağan multipart kontrolleri 6/6 ve Kadrom test-only commit `1276892` full verify 770/770 geçti. Malformed parser cleanup doğrulanmadı; diğer advisory koşulları kanıt sınırlarıyla tutuluyor. R7 yerel kaynak kimliği ve 248 Maven koordinatlık OSV taraması bounded tamam; OSV 0 eşleşme güvenlik yokluğu anlamına gelmez | Açık, sınırlı hipotezleri authorized local fixture testleri veya kaynak incelemesiyle kapat; dış disclosure yok |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
 **kanıt bekliyor** tarihsel iddia bağımsız doğrulanamıyor; **ertelendi** kapsamdan silinmedi.
@@ -950,8 +957,8 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
 | A04 — bounded tamam | Kadrom local demo list/role, üç candidate work-session GET ve iki business-owner ID GET iki hesapla sınandı; [owner runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) · [kapsam](audit/2026-10-22-a04-scope-completeness/README.md) · [work-session runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Seçilen/sınanan yollar sentetik local veride beklenen sahiplik/403 davranışını verdi; attendance pozitif kontrolü boş kayıt döndürdü. Normal clock-in, diğer rol/uçlar, ürün sürümü ve ürün-geneli güvenlik kapsam dışı. Bu sınırlı kabulde aday gözlenmedi |
-| A05 | Kadrom selected dependency/advisory triage and remediation; historical source/runtime records remain linked above. Latest local work: [BCrypt remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) · [dependency refresh + OSV snapshot](audit/2026-10-22-a05-dependency-refresh/README.md) · [multipart boundary](audit/2026-10-22-a05-multipart-bounded/README.md) | BCrypt input guard and Boot 4 dependency fixes accepted for the pinned local source; full Maven test suite 665/665, no failures/errors/skips. Final dependency tree: 246 distinct JAR coordinates, OSV returned 246 rows with 0 matches. This closes the BCrypt remediation and bounded dependency snapshot only. Multipart runtime is reserved for the user; product-release/effective-production applicability and some advisory/identity questions remain. A05 umbrella is partial. |
-| R7 | Kadrom product research and owner-review report: [report](research/kadrom-local-triage.md) · [authorization / identity lookup](audit/2026-10-22-r7-authorization-followup/README.md) · [dependency dispositions](audit/2026-10-22-a05-advisory-disposition/README.md) | Owner-review packet prepared is a completed sub-deliverable. Exact local Maven coordinate GitHub GHSA and OSV lookups were evaluable and returned 0 records; public repo issues/releases/tags are empty and repo security-advisories returned 404 (inconclusive for private advisories). Full criterion remains open because no supported product release/deployed artifact identity is established and owner has not selected an appropriate channel/follow-up. No “no advisory” conclusion is supported. |
+| A05 | Kadrom selected dependency/advisory triage and remediation; historical source/runtime records remain linked above. Latest: [BCrypt remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) · [dependency refresh](audit/2026-10-22-a05-dependency-refresh/README.md) · [ordinary multipart result](audit/2026-10-22-multipart-functional-followup/README.md) | BCrypt remediation and selected local dependency snapshot passed on the earlier source; ordinary valid multipart/Tomcat 11.0.27 test passed 6/6 on current `d96b835`; full local `verify` on that source passed 713 unit + 45 integration tests. Malformed parser-error cleanup remains unverified after the earlier test was auto-blocked. Remote backend CI failed but did not reproduce locally; cause is unknown. A05 remains partial for that specific runtime/advisory boundary and current dependency scan. |
+| R7 | Kadrom local product research and owner report: [report](research/kadrom-local-triage.md) · [source identity](audit/2026-10-23-r7-source-identity/README.md) · [prior exact-coordinate query](audit/2026-10-22-r7-authorization-followup/README.md) · [dependency dispositions](audit/2026-10-22-a05-advisory-disposition/README.md) | Research target is owner repository `calsgnkadir/hotel-platform`, source `main` at `d96b8359a4121437d45c1ae1a4926f4647f7b00e`, backend POM `0.0.1-SNAPSHOT`; no public releases/tags or tracked support policy. This is the exact local-source identity, not a published supported release. Owner report is prepared in this workspace; no external disclosure or CVE assignment is claimed. Exact current-source dependency scan is being refreshed. |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 
