@@ -1,0 +1,2 @@
+# Preserve the exact upstream bytes checked by the vendored-schema digest.
+tools/dom-xss-analyzer/schemas/sarif-schema-2.1.0.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

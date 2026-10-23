@@ -61,6 +61,27 @@ not part of this evidence package. Local acceptance is separate from hosted CI.
 
 ## Boundaries
 
+Delivery commit `119d7acd837072b1b5f95549780f78e36682dd0b` was pushed to
+`origin/main`; a subsequent fetch confirmed HEAD equals origin/main. General
+CI run `39952400914` and K01 Linux run `39952400880` started for that exact SHA.
+K01 Linux, required proof and optional browser jobs completed successfully.
+The main analyzer job failed **880 passed / 62 skipped / 1 failed**: Git's
+line-ending normalization changed the original CRLF schema bytes to LF on
+Linux, breaking the strict provenance digest. `git ls-files --eol` confirmed
+`i/lf w/crlf`. The follow-up adds a narrowly scoped `.gitattributes -text`
+rule and re-stages the original upstream bytes; the digest oracle remains
+strict. The Linux installed-package gate passed all nine controls before the
+test-suite failure. No downloaded-artifact review is claimed.
+
+After applying the attribute and explicitly re-staging the schema, Git reported
+`i/crlf w/crlf attr/-text`. The staged blob and raw working file both had Git
+object ID `534d35da2b8450502d9256a6c699dfe40f5b1ed5`, proving the index holds
+the exact verified file bytes. The file-scoped whitespace rule recognizes CRLF
+without disabling other whitespace checks. Focused follow-up command
+`py -3.10 -m pytest tools/dom-xss-analyzer/test_sarif.py -q -p no:cacheprovider --tb=short`
+passed **116/116** in 27.46s. Runtime source and strict digest oracle are unchanged
+from the 468-test local acceptance; this follow-up corrects Git checkout bytes.
+
 The vendored OASIS schema validates SARIF structure offline, not hosting-service
 support. No code-scanning upload, browser execution, vulnerability confirmation,
 external target scan, release replacement or PyPI publication occurred. Raw

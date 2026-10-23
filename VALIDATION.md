@@ -26,6 +26,25 @@ Wheel SHA-256 `adf7543c9bb7170924ed9c9bf8226622168dd789ab56b259b1e2c8fde99e729e`
 The local test wheel is not a replacement for the published release artifact.
 Hosted CI is tracked separately; no hosted success is inferred from local tests.
 
+Delivery commit `119d7acd837072b1b5f95549780f78e36682dd0b` was pushed and
+verified equal to `origin/main` after fetch. Its
+[K01 Linux run 39952400880](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39952400880)
+completed successfully. General CI run `39952400914` passed required proof and
+optional browser jobs but failed the main analyzer job: **880 passed, 62
+skipped, 1 failed**. The sole failure was the vendored schema byte digest:
+Windows working bytes were original CRLF (`ad6db4...`), while Git normalized
+the stored blob to LF (`2b19d2358baef0251d7d24e208d05ffabf1b2a3ab5e1b3a816066fc57fd4a7e8`).
+The installed Linux gate had already passed 9 controls before that failure.
+A narrow `.gitattributes -text` rule preserves the original schema bytes for
+the follow-up. No downloaded-artifact review is claimed.
+
+Follow-up: original schema bytes re-staged with `i/crlf w/crlf attr/-text`;
+raw working file and staged blob Git object IDs both
+`534d35da2b8450502d9256a6c699dfe40f5b1ed5`. Focused unchanged SARIF suite
+rerun with `py -3.10 -m pytest tools/dom-xss-analyzer/test_sarif.py -q -p no:cacheprovider --tb=short`:
+**116 passed**, zero failures/errors/skips, 27.46s. Existing runtime source
+and the original strict schema digest are unchanged. Hosted follow-up pending.
+
 ## Kadrom current source `b374095` plus A04/A05 regressions — 23 October 2026
 
 The local Kadrom checkout was at `b374095344f7b871bbadc4eef571760fd380f9ab`
