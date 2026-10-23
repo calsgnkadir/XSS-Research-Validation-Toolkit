@@ -1,5 +1,18 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-23 E02 SARIF
+
+- Added offline `dxa-sarif` and scanner `--sarif-out` exports from the common
+  R1 evidence envelope. Observations remain review/none; error and skip events
+  mark invocation unsuccessful. Invalid input fails explicitly, and saved-input
+  conversion preserves existing output on validation failure.
+- Output omits raw observations, URLs, event reasons and identifiers; safe
+  relative source locations and a correlation hash remain. Absolute static
+  paths produce result rows without a source location. No upload/release change.
+- Offline normative schema and independent regression coverage, plus installed
+  CLI checks for all 11 modules: **468 tests and 9 installed controls passed**.
+  [Acceptance and limits](audit/2026-10-23-e02-sarif/README.md).
+
 ## Unreleased — 2026-10-22 R7/A04–A05 continuation
 
 - Three specialists were invoked concurrently under the user's updated limit;

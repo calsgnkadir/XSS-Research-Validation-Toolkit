@@ -135,11 +135,14 @@ def main():
                     help="extra header 'Name: value' (repeatable)")
     ap.add_argument("--json-out", default="")
     ap.add_argument("--html", default="")
+    ap.add_argument("--sarif-out", metavar="FILE", default="",
+                    help="write a SARIF 2.1.0 report")
     args = ap.parse_args()
     dxadyn.REPORT_EVENTS.clear()
     dxadyn.SKIPPED_SUBMITS.clear()
-    if args.json_out and args.html and os.path.abspath(args.json_out) == os.path.abspath(args.html):
-        ap.error("JSON and HTML outputs must have distinct paths")
+    output_paths = [path for path in (args.json_out, args.html, args.sarif_out) if path]
+    if len({os.path.abspath(path) for path in output_paths}) != len(output_paths):
+        ap.error("JSON, HTML, and SARIF outputs must have distinct paths")
 
     if args.cookie:
         dxadyn.apply_cookie(args.cookie)
@@ -162,10 +165,14 @@ def main():
         f["origin"] = "crawl-discovered"
     hint_findings = probe_hints(args.url, hints)
     all_findings = dyn_findings + hint_findings
-    dxadyn.write_json_report(args.json_out, all_findings, "static-guided")
+    document = dxadyn.write_json_report(
+        args.json_out, all_findings, "static-guided",
+        for_html=bool(args.html), for_sarif=bool(args.sarif_out))
+    if args.sarif_out:
+        dxadyn.write_sarif_report(args.sarif_out, document)
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
-            fh.write(dxadyn.render_html(all_findings, args.url, "static-guided"))
+            fh.write(dxadyn.render_html(all_findings, args.url, "static-guided", document=document))
 
     if not all_findings:
         print("No unencoded reflections. Static-side flags remain (below);")

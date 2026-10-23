@@ -13,16 +13,19 @@ dependencies = []
 
 [project.optional-dependencies]
 browser = ["playwright==1.63.0"]
+test = ["pytest", "jsonschema>=4.18,<5"]
 
 [project.scripts]
 dxa = "dxa:main"
 dxadyn = "dxadyn:main"
 dxaprove = "dxaprove:main"
+dxa-sarif = "dxa_sarif_cli:main"
 
 [tool.setuptools]
 py-modules = [
   "dxa", "dxadyn", "dxaprove", "dxadom", "dxa_evidence",
-  "dxa_callback", "dxa_attempts", "dxa_proof_lab", "dxa2dyn"
+  "dxa_callback", "dxa_attempts", "dxa_proof_lab", "dxa2dyn", "dxa_sarif",
+  "dxa_sarif_cli"
 ]
 
 [tool.setuptools.package-dir]

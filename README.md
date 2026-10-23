@@ -72,6 +72,11 @@ HTTP modları ortak bulgu üreticisi kullanır: ham marker ve JSON yanıtı exec
 sayılmaz. `--json-out` ve `--html` aynı finding'leri raporlar.
 [Kanıt modeli ve uyumluluk değişiklikleri](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
 
+Source checkouts also provide offline [SARIF 2.1.0 export](tools/dom-xss-analyzer/SARIF.md):
+`dxa-sarif evidence.json --output evidence.sarif`. Results preserve observation
+and triage categories as review records, without vulnerability severity or
+execution claims. This addition is unreleased; the existing release asset is unchanged.
+
 **R1 kabul kapsamı tamamlandı:** resmî kanıt sözleşmesi, statik/HTTP/DOM/journal
 ortak raporları, hata/atlama olayları ve rol/sink ayrımını koruyan dedup.
 [Madde bazında kapanış](audit/2026-10-05-r1/R1-KAPANIS.md).

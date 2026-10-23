@@ -1045,14 +1045,16 @@ def main():
     ap.add_argument("--json", action="store_true", help="emit JSON instead of text")
     ap.add_argument("--json-out", metavar="FILE", help="write common R1 evidence report")
     ap.add_argument("--html", metavar="FILE", help="write a self-contained HTML report to FILE")
+    ap.add_argument("--sarif-out", metavar="FILE", help="write a SARIF 2.1.0 report")
     ap.add_argument("--config", metavar="FILE", help="versioned JSON static scan settings")
     ap.add_argument("--min-confidence", choices=["low", "medium", "high"],
                     help="hide findings below this confidence (overrides config; default low)")
     args = ap.parse_args()
     config = _load_cli_config(args.config, ap)
     REPORT_EVENTS.clear()
-    if args.json_out and args.html and os.path.abspath(args.json_out) == os.path.abspath(args.html):
-        ap.error("--json-out and --html must have distinct paths")
+    output_paths = [path for path in (args.json_out, args.html, args.sarif_out) if path]
+    if len({os.path.abspath(path) for path in output_paths}) != len(output_paths):
+        ap.error("--json-out, --html, and --sarif-out must have distinct paths")
     if not os.path.exists(args.target):
         REPORT_EVENTS.append(evidence.ReportEvent("static-discovery", "error", "target does not exist", args.target))
 
@@ -1075,10 +1077,15 @@ def main():
     findings = filtered
     findings.sort(key=lambda f: (-CONF_RANK[f["confidence"]], f["file"], f["line"]))
     document = (evidence.report(evidence.static_observations(findings), "static", REPORT_EVENTS)
-                if args.json_out or args.html else None)
+                if args.json_out or args.html or args.sarif_out else None)
     if args.json_out:
         with open(args.json_out, "w", encoding="utf-8") as fh:
             json.dump(document, fh, indent=2)
+    if args.sarif_out:
+        import dxa_sarif
+        sarif_document = dxa_sarif.to_sarif(document)
+        with open(args.sarif_out, "w", encoding="utf-8") as fh:
+            json.dump(sarif_document, fh, ensure_ascii=False, indent=2)
     result_code = 2 if any(event.kind == "error" for event in REPORT_EVENTS) else (1 if findings else 0)
 
     if args.html:

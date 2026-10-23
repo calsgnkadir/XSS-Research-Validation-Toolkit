@@ -971,7 +971,7 @@ Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araş
 ## Ertelenen ama kaybolmayan işler
 
 - E01 Tek dil AST pilotu: R8'de Python için tamamlandı; diğer dillere yalnız kapsam kanıtıyla genişleme ertelendi.
-- E02 SARIF: R6'nın ortak kanıt şeması sonrası; schema validation ve doğru seviye eşlemesi.
+- E02 SARIF — **tamam, 23 Ekim (bounded):** ortak R1 zarfından offline `dxa-sarif` ve scanner `--sarif-out`; normatif 2.1.0 schema, observation/triage `review`/`none`, error/skip unsuccessful, strict girdi/privacy kontrolleri. 468 regresyon + temiz installed wheel 9 kontrol geçti; 11 modül hash'i eşleşti. Absolute static path konumu ve hosting upload desteği kapsam dışı; unreleased. [Kabul](audit/2026-10-23-e02-sarif/README.md).
 - E03 Genel subdomain/dizin recon ve IoT: mevcut XSS ürün hedefi için düşük öncelik.
 - E04 Plugin API/Marketplace ve topluluk kampanyası: kullanıcı ihtiyacı ve tekrarlanabilir sürüm sonrası.
 - E05 Yeni payload/mutation: yeni ölçülmüş bağlam kapsaması varsa; sayı kotası veya 18'in matematiksel doyum iddiası yok.

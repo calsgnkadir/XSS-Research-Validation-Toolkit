@@ -1990,9 +1990,9 @@ def render_html(findings, target, mode, meta=None, events=None, document=None):
 """
 
 
-def write_json_report(path, findings, mode, meta=None, *, for_html=False):
-    """Build one sharing document for JSON and HTML, excluding auth/flow vars."""
-    if not path and not for_html:
+def write_json_report(path, findings, mode, meta=None, *, for_html=False, for_sarif=False):
+    """Build one sharing document for configured exports, excluding auth/flow vars."""
+    if not path and not for_html and not for_sarif:
         return None
     meta = dict(meta or {}, session_check=SESSION_CHECK, session_role=SESSION_ROLE)
     document = evidence.report(findings, mode, REPORT_EVENTS, meta)
@@ -2002,12 +2002,26 @@ def write_json_report(path, findings, mode, meta=None, *, for_html=False):
     return document
 
 
+def write_sarif_report(path, document):
+    """Write a SARIF view of the already validated common R1 report."""
+    if not path:
+        return
+    import dxa_sarif
+    sarif_document = dxa_sarif.to_sarif(document)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(sarif_document, fh, ensure_ascii=False, indent=2)
+
+
 def write_failure_reports(args, mode, reason):
     REPORT_EVENTS.append(evidence.ReportEvent(mode, "error", reason))
-    document = write_json_report(args.json_out, [], mode, for_html=bool(args.html))
+    document = write_json_report(args.json_out, [], mode,
+                                 for_html=bool(args.html),
+                                 for_sarif=bool(args.sarif_out))
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:
             fh.write(render_html([], "", mode, document=document))
+    if args.sarif_out:
+        write_sarif_report(args.sarif_out, document)
 
 
 def _parse_kv_list(text):
@@ -2614,6 +2628,8 @@ def main():
                     help="operator-supplied role label for stored blind journal; not verified auth")
     ap.add_argument("--json-out", metavar="FILE", default="",
                     help="versioned HTTP/DOM findings and operational events")
+    ap.add_argument("--sarif-out", metavar="FILE", default="",
+                    help="write a SARIF 2.1.0 view of the common R1 report")
     ap.add_argument("--auth-check", metavar="JSON", help="Target-specific session check file: url and expect JSONPath/value map; mismatch stops scanning")
     args = ap.parse_args()
     config = _load_cli_config(args.config, ap)
@@ -2650,10 +2666,11 @@ def main():
         ap.error("choose form CSRF or header CSRF for stored submission; use --csrf-field '' for header mode")
     if not math.isfinite(args.rate) or args.rate < 0:
         ap.error("--rate must be finite and >= 0; 0 means unlimited")
-    if args.json_out and args.html:
+    output_paths = [path for path in (args.json_out, args.html, args.sarif_out) if path]
+    if output_paths:
         from pathlib import Path
-        if Path(args.json_out).resolve() == Path(args.html).resolve():
-            ap.error("--json-out and --html must have distinct paths")
+        if len({Path(path).resolve() for path in output_paths}) != len(output_paths):
+            ap.error("--json-out, --html, and --sarif-out must have distinct paths")
 
     # Wire Phase 0.2 CLI flags into the module-level state that _record_skip reads
     global VERBOSE, WAF_LOG_FILE
@@ -2695,20 +2712,28 @@ def main():
             import dxadom
         except ImportError as e:
             REPORT_EVENTS.append(evidence.ReportEvent("browser", "error", "harness import failed", args.url or ""))
-            document = write_json_report(args.json_out, [], "dom", for_html=bool(args.html))
+            document = write_json_report(args.json_out, [], "dom",
+                                         for_html=bool(args.html),
+                                         for_sarif=bool(args.sarif_out))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
                     fh.write(render_html([], args.url or "", "dom", document=document))
+            if args.sarif_out:
+                write_sarif_report(args.sarif_out, document)
             print(f"[dxadom] harness import failed: {e}", file=sys.stderr)
             sys.exit(2)
         print(dxadom.summarize_availability())
         ok, reason = dxadom.is_available()
         if not ok:
             REPORT_EVENTS.append(evidence.ReportEvent("browser", "skip", "browser unavailable", args.url or ""))
-            document = write_json_report(args.json_out, [], "dom", for_html=bool(args.html))
+            document = write_json_report(args.json_out, [], "dom",
+                                         for_html=bool(args.html),
+                                         for_sarif=bool(args.sarif_out))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
                     fh.write(render_html([], args.url or "", "dom", document=document))
+            if args.sarif_out:
+                write_sarif_report(args.sarif_out, document)
             sys.exit(2)
         if not args.url:
             # No URL given: the operator just wanted the availability
@@ -2723,10 +2748,14 @@ def main():
         dom_findings, dom_events = evidence.dom_observations(summary, SESSION_ROLE)
         REPORT_EVENTS.extend(dom_events)
         record_response_event("browser-navigation", args.url, summary.get("status"))
-        document = write_json_report(args.json_out, dom_findings, "dom", for_html=bool(args.html))
+        document = write_json_report(args.json_out, dom_findings, "dom",
+                                     for_html=bool(args.html),
+                                     for_sarif=bool(args.sarif_out))
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
                 fh.write(render_html(dom_findings, args.url, "dom", document=document))
+        if args.sarif_out:
+            write_sarif_report(args.sarif_out, document)
         print(f"[dxadom] visited {summary['url']} status={summary['status']} "
               f"title={summary['title']!r} body_len={summary['body_len']}")
         # Phase 2.2: report DOM sink hits (executed sinks, not response
@@ -2880,10 +2909,14 @@ def main():
             sys.exit(2)
         print("[dxadyn] target session contract passed; role label remains operator supplied")
         if not (args.stored or args.flow or args.url):
-            document = write_json_report(args.json_out, [], "auth-check", for_html=bool(args.html))
+            document = write_json_report(args.json_out, [], "auth-check",
+                                         for_html=bool(args.html),
+                                         for_sarif=bool(args.sarif_out))
             if args.html:
                 with open(args.html, "w", encoding="utf-8") as fh:
                     fh.write(render_html([], "", "auth-check", document=document))
+            if args.sarif_out:
+                write_sarif_report(args.sarif_out, document)
             return
 
     # Phase 1.3: --flow short-circuits the stored/reflected paths. A flow
@@ -2897,10 +2930,13 @@ def main():
         summary = run_flow(flow)
         report_meta = {"steps_run": summary["steps_run"], "error": "flow failed" if summary["error"] else None}
         document = write_json_report(args.json_out, summary["verdicts"], "flow", report_meta,
-                                     for_html=bool(args.html))
+                                     for_html=bool(args.html),
+                                     for_sarif=bool(args.sarif_out))
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
                 fh.write(render_html(summary["verdicts"], summary["name"], "flow", document=document))
+        if args.sarif_out:
+            write_sarif_report(args.sarif_out, document)
         print(f"[dxadyn] flow '{summary['name']}' ran {summary['steps_run']} step(s)")
         if summary["error"]:
             print(f"[dxadyn] flow error: {summary['error']}", file=sys.stderr)
@@ -3030,7 +3066,10 @@ def main():
             meta.update({key: value for key, value in stored_auto_meta.items()
                          if key != "submit_landing"})
         document = write_json_report(args.json_out, findings, mode, meta,
-                                     for_html=bool(args.html))
+                                     for_html=bool(args.html),
+                                     for_sarif=bool(args.sarif_out))
+        if args.sarif_out:
+            write_sarif_report(args.sarif_out, document)
         _print_mutation_summary()
         if args.html:
             with open(args.html, "w", encoding="utf-8") as fh:
@@ -3105,7 +3144,10 @@ def main():
     if args.waf_bypass:
         meta["waf_bypass"] = "on"
     document = write_json_report(args.json_out, findings, "reflected", meta,
-                                 for_html=bool(args.html))
+                                 for_html=bool(args.html),
+                                 for_sarif=bool(args.sarif_out))
+    if args.sarif_out:
+        write_sarif_report(args.sarif_out, document)
     _print_mutation_summary()
     if args.html:
         with open(args.html, "w", encoding="utf-8") as fh:

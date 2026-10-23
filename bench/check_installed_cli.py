@@ -30,7 +30,9 @@ def distribution_identity(wheel_path):
                        if name.endswith(".dist-info/entry_points.txt")]
         assert len(entry_paths) == 1, "wheel must contain exactly one console-script table"
         entry_points = wheel.read(entry_paths[0]).decode("utf-8")
-        expected = "[console_scripts]\ndxa = dxa:main\ndxadyn = dxadyn:main\ndxaprove = dxaprove:main\n"
+        expected = ("[console_scripts]\ndxa = dxa:main\n"
+                    "dxa-sarif = dxa_sarif_cli:main\n"
+                    "dxadyn = dxadyn:main\ndxaprove = dxaprove:main\n")
         normalized = "\n".join(line.strip() for line in entry_points.splitlines() if line.strip()) + "\n"
         assert normalized == expected, "wheel console-script metadata mismatch"
     return {"name": "dxa-research-toolkit", "version": version}
@@ -49,7 +51,7 @@ def main():
     wheel_identity = distribution_identity(args.wheel)
     suffix = ".exe" if platform.system() == "Windows" else ""
     executables = {name: args.bin_dir.resolve() / (name + suffix)
-                   for name in ("dxa", "dxadyn", "dxaprove")}
+                   for name in ("dxa", "dxadyn", "dxaprove", "dxa-sarif")}
     root = pathlib.Path(__file__).resolve().parents[1]
     source = root / "tools/dom-xss-analyzer/dxadyn.py"
     source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
@@ -84,7 +86,8 @@ def main():
         # Check every shipped module, not just the HTTP entry point. Isolated
         # imports must resolve inside the supplied environment.
         modules = ("dxa", "dxadyn", "dxaprove", "dxadom", "dxa_evidence",
-                   "dxa_callback", "dxa_attempts", "dxa_proof_lab", "dxa2dyn")
+                   "dxa_callback", "dxa_attempts", "dxa_proof_lab", "dxa2dyn",
+                   "dxa_sarif", "dxa_sarif_cli")
         probe = subprocess.run([str(installed_python), "-I", "-c",
             "import hashlib,importlib,json,pathlib,sys; "
             "names=" + repr(modules) + "; "
@@ -108,6 +111,55 @@ def main():
             results[name + "_help"] = {"exit_code": result.returncode}
             if name == "dxadyn":
                 assert "--config" in result.stdout
+        # The converter must run using only the installed stdlib package from
+        # outside the repository, preserving observation/error distinctions.
+        saved_report = directory / "saved-r1.json"
+        sarif_output = directory / "saved-r1.sarif"
+        saved_report.write_text(json.dumps({
+            "schema_version": 1, "mode": "installed-smoke",
+            "findings": [{
+                "schema_version": 1, "finding_id": "synthetic-observation",
+                "attempt_id": None, "canary_id": None,
+                "source": {"file": "fixture.py", "line": 1},
+                "sink": {"file": "fixture.py", "line": 2},
+                "context": "unknown", "content_type": "unknown",
+                "session_role": "unspecified", "role_verified": False,
+                "evidence_level": "reflection", "triage": "unreviewed",
+                "evidence_links": [], "observations": [],
+            }],
+            "events": [{
+                "event_id": "synthetic-skip", "observed_at": 1.0,
+                "stage": "fixture", "kind": "skip", "reason": "synthetic skip",
+            }],
+            "meta": {}, "skipped_submits": 1,
+        }), encoding="utf-8")
+        conversion = subprocess.run([
+            str(executables["dxa-sarif"]), str(saved_report),
+            "--output", str(sarif_output),
+        ], cwd=directory, capture_output=True, text=True, timeout=30)
+        assert conversion.returncode == 0, "installed SARIF conversion failed"
+        sarif = json.loads(sarif_output.read_text(encoding="utf-8"))
+        assert sarif["version"] == "2.1.0"
+        run = sarif["runs"][0]
+        assert len(run["results"]) == 1
+        observation = run["results"][0]
+        assert observation["properties"]["evidence_level"] == "reflection"
+        assert observation["kind"] == "review" and observation["level"] == "none"
+        assert run["invocations"][0]["executionSuccessful"] is False
+        # Unsupported input must fail without replacing a prior valid export.
+        prior_bytes = sarif_output.read_bytes()
+        saved_report.write_text('{"schema_version":99,"findings":[]}', encoding="utf-8")
+        rejected = subprocess.run([
+            str(executables["dxa-sarif"]), str(saved_report),
+            "--output", str(sarif_output),
+        ], cwd=directory, capture_output=True, text=True, timeout=30)
+        assert rejected.returncode == 2, "installed SARIF converter accepted invalid R1 input"
+        assert sarif_output.read_bytes() == prior_bytes, "invalid input replaced valid SARIF output"
+        results["sarif_offline"] = {
+            "exit_code": conversion.returncode, "invalid_input_exit_code": rejected.returncode,
+            "observation_level_preserved": True, "skip_not_success": True,
+            "prior_output_preserved": True,
+        }
         static_source = directory / "static.py"
         static_source.write_text('HTMLResponse("constant")\nq = request.args["q"]\nHTMLResponse(q)\n', encoding="utf-8")
         static_config = directory / "static.json"

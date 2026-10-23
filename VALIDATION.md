@@ -1,5 +1,31 @@
 # Doğrulama kaydı — 2026-10-23
 
+## E02 SARIF — 23 October 2026
+
+Base `f0f42868fd05b1d7b5ba3a0228cf464b04fd5320` plus the E02 working tree.
+Windows / Python 3.10.11 / pytest 9.1.1; coordinator-approved elevated Python
+execution after sandbox WindowsApps access denial. Command:
+
+```powershell
+py -3.10 audit/2026-10-23-e02-sarif/run_validation.py
+```
+
+Nine selected test files: **468 passed, 0 failures/errors/skips** (55.11s pytest).
+Includes 116 SARIF schema/semantic/CLI cases and existing static, shared R1,
+HTTP, R2, config and packaging regressions. A prior focused run had 115 passed
+and one test-helper KeyError; QA fixed it before this successful combined run.
+No full browser suite was run. The runner then built a wheel without build
+isolation, installed without dependencies into a fresh temporary venv, and
+ran `bench/check_installed_cli.py` outside the source tree: **9 controls passed**,
+all 11 packaged module hashes matched source and wheel. Synthetic saved-input
+SARIF conversion and existing loopback fixture only; no external scan.
+
+[Result and source hashes](audit/2026-10-23-e02-sarif/result.json),
+[scope and oracle review](audit/2026-10-23-e02-sarif/README.md).
+Wheel SHA-256 `adf7543c9bb7170924ed9c9bf8226622168dd789ab56b259b1e2c8fde99e729e`.
+The local test wheel is not a replacement for the published release artifact.
+Hosted CI is tracked separately; no hosted success is inferred from local tests.
+
 ## Kadrom current source `b374095` plus A04/A05 regressions — 23 October 2026
 
 The local Kadrom checkout was at `b374095344f7b871bbadc4eef571760fd380f9ab`

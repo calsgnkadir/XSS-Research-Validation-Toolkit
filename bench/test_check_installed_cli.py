@@ -10,6 +10,7 @@ METADATA = "Metadata-Version: 2.1\nName: dxa-research-toolkit\nVersion: 1.2.3\n\
 ENTRY_POINTS = (
     "[console_scripts]\n"
     "dxa = dxa:main\n"
+    "dxa-sarif = dxa_sarif_cli:main\n"
     "dxadyn = dxadyn:main\n"
     "dxaprove = dxaprove:main\n"
 )
@@ -53,8 +54,10 @@ def test_distribution_identity_rejects_wrong_name(tmp_path):
     [
         ENTRY_POINTS.replace("dxaprove = dxaprove:main\n", ""),
         ENTRY_POINTS.replace("dxadyn = dxadyn:main", "dxadyn = other:main"),
+        ENTRY_POINTS.replace("dxa-sarif = dxa_sarif_cli:main\n", ""),
+        ENTRY_POINTS.replace("dxa-sarif = dxa_sarif_cli:main", "dxa-sarif = other:main"),
     ],
-    ids=["missing-script", "wrong-script-target"],
+    ids=["missing-script", "wrong-script-target", "missing-sarif-script", "wrong-sarif-target"],
 )
 def test_distribution_identity_rejects_invalid_console_script_mapping(
     tmp_path, entry_points

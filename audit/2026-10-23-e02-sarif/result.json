@@ -1,0 +1,116 @@
+{
+  "python": "3.10.11",
+  "tests": {
+    "tests": 468,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_selection": [
+    "tools/dom-xss-analyzer/test_sarif.py",
+    "tools/dom-xss-analyzer/test_dxa.py",
+    "tools/dom-xss-analyzer/test_static_context.py",
+    "tools/dom-xss-analyzer/test_r1_contract.py",
+    "tools/dom-xss-analyzer/test_http_evidence.py",
+    "tools/dom-xss-analyzer/test_dxadyn.py",
+    "tools/dom-xss-analyzer/test_r2_contract.py",
+    "tools/dom-xss-analyzer/test_dxa_config.py",
+    "bench/test_check_installed_cli.py"
+  ],
+  "installed": {
+    "schema_version": 1,
+    "python": "3.10.11",
+    "platform": "Windows",
+    "results": {
+      "dxa_help": {
+        "exit_code": 0
+      },
+      "dxadyn_help": {
+        "exit_code": 0
+      },
+      "dxaprove_help": {
+        "exit_code": 0
+      },
+      "dxa-sarif_help": {
+        "exit_code": 0
+      },
+      "sarif_offline": {
+        "exit_code": 0,
+        "invalid_input_exit_code": 2,
+        "observation_level_preserved": true,
+        "skip_not_success": true,
+        "prior_output_preserved": true
+      },
+      "static_config": {
+        "configured_findings": 1,
+        "override_findings": 2
+      },
+      "config": {
+        "exit_code": 0,
+        "depth": 1,
+        "observed_routes": [
+          "/",
+          "/child",
+          "/child?<query>"
+        ],
+        "html_json_depth_match": true,
+        "fixture_thread_closed": true
+      },
+      "cli_override": {
+        "exit_code": 0,
+        "depth": 0,
+        "observed_routes": [
+          "/",
+          "/child?<query>"
+        ],
+        "html_json_depth_match": true,
+        "fixture_thread_closed": true
+      },
+      "invalid_config": {
+        "exit_code": 2,
+        "secret_not_echoed": true
+      }
+    },
+    "distribution": {
+      "name": "dxa-research-toolkit",
+      "version": "0.1.0",
+      "installed_version": "0.1.0"
+    },
+    "packaged_module_sha256": {
+      "dxa": "2561203de267961cc3e247aa3708b29bca82f903d6a0e4fdb1ccb68e9ec6b718",
+      "dxadyn": "ff17cf5da967bc584594210799f6b2fdde8c557bc6acfb78821637340a5bec88",
+      "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+      "dxadom": "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+      "dxa_evidence": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+      "dxa_callback": "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+      "dxa_attempts": "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+      "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+      "dxa2dyn": "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+      "dxa_sarif": "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+      "dxa_sarif_cli": "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5"
+    },
+    "wheel_sha256": "adf7543c9bb7170924ed9c9bf8226622168dd789ab56b259b1e2c8fde99e729e",
+    "source_sha256": {
+      "tools/dom-xss-analyzer/dxadyn.py": "ff17cf5da967bc584594210799f6b2fdde8c557bc6acfb78821637340a5bec88"
+    },
+    "limits": [
+      "No browser execution claimed",
+      "No release tag created",
+      "Loopback fixture only; not a vulnerability result"
+    ]
+  },
+  "source_sha256": {
+    "pyproject.toml": "af1dd9afb6bc10a481af656fb2a75e0161f146278f60d6a385a381ecb900dd11",
+    ".github/workflows/ci.yml": "d7e6ccf904e55aff13f6e1215144d45134e73c675baeda1157413de418eab622",
+    "bench/check_installed_cli.py": "233ace07c5531746e2809627a3d7d7894bd2454b6e8ac1fd36996208edadaa5c",
+    "bench/test_check_installed_cli.py": "b989cf2ad6ec00de7a390f02c2bf59f7a35ad7773bf205cb4a0bf0ddfaf46f05",
+    "tools/dom-xss-analyzer/dxa_sarif.py": "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+    "tools/dom-xss-analyzer/dxa_sarif_cli.py": "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5",
+    "tools/dom-xss-analyzer/test_sarif.py": "f11edd6714d75ed6633b53debff4aa975add91f589f969643e5e498205e01db1",
+    "tools/dom-xss-analyzer/dxa.py": "2561203de267961cc3e247aa3708b29bca82f903d6a0e4fdb1ccb68e9ec6b718",
+    "tools/dom-xss-analyzer/dxa2dyn.py": "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+    "tools/dom-xss-analyzer/dxadyn.py": "ff17cf5da967bc584594210799f6b2fdde8c557bc6acfb78821637340a5bec88",
+    "tools/dom-xss-analyzer/dxa_evidence.py": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "tools/dom-xss-analyzer/schemas/sarif-schema-2.1.0.json": "ad6db49878699b091f3eeb765b6e29e92a34bad4da88664d000c923b549c3a25"
+  }
+}
