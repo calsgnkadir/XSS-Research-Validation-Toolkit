@@ -12,6 +12,10 @@
 - Offline normative schema and independent regression coverage, plus installed
   CLI checks for all 11 modules: **468 tests and 9 installed controls passed**.
   [Acceptance and limits](audit/2026-10-23-e02-sarif/README.md).
+- Follow-up preserves the exact vendored upstream schema bytes across Git
+  checkouts; Linux caught a CRLF/LF digest mismatch. The strict digest oracle
+  is retained, focused SARIF retest passed 116/116, and replacement Linux main
+  CI passed 881 tests with 62 skips (separate from local acceptance).
 
 ## Unreleased — 2026-10-22 R7/A04–A05 continuation
 

@@ -20,9 +20,14 @@ yerel HEAD ve `origin/main` eşitliğini doğruladı. K01 Linux `39952400880`,
 required proof ve optional browser job bu SHA için başarılı. General CI
 `39952400914` ana job'ı **880 passed / 62 skipped / 1 failed**: Git schema'nın
 CRLF baytlarını LF'ye çevirdiği için vendored checksum Linux'ta uyuşmadı.
-Koordinatör dar `.gitattributes -text` kuralıyla upstream baytlarını koruyor;
-QA schema oracle'ını inceliyor. Sonraki adım düzeltmeyi commit/push edip exact
-SHA hosted CI sonucunu doğrulamak. A05 malformed multipart
+Dar `.gitattributes -text` kuralı ve original-byte re-stage düzeltmesi
+`9769a20002c81270b17d1ec192a9b2fa4e33bfc2` olarak push edildi; fetch sonrası
+HEAD == origin/main. Değişmeyen SARIF oracle'ı tekrar **116/116** geçti.
+Bu SHA için general CI `39954873774` ana job'ı başarılı: **881 passed / 62
+skipped**, ardından 94 required negative control, 522 benchmark testi ve
+9 installed kontrol geçti. K01 Linux `39954873803` ve optional browser job
+başarılı; required authenticated-browser job hâlâ sürüyor. Sonraki adım bu
+son job sonucunu kaydetmek. A05 malformed multipart
 testi kullanıcıya ayrılmış olarak doğrulanmamış kalıyor; sonuç gelirse A05 kanıtına ekle.
 
 ## Önceki koordinasyon — Kadrom `0ea07ed` A04/A05 teslimi (base `b374095`)

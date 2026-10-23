@@ -45,6 +45,14 @@ rerun with `py -3.10 -m pytest tools/dom-xss-analyzer/test_sarif.py -q -p no:cac
 **116 passed**, zero failures/errors/skips, 27.46s. Existing runtime source
 and the original strict schema digest are unchanged. Hosted follow-up pending.
 
+Fix commit `9769a20002c81270b17d1ec192a9b2fa4e33bfc2` was pushed and verified
+equal to origin/main after fetch. Follow-up general CI run `39954873774` main
+job succeeded: **881 passed / 62 skipped** (97.52s), required negative controls
+**94 passed**, benchmark tests **522 passed**, installed wheel **9 controls
+passed**. Self-scan and strict benchmark smoke steps also succeeded. K01 Linux
+run `39954873803` and optional browser job succeeded; required authenticated
+browser job was still running at this check. Skips are not passing tests.
+
 ## Kadrom current source `b374095` plus A04/A05 regressions — 23 October 2026
 
 The local Kadrom checkout was at `b374095344f7b871bbadc4eef571760fd380f9ab`

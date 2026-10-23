@@ -82,6 +82,15 @@ without disabling other whitespace checks. Focused follow-up command
 passed **116/116** in 27.46s. Runtime source and strict digest oracle are unchanged
 from the 468-test local acceptance; this follow-up corrects Git checkout bytes.
 
+Fix commit `9769a20002c81270b17d1ec192a9b2fa4e33bfc2` was pushed and verified
+equal to origin/main after fetch. General CI `39954873774` main job succeeded:
+**881 passed / 62 skipped**, then 94 required negative controls and 522
+benchmark tests passed. Installed-wheel acceptance passed nine controls;
+self-scan and strict benchmark smoke steps also succeeded. K01 Linux
+`39954873803` and optional browser job succeeded. Required authenticated-browser
+job was still running at this check. These are hosted step/log observations;
+artifacts were not downloaded or reviewed.
+
 The vendored OASIS schema validates SARIF structure offline, not hosting-service
 support. No code-scanning upload, browser execution, vulnerability confirmation,
 external target scan, release replacement or PyPI publication occurred. Raw
