@@ -1,24 +1,24 @@
 # Kadrom local security triage — owner review draft
 
-**Date:** 22 October 2026. **Roadmap:** R7 / A04 / A05. **Status:** draft prepared for the product owner in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. The BCrypt byte-boundary remediation and tests are recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); target commit `6be6a07` was merged with upstream Vite commit `ba38bd3` and pushed as `c3ce102`. The target remains undeployed. Other A05/R7 questions remain open.
+**Date:** 22 October 2026, updated 23 October. **Roadmap:** R7 / A04 / A05. **Status:** owner-review draft prepared in this workspace; not sent to a maintainer, vulnerability database or disclosure service. A04 has bounded acceptance for the selected GET routes. The user separately authorized Kadrom source/dependency fixes. The BCrypt byte-boundary remediation and tests are recorded in [the remediation audit](../audit/2026-10-22-a05-bcrypt-remediation/README.md); target commit `6be6a07` was merged with upstream Vite commit `ba38bd3` and pushed as `c3ce102`. No deployment state was checked in this update. R7 bounded identity research is complete; A05 remains partial for the user's outstanding multipart parser test.
 
 **Coordinator disposition — 23 October 2026:** The local research identity is
 the owner's repository `calsgnkadir/hotel-platform`, `main` at
-`1276892` (the only later changes from `4c9473a` are two frontend text edits
-and the authorized multipart test), backend source coordinate
+`0ea07ed77c9d2edfc8a3e4394d3ab3700ca69de0`, backend source coordinate
 `com.hotelapp:hotel-student-platform:0.0.1-SNAPSHOT`. Public tags/releases and a
-formal support policy were not found, so this is recorded as a dated source
-snapshot rather than a supported product release. The [current dependency
-snapshot](../audit/2026-10-23-r7-source-identity/README.md) checked 248 resolved
-Maven coordinates against OSV and returned 248 rows with zero matches; the
-current `1276892` tree was confirmed byte-identical in its resolved dependency
-tree and coordinate set to the queried `d96b835` tree. This is
-not proof of no vulnerability or of a deployed production graph. The earlier
-BCrypt behavior matched Spring's existing CVE-2025-22228 advisory and the fix
-is committed in the current source lineage. This report was handed to the
-product owner in this workspace. **Bounded local R7 research is complete**;
-there was no new CVE, external disclosure, or CVE assignment. A05 remains
-separate because malformed-parser cleanup could not be safely verified.
+formal support policy were not found, so this is a dated source snapshot rather
+than a supported product release. The [source identity record](../audit/2026-10-23-r7-source-identity/README.md)
+and [current advisory disposition](../audit/2026-10-23-a05-current-source-disposition/README.md)
+bind the previous 248-coordinate OSV response to the unchanged saved dependency
+graph and reconcile the selected advisory leads. This is not proof of no
+vulnerability or of a deployed production graph. The [A04/A05 regression
+delivery](../audit/2026-10-23-a04-a05-current-source-regressions/README.md)
+records the current local verify, pushed source commit and successful remote CI.
+The earlier BCrypt behavior matched Spring's existing CVE-2025-22228 advisory
+and the fix is committed in the source lineage. This report remains an owner
+review draft; there was no external disclosure or CVE assignment. **Bounded
+local R7 research is complete**; A05 remains partial because malformed multipart
+parser cleanup was not tested.
 
 **Coordinator update — 22 October 2026:** The final local Kadrom source tree now
 uses Boot 4.1.1 / Security 7.1.1, the Boot 4 Resilience4j integration and

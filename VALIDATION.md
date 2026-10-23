@@ -1,5 +1,49 @@
 # Doğrulama kaydı — 2026-10-23
 
+## Kadrom current source `b374095` plus A04/A05 regressions — 23 October 2026
+
+The local Kadrom checkout was at `b374095344f7b871bbadc4eef571760fd380f9ab`
+with three scoped working-tree changes: invalid Sort error handling, its three
+MockMvc controls, and a synthetic same-role candidate ownership HTTP regression
+for the three work-session read routes. Changed handler SHA-256 is
+`4BC51C81D0DE86F623A881449A50B9DF81326D684D48B399266C612B6E179710`;
+the Sort and A04 test hashes are
+`7F0F9BC0DB8E126C280A8BABB8E9EA36855AB1D613785E222585D2941B870443` and
+`49C32834F444FA7635B00187286A49B314D6A49AB42BC1A0183275FA61B6405D`.
+
+Command from `.dxa/a04-kadrom-source/hotelapp/`:
+
+```powershell
+& 'C:\Users\user\.m2\wrapper\dists\apache-maven-3.9.16\56ba1f9f\bin\mvn.cmd' -o -ntp '-Dmaven.repo.local=C:\Users\user\.m2\repository' verify
+```
+
+Windows, Java 17.0.18, Maven 3.9.16 offline, in-memory H2 `test` profile.
+Result: **739 unit + 45 integration tests, 0 failures, 0 errors, 0 skipped;
+BUILD SUCCESS**. The three Sort controls passed 3/3 and the A04 ownership HTTP
+regression passed 1/1. This verifies the reviewed source checkout and local
+changes, not a pushed source commit. Malformed multipart parser-error cleanup
+was not tested; the user's reserved test remains separate. Full log:
+`.dxa/a04-kadrom-source/hotelapp/target/2026-10-23-b374-a04-a05-verify.log`.
+
+The verified changes were committed and pushed as `0ea07ed77c9d2edfc8a3e4394d3ab3700ca69de0`.
+After fetch, local HEAD and `origin/main` matched that full hash. GitHub Actions
+run [39928860888](https://github.com/calsgnkadir/hotel-platform/actions/runs/39928860888)
+completed successfully for the exact commit. This remote CI result is distinct
+from the local Maven run above.
+
+## Kadrom upstream source `b374095` remote CI — 23 October 2026
+
+After the locally verified/test-committed source `1276892`, Kadrom `main`
+advanced through four upstream commits to `b374095344f7b871bbadc4eef571760fd380f9ab`.
+The backend changes include per-candidate locking for no-show updates and
+per-record transactions for scheduled work. GitHub Actions run
+[39925048373](https://github.com/calsgnkadir/hotel-platform/actions/runs/39925048373)
+completed successfully for that exact source. No local Maven verification has
+been run on `b374095` at the time that upstream CI was reviewed; the subsequent
+local Maven verification for `b374095` plus regression changes is recorded
+above. The earlier 770/770 result belongs to `1276892`. The resolved dependency
+POM did not change in the upstream commits or the `0ea07ed` regression commit.
+
 ## Kadrom current main with multipart test commit — 23 October 2026
 
 The target advanced while this work was in progress. Source HEAD at final

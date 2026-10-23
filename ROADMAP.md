@@ -11,19 +11,25 @@ Hibernate enum CHECK hatası 2.3.232 test sürümüyle giderildi. Son Maven ağa
 vardı; bu “CVE yok” veya üretim ağacı sonucu değildir. Ayrıntı:
 [remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) ·
 [bağımlılık taraması](audit/2026-10-22-a05-dependency-refresh/README.md).
-Kadrom main `1276892`'ye test-only multipart kontrolü push edildi (parent
-`01d5857` iki frontend metin değişikliği içeriyordu). Aynı çalışma ağacında
-yerel verify 725 unit + 45 integration test ile geçti; GitHub Actions
-39919982298'de backend, frontend ve E2E işleri başarılı oldu.
-Parent commit CI 39915595907 de başarılı oldu. Önceki `d96b835`
+Kadrom main `1276892`'ye test-only multipart kontrolü push edildi; bu source'ta
+yerel verify 725 unit + 45 integration ve GitHub Actions 39919982298 geçti.
+Sonra temiz checkout `b374095`'e fast-forward oldu; GitHub Actions 39925048373
+bu güncel kaynak için başarılı. `b374095` ve bu oturumun üç yerel değişikliği
+üzerinde Maven verify 739 unit + 45 integration ile geçti. A04/A05 değişiklikleri
+`0ea07ed77c9d2edfc8a3e4394d3ab3700ca69de0` olarak push edildi; Actions
+`39928860888` aynı SHA için geçti. [Teslim kaydı](audit/2026-10-23-a04-a05-current-source-regressions/README.md).
+Önceki
+`d96b835`
 backend hatasının public log erişimi 403 olduğu için kök neden bilinmiyor.
 Multipart olağan işlevsel testleri 6/6 geçti; malformed parser cleanup hâlâ
-doğrulanmadı. A05 bu dar sınır nedeniyle kısmi. R7 bounded yerel araştırması
-tamamlandı: kaynak kimliği `1276892`, public
-tag/release veya formel destek politikası yok; desteklenen semver yayın iddiası
-yok. Güncel 248-coordinate OSV sorgusu 248 satır/0 eşleşme verdi; bu üretim
-ağacı veya CVE yokluğu kanıtı değil. Owner report workspace'e teslim edildi;
-dış disclosure yapılmadı. [R7 kimliği](audit/2026-10-23-r7-source-identity/README.md).
+doğrulanmadı. A05 Sort invalid-property HTTP 500 için dar 400 düzeltmesi ve
+3 kontrol geçti; bu DoS/CVE düzeltmesi iddiası değil. R7 bounded yerel
+araştırması güncel applicability disposition ile tamamlandı. Kadrom kaynak
+kimliği `b374095`, public tag/release veya formel destek politikası yok;
+desteklenen semver yayın iddiası yok. Güncel 248-coordinate OSV sorgusu 248
+satır/0 eşleşme verdi; bu üretim ağacı veya CVE yokluğu kanıtı değil. Owner
+report workspace'e teslim edildi; dış disclosure yapılmadı.
+[R7 kimliği](audit/2026-10-23-r7-source-identity/README.md).
 R3/R4/R5/R6 kabul kapsamı tamam; [uzlaştırma](audit/2026-10-22-r3-r6-acceptance-reconciliation/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
@@ -346,7 +352,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
-| 5 | Araştırma/CVE A01–A05 / R7 | A04 seçilmiş GET rotalarında bounded kabul edildi. BCrypt düzeltmesi test edildi; A05 olağan multipart kontrolleri 6/6 ve Kadrom test-only commit `1276892` full verify 770/770 geçti. Malformed parser cleanup doğrulanmadı; diğer advisory koşulları kanıt sınırlarıyla tutuluyor. R7 yerel kaynak kimliği ve 248 Maven koordinatlık OSV taraması bounded tamam; OSV 0 eşleşme güvenlik yokluğu anlamına gelmez | Açık, sınırlı hipotezleri authorized local fixture testleri veya kaynak incelemesiyle kapat; dış disclosure yok |
+| 5 | Araştırma/CVE A01–A05 / R7 | A04 seçilmiş GET rotaları önceki runtime kanıtıyla bounded kabul edildi; yeni source'ta üç work-session GET için kalıcı iki hesaplı HTTP regresyonu geçti. BCrypt ve ordinary multipart 6/6 önceki test edilen source'ta geçti; `b374095` + bu oturum değişiklikleri full verify 739 unit + 45 integration olarak geçti. A05 Sort malformed alanı için 3/3 geçti; bu advisory DoS düzeltme kanıtı değildir. Malformed multipart parser cleanup kullanıcı testi olarak açık. Seçilmiş A05 advisory version/source disposition güncel; bounded R7 tamam, 248 satır/0 eşleşme önceki query'nin aynı graph'a bound edilmiş sonucu ve “CVE yok” kanıtı değil | Sınırlı kaynak/input davranışını sentetik local fixture ile doğrula; malformed multipart cleanup kullanıcı testini bekle; dış disclosure yok |
 
 Durum sözlüğü: **açık** iş yapılacak; **devam** bir kısmı doğrulandı; **tamam** kabul kanıtı var;
 **kanıt bekliyor** tarihsel iddia bağımsız doğrulanamıyor; **ertelendi** kapsamdan silinmedi.
@@ -956,9 +962,9 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | A01 | research/README.md duplicate ve SQLi beyanları | Ürün+sürüm+tarih+kayıt/advisory+maskeli triage varsa bağla; yoksa yazar beyanı olarak tut; yeni kredi ile karıştırma |
 | A02 | Bludit CVE-2026-4420 eşlemesi | Resmî test edilen sürüm/kredi, yerel 3.16.2 gözlemi ve kök neden ayrı; vendor fix ile yerel fix karıştırılmaz; kaynak işlem anında doğrulanır |
 | A03 | Sprint planı ve disclosure kanalı | non-WP hedefe genel Patchstack kabulü varsayımı kaldırılır; scope/rol/güncel sürüm/program kuralları doğrulanır; 90 gün evrensel kural değildir |
-| A04 — bounded tamam | Kadrom local demo list/role, üç candidate work-session GET ve iki business-owner ID GET iki hesapla sınandı; [owner runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) · [kapsam](audit/2026-10-22-a04-scope-completeness/README.md) · [work-session runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Seçilen/sınanan yollar sentetik local veride beklenen sahiplik/403 davranışını verdi; attendance pozitif kontrolü boş kayıt döndürdü. Normal clock-in, diğer rol/uçlar, ürün sürümü ve ürün-geneli güvenlik kapsam dışı. Bu sınırlı kabulde aday gözlenmedi |
-| A05 | Kadrom selected dependency/advisory triage and remediation; historical source/runtime records remain linked above. Latest: [BCrypt remediation](audit/2026-10-22-a05-bcrypt-remediation/README.md) · [dependency refresh](audit/2026-10-22-a05-dependency-refresh/README.md) · [ordinary multipart result](audit/2026-10-22-multipart-functional-followup/README.md) | BCrypt remediation and selected local dependency snapshot passed on the earlier source; ordinary valid multipart/Tomcat 11.0.27 test passed 6/6 on current `d96b835`; full local `verify` on that source passed 713 unit + 45 integration tests. Malformed parser-error cleanup remains unverified after the earlier test was auto-blocked. Remote backend CI failed but did not reproduce locally; cause is unknown. A05 remains partial for that specific runtime/advisory boundary and current dependency scan. |
-| R7 | Kadrom local product research and owner report: [report](research/kadrom-local-triage.md) · [source identity](audit/2026-10-23-r7-source-identity/README.md) · [prior exact-coordinate query](audit/2026-10-22-r7-authorization-followup/README.md) · [dependency dispositions](audit/2026-10-22-a05-advisory-disposition/README.md) | Research target is owner repository `calsgnkadir/hotel-platform`, source `main` at `d96b8359a4121437d45c1ae1a4926f4647f7b00e`, backend POM `0.0.1-SNAPSHOT`; no public releases/tags or tracked support policy. This is the exact local-source identity, not a published supported release. Owner report is prepared in this workspace; no external disclosure or CVE assignment is claimed. Exact current-source dependency scan is being refreshed. |
+| A04 — bounded tamam | Kadrom local demo list/role, üç candidate work-session GET ve iki business-owner ID GET iki hesapla sınandı; [owner runtime](audit/2026-10-22-a04-owner-read-runtime/README.md) · [kapsam](audit/2026-10-22-a04-scope-completeness/README.md) · [work-session runtime](audit/2026-10-21-a04-same-role-runtime/README.md) · [current-source HTTP regression](audit/2026-10-23-a04-a05-current-source-regressions/README.md) · [test envanteri](audit/2026-10-21-a04-testability-followup/README.md) | Seçilen/sınanan yollar sentetik local veride beklenen sahiplik/403 davranışını verdi; `b374095` sonrası aynı-rol aday sahipliği için üç work-session GET yolu kalıcı HTTP regresyonuyla doğrulandı (739 unit + 45 integration full verify içindeydi). Attendance pozitif kontrolü boş kayıt döndürdü. Normal clock-in, diğer rol/uçlar, ürün sürümü ve ürün-geneli güvenlik kapsam dışı. Bu sınırlı kabulde aday gözlenmedi |
+| A05 | Kadrom local dependency/advisory triage ve remediation: [BCrypt](audit/2026-10-22-a05-bcrypt-remediation/README.md) · [multipart](audit/2026-10-22-multipart-functional-followup/README.md) · [current disposition](audit/2026-10-23-a05-current-source-disposition/README.md) · Sort regression is in `.dxa/a04-kadrom-source/hotelapp/src/test/java/com/hotelapp/exception/GlobalExceptionHandlerSortTest.java` | BCrypt fix and ordinary multipart 6/6 accepted on prior source; `b374095` with current Sort change passed full verify 739 unit + 45 integration. Malformed multipart parser-error cleanup remains unverified per user's reserved test. Sort change addresses input-error handling only; no advisory DoS claim. A05 remains partial for that runtime boundary. | Local source/input boundary; no CVE/DoS claim without matched oracle |
+| R7 | Kadrom local product research and owner report: [report](research/kadrom-local-triage.md) · [source identity](audit/2026-10-23-r7-source-identity/README.md) · [current source disposition](audit/2026-10-23-a05-current-source-disposition/README.md) | Bounded local research complete for source `b374095344f7b871bbadc4eef571760fd380f9ab`, backend POM `0.0.1-SNAPSHOT`; public releases/tags or tracked support policy not found. Prior 248-coordinate OSV query is bound to the same saved dependency graph, but was not rerun and is not a full scan. Selected advisory leads reconciled against current versions/source. Owner report is prepared in this workspace; no external disclosure or CVE assignment is claimed. | Exact local-source research identity and scoped advisory disposition; no claim of absence of vulnerabilities |
 
 Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araştırma ürünü bu roadmap'te peşinen seçilmedi.
 

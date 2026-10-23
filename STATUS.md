@@ -1,6 +1,6 @@
 # Güncel devam noktası — 23 Ekim 2026
 
-## Güncel koordinasyon — multipart, R7 kimliği ve R3–R6 kabulü
+## Güncel koordinasyon — Kadrom `0ea07ed` A04/A05 teslimi (base `b374095`)
 
 - **R3/R4/R5/R6 tamam:** QA uzmanı mevcut kabul kayıtlarını ve kaynakları
   karşılaştırdı; yeni zorunlu açık madde bulmadı. Dokuz paket modülü hash'i
@@ -13,36 +13,51 @@
   zinciri değildir. Önceden otomatik kontrolde engellenen malformed-parser
   senaryosu tekrar edilmedi; parser-error cleanup doğrulanmış değildir.
   [Yeni kayıt](audit/2026-10-22-multipart-functional-followup/README.md).
-- **R7 bounded araştırma tamam:** Kadrom main `1276892` (bu oturumdaki test-only
-  commit; parent `01d5857` iki frontend metin değişikliği içeriyordu),
-  Maven `com.hotelapp:hotel-student-platform:0.0.1-SNAPSHOT`. Public release/tag
-  yok; resmî destek politikası bulunmadı. Yerel araştırma kaynağı kesin olarak
-  belirlendi; bu snapshot desteklenen semver yayın olarak etiketlenmiyor. Güncel
-  248-coordinate OSV snapshot'ı 248 satır ve 0 eşleşme verdi; R7 owner raporu
-  bu workspace'e teslim edildi. Yeni CVE/disclosure iddiası yok.
-  [Kimlik kaydı](audit/2026-10-23-r7-source-identity/README.md).
-- **Yeni upstream:** Kadrom `d96b835`, `4c9473a` ve sonra frontend-only `01d5857`'ye
-  fast-forward edildi. Aradaki backend değişiklikleri Flyway starter, iş
-  kuralları/eşzamanlılığı ve CI test timezone ayarlarını içeriyor. Önceki 665/665 suite
-  yeni HEAD için geçerli sayılmıyor; güncel verify sonucu aşağıda.
-- **Doğrulama:** Commit `1276892` içeriğiyle aynı çalışma ağacında yerel `mvn verify`
+- **R7 bounded araştırma tamam:** Güncel source identity `b374095` olarak
+  doğrulandı; public release/tag veya resmî destek politikası bulunmadı.
+  Önceki 248 koordinat OSV sonucu, değişmeyen Maven graph hash'leriyle bu
+  source'a bağlandı; seçilmiş advisory lead'leri güncel sürüm aralıklarıyla
+  uzlaştırıldı. Bu, tam güvenlik taraması veya “CVE yok” sonucu değildir.
+  [Kimlik](audit/2026-10-23-r7-source-identity/README.md) ·
+  [güncel disposition](audit/2026-10-23-a05-current-source-disposition/README.md).
+- **Yeni upstream:** Kadrom temiz `1276892` checkout'undan `b374095`'e
+  fast-forward edildi. Yeni backend değişiklikleri aday/başvuru kilit sırası,
+  admin güncellemeleri ve kayıt-başına zamanlanmış işler içeriyor. Önceki
+  GitHub Actions `39925048373` güncel `b374095` için başarılı.
+- **Doğrulama:** `b374095` ve üç yerel değişiklik üzerinde `mvn verify`
+  **739 unit + 45 integration**, sıfır failure/error/skip, BUILD SUCCESS verdi.
+  Sort regression testleri 3/3; A04 work-session HTTP ownership testi 1/1
+  geçti. Değişiklikler Kadrom `main`'e
+  `0ea07ed77c9d2edfc8a3e4394d3ab3700ca69de0` olarak push edildi; fetch sonrası
+  `HEAD == origin/main`, Actions run `39928860888` aynı SHA için başarılı.
+  [A04/A05 teslim kaydı](audit/2026-10-23-a04-a05-current-source-regressions/README.md).
+  Malformed multipart parser cleanup hâlâ test edilmedi.
+- **Önceki doğrulama:** Commit `1276892` içeriğiyle aynı çalışma ağacında yerel `mvn verify`
   **725 unit + 45 integration**, sıfır failure/error/skip, BUILD SUCCESS verdi.
   GitHub Actions `39915595907` parent `01d5857` commit'inde başarıyla tamamlandı;
   test commit'i `1276892` için CI `39919982298` backend, frontend ve E2E işleri
   başarıyla tamamlandı. Önceki
   `39861668186` backend/frontend/E2E işlerini de geçti. Önceki `d96b835`
-  backend hatasının logu 403
-  nedeniyle erişilemedi; timezone değişikliğiyle çözülmüş olması olası, kesin
-  başarısız test bilinmiyor. [CI incelemesi](audit/2026-10-23-kadrom-current-ci-review/README.md).
+  backend hatasının logu 403 nedeniyle erişilemedi; timezone değişikliğiyle
+  çözülmüş olması olası, kesin başarısız test bilinmiyor.
+  [CI incelemesi](audit/2026-10-23-kadrom-current-ci-review/README.md).
+
+### Tamamlanan paralel uzman işleri — 23 Ekim
+
+- A05: tek invalid Sort alanında HTTP 500'ü dar biçimde 400'e çeviren handler ve 3 kontrol; DoS/CVE düzeltmesi iddiası yok.
+- A04: üç candidate work-session GET yolunda iki sentetik aynı-rol hesabıyla kalıcı ownership regresyonu; bounded test geçti.
+- A05/R7: güncel dependency graph/advisory applicability disposition; selected lead'ler mevcut sürüm aralıklarının dışında.
+
+Üç uzman ayrı dosya sahipliklerinde çalıştı. Koordinatör diff'i ve test
+oracle'larını inceledi; hedef kaynak testleri tamamlandı. Multipart parser-error
+cleanup otomatik kontrol engeli sonrası doğrulanmamış durumda; bu senaryo tekrar
+koşturulmuyor.
 
 ### Güncel sonraki adım
 
-Multipart olağan işlevsel kontrolleri A05'e kaydedildi; malformed parser-error
-cleanup hâlâ otomatik güvenlik engeli nedeniyle doğrulanamadı. A05'in kalan
-dar follow-up'ı bu acceptance sınırıdır. R7 bounded yerel araştırması ve R3–R6
-kabulü tamamlandı. Dış disclosure/gönderim yapılmadı. Sıradaki toolkit işi için
-ROADMAP'in açık, uygulanabilir maddeleri arasından yeni kapsam seçilir; R4
-corpus genişletmesi zorunlu bir devam işi değildir.
+Toolkit kayıtlarını commit/push et. A05 parser cleanup kullanıcının ayırdığı
+test olarak bekliyor. R3–R6 kabulü tamam; R4 corpus genişlemesi zorunlu iş
+değildir. Dış disclosure/gönderim yapılmadı.
 
 ## Önceki doğrulama — 22 Ekim, 16:38 Europe/Istanbul
 
