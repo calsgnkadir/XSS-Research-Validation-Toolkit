@@ -55,9 +55,11 @@ koşturulmuyor.
 
 ### Güncel sonraki adım
 
-Toolkit kayıtlarını commit/push et. A05 parser cleanup kullanıcının ayırdığı
-test olarak bekliyor. R3–R6 kabulü tamam; R4 corpus genişlemesi zorunlu iş
-değildir. Dış disclosure/gönderim yapılmadı.
+A05 malformed multipart parser cleanup kullanıcının ayırdığı test olarak
+bekliyor; sonuç geldiğinde A05 kanıtına ekle ve advisory koşuluyla karşılaştır.
+R3–R6 kabulü tamam; R4 corpus genişlemesi zorunlu iş değildir. Sonraki bağımsız
+geliştirme için ROADMAP'teki açık, uygulanabilir maddeler arasından sıradaki
+hedefi seç. Dış disclosure/gönderim yapılmadı.
 
 ## Önceki doğrulama — 22 Ekim, 16:38 Europe/Istanbul
 
