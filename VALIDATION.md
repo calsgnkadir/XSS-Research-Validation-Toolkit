@@ -1712,3 +1712,19 @@ Yalnız bare-visit dialog çıktısındaki yanlış proof iddiası düzeltildi. 
 
 Orijinal ZIP ve denetim kaynak kopyası korunmuştur. İlk düzeltmeler `2703d1a`
 ile Git geçmişine ve GitHub main dalına aktarıldı. Sürüm etiketi oluşturulmadı.
+
+## PyPI 0.2.0 TestPyPI acceptance and production upload blocker — 24 October
+
+Source release commit `8891219c3899f3208db9d19bff1990f96544dac5`, tag
+`v0.2.0`. Rebuilt sdist and wheel with the isolated build environment; `twine
+check dist/*` passed for both. TestPyPI accepted both artifacts. A clean Python
+3.11 venv installed `dxa-research-toolkit==0.2.0` from TestPyPI; `dxa`,
+`dxadyn`, `dxaprove`, and `dxa-sarif --help` all exited successfully (4/4).
+This was package/install verification, not a source test run.
+
+Production `twine upload dist/*` returned HTTP 403. A public PyPI JSON request
+for version 0.2.0 returned 404, confirming that the release was not published
+by that attempt. Do not mark the package as installable from production PyPI
+until a valid production token is configured and a clean PyPI install passes.
+Artifact hashes and the release record are in
+`audit/2026-10-24-pypi-0.2.0/README.md`.

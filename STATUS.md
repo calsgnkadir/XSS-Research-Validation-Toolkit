@@ -21,8 +21,12 @@
   envanteri daemon pipe'i bulunmadığı için alınamadı; bu nedenle image yokluğu
   iddiası kurulmuyor. Sadık retest mevcut kanıtla yapılamıyor; tarihsel execution
   iddiası doğrulanmamış kalıyor.
-- PyPI yayınlanmadı; `v0.1.0` GitHub Release mevcut. Dış paket yayını ayrıca
-  açık kullanıcı onayı gerektiriyor.
+- `v0.2.0` source release commit `8891219` ve tag `v0.2.0` origin'e push edildi;
+  GitHub Release oluşturuldu. TestPyPI sdist/wheel yüklemesi ve temiz venv'te
+  dört CLI `--help` kontrolü geçti. Production PyPI upload denemesi 403 döndü;
+  PyPI JSON endpoint'i sürüm için 404 veriyor, dolayısıyla üretim paketi henüz
+  yayınlanmadı. `[pypi]` credential yetkisi düzeltilip upload tekrar denenmeli.
+  [Yayın denemesi kaydı](audit/2026-10-24-pypi-0.2.0/README.md).
 - Toolkit testleri çalıştırılmadı: bu teslim dokümantasyon ve salt-okunur
   envanter kontrolüdür.
 
