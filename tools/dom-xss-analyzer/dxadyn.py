@@ -84,6 +84,10 @@ PAYLOAD_VARIANTS = {
     # v3.10 base five: attribute breakout + close-tag families.
     "body":            ('"<dXsS>',                '<dXsS>'),
     "title-breakout":  ('</title><dXsS>',         '</title><dXsS>'),
+    # E05: an opening textarea shape remains RCDATA in an existing textarea.
+    # This inert close-tag probe reaches a marker element in the bounded
+    # loopback parser fixture; returned bytes remain reflection evidence.
+    "textarea-breakout": ('</textarea><dXsS>',    '</textarea><dXsS>'),
     "attr-breakout":   ('"><dXsS>',               '"><dXsS>'),
     "script-breakout": ("';<dXsS>//",             '<dXsS>'),
     "url-scheme":      ('javascript:/*<dXsS>*/',  'javascript:/*<dXsS>*/'),
@@ -2488,12 +2492,12 @@ def main():
     ap.add_argument("--variants", default="body",
                     help="stored mode: comma-separated payload variants to try; "
                          "each variant gets its own cid + probe. Choices: "
-                         "body (default), title-breakout, attr-breakout, "
+                         "body (default), title-breakout, textarea-breakout, attr-breakout, "
                          "script-breakout, url-scheme, or `all`. Example: "
-                         "--variants title-breakout,attr-breakout picks up "
-                         "reflections that only execute after a </title> or "
-                         "attribute-quote break, which the plain body payload "
-                         "needs context-specific investigation. Raw reflection is not execution proof.")
+                         "--variants title-breakout,textarea-breakout selects "
+                         "inert closing-tag marker probes for RCDATA contexts. "
+                         "Context-specific browser investigation is separate; "
+                         "raw reflection is not execution proof.")
     ap.add_argument("--waf-bypass", action="store_true",
                     help="stored mode: for each --variants entry, also probe "
                          "4 mutation shapes (case-swap, split-tag via HTML "

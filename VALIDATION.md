@@ -1,4 +1,67 @@
-# Doğrulama kaydı — 2026-10-23
+# Doğrulama kaydı — 2026-10-24
+
+## E05 textarea parser-context acceptance — 24 October 2026
+
+Source base `532be7ac01e82fbe0612749ead6d3cb39f0be7e9` plus the scoped E05
+changes. Windows / Python 3.10.11 / pytest 9.1.1; elevated coordinator execution
+after specialist WindowsApps Python launch denial. Before production changes,
+the new unit/transport file failed 6/6 (including three missing-registry-key
+failures). The independent native Chromium oracle then returned **1 failed,
+5 passed**, reproducing zero marker elements in the raw textarea positive.
+
+After the change, with `DXA_REQUIRE_BROWSER=1`:
+
+```powershell
+py -3.10 -m pytest tools/dom-xss-analyzer/test_e05_context.py bench/test_e05_context_coverage.py tools/dom-xss-analyzer/test_dxadyn.py tools/dom-xss-analyzer/test_http_evidence.py tools/dom-xss-analyzer/test_json_transport.py tools/dom-xss-analyzer/test_blind_journal.py tools/dom-xss-analyzer/test_r1_contract.py tools/dom-xss-analyzer/test_sarif.py -q -p no:cacheprovider --tb=short --junitxml=.dxa/e05-acceptance.xml
+```
+
+**381 passed, zero failures/errors/skips**, 43.01s. This includes six independent
+browser cases: all 950 legacy generated attempts remain marker-inert inside
+textarea; the targeted new raw probe creates one marker outside textarea;
+escaped/default/title/old textarea-opening controls produce none. Browser page
+JavaScript was disabled. This measures parser placement, not execution or
+vulnerability. HTTP evidence remains reflection. No full-suite run or new
+hosted success is inferred. [Evidence, source hashes and limits](audit/2026-10-24-e05-context/README.md).
+
+Current wheel built with `pip wheel --no-deps --no-build-isolation`, installed
+with `--no-index --no-deps` into a new local venv. The installed CLI gate passed
+**9 controls**, with all 11 source/wheel/installed module hashes matching.
+Wheel SHA-256 `a7c3e89fd9257d6c4b3d1129822d5dd435c58279b812f3092ea65fc42d5a35d8`.
+The published release asset was not replaced. Exact packaging commands and
+sanitized gate output are in the E05 evidence package.
+
+## E02 hosted CI metadata follow-up — 24 October 2026
+
+Source commit `532be7ac01e82fbe0612749ead6d3cb39f0be7e9`. The GitHub
+`fetch_workflow_run_jobs` tool was used to recheck the latest-attempt jobs
+for runs `39955815522`, `39955815291`, and `39954873774`.
+
+For [CI 39955815522](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815522),
+the analyzer job `120421256070`, required authenticated-browser job
+`120421256089`, and optional dxadom browser job `120421256218` all returned
+`status=completed`, `conclusion=success`; each returned step also reported
+success. The analyzer steps include the installed-wheel gate, main suite,
+required negative controls, self-scan, benchmark tests and strict smoke run.
+The required browser steps include R3 acceptance, R4 execution/auth controls,
+proof demo, and the complete-evidence gate.
+
+For [K01 Linux 39955815291](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815291),
+job `120421255038` and its returned steps were completed/success, including
+the clean proof and independent artifact gate. The formerly pending required
+browser job `120418093477` in fix-commit
+[CI 39954873774](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39954873774)
+also returned completed/success, as did that run's other two jobs.
+
+This was a read-only metadata check. No local test suite was rerun, no new test
+counts were collected, and no hosted artifacts were downloaded or independently
+reviewed. The prior recorded counts below remain tied to their original runs.
+Initial combined Git fetch calls failed to write `.git/FETCH_HEAD`, including
+an elevated retry; a later standalone elevated `git fetch origin` succeeded
+and the local/upstream comparison was `0/0`. Separately, the coordinator checked GitHub's
+`/repos/calsgnkadir/XSS-Research-Validation-Toolkit/branches/main` API and
+observed the same full `532be7a` SHA as local HEAD. This establishes the
+then-observed remote-main equality through the API as well.
+[Reconciliation scope](audit/2026-10-24-status-reconciliation/README.md).
 
 ## E02 SARIF — 23 October 2026
 
@@ -51,7 +114,8 @@ job succeeded: **881 passed / 62 skipped** (97.52s), required negative controls
 **94 passed**, benchmark tests **522 passed**, installed wheel **9 controls
 passed**. Self-scan and strict benchmark smoke steps also succeeded. K01 Linux
 run `39954873803` and optional browser job succeeded; required authenticated
-browser job was still running at this check. Skips are not passing tests.
+browser job was still running at that 23 October check. Its later success is
+recorded in the 24 October metadata follow-up above. Skips are not passing tests.
 
 ## Kadrom current source `b374095` plus A04/A05 regressions — 23 October 2026
 

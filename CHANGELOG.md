@@ -1,5 +1,17 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-24 E05 textarea context
+
+- Added an inert `textarea-breakout` probe after an independent Chromium
+  oracle measured a missing textarea RCDATA marker context. The new probe
+  produces one parsed marker outside textarea; escaped and wrong-context
+  controls remain inert. HTTP evidence remains reflection, not execution.
+- Added the independent parser oracle to required browser CI. Selected local
+  acceptance passed **381 tests with zero skips**; hosted results are tracked
+  separately. [Evidence and limits](audit/2026-10-24-e05-context/README.md).
+- Reconciled current R7 and CI status against dated acceptance records;
+  A05 malformed multipart cleanup remains the user's unverified reserved test.
+
 ## Unreleased — 2026-10-23 E02 SARIF
 
 - Added offline `dxa-sarif` and scanner `--sarif-out` exports from the common

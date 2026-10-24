@@ -1,0 +1,153 @@
+{
+    "schema_version":  1,
+    "source_base":  "532be7ac01e82fbe0612749ead6d3cb39f0be7e9",
+    "source_state":  "base plus E05 scoped working changes; raw working-byte hashes below",
+    "python":  "3.10.11",
+    "pytest":  "9.1.1",
+    "platform":  "Windows",
+    "browser_version":  "155.0.8059.85",
+    "require_browser":  true,
+    "browser_page_javascript":  false,
+    "tests":  {
+                  "tests":  381,
+                  "failures":  0,
+                  "errors":  0,
+                  "skipped":  0,
+                  "pytest_duration_seconds":  43.01
+              },
+    "test_selection":  [
+                           "tools/dom-xss-analyzer/test_e05_context.py",
+                           "bench/test_e05_context_coverage.py",
+                           "tools/dom-xss-analyzer/test_dxadyn.py",
+                           "tools/dom-xss-analyzer/test_http_evidence.py",
+                           "tools/dom-xss-analyzer/test_json_transport.py",
+                           "tools/dom-xss-analyzer/test_blind_journal.py",
+                           "tools/dom-xss-analyzer/test_r1_contract.py",
+                           "tools/dom-xss-analyzer/test_sarif.py"
+                       ],
+    "baseline":  {
+                     "unit_transport":  {
+                                            "failed":  6,
+                                            "passed":  0,
+                                            "duration_seconds":  1.44
+                                        },
+                     "independent_browser":  {
+                                                 "failed":  1,
+                                                 "passed":  5,
+                                                 "duration_seconds":  9.16
+                                             },
+                     "legacy_families":  50,
+                     "generated_attempts":  950,
+                     "marker_elements":  0
+                 },
+    "context_measurement":  {
+                                "targeted_raw_marker_elements":  1,
+                                "targeted_escaped_marker_elements":  0,
+                                "default_body_marker_elements":  0,
+                                "wrong_title_marker_elements":  0,
+                                "previous_textarea_opening_marker_elements":  0,
+                                "evidence":  "native DOM marker placement; no JavaScript execution claim"
+                            },
+    "installed":  {
+                      "schema_version":  1,
+                      "python":  "3.10.11",
+                      "platform":  "Windows",
+                      "results":  {
+                                      "dxa_help":  {
+                                                       "exit_code":  0
+                                                   },
+                                      "dxadyn_help":  {
+                                                          "exit_code":  0
+                                                      },
+                                      "dxaprove_help":  {
+                                                            "exit_code":  0
+                                                        },
+                                      "dxa-sarif_help":  {
+                                                             "exit_code":  0
+                                                         },
+                                      "sarif_offline":  {
+                                                            "exit_code":  0,
+                                                            "invalid_input_exit_code":  2,
+                                                            "observation_level_preserved":  true,
+                                                            "skip_not_success":  true,
+                                                            "prior_output_preserved":  true
+                                                        },
+                                      "static_config":  {
+                                                            "configured_findings":  1,
+                                                            "override_findings":  2
+                                                        },
+                                      "config":  {
+                                                     "exit_code":  0,
+                                                     "depth":  1,
+                                                     "observed_routes":  [
+                                                                             "/",
+                                                                             "/child",
+                                                                             "/child?\u003cquery\u003e"
+                                                                         ],
+                                                     "html_json_depth_match":  true,
+                                                     "fixture_thread_closed":  true
+                                                 },
+                                      "cli_override":  {
+                                                           "exit_code":  0,
+                                                           "depth":  0,
+                                                           "observed_routes":  [
+                                                                                   "/",
+                                                                                   "/child?\u003cquery\u003e"
+                                                                               ],
+                                                           "html_json_depth_match":  true,
+                                                           "fixture_thread_closed":  true
+                                                       },
+                                      "invalid_config":  {
+                                                             "exit_code":  2,
+                                                             "secret_not_echoed":  true
+                                                         }
+                                  },
+                      "distribution":  {
+                                           "name":  "dxa-research-toolkit",
+                                           "version":  "0.1.0",
+                                           "installed_version":  "0.1.0"
+                                       },
+                      "packaged_module_sha256":  {
+                                                     "dxa":  "2561203de267961cc3e247aa3708b29bca82f903d6a0e4fdb1ccb68e9ec6b718",
+                                                     "dxadyn":  "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199",
+                                                     "dxaprove":  "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+                                                     "dxadom":  "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+                                                     "dxa_evidence":  "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+                                                     "dxa_callback":  "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+                                                     "dxa_attempts":  "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+                                                     "dxa_proof_lab":  "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+                                                     "dxa2dyn":  "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+                                                     "dxa_sarif":  "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+                                                     "dxa_sarif_cli":  "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5"
+                                                 },
+                      "wheel_sha256":  "a7c3e89fd9257d6c4b3d1129822d5dd435c58279b812f3092ea65fc42d5a35d8",
+                      "source_sha256":  {
+                                            "tools/dom-xss-analyzer/dxadyn.py":  "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199"
+                                        },
+                      "limits":  [
+                                     "No browser execution claimed",
+                                     "No release tag created",
+                                     "Loopback fixture only; not a vulnerability result"
+                                 ]
+                  },
+    "source_sha256":  {
+                          "tools/dom-xss-analyzer/test_e05_context.py":  "cffbe65f1addf3e3ebf9aa5ce74921262499eb7075ee182bbdeaa80224a5229e",
+                          "bench/test_e05_context_coverage.py":  "1cc62555c14b4d96d08bdc3ee42b698be7abdcfb3a1a57f6a123fee16289b44e",
+                          "tools/dom-xss-analyzer/test_dxadyn.py":  "249fb927714248deb30bd4dd84cda3fb7701a6d9f5696107e4a1fdb84a85778b",
+                          "tools/dom-xss-analyzer/test_http_evidence.py":  "4ba2cf2e04b1e48018c76ae3f836403e77a02f89cc1dd3c345999f0329fa42c7",
+                          "tools/dom-xss-analyzer/test_json_transport.py":  "7ac2a89fb4f1415ee734ec5574cf99e42f5fb7d428612960ec2d8f516b15c17b",
+                          "tools/dom-xss-analyzer/test_blind_journal.py":  "3a5dd5865de85a3ae111408468c5042c4be4e9af1e23c5b0aa492871c72d09b6",
+                          "tools/dom-xss-analyzer/test_r1_contract.py":  "b828aa542ffd0f8f671461a4503a910412dc304d110c020bbc0990cb4ed21f31",
+                          "tools/dom-xss-analyzer/test_sarif.py":  "f11edd6714d75ed6633b53debff4aa975add91f589f969643e5e498205e01db1",
+                          "tools/dom-xss-analyzer/dxadyn.py":  "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199",
+                          ".github/workflows/ci.yml":  "dff59847a93384c7d3b2a64a4b39af73583a395db71ca2e7d31282cbdba944e4",
+                          "pyproject.toml":  "af1dd9afb6bc10a481af656fb2a75e0161f146278f60d6a385a381ecb900dd11",
+                          "bench/check_installed_cli.py":  "233ace07c5531746e2809627a3d7d7894bd2454b6e8ac1fd36996208edadaa5c"
+                      },
+    "limits":  [
+                   "Selected test suite, not full project suite",
+                   "No external scan or A05 multipart test",
+                   "No release replacement or PyPI publication",
+                   "Hosted CI tracked separately"
+               ]
+}

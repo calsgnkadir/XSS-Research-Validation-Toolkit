@@ -17,7 +17,7 @@ def test_all_payload_shapes_round_trip_through_actual_submit(monkeypatch):
 
     monkeypatch.setattr(dxadyn, "_fetch_json", receive)
     shapes = list(dxadyn.make_canaries_for(list(dxadyn.PAYLOAD_VARIANTS), waf_bypass=True))
-    assert len(shapes) == 950
+    assert len(shapes) == len(dxadyn.PAYLOAD_VARIANTS) * (1 + len(dxadyn._WAF_MUTATIONS))
     for variant, cid, canary, marker in shapes:
         assert dxadyn._submit_json("http://127.0.0.1/test", '{"value":"{CANARY}"}', canary)[0] == 200
         assert captured[-1]["value"] == canary, variant

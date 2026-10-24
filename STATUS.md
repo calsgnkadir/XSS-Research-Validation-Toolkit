@@ -1,6 +1,47 @@
-# Güncel devam noktası — 23 Ekim 2026
+# Güncel devam noktası — 24 Ekim 2026
 
-## Son doğrulanan teslim — E02 SARIF, 23 Ekim 2026
+## Son doğrulanan yerel teslim — belge uzlaştırması ve E05 textarea
+
+Başlangıç kaynak commit'i `532be7ac01e82fbe0612749ead6d3cb39f0be7e9`.
+24 Ekim'deki birleşik Git fetch komutları `.git/FETCH_HEAD` yazma izni
+hatası verdi. Sonraki bağımsız yükseltilmiş `git fetch origin` başarılı oldu;
+yerel HEAD ve upstream farkı `0/0` olarak doğrulandı. GitHub `/branches/main`
+API kontrolü de başlangıçtaki aynı `532be7a` hash'ini verdi.
+
+GitHub job metadata'sı 24 Ekim'de yeniden kontrol edildi: bu commit'in
+[general CI 39955815522](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815522)
+ana analyzer, required authenticated-browser ve optional dxadom browser
+job'ları `completed/success`;
+[K01 Linux 39955815291](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815291)
+job'ı da `completed/success`. Önceki fix commit'inin CI `39954873774`
+required authenticated-browser job'ı da artık başarılı. Bu metadata kontrolünde
+yerel test çalıştırılmadı, CI artifact'leri indirilip incelenmedi.
+
+- **E02:** bounded kabul tamam; SARIF değişikliği unreleased, yayımlanmış
+  `v0.1.0` wheel asset'i değişmedi.
+- **R7:** 23 Ekim kaynak kimliği ve seçilmiş advisory disposition kayıtlarına
+  göre bounded yerel araştırma tamam. Bu, tam güvenlik taraması, production
+  graph doğrulaması veya CVE yokluğu sonucu değil.
+- **A05:** malformed multipart parser-error cleanup hâlâ doğrulanmamış ve
+  kullanıcının ayırdığı test. Ordinary multipart başarısı bu sınırı kapatmaz.
+- **Üç uzman görevi tamam:** belge uzlaştırması, corpus/negatif kontrol analizi
+  ve E05 dar düzeltmesi ayrı native rollerde yürütüldü; koordinatör diff ve
+  oracle'ları inceledi. Aktif uzman/arka plan işi yok. Ana ROADMAP ve ortak
+  sözleşmeler koordinatörde kaldı; TOML loader ayrıca doğrulanmadı.
+- **E05 textarea uzantısı yerel kabul:** önce 950 mevcut probe/mutation native
+  parser'da textarea dışına marker çıkaramadı. Yeni inert kapanış probu bir
+  marker öğesi oluşturdu; escaped ve yanlış bağlam kontrolleri sıfır kaldı.
+  Bağımsız browser başlangıcı 1 failed / 5 passed; düzeltme sonrası sekiz
+  dosyalık birleşik koşu **381 passed, sıfır failure/error/skip**. HTTP sonucu
+  reflection kalır; JavaScript execution/açıklık iddiası yok. Oracle zorunlu
+  browser CI seçimine eklendi. Yeni wheel'in izole kurulumunda 9 kontrol geçti;
+  11 modül kaynak/wheel/kurulum hash'i eşleşti. [Kabul ve sınırlar](audit/2026-10-24-e05-context/README.md).
+
+Sonraki adım: bu yerel teslimin Git teslimini tamamla ve yeni SHA'nın
+uzak CI sonucunu ayrı doğrula. Yeni release yayımlanmadı. A05 kullanıcı testi
+ayrı bekliyor. [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
+
+## Önceki doğrulanan teslim — E02 SARIF, 23 Ekim 2026
 
 Üç native uzman ayrı dosya sahiplikleriyle mevcut E02 değişikliklerini tamamladı:
 rapor uzmanı exporter/belge, engine uzmanı CLI/paket/CI ve installed gate, QA
@@ -26,8 +67,9 @@ HEAD == origin/main. Değişmeyen SARIF oracle'ı tekrar **116/116** geçti.
 Bu SHA için general CI `39954873774` ana job'ı başarılı: **881 passed / 62
 skipped**, ardından 94 required negative control, 522 benchmark testi ve
 9 installed kontrol geçti. K01 Linux `39954873803` ve optional browser job
-başarılı; required authenticated-browser job hâlâ sürüyor. Sonraki adım bu
-son job sonucunu kaydetmek. A05 malformed multipart
+başarılıydı; required authenticated-browser job 23 Ekim'deki bu kontrolde
+hâlâ sürüyordu. 24 Ekim metadata kontrolünde job'ın başarılı tamamlandığı
+doğrulandı; güncel kayıt üsttedir. A05 malformed multipart
 testi kullanıcıya ayrılmış olarak doğrulanmamış kalıyor; sonuç gelirse A05 kanıtına ekle.
 
 ## Önceki koordinasyon — Kadrom `0ea07ed` A04/A05 teslimi (base `b374095`)
@@ -83,7 +125,7 @@ oracle'larını inceledi; hedef kaynak testleri tamamlandı. Multipart parser-er
 cleanup otomatik kontrol engeli sonrası doğrulanmamış durumda; bu senaryo tekrar
 koşturulmuyor.
 
-### Güncel sonraki adım
+### 23 Ekim'deki sonraki adım (tarihsel; güncel koordinasyon üstte)
 
 A05 malformed multipart parser cleanup kullanıcının ayırdığı test olarak
 bekliyor; sonuç geldiğinde A05 kanıtına ekle ve advisory koşuluyla karşılaştır.
