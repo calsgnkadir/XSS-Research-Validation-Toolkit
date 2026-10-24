@@ -4,8 +4,12 @@
 
 This coordinator follow-up addressed the user's ordered documentation and
 artifact-search tasks after pushing the existing docs-only commit `6170994`.
-The push advanced `origin/main` from `4abb868` to `6170994`; `git ls-remote`
-reported the same `6170994` SHA. No force push was used.
+The initial push advanced `origin/main` from `4abb868` to `6170994`. The
+writeup reconciliation was then committed as
+`574ff7c707a8e28ceaf45b11605d0359c72ad06a`, pushed, and verified with
+`git ls-remote origin refs/heads/main`, which returned that same SHA. No force
+push was used. No CI run was requested or performed for this documentation-only
+delivery.
 
 The work changed writeup prose and project status records only. No raw historical
 reports, application source, test fixture, Docker resource, or application data

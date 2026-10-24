@@ -2,9 +2,10 @@
 
 ## Sonraki koordinasyon — writeup içeriği, A05 ve K04 (24 Ekim)
 
-- `6170994` docs-only commit'i kullanıcı talimatıyla push edildi; fetch sonrası
-  `origin/main` ile fast-forward doğrulandı. Bu nottan sonraki writeup ve durum
-  değişiklikleri henüz commit edilmedi.
+- `6170994` docs-only commit'i push edildi. C01–C09/A05/K04 dokümantasyon
+  teslimi `574ff7c707a8e28ceaf45b11605d0359c72ad06a` olarak push edildi;
+  `git ls-remote` aynı SHA'yı `origin/main` için doğruladı. Bu teslim için CI
+  çalıştırılmadı; yalnız dokümantasyon ve yerel artifact envanteri değişti.
 - C01–C09 writeup gövdeleri banner'larla tutarlı hale getirildi: tarihsel
   gözlem/teori ayrıldı; C03 UNION/blind anlatımı teori olarak işaretlendi; C05
   iki sentetik hesaplı yatay BOLA tekrarını tarihsel kayıttan ve vertical
