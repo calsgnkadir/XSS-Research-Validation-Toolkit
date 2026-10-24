@@ -1,5 +1,14 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-25 roadmap and portfolio documentation
+
+- Aligned the current ROADMAP summary with the published `v0.2.0` PyPI/GitHub
+  release and bounded A04, frozen A05, and K04 retestability status; dated
+  historical snapshots remain unchanged.
+- Finalized the internal K01/E05/BCrypt portfolio case pack and CV wording.
+  E05 remains parser-marker evidence only; BCrypt is a known upstream CVE
+  applicability example, not an application CVE. The pack was not published.
+
 ## 0.2.0 — 2026-10-24
 
 ### PyPI publication

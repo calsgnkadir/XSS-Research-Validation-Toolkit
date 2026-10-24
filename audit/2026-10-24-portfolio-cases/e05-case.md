@@ -30,7 +30,10 @@ impact, sanitizer bypass, WAF bypass, or general scanner accuracy. HTTP
 evidence remains `reflection` / `unreviewed`; the inert marker result is a
 separate parser observation, not HTTP reflection upgraded to a finding. No
 fix/retest of an affected product is claimed; this is an analyzer context
-extension, and the change is unreleased beyond the public `v0.1.0` artifact.
+extension. The change is included in the published
+[`dxa-research-toolkit==0.2.0`](https://pypi.org/project/dxa-research-toolkit/0.2.0/)
+package. The earlier `v0.1.0` GitHub Release is historical and does not contain
+this change.
 
 **Evidence:** [E05 acceptance and limits](../2026-10-24-e05-context/README.md),
 [independent coverage oracle](../2026-10-24-e05-context/coverage.md),

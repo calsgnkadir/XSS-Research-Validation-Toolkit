@@ -10,6 +10,19 @@
 - Bu release yalnız paketleme/dokümantasyon değişikliğidir; kaynak davranışı
   değiştirilmedi. Ayrıntı: [release audit](audit/2026-10-24-pypi-0.2.0/README.md).
 
+## Güncel takip — ROADMAP ve portföy — 25 Ekim
+
+- ROADMAP'in güncel sürüm özeti `v0.2.0` PyPI/GitHub yayınını yansıtacak şekilde
+  eşitlendi; tarihli eski snapshot'lar korunuyor.
+- Kanıt sınırları gözden geçirilmiş iç portföy paketi hazır: K01 birincil vaka,
+  E05 inert parser-context vakası, BCrypt bilinen upstream CVE uygunluk örneği.
+  [Paket](audit/2026-10-24-portfolio-cases/README.md) ·
+  [CV taslağı](docs/PORTFOLIO-CV-DRAFT.md). Dış yayın yapılmadı.
+- A04 yalnız seçilmiş yerel rotalarda bounded tamam; A05 partial/frozen; K04
+  dokümantasyon tamam, tarihsel retest için eşleşen artifact bekliyor. Ayrıntı
+  ve yeniden açma koşulları [ROADMAP](ROADMAP.md) başındadır.
+- Bu doküman tesliminde toolkit testleri çalıştırılmadı.
+
 ## Önceki teslim — writeup içeriği, A05 ve K04 (24 Ekim)
 
 - `6170994` docs-only commit'i push edildi. C01–C09/A05/K04 dokümantasyon

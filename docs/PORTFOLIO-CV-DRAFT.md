@@ -1,12 +1,16 @@
 # XSS Research — CV and Portfolio Draft
 
-**Status:** draft text based on retained local evidence. Adapt the wording to
-the actual role and CV format. These bullets describe bounded work; they do
+**Status:** reviewed, evidence-bounded wording ready to adapt to a role and CV
+format. This file is not an externally published portfolio. These bullets do
 not assign a professional level or claim a new CVE.
 
 ## English
 
 **Project:** Python XSS research CLI and controlled validation fixtures
+
+**Current release:** [`dxa-research-toolkit==0.2.0` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.0/).
+The release includes the offline SARIF CLI and E05 parser-context extension;
+`v0.1.0` remains the historical GitHub Release.
 
 - Built a repeatable stored-XSS proof/fix/retest in a disposable local fixture,
   using a CID-matched browser canary, separate writer and reader contexts,
@@ -46,12 +50,13 @@ not assign a professional level or claim a new CVE.
   · [acceptance limits](../audit/2026-10-24-e05-context/README.md). It proves
   inert parser marker placement only; it does not prove JavaScript execution,
   a confirmed XSS vulnerability, impact, or general detection accuracy.
-- **Short CVE example, BCrypt:** [case brief](../audit/2026-10-24-portfolio-cases/bcrypt-case.md)
-  · [current-source disposition](../audit/2026-10-24-a05-source-refresh/README.md).
-  This reproduces a known upstream Spring Security CVE in one local path; it is
-  not a new application CVE or production-impact demonstration.
-- The public toolkit release is `v0.1.0`; E05 changes are in later unreleased
-  source. Do not imply the released wheel contains E05.
+- **Short CVE example, BCrypt:** [case brief](../audit/2026-10-24-portfolio-cases/bcrypt-case.md).
+  This reproduces known upstream Spring Security behavior in one local path;
+  it is not a new application CVE or production-impact demonstration. Its
+  supporting source/remediation records are internal and need review before
+  public linking.
+- The public toolkit release is `0.2.0`; E05 is included in that package.
+  The `v0.1.0` GitHub Release is historical and does not include E05.
 - Do not include private raw captures, credentials, real account data, or an
   application/company name without the owner's approval. Keep test counts out
   of claims about real-product coverage or personal certification.

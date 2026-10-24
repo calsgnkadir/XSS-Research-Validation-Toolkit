@@ -1,9 +1,11 @@
 ## Case 3 — Known BCrypt boundary behavior and CVE applicability
 
-**Roadmap:** A05 / R7. **Scope:** one authorized local Kadrom authentication
-path, in-memory H2 test profile, synthetic account only. The observed baseline
-was Spring Boot 3.2.5 / Spring Security Crypto 6.2.4; no production account,
-deployment, external service, or third-party target was used.
+**Roadmap:** A05 / R7. **Scope:** one authorized local application
+authentication path, in-memory H2 test profile, synthetic account only. The
+observed baseline was Spring Boot 3.2.5 / Spring Security Crypto 6.2.4; no
+production account, deployment, external service, or third-party target was
+used. The application identity is intentionally omitted from this portfolio
+brief.
 
 **Question and result:** does an input longer than BCrypt's 72-byte boundary
 authenticate as the same principal as the first 72 bytes? A focused test sent
@@ -17,8 +19,8 @@ are bounded local observations, not a practical account-takeover demonstration.
 [CVE-2025-22228](https://spring.io/security/cve-2025-22228/) covers the known
 BCrypt long-input behavior and lists the tested 6.2.4 line in its affected
 range. This is a reproduction of a known upstream library issue in one
-application path; it is not a newly discovered Kadrom vulnerability. No CVE
-was assigned to the application.
+application path; it is not a newly discovered application vulnerability. No
+CVE was assigned to the application.
 
 **Remediation and regression evidence:** the local remediation aligned the
 application to Spring Boot 4.1.1 / Spring Security 7.1.1 and rejects passwords
@@ -27,15 +29,16 @@ focused remediation selector reported 51 passed; a full Maven run later
 reported 665 passed, with no failures, errors, or skips. A subsequent
 test-only exact-72-byte multibyte password-change regression passed in a
 separate auth-only selector (37 passed); the full suite was not rerun after
-that addition. Current-source review rebound the selected advisory check to
-Kadrom `eb031a1`: Security 7.1.1 is outside the recorded affected range and no
-new candidate was found among the reviewed leads. Those historical test counts
-must not be represented as a fresh full-suite run on `eb031a1` or as deployed
-runtime proof.
+that addition. The current-source review found Spring Security 7.1.1 outside
+the recorded affected range and no new candidate in the selected lead set.
+Those historical test counts must not be represented as a fresh full-suite run
+on current source or as deployed runtime proof.
 
 **Evidence and limits:** [bounded local reproduction](../2026-10-22-a05-bcrypt-local-check/README.md),
 [remediation and regression results](../2026-10-22-a05-bcrypt-remediation/README.md),
 and [current-source reconciliation](../2026-10-24-a05-source-refresh/README.md).
+These linked records are internal supporting evidence and should be sanitized
+and reviewed before public linking.
 The work does not establish a practical takeover, production impact, existing
 account recovery behavior, or a fully secure application. A05 remains partial;
 no deployed current-source environment was available in the latest readiness

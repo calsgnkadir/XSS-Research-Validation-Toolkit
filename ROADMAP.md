@@ -1,5 +1,22 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**25 Ekim güncel durum — yayın ve A04/A05/K04:** `dxa-research-toolkit==0.2.0`
+PyPI'de yayımlandı; temiz production venv kurulumu ile dört CLI girişi doğrulandı.
+GitHub `v0.2.0` Release'i mevcut, `v0.1.0` tarihsel release olarak korundu.
+[Yayın kabulü](audit/2026-10-24-pypi-0.2.0/README.md).
+
+- **A04 — bounded tamam:** seçilmiş GET rotalarında aynı-rol sahiplik ve
+  work-session erişimi sentetik yerel veride doğrulandı; ürün-geneli kapsam
+  değildir. [Güncel kaynak regresyonu](audit/2026-10-23-a04-a05-current-source-regressions/README.md).
+- **A05 — partial, frozen:** malformed multipart cleanup fixture'ı current
+  `eb031a1` üzerinde 1/1 geçti. Ayrı current-source app denemesi host-to-MySQL
+  bağlantısı kurulamadığı için health/auth'a ulaşmadı; deployment/auth/proxy,
+  stress ve geniş disposition kapanmadı. [Freeze ve sonuç](audit/2026-10-24-writeup-reconciliation/README.md) ·
+  [parser fixture](audit/2026-10-24-a05-multipart-cleanup/README.md).
+- **K04 — dokümantasyon tamam, tarihsel retest yapılamadı:** eşleşen historical
+  source/image ve route/sanitizer/render-path artifact'i bulunamadı. Yeniden
+  açma koşulu bu artifact'in bulunmasıdır. [Arama](audit/2026-10-24-k04-artifact-search-retest/README.md).
+
 **24 Ekim güncel durum — A04 / A05 / E05 / R7 / R3–R6:** A04'ün roadmap'teki seçilmiş GET
 rotaları için bounded kabulü tamamlandı; ürün-geneli güvenlik iddiası değildir.
 BCrypt'in 72 UTF-8 bayt düzeltmesi ve Boot 4.1.1 / Security 7.1.1 yükseltmesi
@@ -393,7 +410,7 @@ Yeni dış hedef taraması, hesap açma, disclosure veya yayın bu roadmap oluş
 
 | Öncelik | Alan / kimlik | Başlangıç durumu | Alanın kapanışı |
 |---|---|---|---|
-| 1 | Bot R0–R9 | R0–R6 tamam; `v0.1.0` GitHub Release yayımlandı (PyPI hariç). R8 bounded pilot ve R9 bounded operasyon/CI kabulü tamam; R7 source kimliği ve yerel advisory taraması bounded tamam | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
+| 1 | Bot R0–R9 | R0–R6 tamam; `v0.1.0` tarihsel GitHub Release olarak duruyor. `v0.2.0` GitHub Release mevcut; PyPI yayını 25 Ekim'de tamamlandı ve temiz production venv'te dört CLI doğrulandı. R8 bounded pilot, R9 operasyon/CI ve R7 seçilmiş-source araştırması kendi kapsamlarında tamam | Doğru kanıt, güvenilir oturum, browser entegrasyonu, ölçüm, kurulabilir sürüm ve operasyon sınırları |
 | 2 | Rapor C01–C13; kanıt K01–K05 / R5 | 19 Ekim C10/C13 düzenlemesi tamam; K03 yerel sürümlü tekrarları var; eski saha iddiaları ayrıca sınırlandı | İddia sınırları, yayın kopyaları, K01, K03 yeni loopback kanıtı ve arşiv rapor etiketleri kaydedildi; yeni tekrar eski tarihsel seansı doğrulamaz |
 | 3 | Portfolyo P01–P04 | P01–P04 tamam | Üç seçilmiş kanıt yolu, temiz kurulum ve yerel tekrar; proje tanımı sınırlı ve 06–10 tarihi seri olarak gruplanmış |
 | 4 | Staj S01–S03 | S01/S02/S03 tamam | Oturum kaydı, teknik devam özeti ve 11 yazılık beceri/kanıt matrisi hazır |
@@ -473,7 +490,7 @@ Stajda başlayan XSS çalışmasını, bir başkasının da kurup sonuçlarını
 | R3 Tarayıcı doğrulamasını bağla | Tamam — loopback proof pipeline | R1 + R2 | Auth/stored/DOM, observer, SPA route ve kontrollü browser kanıtı |
 | R4 Doğru benchmark ve CI | **Tamam — 16 Ekim teknik kapsam kararı** | R1–R3 | Kimlik bazlı ölçüm, hata/timeout kapsamı, doğrulanmış artifact, eşit bütçeli loopback koşusu ve exact-payload browser replay |
 | R5 / K01 Tekrar üretilebilir XSS vaka çalışması | **Tamam — 16 Ekim teknik kabul** | R3 + R4 | Temiz lab kurulumu, proof, fix, retest, staj yazısı; ikinci insan tekrarı zorunlu kapsamdan çıkarıldı |
-| R6 Kullanılabilir ilk sürüm | **Tamam — v0.1.0 GitHub Release ve wheel asset 21 Ekim'de yayımlandı; PyPI hariç** | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
+| R6 Kullanılabilir ilk sürüm | **Tamam — v0.1.0 GitHub Release 21 Ekim'de tarihsel olarak yayımlandı; v0.2.0 GitHub Release'i mevcut, PyPI sdist/wheel 25 Ekim'de yayımlandı ve temiz venv'te dört CLI doğrulandı** | R1–R5 | Paketleme, konfigürasyon, JSON/HTML, demo ve sürüm notu |
 | R7 / A01–A05 Sınırlı gerçek ürün/CVE araştırması | Bounded yerel R7 araştırması tamam; A01–A03 iddia sınırları düzeltildi, A04 seçilmiş GET kabulü ve current-source ownership regresyonu tamam. BCrypt remediation ve dar Sort input-error regresyonu geçti. Araştırma kimliği Kadrom b374095 kaynak snapshot; public desteklenen release/tag bulunmadı. 248-coordinate OSV snapshot eşleşen kayıtlı graph ile ilişkilendirildi; tam tarama veya CVE yokluğu değil. Owner raporu workspace içinde hazır. A05 parser cleanup current `eb031a1` üzerinde bir loopback fixture'da 1/1 geçti; tam app/auth/proxy veya genel cleanup garantisi değil. Geniş ürün/dependency disposition hâlâ kısmi. | Bounded parser sonucunu ve sınırlarını koru; A05 wider disposition'ı ayrı değerlendir. Dış disclosure/gönderim ayrıca yetkilidir. | Kesin kaynak kimliği, sınırlı parser davranışı/advisory disposition ve dürüst yerel rapor; ürün-geneli güvenlik veya yeni CVE iddiası yok |
 
 R0 tamamlandı demek bütün tarihsel yazılar teknik olarak düzeltildi demek değildir. Eski kayıtlar tarihsel olarak etiketlendi; vaka bazında kanıt düzeltmesi R5'te yapılır. R1'in ilk düzeltmesi de DOM proof veya blind eksiklerinin tamamlandığı anlamına gelmez.
@@ -1023,10 +1040,10 @@ Eski Klarna hedef önerisi güncel scope veya test yetkisi sayılmaz. Yeni araş
 ## Ertelenen ama kaybolmayan işler
 
 - E01 Tek dil AST pilotu: R8'de Python için tamamlandı; diğer dillere yalnız kapsam kanıtıyla genişleme ertelendi.
-- E02 SARIF — **tamam, 23 Ekim (bounded):** ortak R1 zarfından offline `dxa-sarif` ve scanner `--sarif-out`; normatif 2.1.0 schema, observation/triage `review`/`none`, error/skip unsuccessful, strict girdi/privacy kontrolleri. 468 regresyon + temiz installed wheel 9 kontrol geçti; 11 modül hash'i eşleşti. Absolute static path konumu ve hosting upload desteği kapsam dışı; unreleased. [Kabul](audit/2026-10-23-e02-sarif/README.md).
+- E02 SARIF — **tamam, 23 Ekim (bounded), v0.2.0'da yayımlandı:** ortak R1 zarfından offline `dxa-sarif` ve scanner `--sarif-out`; normatif 2.1.0 schema, observation/triage `review`/`none`, error/skip unsuccessful, strict girdi/privacy kontrolleri. 468 regresyon + temiz installed wheel 9 kontrol geçti; 11 modül hash'i eşleşti. `dxa-sarif` CLI v0.2.0 package release ile yayımlandı. Absolute static path konumu ve hosting upload desteği kapsam dışı. [Kabul](audit/2026-10-23-e02-sarif/README.md) · [PyPI release](audit/2026-10-24-pypi-0.2.0/README.md).
 - E03 Genel subdomain/dizin recon ve IoT: mevcut XSS ürün hedefi için düşük öncelik.
 - E04 Plugin API/Marketplace ve topluluk kampanyası: kullanıcı ihtiyacı ve tekrarlanabilir sürüm sonrası.
-- E05 Yeni payload/mutation: **textarea RCDATA uzantısı 24 Ekim yerel kabulü tamam:** 950 mevcut şekil marker öğesi üretmezken yeni inert kapanış probu textarea dışında bir öğe üretti; escaped/yanlış bağlam kontrolleri sıfır kaldı. Bağımsız browser oracle dahil seçilmiş koşu 381 passed, sıfır skip; HTTP reflection anlamı korundu. [Kabul ve sınırlar](audit/2026-10-24-e05-context/README.md). Diğer genişlemeler yeni ölçülmüş bağlam kapsaması varsa; sayı kotası veya 18'in matematiksel doyum iddiası yok. Unreleased; bütün E05 kapsamının kapanışı değil.
+- E05 Yeni payload/mutation: **textarea RCDATA uzantısı 24 Ekim yerel kabulü tamam:** 950 mevcut şekil marker öğesi üretmezken yeni inert kapanış probu textarea dışında bir öğe üretti; escaped/yanlış bağlam kontrolleri sıfır kaldı. Bağımsız browser oracle dahil seçilmiş koşu 381 passed, sıfır skip; HTTP reflection anlamı korundu. [Kabul ve sınırlar](audit/2026-10-24-e05-context/README.md). Diğer genişlemeler yeni ölçülmüş bağlam kapsaması varsa; sayı kotası veya 18'in matematiksel doyum iddiası yok. Bu sınırlı textarea uzantısı v0.2.0'da yayımlandı; daha geniş E05 kapsamı tamamlanmadı.
 
 ## Denetimden kapanışa izlenebilirlik
 
