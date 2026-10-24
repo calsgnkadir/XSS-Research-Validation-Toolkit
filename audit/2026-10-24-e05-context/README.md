@@ -35,8 +35,17 @@ failures/errors/skips**, including all six browser cases. Windows / Python
 disabled for the parser oracle. This was a selected suite, not a full-suite run.
 
 The coordinator added the independent oracle to the required browser CI job.
-Hosted execution for the new delivery must be verified separately from local
-acceptance. Prior green runs belong to the base commit.
+Delivery commit `77199075a271227bce7cb6386d571f34f0213b5d` was pushed;
+subsequent fetch confirmed local HEAD equals origin/main. Hosted execution is
+separate from local acceptance. [CI 40083275086](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275086)
+main, required authenticated-browser and optional browser jobs succeeded.
+[K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
+succeeded. Hosted logs: main suite **887 passed / 62 skipped** (98.64s),
+required negatives **94 passed** (23.68s), benchmark **522 passed** (16.26s),
+installed gate **9 controls passed**. Required browser acceptance passed
+**224 tests** (104.62s); strict corpus, auth controls, demo and zero-skip
+evidence gate also succeeded. These are metadata/log observations; hosted
+artifacts were not downloaded or independently reviewed. Skips are not passes.
 
 The current source wheel was built without build isolation and installed
 without dependencies into a new local venv under ignored `.dxa/e05-package/`.

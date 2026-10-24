@@ -30,6 +30,18 @@ Wheel SHA-256 `a7c3e89fd9257d6c4b3d1129822d5dd435c58279b812f3092ea65fc42d5a35d8`
 The published release asset was not replaced. Exact packaging commands and
 sanitized gate output are in the E05 evidence package.
 
+Delivery commit `77199075a271227bce7cb6386d571f34f0213b5d` was pushed; a
+subsequent fetch verified local HEAD equals origin/main. For that exact SHA,
+[CI 40083275086](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275086)
+completed all three jobs successfully. Hosted job logs show main suite
+**887 passed / 62 skipped** (98.64s), required negatives **94 passed** (23.68s),
+benchmark tests **522 passed** (16.26s), installed gate **9 controls passed**;
+required authenticated-browser acceptance **224 passed** (104.62s), followed
+by successful strict corpus, auth controls, demo and zero-skip evidence gate.
+[K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
+also completed successfully. These are hosted metadata/log observations, not
+local reruns or independent downloaded-artifact review. Skips are not passes.
+
 ## E02 hosted CI metadata follow-up — 24 October 2026
 
 Source commit `532be7ac01e82fbe0612749ead6d3cb39f0be7e9`. The GitHub

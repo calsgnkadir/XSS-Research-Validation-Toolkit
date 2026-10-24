@@ -37,9 +37,18 @@ yerel test çalıştırılmadı, CI artifact'leri indirilip incelenmedi.
   browser CI seçimine eklendi. Yeni wheel'in izole kurulumunda 9 kontrol geçti;
   11 modül kaynak/wheel/kurulum hash'i eşleşti. [Kabul ve sınırlar](audit/2026-10-24-e05-context/README.md).
 
-Sonraki adım: bu yerel teslimin Git teslimini tamamla ve yeni SHA'nın
-uzak CI sonucunu ayrı doğrula. Yeni release yayımlanmadı. A05 kullanıcı testi
-ayrı bekliyor. [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
+Kod/test/kanıt teslimi `77199075a271227bce7cb6386d571f34f0213b5d` olarak push
+edildi; sonraki fetch yerel HEAD ve origin/main eşitliğini doğruladı. Bu SHA'nın
+[CI 40083275086](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275086)
+ana, required authenticated-browser ve optional browser işleri başarılı.
+Hosted ana suite **887 passed / 62 skipped**, ardından 94 negatif kontrol ve
+522 benchmark testi geçti; installed gate 9/9. Required browser kabulü
+**224 passed**, ardından corpus/auth/demo ve sıfır-skip evidence gate başarılı.
+[K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
+başarılı. Bu hosted metadata/log gözlemidir; artifact indirilip incelenmedi.
+Sonraki adım: A05 kullanıcı testi sonucu gelirse ayrı kanıta ekle; sonraki E05
+uzantısını ancak yeni ölçülmüş bağlam açığıyla seç. Yeni release yayımlanmadı.
+[Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 
 ## Önceki doğrulanan teslim — E02 SARIF, 23 Ekim 2026
 
