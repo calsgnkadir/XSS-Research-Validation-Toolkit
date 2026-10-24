@@ -13,17 +13,22 @@ bounded HTTP/browser behavior, preserve evidence boundaries, and test fixes in
 local fixtures. The retained acceptance includes controlled corpus and
 loopback-fixture checks; it does not establish broad real-world detection
 accuracy, independent product findings, competitor superiority, or newly
-discovered CVEs. The accepted `0.1.0` wheel is available through the
-[GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0);
-PyPI publication is excluded. Current tag and artifact status is recorded in
-[STATUS](STATUS.md). Use the tools only on systems you own or are explicitly
-authorized to test.
+discovered CVEs. Install the package with:
+
+```console
+python -m pip install dxa-research-toolkit
+```
+
+The accepted `0.1.0` wheel remains available through the historical
+[GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0).
+Current tag and artifact status is recorded in [STATUS](STATUS.md). Use the
+tools only on systems you own or are explicitly authorized to test.
 
 ## Current status
 
 This is an experimental research toolkit, not a general-purpose vulnerability
-scanner. The `v0.1.0` GitHub Release remains available; this source checkout has
-later unreleased changes and PyPI publication is excluded. Bounded acceptance
+scanner. The `v0.1.0` GitHub Release remains available as a historical release;
+this source checkout includes later changes. Bounded acceptance
 for R0–R6, the Python AST pilot (R8), and the declared operational scope (R9)
 is complete. E05's measured textarea parser-context extension is accepted
 within its narrow scope. A04 is bounded complete for the selected local GET

@@ -1,6 +1,8 @@
 # Değişiklik kaydı
 
-## Unreleased — 2026-10-24 writeup evidence reconciliation and frozen scopes
+## 0.2.0 — 2026-10-24
+
+### Writeup evidence reconciliation and frozen scopes
 
 - Edited writeups 01–09 so body text matches the historical evidence limits.
   C01 treats nested-tag deletion as an illustrative mechanism, C03 labels
@@ -20,7 +22,7 @@
   the engine named pipe was absent; global artifact absence is not asserted.
   No retest ran. [Audit](audit/2026-10-24-writeup-reconciliation/README.md).
 
-## Unreleased — 2026-10-24 A05 multipart cleanup
+### A05 multipart cleanup
 
 - Re-ran one bounded malformed multipart parser/cleanup fixture on the current
   Kadrom source with embedded Tomcat 11/Spring MVC. The positive parse control
@@ -67,7 +69,7 @@
   it retains evidence limitations and is not an external portfolio publication.
   [CV draft](docs/PORTFOLIO-CV-DRAFT.md).
 
-## Unreleased — 2026-10-24 E05 textarea context
+### E05 textarea context
 
 - Added an inert `textarea-breakout` probe after an independent Chromium
   oracle measured a missing textarea RCDATA marker context. The new probe
@@ -79,7 +81,7 @@
 - Reconciled current R7 and CI status against dated acceptance records;
   A05 malformed multipart cleanup remains the user's unverified reserved test.
 
-## Unreleased — 2026-10-23 E02 SARIF
+### E02 SARIF
 
 - Added offline `dxa-sarif` and scanner `--sarif-out` exports from the common
   R1 evidence envelope. Observations remain review/none; error and skip events
@@ -96,7 +98,7 @@
   is retained, focused SARIF retest passed 116/116, and replacement Linux main
   CI passed 881 tests with 62 skips (separate from local acceptance).
 
-## Unreleased — 2026-10-22 R7/A04–A05 continuation
+### R7/A04–A05 continuation
 
 - Three specialists were invoked concurrently under the user's updated limit;
   local ignored role/workflow instructions now say three. The ignore rules,
