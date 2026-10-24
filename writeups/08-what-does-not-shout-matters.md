@@ -5,19 +5,18 @@
 > **TL;DR** — [Writeup 06](06-building-an-xss-bot.md) shipped the bot; [Writeup
 > 07](07-teaching-the-bot-to-log-in.md) taught it to log in and shut up about
 > escaped code. This pass finished the second half: **teach it that "reflected
-> raw" is not one thing**. A canary that lands in `<title>` doesn't execute; a
-> canary echoed inside `application/json` isn't parsed as HTML at all; the same
-> underlying stored bug reflected across 58 admin preview pages isn't 58 bugs.
-> None of this makes the bot find more — it makes the bot's HIGH label mean
-> something. The other half of the pass added a fourth static language (Java /
-> Servlet / Spring / JSP / Thymeleaf), which turned a 211-file Spring backend
-> into 3 real "eyes-on this line" candidates instead of nothing.
+> raw" is not one thing**. A canary in `<title>` is a parser-context observation,
+> not proof that a JavaScript payload executes; a canary in `application/json`
+> is not by itself a browser HTML sink; repeated rows may describe one underlying
+> reflection. The historical changes reclassified and deduplicated selected
+> outputs. They do not establish accuracy or turn remaining HIGH rows into
+> confirmed findings. The Java pass produced three historical review candidates
+> on one 211-file snapshot; they were not three confirmed vulnerabilities.
 
-The interesting rule this pass illustrates: **a security tool's value is
-proportional to how much of its output the human can trust as signal**. The
-easy way to make a tool look impressive is to raise its recall (flag more).
-The useful way is to raise its precision (flag *the right* things) and be
-honest about the rest. That is what v3.5-v3.7 do.
+The historical pass illustrates output classification and deduplication. The
+reported changes are not a measured precision or recall improvement: that
+would require an independently labeled corpus and a defined denominator.
+Reviewers still need to inspect each candidate and its actual rendering path.
 
 ## The gap writeup 07 left open
 
@@ -30,21 +29,23 @@ every raw reflection:
 [HIGH] UNENCODED (HTML injection)   -- for every single hit
 ```
 
-Three separate real-world problems all wore that label:
+The historical account grouped three output patterns under that label; their
+interpretation is bounded by the retained records:
 
-- The Bludit tag XSS from writeup 06 lands **inside `<title>`**. It IS a raw
-  reflection, but `<title>` renders as text; a browser doesn't run
-  `<img onerror>` there without a `</title>` breakout. So "HIGH executable"
-  overstates it.
-- WonderCMS's stored payload surfaces on **58 different admin preview pages**
-  because the same template renders the current page's content on every
-  admin route. All 58 rows are one bug; the label buries the real signal.
-- A REST endpoint that echoes the canary in a `{"name":"dxa..\"<dXsS>"}`
-  response body flags as `[HIGH] UNENCODED` too — but the response is
-  `application/json`, so the browser parses it as JSON and nothing executes.
-  Same label, different reality.
+- The historical Bludit report returned a raw canary in a `<title>` context.
+  That is a parser-context observation, not evidence that JavaScript executed;
+  a title-context value would need a suitable breakout and separate execution
+  proof.
+- The historical run reported the same stored canary on 58 admin preview
+  responses. The author attributed those rows to one repeated rendering path;
+  the count alone does not establish 58 independent bugs or prove the route
+  relationship.
+- A historical REST response echoed the canary as JSON and received an
+  `[HIGH] UNENCODED` tool label. JSON reflection alone does not establish a
+  browser HTML sink or execution; downstream rendering requires separate
+  evidence.
 
-Each of these is a specific, addressable false-positive class. Fixing them
+These patterns motivated specific classification and deduplication changes. Fixing them
 doesn't need better crawling or a headless browser; it needs the bot to look
 at *where the payload landed* and *how the response is served* before deciding
 what to yell.
@@ -178,21 +179,18 @@ handles `Type name = expr;` (types may be generic). FP squelch: OWASP
 `HtmlUtils.htmlEscape`, ESAPI `encodeForHTML` — within 200 chars of the sink,
 downgrade HIGH to MEDIUM.
 
-Pointed at hotel-platform's `hotelapp/src/main/java`: **3 HIGH, 6 MEDIUM,
-211 files scanned in a second.** The three HIGH: two on
+The historical run reported hotel-platform's `hotelapp/src/main/java`: **3 HIGH, 6 MEDIUM,
+211 files scanned in a second.** The three HIGH rows: two on
 `IdempotencyFilter.java:88` (the same line matched two sink patterns —
 `servlet-writer` and `response-write`, that's a dedup opportunity for
 another pass) writing a cached JSON body back on cache hit; one on
 `CorrelationIdFilter.java:50` writing the inbound `X-Correlation-Id` value
-back onto the response header. Both are defensively guarded at runtime:
-`IdempotencyFilter` writes cached prior-successful-JSON with an
-`application/json` Content-Type; `CorrelationIdFilter` calls `sanitize(inbound)`
-and enforces a 64-character length limit before echoing. The bot flagged
-the reach, not the exploit — which is exactly the right level for a regex
-heuristic. A cross-method-taint upgrade (see honest limitations) would
-follow the `sanitize()` call one level and quiet the CorrelationId flag; it
-is deliberately not done yet because the value of *"here is a source that
-reaches a sink through your own code, please review"* is high on its own.
+back onto the response header. The historical source description says the
+cached response used `application/json` and the correlation ID passed through a
+helper named `sanitize()` plus a length limit. Those facts do not prove the
+helper's behavior for the output context or establish a browser exploit. The
+analyzer rows were candidates for review; a sanitizer-like name is not
+function-body or context analysis.
 
 ## Where the bot honestly stands after this pass
 
@@ -205,10 +203,10 @@ Updated capability matrix:
 | Stored XSS (form) | ✅ | `--stored --target-field` |
 | Stored XSS (JSON API) | ✅ | `--stored --json-body` |
 | Stored header injection (2-step) | ✅ | `--stored --header-target` |
-| Autonomous check URL discovery | ✅ | `--auto-check` (with orphan-page hints via `--auto-check-from`) |
+| Bounded check URL discovery | ✅ | `--auto-check` follows bounded links; `--auto-check-from` supplies orphan hints |
 | SPA / bearer-token / OAuth targets | ✅ | `--cookie` / `--header` |
 | REST methods (PUT/PATCH/DELETE) | ✅ | `--method` (v3.6) |
-| Sink-context awareness | ✅ | `find_context()` + severity ladder (v3.5) |
+| Sink-context classification | ⚠️ | historical context label; not execution proof |
 | Response Content-Type awareness | ✅ | `_apply_ct_gate()` (v3.7) |
 | Same-bug dedup across pages | ✅ | `dedupe_findings()` (v3.5) |
 | Static: JS / TS / C# / PHP / Java | ✅ | `dxa` (Java added this pass) |
@@ -218,13 +216,16 @@ Updated capability matrix:
 | Blind XSS (fires elsewhere / later) | ❌ | needs an out-of-band callback server |
 | Payload mutation / WAF bypass | ❌ | one canary shape only |
 
-The gaps at the bottom are real. This pass didn't close them; it made the
-findings the bot *does* return more honest — which is the harder half of a
-security tool's job. **Precision before recall** is a defensible engineering
-choice for a hand-written triage aid; recall-first is the design for
-commercial scanners with response teams to filter their output.
+The matrix describes a historical snapshot, not a measured accuracy result.
+Precision and recall require an independently labeled corpus and defined
+TP/FP/FN counts. Reclassification and deduplication change report rows; they
+do not by themselves establish that remaining results are correct.
 
 ## Takeaway
+
+The statements below preserve the author's historical interpretation of the
+tool changes. Read them as implementation notes and reported observations;
+they are not independent target verification or a measured precision result.
 
 Every fix in this pass — sink context, dedup, Content-Type gate, Java —
 targeted a specific class of false or over-labelled finding I had seen the
@@ -233,6 +234,10 @@ None of them made the bot find something it wasn't finding before. All of
 them made the label attached to what it finds match what the human would
 say after looking. That is the maturity step between "runs" and "you would
 actually hand it to someone."
+
+**Evidence limit:** the 0-HIGH output mentioned in the historical series means
+only that this heuristic produced no rows above that threshold on that input.
+It does not show that the scanned code or application was safe.
 
 Same source→sink discipline as the rest of the repo — with the honest edges
 of what a regex-plus-canary approach can and can't tell you drawn in ink.

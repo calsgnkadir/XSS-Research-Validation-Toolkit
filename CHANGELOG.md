@@ -1,5 +1,25 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-24 writeup evidence reconciliation and frozen scopes
+
+- Edited writeups 01–09 so body text matches the historical evidence limits.
+  C01 treats nested-tag deletion as an illustrative mechanism, C03 labels
+  UNION/blind material as theory, and C05 distinguishes a historical basket-ID
+  claim from a bounded two-account horizontal BOLA replay; vertical escalation
+  was not tested.
+- Scoped negative bundle observations, JWT examples, operator-supplied URL
+  hints, raw JSON/reflection, HIGH/zero-HIGH counts, and sanitizer-name
+  heuristics. Report-row changes are not a precision measurement. Raw reports
+  were not edited.
+- **A05 frozen as partial:** multipart cleanup fixture 1/1 passed; current-source
+  app health/auth was not reached because host-to-MySQL loopback connectivity
+  failed. No deployment-wide or CVE closure is claimed.
+- **K04 retestability:** searched the workspace and reachable Desktop,
+  Documents, and Downloads project/artifact paths without locating a matching
+  historical source/image. Docker image enumeration was unavailable because
+  the engine named pipe was absent; global artifact absence is not asserted.
+  No retest ran. [Audit](audit/2026-10-24-writeup-reconciliation/README.md).
+
 ## Unreleased — 2026-10-24 A05 multipart cleanup
 
 - Re-ran one bounded malformed multipart parser/cleanup fixture on the current

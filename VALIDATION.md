@@ -1,5 +1,30 @@
 ﻿# Doğrulama kaydı — 2026-10-24
 
+## C01–C09 writeup reconciliation, A05 freeze, K04 artifact search — 24 October
+
+Documentation-only changes aligned writeups 01–09 with their historical
+evidence banners and the current K03/K04 records. C03 labels UNION and blind
+material as theory; C05 distinguishes the historical basket-ID account from a
+later two-synthetic-account horizontal BOLA replay, and states that vertical
+escalation was not tested. C01/C02/C04/C06–C09 further scope execution,
+negative observations, operator-supplied URL hints, raw JSON, sanitizer-name
+heuristics, and HIGH/precision claims. Raw reports were not edited.
+
+A05 is explicitly frozen as partial: its malformed multipart cleanup fixture
+passed 1/1, but the separate current-source app runtime did not reach health or
+auth because host-to-MySQL loopback connectivity failed. No new runtime request
+or test was made for this documentation change; no app/auth/deployment result
+is claimed.
+
+K04 artifact-name/content search covered this workspace and reachable
+`OneDrive\Desktop`, `Documents`, and `Downloads` project/artifact locations.
+No matching historical route/source/image was located. Docker image listing
+could not connect because the Docker engine named pipe was absent; this is not
+evidence that no local image exists. No historical retest ran.
+
+No toolkit tests were run. No raw reports, Docker resources, application data,
+or external targets were changed or contacted.
+
 ## K03 independent local lab retest — 24 October
 
 Windows local Docker, existing OWASP Juice Shop `20.2.0` immutable image ID

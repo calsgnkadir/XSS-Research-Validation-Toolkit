@@ -1,6 +1,6 @@
 > **Historical heuristic-tuning account — not a precision measurement.** The 3→1 HIGH change reports how one early regex analyzer's output changed after heuristic edits on one historical code snapshot. It is not a measured precision gain: there is no independently labeled representative corpus or accepted TP/FP/FN denominator here. In particular, sanitizer-name heuristics can suppress true flows, and the remaining HIGH is an inspection candidate, not a confirmed XSS. See [C09](../ROADMAP.md), the [R8 counterexample limits](../audit/2026-10-16-r8-current-review/README.md), and [status](../STATUS.md).
 
-# Three HIGH to one: a precision journey on real code
+# Three HIGH rows to one: a historical heuristic change
 
 > **TL;DR** — After [Writeup 08](08-what-does-not-shout-matters.md) added Java
 > to `dxa`, the first live-fire run against my own hotel-platform Spring Boot
@@ -55,9 +55,11 @@ Three rows. Reading them by hand:
   response.setHeader(HEADER, cid);
   ```
 
-  `cid` **is** built from `inbound`, but always through a local `sanitize()`
-  helper (or replaced entirely by `shortUuid()`). The value that reaches
-  `setHeader` is sanitised. The bot didn't see `sanitize()` for two reasons:
+  In the historical source snapshot, `cid` was built from `inbound` through a
+  local helper named `sanitize()` (or replaced by `shortUuid()`). The analyzer
+  treated that name as a sanitization signal; this writeup does not establish
+  the helper's implementation or prove that its output is safe for the header
+  context. The bot didn't account for the helper name for two reasons:
   its escape gate only matches OWASP-standard names, and the whole
   expression spans three physical lines so even if the gate knew `sanitize`,
   it wouldn't have been on the same line as the assignment.
@@ -69,8 +71,10 @@ Three rows. Reading them by hand:
   `response.getWriter().*`. Every hit on the specific one is also a hit on
   the general one — same line, two rows.
 
-Two of the three rows are noise, one is a real reach. That's the ratio the
-next two versions fix.
+The historical author interpreted one row as a helper-related candidate and
+two as overlapping sink rows. Those labels are an interpretation of that
+snapshot, not independently established false-positive/true-positive labels;
+the row-count change alone cannot measure accuracy.
 
 ## Fix 1: cross-method sanitizer awareness (v3.8)
 
@@ -93,8 +97,9 @@ OWASP-standard encoder call was on the same line as the sink
   ```
 
   Anywhere this call appears **in the RHS of an assignment**, `compute_taint`
-  skips propagation for that line. The tainted variable is treated as
-  cleaned.
+  skips propagation for that line. The tainted variable is treated as cleaned by
+  the heuristic, regardless of what the named function actually does. It is not
+  function-body or context-aware sanitizer analysis.
 
 - **Multi-line statement join, for taint only.** Java ternaries and
   long argument lists frequently span 3-8 lines. To make the sanitize
@@ -108,9 +113,10 @@ OWASP-standard encoder call was on the same line as the sink
 
 Together these turn the CorrelationIdFilter block from three separate lines
 into one joined statement `String cid = (inbound != null ...) ? sanitize(inbound) : shortUuid();`,
-the sanitize hint matches, taint propagation from `inbound` to `cid` is
+the sanitize-name hint matches, taint propagation from `inbound` to `cid` is
 skipped, and the `setHeader(HEADER, cid)` line no longer finds `cid` in
-`tainted`. HIGH drops from 3 to 2.
+`tainted`. The reported HIGH count drops from 3 to 2; this is a classifier
+output change, not proof that the value was safely sanitized.
 
 The catch is the mirror of the win: this is an **aggressive** heuristic. Any
 sanitize-family call in the RHS breaks the chain, even if the call happens
@@ -155,9 +161,9 @@ skips them in the emit loop. The pre-existing hardcoded suppression for
 `(src-href, navigation)` folded into the same table — one central place,
 adding a future overlap is a table row.
 
-Result: the two IdempotencyFilter rows collapse to one. HIGH drops from 2
-to 1. Total findings on the file drop from 9 to 7 as the same rule
-suppresses duplicate MEDIUMs on other lines too.
+Reported result: the two IdempotencyFilter rows collapse to one. HIGH drops
+from 2 to 1, and total rows on the file drop from 9 to 7. These are historical
+row counts after a suppression rule, not a measured accuracy gain.
 
 ## The remaining HIGH was an inspection candidate
 
@@ -208,16 +214,12 @@ measure that tradeoff.
 
 ## Takeaway
 
-The story here isn't that the bot got smarter in some general way. It's
-that **each of the three HIGH rows had a specific reason to be there or
-not**, and reading each of them turned into a targeted fix with a test
-that reproduces the exact real-file shape. This is what precision-first
-engineering looks like day to day: a real target reports something, you
-read it, you decide whether it's noise or signal, and if it's noise you
-add the smallest heuristic that cuts *that* class of noise without
-weakening what the tool catches on real problems. Then you write the
-test so tomorrow's change doesn't undo it. Repeat until the number the
-bot returns matches what a competent human would say by hand.
+The record supports a narrower account: a heuristic change altered the
+reported rows on one historical source snapshot, with tests for selected code
+shapes. It does not provide independently labeled true/false outcomes for all
+three original rows or measure whether the change preserved other detections.
+Treat the remaining HIGH as a review candidate, and test sanitizer helpers by
+their implementation and output context rather than their names.
 
 Same source→sink discipline as the rest of the repo, one target's
 worth of engineering shown end to end.

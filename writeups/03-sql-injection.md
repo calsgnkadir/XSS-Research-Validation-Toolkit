@@ -18,7 +18,7 @@
 > dump another table). The only real fix is to never build the query by
 > concatenation at all.
 
-The XSS writeups in this repo all turn on one idea: the browser parses a value in
+This section is **mechanism/theory**, not a Juice Shop experiment. The XSS writeups in this repo all turn on one idea: the browser parses a value in
 a context where you didn't expect markup. SQL injection is the same shape one
 layer down — the **database** parses a value in a context where the developer
 expected only data. Same lesson, different parser.
@@ -54,16 +54,16 @@ This maps directly onto the repo's [`methodology.md`](../methodology.md): the
 API field, even a header), and the **sink** is the string-concatenated SQL. If a
 source reaches that sink without being parameterised, you have SQLi.
 
-## Three ways to use the border
+## Three ways to use the border — examples, not this lab's results
 
-**1. Login bypass** — comment out the check (the example above):
+**Theory example — login bypass:** comment out the check (the example above):
 
 ```
 username:  administrator'--
 password:  anything
 ```
 
-**2. Retrieve hidden data** — make the `WHERE` always true. A product filter runs
+**Theory example — retrieve hidden data:** make the `WHERE` always true. A product filter runs
 `… WHERE category = 'Gifts' AND released = 1`; injecting into `category`:
 
 ```
@@ -74,7 +74,7 @@ every row and `--` kills the `released = 1` restriction, so **every** product �
 including unreleased ones — is returned. (PortSwigger Academy's first two
 SQL-injection labs are exactly these two shapes.)
 
-**3. UNION — steal from *other* tables.** `UNION` appends a second `SELECT` and
+**Theory example — `UNION`:** `UNION` appends a second `SELECT` and
 stacks its rows onto the results. So a search that shows product names can be made
 to show usernames and password hashes instead:
 
@@ -103,7 +103,7 @@ PortSwigger Academy exercises are also author-reported here without a retained
 per-lab result. The `UNION` and blind sections below are mechanism/examples;
 they were not run against Juice Shop.
 
-## When you can't see the output: blind SQLi
+## Theory example — when you can't see the output: blind SQLi
 
 Often the query result never appears on the page — but the app still *behaves*
 differently depending on whether your injected condition is true. You then leak
@@ -158,12 +158,12 @@ Supporting controls:
 
 ## Takeaway
 
-SQL injection is a **data-becomes-code** confusion: your input, meant to be a
-value, gets parsed as part of the query. Every technique here — login bypass,
-`OR 1=1`, `UNION`, blind extraction — is just a different sentence written in the
-code half of that border. And the fix isn't a cleverer filter; it's refusing to
-build the query by concatenation at all, so input can never reach the parser as
-structure. **Parameterise, and the border can't be crossed.**
+SQL injection is a **data-becomes-code** confusion: input is parsed as part of a
+query. The examples here — login bypass, `OR 1=1`, `UNION`, and blind extraction
+— show different possible query behaviors; only the login shape has a separate
+bounded local reproduction linked above. Parameterised queries keep bound
+values out of SQL syntax positions for query paths that use them. This guidance
+does not claim every application query is parameterised or safe.
 
 ---
 

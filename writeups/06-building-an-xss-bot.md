@@ -4,18 +4,20 @@
 
 > **TL;DR** — The rest of this repo's writeups explain *how* an XSS bug works.
 > This one turns that reasoning into a program: a static half (`dxa`) that reads
-> code and flags source→sink flows, and a dynamic half (`dxadyn`) that drives a
-> running target — injects a unique canary, follows the app's own links, and
-> reports where the payload survived **unencoded**. End-to-end it needs no
-> hand-picked URL: log in, submit, let it crawl. Same source→sink method as the
-> hand-work in this repo — automated for the supported paths. Historical reports
+> code and flags candidate source→sink flows, and a dynamic half (`dxadyn`) that
+> sends a unique canary through configured inputs, follows bounded same-host
+> links, and reports how it appeared in checked responses. The historical run
+> used an operator-provided `{CID}` route seed; that is not arbitrary URL
+> discovery. Scope, authentication, input selection, and proof review remain
+> bounded by configuration and operator judgment. Historical reports
 > show that the tool was given a `{CID}` route seed and classified a stored
 > reflection; they do not independently prove autonomous discovery, browser
 > execution, or a CVE-2026-4420 match.
 
-Every earlier writeup here does the same three moves by hand: name the sources,
-name the sinks, prove one reaches the other. Those moves *are* an algorithm; a
-tool is just that algorithm without a human in the loop for the mechanical part.
+Every earlier writeup here describes three moves: name the sources, name the
+sinks, and investigate whether one reaches the other. A tool can automate
+selected parts of that process; this early implementation did not remove the
+need for human review or establish every source-to-sink path.
 The interesting question stops being "did the payload land?" and becomes "does
 this reflection actually execute in the context it lands in?" — which is where
 judgment still belongs.
@@ -60,9 +62,9 @@ inspects how it comes back:
 canary = dxa<8hex>"<dXsS>
 ```
 
-The `<dXsS>` marker is what has to survive **raw** for a reflection to count as
-HTML injection — a `<` and `>` around content that isn't a real HTML tag will
-either be encoded (safe) or preserved (unsafe). The `"` in front is a bonus
+The `<dXsS>` marker is checked as a **raw reflection indicator** — encoded bytes
+and unencoded bytes are different observations, but an unencoded marker alone
+does not establish parser breakout, execution, or vulnerability. The `"` in front is a bonus
 signal: if only the quote survives, you might still have an attribute-breakout
 class bug. Every occurrence of the canary id is inspected: markup follows
 directly → `unencoded` (historical HIGH label); only a raw quote follows →
@@ -142,7 +144,7 @@ it — the "unencoded" report is the invitation to check exactly that.
 
 ## What "caught" honestly means
 
-The bot proves **HTML injection** — a value reached the response as markup, not
+The historical tool classified a **raw marker reflection** — a value reached the response as markup-like bytes, not
 as text. That is one step short of proving **script execution**, which depends
 on the surrounding context (a text-only place like `<title>` or a plain
 attribute won't run an `<img onerror>` without a follow-on breakout; a body
@@ -180,14 +182,11 @@ The Bludit finding is worth calling out for what it *is* and *isn't*:
 
 ## Takeaway
 
-The methodology in this repo isn't magic; it's an algorithm — enumerate sources,
-enumerate sinks, prove one reaches the other, then judge whether the browser
-runs it. Automating the mechanical two-thirds turns finding *this shape* of bug
-from "an afternoon per target" into "one command," and frees a human to spend
-their attention on the part that still requires taste: does the reflected value
-actually execute in the context it landed in? Everything else, the bot can do
-deterministically, offline, and in CI — no AI needed, no LLM to hallucinate,
-and every step reproducible in a unit test.
+The methodology in this repo can automate selected steps: inspect supported
+source/sink patterns, send configured requests, and classify response
+observations. It does not prove every path or replace the human review needed to
+establish execution in context. Unit tests validate their stated fixtures and
+oracles, not arbitrary target behavior.
 
 ---
 

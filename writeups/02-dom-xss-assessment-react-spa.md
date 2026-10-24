@@ -13,8 +13,9 @@
 > to one reported page/build and do not conclude that the application was safe.
 
 > **Target anonymised on purpose.** The site is a live e-commerce React/Next.js
-> app on a public bug-bounty program. No vulnerability was found and none is
-> disclosed here; I keep the name out as basic disclosure hygiene. The value of
+> app on a public bug-bounty program. No vulnerability is independently
+> substantiated by retained evidence; this is not a conclusion that none existed.
+> The name is omitted. The value of
 > this writeup is the *method*, which is identical on any target.
 
 ## Why reflected-XSS reasoning does not carry over
@@ -97,9 +98,11 @@ from retained bundle/response evidence):
   location.hash`, `-1 !== location.hash`. The site's own reads *returned or
   compared* the value; none flowed into an HTML sink.
 
-The single most important observation: **sources exist, sinks exist, but no
-source is wired to a sink.** DOM XSS needs the two to meet on one data path.
-Here they never touch.
+The historical report's central interpretation was that sources and sinks
+coexisted but no source reached a sink in the inspected bundle. That is an
+author-reported negative result, not a finding independently checked from the
+missing bundle. DOM XSS requires a source-to-sink path; a text search or an
+absent match alone does not rule one out.
 
 Two controls were discussed in the historical account; neither is independently
 verified for the target by retained artifacts:
@@ -115,8 +118,9 @@ verified for the target by retained artifacts:
 ## Pass 2 — dynamic: instrument the one live source
 
 Static reading of minified code can miss a flow that only exists at runtime. The
-one source with real listeners in the app's own code was `postMessage`, so I
-confirmed it live. A **read-only** one-liner in the console registers a logging
+one source with reported listeners in the app's own code was `postMessage`. The
+historical account says it used this **read-only** one-liner in the console to
+register a logging
 listener — no page code is modified, nothing is sent anywhere:
 
 ```js

@@ -956,9 +956,9 @@ sonuçlar içerik ve iddia sınırı kabulüdür; eksik tarihsel kanıtlar yenid
 |---|---|---|
 | C01 / writeup 01 | Header source, filtre ve execution iddiasını ayır; recursive filtreyi genel çözüm gibi sunma | **Tamam:** source/filter ayrıldı, recursive filtering genellenmiyor; historical execution proof eksikliği açık (K02/K04) |
 | C02 / writeup 02 | postMessage yokluğu, server-trusted veri, Trusted Types createHTML/enforcement ve CSP yorumlarını düzelt | **Tamam:** incelenen yol ve sınır yazılı; bundle, header ve target-wide kapsam kanıtı yok (K02) |
-| C03 / writeup 03 | Gerçek SQLi demosunu UNION/blind teorisinden ayır; email/admin ve parser varsayımlarını düzelt | **Tamam:** deney anlatısı yazar beyanı; UNION/blind teori; exact request/version artifact mevcut değil (K03) |
+| C03 / writeup 03 | Gerçek SQLi demosunu UNION/blind teorisinden ayır; email/admin ve parser varsayımlarını düzelt | **Tamam:** historical session exchange unavailable; UNION/blind theory; separate bounded 20.2.0 login-shape replay linked without backdating it (K03) |
 | C04 / writeup 04 | JWT başarı/başarısızlık, newline hipotezi ve SPKI/PKCS#8 terminolojisi | **Tamam:** gözlem ve hipotez ayrıldı; raw exchange ve key-format cause doğrulanmadı (K03) |
-| C05 / writeup 05 | İki hesap/aynı nesne kontrolü; yatay BOLA ile privilege escalation ayrımı | **Tamam:** horizontal claim yazar beyanı; A/B same-object pair ve vertical claim proof yok (K03) |
+| C05 / writeup 05 | İki hesap/aynı nesne kontrolü; yatay BOLA ile privilege escalation ayrımı | **Tamam:** historical basket-ID claim remains unverified; later bounded synthetic A/B same-session basket replay supports horizontal access on one pinned route; vertical escalation not tested (K03) |
 | C06 / writeup 06 | Seed/URL yardımı ile otonom keşfi ve tarihsel sürümü ayır | **Tamam:** inputs, old build counts and unverified CVE/version relationship scoped as historical |
 | C07 / writeup 07 | 0 HIGH≠güvenli; sanitizer adı≠fonksiyon analizi; Bludit aidiyetini düzelt | **Tamam:** heuristic HIGH and sanitizer limits stated; no CVE attribution or general safety claim |
 | C08 / writeup 08 | Ham JSON≠HTML injection/XSS; çok URL≠çok açık; target sonuçlarını daralt | **Tamam:** counts and JSON reflections are not findings; unavailable target artifacts and triage limits stated |
@@ -1000,7 +1000,14 @@ paketin doğruluğunu değil, doğru kapsamla sunulmasını kabul eder.
 | S02 — tamam, 19 Ekim | Mevcut 11 yazıyı beceri ve kanıt matrisiyle ilişkilendir | 11/11 yazı için beceri, teori/tarihsel deney/araç geliştirme, mevcut/eksik kanıt ve C/K bağı. [Matris](staj/2026-10-17-s02-beceri-kanit-matrisi.md) |
 | S03 — tamam, 17 Ekim | Teknik devam özeti ve teslim kontrolü | [S01/S03 kaydı](staj/2026-10-17-p02-p03-s01-s03.md) önce/sonra, ölçülen test farkı, sınırlamalar ve sonraki adımı içeriyor; resmi okul formatı/onay şartı varsayılmıyor |
 
-## Araştırma ve CVE — A01–A05 / R7 (R7 bounded tamam; A05 kısmi; tarihsel kanıt sınırları korunuyor)
+## Araştırma ve CVE — A01–A05 / R7 (R7 bounded tamam; A05 kısmi ve 24 Ekim'de donduruldu; tarihsel kanıt sınırları korunuyor)
+
+**A05 disposition (24 Ekim): partial, frozen.** The malformed multipart
+cleanup fixture passed 1/1, but a separate current-source app runtime did not
+reach health/auth because host-to-MySQL loopback connectivity failed. No
+application/auth/deployment conclusion is available. Resume only when a suitable
+authorized runtime environment exists; keep the prior evidence and data. See
+[freeze and writeup reconciliation](audit/2026-10-24-writeup-reconciliation/README.md).
 
 | Kimlik | İş / dosya | Kabul ölçütü |
 |---|---|---|

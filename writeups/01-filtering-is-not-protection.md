@@ -2,18 +2,27 @@
 
 > **Historical lab account — evidence limit.** This writeup records the author's 2026-09-28 local Juice Shop experiment. The archived screenshots show the header value reaching the Last Login IP field, but do not show a successful JavaScript canary. Treat the source/header path as an observation and the XSS/execution story below as **not independently verified by the retained evidence**. See the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md), [current status](../STATUS.md), and [acceptance scope](../ROADMAP.md).
 
-# Why filtering isn't protection: the nested-tag sanitizer bypass
+# Why filtering isn't protection: a nested-tag bypass mechanism
 
 > **TL;DR** — A single-pass filter that *deletes* dangerous substrings can be
 > defeated by making the deletion itself assemble a new dangerous tag. Removing
 > `<script>…</script>` from the right input leaves a working `<iframe>` behind.
 > The act of sanitising is what builds the payload.
 
-This is one of the first bugs that changed how I think about input handling. I
-hit it while working the *Server-side XSS Protection* path on OWASP Juice Shop
-(local, authorized) — it appears twice in this repository's findings: the
-feedback comment (Finding 2) and the `True-Client-IP` header → Last Login IP page
-(Finding 8), both behind the *same* server-side filter.
+This is one of the first examples that changed how I think about input handling.
+The retained local Juice Shop screenshots show a `True-Client-IP` value reaching
+the Last Login IP field and show filtered payload responses. They do not show
+the successful nested-tag execution described in the historical account. The
+feedback-comment and header routes were reported to use the same filter, but
+that shared implementation path is not independently established by the
+retained material.
+
+**Evidence and mechanism are separate here:** the regex below is a generic,
+illustrative single-pass deletion rule. Its output demonstrates how such a rule
+could reassemble markup; it is not a recovered copy of the Juice Shop filter or
+a reproduction of that target's route. For the historical target, execution is
+unverified. The repository's separate [K01 fixture](../cases/k01-stored-comment/README.md)
+has browser execution evidence, but it does not validate this Juice Shop claim.
 
 ## The defense that feels reasonable
 

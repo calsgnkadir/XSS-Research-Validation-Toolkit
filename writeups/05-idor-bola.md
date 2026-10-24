@@ -1,35 +1,36 @@
 > **Historical lab account — proof limit.** The text reports changing basket IDs while authenticated and receiving different `UserId` values, but the retained evidence does not include a masked A/B account-control pair or request/response set proving which object belonged to which user. The historical BOLA claim is therefore not independently verified here. Vertical privilege escalation was not demonstrated. See [C05](../ROADMAP.md) and the [audit](../audit/2026-09-28/DENETIM-RAPORU-TR.md).
 
-> **New local repetition — 19 October 2026.** On an isolated OWASP Juice Shop
+> **Bounded local repetition — 19 October 2026.** On an isolated OWASP Juice Shop
 > 20.2.0 image, two newly registered local accounts were identified separately.
 > Account A read its own basket and account B's basket with the same A session;
 > the latter response matched B's owner ID and included a product B had added.
 > The same request without a session returned 401. The versioned request/
 > response record and source hash are in the
 > [K03 audit](../audit/2026-10-19-k03-loopback-reproduction/README.md). This
-> is a new controlled repeat, not proof of the older basket IDs or session.
+> is a new controlled repeat, not proof of the older basket IDs or session. A
+> further pinned-image replay is documented in the
+> [24 October K03 audit](../audit/2026-10-24-k03-independent-retest/README.md).
 
 # IDOR / BOLA: the server checks *who you are*, not *what's yours*
 
 > **TL;DR** — Most injection bugs are about a value being *parsed* in the wrong
 > context. Access-control bugs are different: nothing is parsed, nothing executes.
-> The server correctly checks that you are **logged in** (authentication) but forgets
-> to check that the thing you asked for is actually **yours** (authorization). When an
-> object is fetched by an `id` in the URL and no ownership check runs, changing that
-> `id` hands you someone else's data — with your own valid token. That's an
-> **Insecure Direct Object Reference (IDOR)**, a.k.a. **Broken Object-Level
-> Authorization (BOLA)**. The fix is one check the code skipped: *does this object
-> belong to the caller?*
+> Authentication establishes identity; authorization decides whether that caller
+> may access the requested object or action. If an object is fetched by an `id`
+> without an applicable access check, a caller may reach data they are not
+> allowed to read. That can be an **Insecure Direct Object Reference (IDOR)** or
+> **Broken Object-Level Authorization (BOLA)**. The required policy depends on
+> the resource and caller.
 
-Every other writeup in this repo turns on a value being interpreted as code —
+This is a general access-control model; it does not establish the behavior of
+every ID-keyed route. Every other writeup in this repo turns on a value being interpreted as code —
 markup in HTML, input in SQL, a claim in a JWT. This one has no payload at all.
-The request is completely well-formed and completely authenticated; the only thing
-"wrong" with it is that it asks for an object the user isn't entitled to. It's the
+The request can be well-formed and authenticated while still asking for an object
+the caller is not entitled to. It's the
 last step of the repo's [`methodology.md`](../methodology.md) — **AUTHZ: was the
 privilege used even required?** — and on modern targets it lands far more often
-than XSS, because client-side hardening (auto-escaping, CSP, Trusted Types) does
-nothing for it: authorization is server logic, and server logic is where it's
-missing.
+because client-side hardening (auto-escaping, CSP, Trusted Types) does nothing
+for it: authorization is enforced by application and server-side policy.
 
 ## The one idea: authentication ≠ authorization
 
@@ -58,13 +59,15 @@ raw request/response pair:
 3. Each returned 200 OK — a different UserId each time.
 ```
 
-The author reported that a token returned basket records with different `UserId`
-values and that the *View Basket* challenge completed. To establish horizontal
-BOLA independently, an evidence package must identify account A, show A's own
-object, then show A requesting account B's known object with the same session,
-including expected and observed status/body and a negative control. Those
-artifacts are not retained here. No privilege escalation is claimed by this
-writeup.
+The historical report said a token returned basket records with different
+`UserId` values and that the *View Basket* challenge completed. Those older
+requests do not identify each object's owner or preserve an A/B control pair,
+so that historical claim remains unverified. Separately, the bounded local
+replay linked above used two synthetic accounts: account A read its own basket
+and B's known basket with the same A session; the foreign response matched B's
+owner ID and seeded product, while a no-session control returned 401. This
+supports horizontal cross-account access for that pinned lab route and run. It
+does not establish vertical privilege escalation or behavior on other routes.
 
 ## Why this ships so easily
 
@@ -81,10 +84,12 @@ writeup.
 
 ## Two directions the same bug points
 
-- **Horizontal** (this finding): reach *another user's* object at your own privilege
-  level — user A reads user B's basket.
-- **Vertical**: reach an object or action that needs *higher* privilege — a normal
-  user hitting an admin-only object or endpoint because the role check is missing.
+- **Horizontal BOLA**: a peer user accesses another user's object at the same
+  privilege level. The bounded Juice Shop replay above tested this with two
+  synthetic accounts and one basket route.
+- **Vertical privilege escalation**: a lower-privilege user reaches an action
+  or object reserved for a higher role. It requires a separate role-boundary
+  test; it was not demonstrated in the cited basket replay.
 
 Both are the same root cause (a missing authorization check); they differ only in
 whether you move *sideways* to a peer's data or *up* to privileged data.
@@ -132,12 +137,12 @@ Supporting practices:
 
 ## Takeaway
 
-IDOR is the quietest bug in this repo: a perfectly valid, authenticated request that
-the server answers too generously because it confirmed *identity* and forgot
-*ownership*. There's no payload to filter and no framework that escapes it away — the
-missing piece is a single authorization check on the specific object. Ask, on every
-request, *does this thing belong to the caller?* — and the id in the URL stops being
-a key to everyone's data.
+The historical report and the later bounded lab replay are different evidence
+items. The latter demonstrates one horizontal access-control failure in one
+local route with synthetic accounts; it does not show vertical escalation or
+prove a general pattern across the application. For each protected object,
+verify the specific ownership and role policy with separate accounts and
+positive/negative controls.
 
 ---
 

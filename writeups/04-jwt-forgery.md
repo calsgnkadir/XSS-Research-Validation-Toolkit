@@ -11,13 +11,13 @@
 
 # Forging JWTs: when the token decides how it's checked
 
-> **TL;DR** — A JSON Web Token carries its own claims (*who you are*) **and a
-> header that says how the signature should be verified*. If the server trusts
-> that header, the attacker controls the verification. Say `alg: none` and the
-> server checks nothing; say `alg: HS256` and sign with the server's *public* key
-> and the server validates your forgery with its own key. Both bugs have one root:
-> the **token** is allowed to choose how the **server** authenticates it. The fix
-> is to take that choice away from the token.
+> **Mechanism summary, not a claim about the historical target:** a JSON Web
+> Token carries claims and an algorithm header. A verifier that accepts
+> attacker-selected algorithms or key types can be misconfigured; `alg:none`
+> acceptance and RS256/HS256 confusion are distinct example failure modes. The
+> retained Juice Shop evidence does not establish either historical exchange;
+> only the separate bounded `alg:none` replay above was observed on the pinned
+> 20.2.0 lab image. Verifiers should pin allowed algorithms and compatible keys.
 
 Every other writeup in this repo is about a value being interpreted in a context
 the developer didn't expect — markup in HTML, input in SQL. JWT forgery is the
@@ -70,7 +70,7 @@ so the stated mechanism is not independently confirmed for the target.
 > after a standard base64 encode, strip `=` padding and swap `+`→`-`, `/`→`_`. The
 > header and payload are plain JSON; the third part is genuinely empty.
 
-## Attack 2 — RS256 → HS256 key confusion: sign with the *public* key
+## Mechanism example 2 — RS256 → HS256 key confusion
 
 `RS256` is **asymmetric**: a **private** key signs, a **public** key verifies. The
 public key is, by design, public — you can often just download it. `HS256` is

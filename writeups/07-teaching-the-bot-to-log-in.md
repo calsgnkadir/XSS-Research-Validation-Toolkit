@@ -1,15 +1,16 @@
 > **Historical implementation snapshot — not a current feature guide.** Versions, counts, classifications and target results below describe an earlier iteration. A static `HIGH` label is a heuristic priority, a sanitizer-name match does not prove sanitization, and zero HIGH findings do not establish safety. The Bludit/CVE association is not independently established for the version described. Check [current status](../STATUS.md), [CLI documentation](../tools/dom-xss-analyzer/README.md), and [R8 limits](../audit/2026-10-16-r8-current-review/README.md).
 
-# Teaching the bot to log in, find its own targets, and shut up
+# Teaching the bot to log in and check bounded target candidates
 
 > **TL;DR** — [Writeup 06](06-building-an-xss-bot.md) shipped the first
 > version of the XSS bot: static (`dxa`) + dynamic (`dxadyn`) source→sink
-> together in one command. It caught the obvious classes but left three real
-> problems: **modern admins log in over JSON, not HTML forms**; **stored
+> together in one command. The historical notes describe three workflow gaps:
+> JSON-based login support, locating stored reflections, and heuristic static
+> candidates that needed review. **Modern admins log in over JSON, not HTML forms**; **stored
 > reflections don't always live where you tell them to**; and **static analysis
-> on well-written code turns into an avalanche of false HIGH-confidence noise**.
-> This writeup is the fix pass — session import for SPA logins (`--cookie` /
-> `--header`), autonomous post-submit crawling (`--auto-check`), two more
+> on well-written code can produce many heuristic HIGH-priority candidates**.
+> This writeup is the historical fix pass — session import for SPA logins (`--cookie` /
+> `--header`), bounded post-submit link checking (`--auto-check`), two more
 > submission shapes (`--json-body`, `--header-target`), a third static language
 > (PHP), an escape-aware false-positive squelch, and a visual HTML report.
 > None of it is a new class; all of it is what "makes it a tool you'd actually
@@ -69,8 +70,8 @@ Bludit's `alternative` theme is a good stress test because it *never* links to
 `/tag/<slug>`. Auto-check would find nothing on its own. The `--auto-check-from
 http://target/tag/{CID}-dxss` template covers this case honestly: the operator
 tells the bot the URL *shape*, the bot fills in the canary id and probes it.
-That's not "the tool failing to be autonomous"; it's the tool being honest that
-it can't conjure orphan URLs it has never seen. A verdict tightening ("markup
+This is a bounded link-checking workflow: it cannot discover an orphan URL it
+has never seen unless an operator supplies a route template. A verdict tightening ("markup
 must follow the canary immediately, not somewhere near it") kills the false
 positive where the canary lands inside a slug URL and the attribute's closing
 `"` looks like an attribute breakout.
@@ -158,23 +159,22 @@ After this pass:
 |-------|---------|-----|
 | Reflected XSS | ✅ | `dxadyn <url>` |
 | Reflected header XSS | ✅ | `--probe-headers` |
-| Stored XSS (form → same or other page) | ✅ | `--stored --check` or `--stored --auto-check` |
+| Stored reflection checks | ✅ | `--stored --check` or bounded `--auto-check`; orphan routes need operator hints |
 | Stored XSS (JSON API path) | ✅ | `--json-body` |
 | Stored header injection (two-step) | ✅ | `--header-target` |
 | SPA / bearer-token targets | ✅ | `--cookie` / `--header` |
 | Static: JS / C# / PHP source → sink | ✅ | `dxa` |
-| Static-guided dynamic probing | ✅ | `dxa2dyn` |
+| Static-guided dynamic probing | ✅ | `dxa2dyn`; candidate generation does not establish execution |
 | DOM XSS via `location.hash` / `postMessage` | ❌ | needs a headless browser (Playwright) |
 | Blind XSS (fires elsewhere / later) | ❌ | needs an out-of-band callback server |
-| Payload mutation / WAF bypass | ❌ | one canary shape only |
+| Payload mutation / WAF bypass | ❌ | this historical workflow used one canary shape; no WAF bypass result |
 | Sink-context awareness (`<title>` vs `<body>`) | ⚠️ | flags reflection, not executability |
 | Concurrency, rate-limit, robots.txt | ❌ | sequential; polite-crawl not implemented |
 
-The honest position, given that list: this is **not** a Burp Scanner or DalFox
-competitor. It is a **reference-quality methodology tool** — the source→sink
-discipline that runs through the rest of this repo, written down as code,
-tested against real vulnerable targets, and shipped with the honest edges of
-what a regex-plus-canary approach can and cannot see. The blind spots above
+This list is a historical capability description, not an accuracy assessment.
+It does not establish broad detection coverage or validate every listed mode.
+The current tool's supported scope and evidence meanings are in the
+[CLI documentation](../tools/dom-xss-analyzer/README.md). The blind spots above
 aren't excuses; they are the *reasons* an interview conversation about this
 tool has a second half. *"Why not headless?"* opens the door to a real
 discussion about coverage vs deployment cost that a candidate who has thought
@@ -182,13 +182,11 @@ about the trade-off can defend.
 
 ## Takeaway
 
-Between writeup 06 and this one, the bot went from *"catches the classic shape
-against the exact URL you tell it to look at"* to *"logs in against a modern
-admin, submits a payload however the target expects it, and finds where the
-payload landed on its own — then writes a page you can share."* Same
-underlying methodology as every other writeup here (enumerate sources, enumerate
-sinks, prove the reach, judge execution) — automated far enough that the human
-time goes to the last step.
+Between writeup 06 and this one, the historical implementation added session
+header import, additional submission formats, and bounded checks of linked or
+operator-supplied URLs. It did not discover arbitrary targets or prove browser
+execution. Review still depends on the configured scope, the response context,
+and separate browser evidence where execution is claimed.
 
 ---
 
