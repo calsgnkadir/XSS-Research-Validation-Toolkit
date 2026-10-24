@@ -27,14 +27,20 @@ parser cleanup kontrolü de 1/1 geçti: pozitif kontrolün 4 baytlık temp dosya
 response sonrasında temizlendi; hatalı boundary handler seçilmeden reddedildi,
 spool boş kaldı ve health GET 200 döndü. Bu dar fixture sonucu tam app/auth/
 proxy veya genel parser garantisi değildir; A05'in daha geniş ürün/bağımlılık
-disposition'ı kısmi kalır. A05 Sort invalid-property HTTP 500 için dar 400 düzeltmesi ve
+disposition'ı kısmi kalır. 24 Ekim source-refresh incelemesi seçilmiş advisory
+listesini `eb031a1`'e bağladı; Maven tree SHA-256 önceki kaydedilmiş 248
+koordinatlı OSV sorgu ağacıyla aynı, yeni uygulanabilir aday görülmedi.
+[Kaynak uzlaştırması](audit/2026-10-24-a05-source-refresh/README.md). A05
+Sort invalid-property HTTP 500 için dar 400 düzeltmesi ve
 3 kontrol geçti; bu DoS/CVE düzeltmesi iddiası değil. R7 bounded yerel
-araştırması güncel applicability disposition ile tamamlandı. Kadrom kaynak
-kimliği `b374095`, public tag/release veya formel destek politikası yok;
-desteklenen semver yayın iddiası yok. Güncel 248-coordinate OSV sorgusu 248
-satır/0 eşleşme verdi; bu üretim ağacı veya CVE yokluğu kanıtı değil. Owner
-report workspace'e teslim edildi; dış disclosure yapılmadı.
-[R7 kimliği](audit/2026-10-23-r7-source-identity/README.md).
+araştırması güncel applicability disposition ile tamamlandı. Kadrom `main`
+kaynağı 24 Ekim'de `eb031a1` olarak yeniden doğrulandı; seçilmiş advisory
+disposition'ları aynı hash'li 248-coordinate graph'e bağlandı ve yeni
+uygulanabilir aday görülmedi. Bu, üretim ağacı veya CVE yokluğu kanıtı değil.
+Owner report workspace'e teslim edildi; dış disclosure yapılmadı. Kadrom'da
+public tag/release veya formel destek politikası yok; desteklenen semver yayın
+iddiası yok. [R7 kimliği](audit/2026-10-23-r7-source-identity/README.md) ·
+[24 Ekim kaynak uzlaştırması](audit/2026-10-24-a05-source-refresh/README.md).
 R3/R4/R5/R6 kabul kapsamı tamam; [uzlaştırma](audit/2026-10-22-r3-r6-acceptance-reconciliation/README.md).
 E05 textarea RCDATA uzantısında ölçülen bir bağlam açığı için inert probe eklendi;
 bağımsız browser oracle dahil seçilmiş yerel kabul 381/381 geçti. Bu parser marker
@@ -43,6 +49,18 @@ yerleşimini ölçer, execution/açıklık sonucu değildir. Ayrıntı:
 `e56ae60`; bu SHA için GitHub CI `40086961102` ve K01 Linux `40086961111`
 tüm job'larıyla başarılı. Source checkout'taki bu değişiklikler unreleased;
 `v0.1.0` release asset'i değiştirilmedi.
+
+Bot için yeni feature genişletmesi şu an öncelik değil. K03 bağımsız Juice Shop
+20.2.0 replay'i tamamlandı; 17 istekte lab davranışları tekrarlandı, tarihsel
+oturum/CVE iddiası doğrulanmadı. K04 bağımsız pinned-source incelemesi
+tamamlandı; mevcut route historical regex claim'ini çalıştırmadığı için inert
+runtime oracle bulunmadı ve HTTP/browser retesti yapılmadı. Sonraki iş mevcut
+kanıttan 2–3 portföy vakası hazırlamak; yeniden kodlama ancak yeni ölçülmüş
+bağlam/corpus açığı veya net kullanıcı kabul ihtiyacı doğarsa açılmalı.
+CVE/meslek değerlendirmesi ve CV'de kullanılabilecek ölçülü ifadeler için
+[araştırma kaydı](audit/2026-10-24-cve-portfolio-review/README.md) ·
+[K03 replay](audit/2026-10-24-k03-independent-retest/README.md) ·
+[K04 test edilebilirlik](audit/2026-10-24-k04-independent-retest/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla

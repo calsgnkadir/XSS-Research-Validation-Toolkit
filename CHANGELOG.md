@@ -8,9 +8,24 @@
   before handler selection, left the spool empty and was followed by health 200.
   This is fixture evidence, not a full app/auth/deployment or CVE result.
   [Test and limits](audit/2026-10-24-a05-multipart-cleanup/README.md).
-- A04 selected-route evidence and K04 documentation acceptance remain complete
-  within their recorded scopes; neither implies product-wide coverage or a
-  historical remediation retest.
+- A04 selected-route evidence remains complete within its recorded scope.
+  K04's defensive writeup review remains accepted as guidance, while its
+  historical bypass lacks retained execution evidence and has not been
+  remediation-retested.
+- Rebound the selected A05 advisory dispositions to current Kadrom source
+  `eb031a1`; the offline dependency tree matches the previously queried
+  248-coordinate hash. No new applicable candidate was identified in the
+  reviewed lead set; broader A05 remains partial. [Source reconciliation](audit/2026-10-24-a05-source-refresh/README.md).
+- Independently replayed K03's bounded SQLi/JWT/BOLA controls against the
+  pinned local Juice Shop 20.2.0 image. The run completed 17 requests in an
+  internal-only lab; this is not historical-session validation or a CVE claim.
+  K04 source inspection found the current sanitizer path does not match the
+  historical regex-reassembly claim, so no faithful runtime retest was run.
+  [K03 evidence](audit/2026-10-24-k03-independent-retest/README.md) ·
+  [K04 testability](audit/2026-10-24-k04-independent-retest/README.md).
+- Recorded the feature-freeze/portfolio decision and CVE-source roles: next
+  priority is a small evidence-backed portfolio, not broad bot feature growth.
+  [CVE and portfolio review](audit/2026-10-24-cve-portfolio-review/README.md).
 
 ## Unreleased — 2026-10-24 E05 textarea context
 

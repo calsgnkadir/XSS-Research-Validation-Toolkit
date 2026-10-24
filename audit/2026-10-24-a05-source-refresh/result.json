@@ -1,0 +1,49 @@
+{
+  "schema": "a05-current-source-reconciliation/1",
+  "review_date": "2026-10-24",
+  "toolkit_commit_at_review_start": "00513a99b4b4ae235985eb94780569a6fe1b362b",
+  "target": {
+    "repository": "calsgnkadir/hotel-platform",
+    "branch": "main",
+    "commit": "eb031a19f9f6b0715d8b302751542f631216cdd5",
+    "matches_origin_main": true,
+    "local_untracked_fixture_present": true
+  },
+  "dependency_reconciliation": {
+    "pom_sha256": "f757453d4066791a0b58409133dd9a3d22a6c932b4ad3a7caa3a51b8aa1678b2",
+    "maven": "3.9.16",
+    "mode": "offline",
+    "tree_sha256": "d8ebcd896e982834d6d9d42ea7b1d22b687931da1194b9a47dd751147e7bca5",
+    "tree_bytes": 16881,
+    "coordinate_count": 248,
+    "matches_2026_10_23_saved_tree": true,
+    "prior_osv_response_rows": 248,
+    "prior_osv_matched_rows": 0,
+    "prior_osv_query_reused": true
+  },
+  "source_review": {
+    "paths_unchanged_since_0ea07ed": [
+      "hotelapp/pom.xml",
+      "hotelapp/src/main/java/com/hotelapp/controller/**",
+      "hotelapp/src/main/java/com/hotelapp/config/**",
+      "hotelapp/src/main/java/com/hotelapp/validation/**",
+      "hotelapp/src/main/resources/**",
+      "hotelapp/src/main/java/com/hotelapp/service/FileStorageService.java",
+      "hotelapp/src/main/java/com/hotelapp/exception/GlobalExceptionHandler.java"
+    ],
+    "not_a_full_security_review": true
+  },
+  "disposition": {
+    "selected_a05_leads_rebound_to_current_source": true,
+    "new_applicable_cve_candidate_identified": false,
+    "a05_umbrella_status": "partial",
+    "cve_free_claim": false,
+    "production_deployment_reviewed": false,
+    "external_disclosure_performed": false
+  },
+  "limits": [
+    "The OSV request was not repeated because the exact dependency-tree hash matched the previously queried tree.",
+    "No deployed production graph, proxy/WAF configuration, large/many-part stress case, or all-parser-error-path review was performed.",
+    "The bounded parser cleanup result is the separate 2026-10-24 audit, not a rerun in this reconciliation."
+  ]
+}

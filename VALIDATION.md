@@ -1,4 +1,56 @@
-# Doğrulama kaydı — 2026-10-24
+﻿# Doğrulama kaydı — 2026-10-24
+
+## K03 independent local lab retest — 24 October
+
+Windows local Docker, existing OWASP Juice Shop `20.2.0` immutable image ID
+`sha256:0cec496d878c6855a1c81694c9f91564082f418b84aece87538adb8850d2437e`;
+network internal-only, new unique container, no pull/published port/mount,
+`http://127.0.0.1:3000` loopback target. A different QA/security agent ran the
+capture script: 17 HTTP requests, process exit 0. SQLi-shaped login mapped to
+admin identity; unsigned `alg:none` token mapped to admin; modified-signature
+`whoami` returned HTTP 200 without identity; synthetic A read B's basket (200),
+anonymous read returned 401. New container/network were stopped and removed;
+old Juice Shop container/network remained unchanged. Raw private capture stays
+in ignored `.dxa` and is not included here.
+
+This is a new training-lab replay, not validation of historical writeup sessions,
+a toolkit vulnerability, or a new CVE. Source hashes, sanitized results and
+limits: [K03 audit](audit/2026-10-24-k03-independent-retest/README.md).
+
+## K04 pinned-source testability review — 24 October
+
+Juice Shop `20.2.0` source inspection: the challenge-enabled `saveLoginIp.js`
+branch checks an exact active iframe value before the sanitizer; the normal
+branch uses `sanitizeSecure` and recursive `sanitize-html`. The writeup's
+nested-tag regex is a separate `sanitizeLegacy` helper not used by this route.
+No faithful inert oracle was found, so no HTTP/browser retest ran. A temporary
+unstarted container and internal network used only for source copying were
+removed; no application process or request ran. The historical bypass and
+fix/retest remain unverified. [K04 audit](audit/2026-10-24-k04-independent-retest/README.md).
+
+## A05 current-source dependency reconciliation — source-only
+
+Kadrom `main` `eb031a19f9f6b0715d8b302751542f631216cdd5`, fetched and equal to
+`origin/main`. `hotelapp/pom.xml` SHA-256 is
+`f757453d4066791a0b58409133dd9a3d22a6c932b4ad3a7caa3a51b8aa1678b2`, unchanged
+from the recorded source review. Maven 3.9.16 ran the dependency tree offline;
+no tests ran. The generated 16,881-byte tree SHA-256
+`d8ebcd896e982834d6d9d42ea7b1d22b687931da1194b9a47dd751147e7bca5` matches the
+saved tree behind the 23 October OSV query (248 coordinates, 248 response rows,
+zero matched rows). The query was not repeated because its exact tree hash is
+unchanged. This supports the selected dependency disposition for current source;
+it does not prove a production graph or absence of vulnerabilities.
+
+From `.dxa/a04-kadrom-source/hotelapp/`:
+
+```powershell
+<Maven 3.9.16 executable> -o -ntp -Dmaven.repo.local=<local Maven repository> -DoutputFile=target/a05-refresh-dependency-tree.txt -DoutputType=text dependency:tree
+```
+
+See the [A05 current-source reconciliation](audit/2026-10-24-a05-source-refresh/README.md)
+for source-path diff scope and advisory-by-advisory disposition. The existing
+[malformed multipart test](audit/2026-10-24-a05-multipart-cleanup/README.md)
+is separate; it was not rerun during this source-only review.
 
 ## A05 multipart parser-error cleanup — bounded local retest
 

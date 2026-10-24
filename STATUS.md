@@ -1,6 +1,6 @@
 # Güncel devam noktası — 24 Ekim 2026
 
-## Son teslim — A05 parser retesti, E05 textarea ve belge uzlaştırması
+## Son teslim — K03 bağımsız tekrar, K04 kaynak sınırı; A05/E05
 
 Bu durum uzlaştırması `e56ae6048e9e74a75816f485673a9ba2086333a8` kanıt teslimi
 üzerinde başladı. Başlangıçta `git fetch origin` sonrası yerel `main` ile
@@ -24,6 +24,12 @@ incelenmedi. Bu turda toolkit testleri yeniden çalıştırılmadı.
   + Tomcat parser cause'u ile handler seçilmeden reddedildi; exception/response
   sonrası spool sıfır, health GET 200. Tek test geçti. Tam app/auth/deployment
   kapsamı değil; A05 bütünü kısmi kalıyor. [Kayıt](audit/2026-10-24-a05-multipart-cleanup/README.md).
+- **A05 source refresh:** source `eb031a1` fetch sonrası `origin/main` ile
+  eşleşiyor. POM hash değişmedi; offline Maven 3.9.16 tree SHA-256
+  `d8ebcd896e982834d6d9d42ea7b1d22b687931da1194b9a47dd751147e7bca5`, önceki
+  248-coordinate query tree'siyle aynı. Seçilmiş advisory lead'leri yeni source'a
+  yeniden bağlandı; yeni uygulanabilir aday yok. Bu umbrella A05'i kapatmaz;
+  deployment/proxy/stres kapsamı yok. [Uzlaştırma](audit/2026-10-24-a05-source-refresh/README.md).
 - **Üç uzman görevi tamam:** belge uzlaştırması, corpus/negatif kontrol analizi
   ve E05 dar düzeltmesi ayrı native rollerde yürütüldü; koordinatör diff ve
   oracle'ları inceledi. Aktif uzman/arka plan işi yok. Ana ROADMAP ve ortak
@@ -47,10 +53,33 @@ Hosted ana suite **887 passed / 62 skipped**, ardından 94 negatif kontrol ve
 **224 passed**, ardından corpus/auth/demo ve sıfır-skip evidence gate başarılı.
 [K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
 başarılı. Bu hosted metadata/log gözlemidir; artifact indirilip incelenmedi.
-Sonraki adımlar: A05'in daha geniş ürün/bağımlılık disposition'ını sürdür;
-parser sonucunu bu Tomcat/Spring fixture'ının dışına genelleme. E05 için başka
-probe ancak yeni, bağımsız ölçülmüş parser-context açığı varsa eklenmeli. README
-ve roadmap'in güncel özetleri bu handoff ile hizalandı. Yeni release yayımlanmadı.
+**K03 bağımsız retest:** farklı QA/security agent exact local Juice Shop 20.2.0
+image ID ile 17 HTTP isteğini internal-only yeni ağda tamamladı. SQLi şekilli
+giriş admin kimliği döndürdü; `alg:none` admin kimliğine eşlendi; değiştirilmiş
+imza HTTP 200/no identity döndürdü; iki sentetik hesap arasında basket okuma
+200, anonim erişim 401 oldu. Yeni ham kayıt yalnız ignored `.dxa` altında ve
+önceki ham kayıt korunuyor. Yeni konteyner/ağ kaldırıldı; eski konteyner/ağ
+değişmedi. Bu eğitim-labı tekrarıdır, tarihsel oturum doğrulaması veya CVE
+bulgusu değildir. [Audit](audit/2026-10-24-k03-independent-retest/README.md).
+
+**K04 bağımsız kaynak/test edilebilirlik incelemesi:** pinned Juice Shop
+20.2.0 `saveLoginIp.js` challenge açıkken bilinen aktif iframe değerini
+sanitizer'dan önce kontrol ediyor; normal dal `sanitizeSecure` çağırıyor.
+`sanitizeSecure` `sanitize-html` ile recursive; writeup'taki nested-tag regex
+iddiası bu rotada değil (regex ayrı `sanitizeLegacy` helper'ında). Bu nedenle
+sadık inert oracle yok ve HTTP/browser retesti yapılmadı. Yalnız source
+inspection için oluşturulan durdurulmuş/geçici Docker kaynakları kaldırıldı;
+aktif istek yok. Tarihsel execution iddiası author-reported/bağımsız kanıtsız
+kalmaya devam ediyor. [Audit](audit/2026-10-24-k04-independent-retest/README.md).
+
+**Yön kararı:** E05 textarea ölçülmüş parser-context açığı dar kapsamda tamam;
+yeni bağımsız ölçüm yoksa ek probe gerekmez. Bot feature genişletmesi şu an
+öncelikli değil; yeni ölçülmüş kabul boşluğu dışında kodlama açma. Sıradaki
+portföy işi: doğrulanmış stored-XSS proof/fix/retest, parser/DOM pozitif-negatif
+kontrolü ve sınırları açık dependency/CVE disposition'ından 2–3 kısa vaka
+hazırlamak; OWASP WSTG/ASVS ve PortSwigger XSS lab ilerlemesini ayrı kaydetmek.
+[CVE ve CV değerlendirmesi](audit/2026-10-24-cve-portfolio-review/README.md).
+K03/K04, A05 ve E05 değerlendirmesi tamamlandı; yeni release yayımlanmadı.
 [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 
 ## Önceki doğrulanan teslim — E02 SARIF, 23 Ekim 2026
