@@ -5,6 +5,20 @@ requests, or external communications were performed for this document. These
 are case summaries to adapt for a portfolio/CV; they are not new acceptance
 claims. Keep each item's evidence type and limits with the summary.
 
+## Curated order
+
+1. **Primary case — K01 stored XSS proof/fix/retest:** [K01 case brief](k01-case.md).
+2. **Second case — E05 textarea parser context:** [E05 case brief](e05-case.md).
+   The measured evidence is inert parser placement; JavaScript execution and a
+   confirmed XSS vulnerability were not established.
+3. **Short CVE-applicability example — BCrypt:** [BCrypt case brief](bcrypt-case.md).
+   This matches an already assigned Spring Security CVE; no CVE was assigned to
+   Kadrom.
+
+The sections below preserve the initial combined drafts. The three briefs above
+are the selected order for a concise portfolio; they carry the evidence and
+limits needed for each claim.
+
 ## Case 1 — Stored XSS proof, output-encoding fix, and retest
 
 **Roadmap:** K01 / R5. **Target and authorization:** the repository's own

@@ -86,10 +86,11 @@ source/embedded-fixture çalışmaları mümkün; deployment/auth-runtime/proxy/
 production graph/stress iddiaları için uygun ortam şu an yok. Volume'lar
 korundu; envanter salt-okunurdu. [Ortam audit'i](audit/2026-10-24-a05-authorized-environment/README.md).
 
-**Portföy taslakları hazır:** K01 stored-XSS proof/fix/retest, E05 inert
-textarea parser-context ölçümü ve bilinen BCrypt CVE applicability/remediation
-üç vaka olarak düzenlendi; Türkçe/İngilizce CV maddeleri ve sınırlar eklendi.
-[Taslak](audit/2026-10-24-portfolio-cases/README.md). E05 textarea ölçülmüş
+**Portföy taslakları hazır:** K01 ana vaka (`k01-case.md`), E05 ikinci vaka
+(`e05-case.md`; parser marker kanıtı var, execution/vulnerability kanıtı yok),
+ve kısa bilinen-BCrypt-CVE uygunluk örneği (`bcrypt-case.md`). Türkçe/İngilizce
+CV maddeleri ve sınırlar eklendi. [Paket ve vaka brief'leri](audit/2026-10-24-portfolio-cases/README.md).
+E05 textarea ölçülmüş
 parser-context açığı dar kapsamda tamam; yeni bağımsız ölçüm yoksa ek probe
 gerekmez. Bot feature genişletmesi öncelikli değil; yeni ölçülmüş kabul boşluğu
 çıkmadıkça kodlama açma. OWASP WSTG/ASVS ve PortSwigger lab ilerlemesini ayrı
