@@ -43,6 +43,24 @@ have no current suitable environment. A future isolated local stack needs a
 fresh synthetic database volume; it would not establish production behavior.
 [Environment review](audit/2026-10-24-a05-authorized-environment/README.md).
 
+## A05 current-source isolated runtime — inconclusive
+
+Source `eb031a19f9f6b0715d8b302751542f631216cdd5`; 280 copied `src/main`
+files and POM matched the authorized checkout. Offline Maven package completed
+with exit 0 / `BUILD SUCCESS` and tests skipped in ignored `.dxa` staging. New
+JAR SHA-256 `505df33126a2b7c65c9427da9b3679b95646d84db53ac5bf64ad02ff8b6353f7`;
+existing source `target/` JAR remained unchanged.
+
+Only a newly named MySQL 8.0 container/network/volume was created; the network
+was internal, port binding was `127.0.0.1:13307`, image pull disabled. DB became
+healthy, but host TCP to `127.0.0.1:13307` was false. The test-profile app
+exited at Flyway connection before binding `127.0.0.1:18081`. No health,
+registration, login, or 72/73-byte requests were sent. The app was not tested.
+Only the new DB container was stopped; its new volume/network remain for
+inspection. Existing A04/A05 containers/volumes and old JAR were untouched.
+Outcome: **inconclusive environment connectivity**, not a pass/fail security
+result. [Risk plan and evidence](audit/2026-10-24-a05-isolated-runtime/README.md).
+
 ## A05 current-source dependency reconciliation — source-only
 
 Kadrom `main` `eb031a19f9f6b0715d8b302751542f631216cdd5`, fetched and equal to

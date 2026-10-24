@@ -33,9 +33,11 @@ the prior query hash, with no new applicable candidate among the reviewed leads.
 A05 remains partial: one malformed multipart cleanup fixture passed, while
 deployment-wide and broader runtime conditions remain open. The local authorized
 Kadrom checkout exists, but no current-source app deployment or active proxy/WAF
-is available for those checks. R7's bounded local research is complete; this
-does not establish vulnerability absence. Current
-handoff, open work and evidence limits are in [STATUS](STATUS.md), the
+was available for those checks. A fresh isolated runtime attempt built the
+current JAR, but host-to-MySQL connectivity failed before the app bound its
+health port; no health/auth requests were sent. R7's bounded local research is complete; this
+does not establish vulnerability absence. See the [A05 runtime attempt](audit/2026-10-24-a05-isolated-runtime/README.md).
+Current handoff, open work and evidence limits are in [STATUS](STATUS.md), the
 [roadmap](ROADMAP.md), and the [validation log](VALIDATION.md).
 The current feature-freeze decision, CVE-source roles, and evidence-based CV
 wording are in the [CVE and portfolio review](audit/2026-10-24-cve-portfolio-review/README.md).
@@ -51,10 +53,14 @@ reassembly claim, so no faithful K04 runtime retest was run. See the separate
 [K04](audit/2026-10-24-k04-independent-retest/README.md) records.
 Three evidence-based case drafts for K01, E05, and the known BCrypt issue are in
 the [portfolio preparation audit](audit/2026-10-24-portfolio-cases/README.md).
+The concise [CV draft](docs/PORTFOLIO-CV-DRAFT.md) is separate from the
+supporting evidence. K04's local artifact search found no matching historical
+Juice Shop source/image; its retest remains blocked on that artifact.
 The follow-up found no faithful local K04 image for a runtime retest and no
 currently running current-source Kadrom deployment for broad A05 checks; see
 [K04 testability](audit/2026-10-24-k04-retest-followup/README.md) and
-[A05 environment readiness](audit/2026-10-24-a05-authorized-environment/README.md).
+[K04 local artifact search](audit/2026-10-24-k04-artifact-search-retest/README.md),
+and [A05 environment readiness](audit/2026-10-24-a05-authorized-environment/README.md).
 
 The A05/E05 evidence delivery is `e56ae60` on `main`; local HEAD matched
 `origin/main` when checked. Its

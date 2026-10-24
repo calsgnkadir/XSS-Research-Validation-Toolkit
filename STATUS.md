@@ -76,15 +76,21 @@ kalmaya devam ediyor. [Audit](audit/2026-10-24-k04-independent-retest/README.md)
 okunur inceledi; yalnız Juice Shop 20.2.0 imajı var, historical regex
 reassembly yolu bu imajdaki route'ta kullanılmıyor. Sadık retest için 28 Eylül
 claim'ine denk düşen historical image digest veya source commit, route,
-sanitizer sürümü ve render path gerekli. Bu yokken runtime retesti yapılmadı.
-[Takip audit'i](audit/2026-10-24-k04-retest-followup/README.md).
+sanitizer sürümü ve render path gerekli. Repo geçmişi ve yerel `.dxa` araması da
+bunu bulmadı; K04 runtime retesti başlamadı. [Takip audit'i](audit/2026-10-24-k04-retest-followup/README.md) ·
+[artifact araması](audit/2026-10-24-k04-artifact-search-retest/README.md).
 
 **A05 ortam hazırlığı değerlendirmesi:** güncel authorized Kadrom source
 checkout'u var; A05 container'ları `Created`/`Exited`, güncel `eb031a1` ile
 bağlı çalışan uygulama yok, JAR daha eski ve aktif Caddy/proxy/WAF yok. Mevcut
 source/embedded-fixture çalışmaları mümkün; deployment/auth-runtime/proxy/WAF/
-production graph/stress iddiaları için uygun ortam şu an yok. Volume'lar
-korundu; envanter salt-okunurdu. [Ortam audit'i](audit/2026-10-24-a05-authorized-environment/README.md).
+production graph/stress iddiaları için uygun ortam şu an yok. Taze internal
+MySQL volume'u ile local runtime denemesi yapıldı; current-source jar offline
+başarıyla üretildi, fakat host TCP `127.0.0.1:13307` erişemedi ve app health
+portuna bind olmadı. Health/auth veya 72/73-byte isteği gönderilmedi. Yalnız
+yeni MySQL konteyneri durduruldu; yeni volume/network korundu, eski kaynaklara
+dokunulmadı. [Ortam audit'i](audit/2026-10-24-a05-authorized-environment/README.md) ·
+[inconclusive runtime](audit/2026-10-24-a05-isolated-runtime/README.md).
 
 **Portföy taslakları hazır:** K01 ana vaka (`k01-case.md`), E05 ikinci vaka
 (`e05-case.md`; parser marker kanıtı var, execution/vulnerability kanıtı yok),
@@ -93,8 +99,9 @@ CV maddeleri ve sınırlar eklendi. [Paket ve vaka brief'leri](audit/2026-10-24-
 E05 textarea ölçülmüş
 parser-context açığı dar kapsamda tamam; yeni bağımsız ölçüm yoksa ek probe
 gerekmez. Bot feature genişletmesi öncelikli değil; yeni ölçülmüş kabul boşluğu
-çıkmadıkça kodlama açma. OWASP WSTG/ASVS ve PortSwigger lab ilerlemesini ayrı
-kaydet. [CVE ve CV değerlendirmesi](audit/2026-10-24-cve-portfolio-review/README.md).
+çıkmadıkça kodlama açma. Türkçe/İngilizce kısa CV metni ayrıca
+[CV taslağına](docs/PORTFOLIO-CV-DRAFT.md) eklendi. OWASP WSTG/ASVS ve
+PortSwigger lab ilerlemesini ayrı kaydet. [CVE ve CV değerlendirmesi](audit/2026-10-24-cve-portfolio-review/README.md).
 K03/K04, A05 ve E05 değerlendirmesi tamamlandı; yeni release yayımlanmadı.
 [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 

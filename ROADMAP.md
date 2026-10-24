@@ -63,13 +63,19 @@ CVE/meslek değerlendirmesi ve CV'de kullanılabilecek ölçülü ifadeler için
 [K04 test edilebilirlik](audit/2026-10-24-k04-independent-retest/README.md).
 Üç CV/portföy vaka taslağı koordinatör tarafından kanıt ve sınırları açısından
 incelendi: [K01, E05, bilinen BCrypt CVE'si](audit/2026-10-24-portfolio-cases/README.md).
-Yayımlama/isim kullanımı ayrıca gözden geçirilmeden dışarıya paylaşılmadı.
+Türkçe/İngilizce kısa CV metni [taslağa](docs/PORTFOLIO-CV-DRAFT.md) eklendi;
+yayımlama/isim kullanımı ayrıca gözden geçirilmeden dışarıya paylaşılmadı.
 A05 için mevcut Kadrom checkout'u kaynak/fixture işi destekliyor; çalışan güncel
-deployment, aktif Caddy/proxy/WAF ve güncel kaynağa bağlı JAR yok. A05 runtime
-ve deployment iddiaları için şu an uygun ortam mevcut değil; ayrıntı
-[salt-okunur ortam incelemesinde](audit/2026-10-24-a05-authorized-environment/README.md).
+deployment ve aktif Caddy/proxy/WAF yok. `eb031a1` JAR offline başarıyla
+oluşturuldu; fresh internal DB healthy oldu, fakat host-to-MySQL loopback
+bağlantısı kurulamadığı için app health/auth testleri başlamadı. Sonuç
+inconclusive; yeni DB container durduruldu, yeni volume/network korundu.
+[Ortam incelemesi](audit/2026-10-24-a05-authorized-environment/README.md) ·
+[runtime audit](audit/2026-10-24-a05-isolated-runtime/README.md).
 K04 faithful retest için tarihsel imaj/source commit ve eşleşen route/sanitizer
-artifaktı gerekiyor; yalnız Juice Shop 20.2.0 var. [Takip incelemesi](audit/2026-10-24-k04-retest-followup/README.md).
+artifaktı gerekiyor; repo/.dxa araması da bulmadı, yalnız Juice Shop 20.2.0
+var. [Takip incelemesi](audit/2026-10-24-k04-retest-followup/README.md) ·
+[artifact araması](audit/2026-10-24-k04-artifact-search-retest/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla

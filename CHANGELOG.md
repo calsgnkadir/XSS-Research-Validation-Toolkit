@@ -35,6 +35,17 @@
 - K04 follow-up confirmed no local historical image/source path matching the
   writeup's regex-reassembly claim; no faithful runtime retest was run.
   [K04 retestability](audit/2026-10-24-k04-retest-followup/README.md).
+- Searched local Git history and already-present artifacts for the historical
+  K04 image/source; none was found. Retest still needs the matching historical
+  route, sanitizer and render path. [Artifact search](audit/2026-10-24-k04-artifact-search-retest/README.md).
+- Built the current `eb031a1` JAR offline in isolated ignored staging and
+  started a fresh internal MySQL volume. Host-to-MySQL loopback was unreachable,
+  so the app exited before health/auth requests; this is inconclusive, not a
+  security test result. The new DB container was stopped and its volume retained.
+  [Runtime audit](audit/2026-10-24-a05-isolated-runtime/README.md).
+- Added a concise Turkish/English CV draft ordered K01, E05, known BCrypt CVE;
+  it retains evidence limitations and is not an external portfolio publication.
+  [CV draft](docs/PORTFOLIO-CV-DRAFT.md).
 
 ## Unreleased — 2026-10-24 E05 textarea context
 
