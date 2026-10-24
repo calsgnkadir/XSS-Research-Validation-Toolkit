@@ -1,6 +1,16 @@
-# Güncel devam noktası — 24 Ekim 2026
+# Güncel devam noktası — 25 Ekim 2026
 
-## Sonraki koordinasyon — writeup içeriği, A05 ve K04 (24 Ekim)
+## Son kapanış — PyPI 0.2.0
+
+- `dxa-research-toolkit==0.2.0` PyPI'de canlı; temiz production venv kurulumu
+  ve dört CLI `--help` kontrolü geçti. TestPyPI provası ve iki artifact'in
+  production SHA-256 doğrulaması da tamamlandı.
+- `v0.2.0` GitHub Release mevcut; tarihsel `v0.1.0` release'i değişmedi. README,
+  CHANGELOG, VALIDATION ve kısa audit kapanış kaydı bu teslimde güncellendi.
+- Bu release yalnız paketleme/dokümantasyon değişikliğidir; kaynak davranışı
+  değiştirilmedi. Ayrıntı: [release audit](audit/2026-10-24-pypi-0.2.0/README.md).
+
+## Önceki teslim — writeup içeriği, A05 ve K04 (24 Ekim)
 
 - `6170994` docs-only commit'i push edildi. C01–C09/A05/K04 dokümantasyon
   teslimi `574ff7c707a8e28ceaf45b11605d0359c72ad06a` olarak push edildi;
@@ -21,12 +31,14 @@
   envanteri daemon pipe'i bulunmadığı için alınamadı; bu nedenle image yokluğu
   iddiası kurulmuyor. Sadık retest mevcut kanıtla yapılamıyor; tarihsel execution
   iddiası doğrulanmamış kalıyor.
-- `v0.2.0` source release commit `8891219` ve tag `v0.2.0` origin'e push edildi;
-  GitHub Release oluşturuldu. TestPyPI sdist/wheel yüklemesi ve temiz venv'te
-  dört CLI `--help` kontrolü geçti. Production PyPI upload denemesi 403 döndü;
-  PyPI JSON endpoint'i sürüm için 404 veriyor, dolayısıyla üretim paketi henüz
-  yayınlanmadı. `[pypi]` credential yetkisi düzeltilip upload tekrar denenmeli.
-  [Yayın denemesi kaydı](audit/2026-10-24-pypi-0.2.0/README.md).
+- `v0.2.0` source commit `8891219` ve tag `v0.2.0` origin'e push edildi;
+  GitHub Release oluşturuldu, TestPyPI provası başarılıydı. Paket
+  `dxa-research-toolkit==0.2.0` 25 Ekim'de PyPI'ye yayımlandı. Production JSON
+  kaydı sürümü ve iki
+  artifact'i gösteriyor; yeni venv'te `pip install dxa-research-toolkit==0.2.0`
+  başarılı oldu ve `dxa`, `dxadyn`, `dxaprove`, `dxa-sarif --help` 4/4 geçti.
+  `v0.1.0` değişmedi. Ayrıntı ve SHA-256 değerleri:
+  [release audit](audit/2026-10-24-pypi-0.2.0/README.md).
 - Toolkit testleri çalıştırılmadı: bu teslim dokümantasyon ve salt-okunur
   envanter kontrolüdür.
 

@@ -2,6 +2,15 @@
 
 ## 0.2.0 — 2026-10-24
 
+### PyPI publication
+
+- Published `dxa-research-toolkit==0.2.0` to PyPI on 2026-10-25. The live
+  [PyPI release](https://pypi.org/project/dxa-research-toolkit/0.2.0/) contains
+  the tested wheel and sdist. A fresh production-PyPI venv install passed, and
+  `dxa`, `dxadyn`, `dxaprove`, and `dxa-sarif --help` passed 4/4. Artifact hashes
+  and the TestPyPI/production acceptance details are in
+  [the release audit](audit/2026-10-24-pypi-0.2.0/README.md).
+
 ### Writeup evidence reconciliation and frozen scopes
 
 - Edited writeups 01–09 so body text matches the historical evidence limits.
