@@ -1,6 +1,6 @@
 # Güncel devam noktası — 24 Ekim 2026
 
-## Son doğrulanan yerel teslim — belge uzlaştırması ve E05 textarea
+## Son doğrulanan teslim — A05 parser retesti ve E05 textarea
 
 Başlangıç kaynak commit'i `532be7ac01e82fbe0612749ead6d3cb39f0be7e9`.
 24 Ekim'deki birleşik Git fetch komutları `.git/FETCH_HEAD` yazma izni
@@ -22,8 +22,13 @@ yerel test çalıştırılmadı, CI artifact'leri indirilip incelenmedi.
 - **R7:** 23 Ekim kaynak kimliği ve seçilmiş advisory disposition kayıtlarına
   göre bounded yerel araştırma tamam. Bu, tam güvenlik taraması, production
   graph doğrulaması veya CVE yokluğu sonucu değil.
-- **A05:** malformed multipart parser-error cleanup hâlâ doğrulanmamış ve
-  kullanıcının ayırdığı test. Ordinary multipart başarısı bu sınırı kapatmaz.
+- **A05 multipart:** kullanıcının ayırdığı test 24 Ekim'de güncel Kadrom
+  `eb031a1` kaynağında bounded Spring MVC/Tomcat 11 loopback fixture ile tekrar
+  edildi. Pozitif parser kontrolünde 4 baytlık temp dosya exception anında
+  görüldü ve response sonrası temizlendi. Hatalı boundary `MultipartException`
+  + Tomcat parser cause'u ile handler seçilmeden reddedildi; exception/response
+  sonrası spool sıfır, health GET 200. Tek test geçti. Tam app/auth/deployment
+  kapsamı değil; A05 bütünü kısmi kalıyor. [Kayıt](audit/2026-10-24-a05-multipart-cleanup/README.md).
 - **Üç uzman görevi tamam:** belge uzlaştırması, corpus/negatif kontrol analizi
   ve E05 dar düzeltmesi ayrı native rollerde yürütüldü; koordinatör diff ve
   oracle'ları inceledi. Aktif uzman/arka plan işi yok. Ana ROADMAP ve ortak
@@ -46,8 +51,9 @@ Hosted ana suite **887 passed / 62 skipped**, ardından 94 negatif kontrol ve
 **224 passed**, ardından corpus/auth/demo ve sıfır-skip evidence gate başarılı.
 [K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
 başarılı. Bu hosted metadata/log gözlemidir; artifact indirilip incelenmedi.
-Sonraki adım: A05 kullanıcı testi sonucu gelirse ayrı kanıta ekle; sonraki E05
-uzantısını ancak yeni ölçülmüş bağlam açığıyla seç. Yeni release yayımlanmadı.
+Sonraki adım: A05'in daha geniş ürün/bağımlılık disposition'ını ayrı değerlendir;
+parser sonucunu bu Tomcat/Spring fixture'ının dışına genelleme. E05 uzantısı
+için yeni ölçülmüş bağlam açığı gerekir. Yeni release yayımlanmadı.
 [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 
 ## Önceki doğrulanan teslim — E02 SARIF, 23 Ekim 2026

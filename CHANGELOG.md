@@ -1,5 +1,17 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-24 A05 multipart cleanup
+
+- Re-ran one bounded malformed multipart parser/cleanup fixture on the current
+  Kadrom source with embedded Tomcat 11/Spring MVC. The positive parse control
+  produced and cleaned one 4-byte temp file; the truncated request failed
+  before handler selection, left the spool empty and was followed by health 200.
+  This is fixture evidence, not a full app/auth/deployment or CVE result.
+  [Test and limits](audit/2026-10-24-a05-multipart-cleanup/README.md).
+- A04 selected-route evidence and K04 documentation acceptance remain complete
+  within their recorded scopes; neither implies product-wide coverage or a
+  historical remediation retest.
+
 ## Unreleased — 2026-10-24 E05 textarea context
 
 - Added an inert `textarea-breakout` probe after an independent Chromium

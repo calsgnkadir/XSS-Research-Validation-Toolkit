@@ -1,5 +1,37 @@
 # Doğrulama kaydı — 2026-10-24
 
+## A05 multipart parser-error cleanup — bounded local retest
+
+Kadrom checkout `eb031a19f9f6b0715d8b302751542f631216cdd5`, clean after a
+fast-forward from `0ea07ed`. One local untracked test fixture was added under
+`src/test`; no Kadrom application source/POM was modified. Windows 11, Java
+17.0.18, Maven 3.9.16 offline, Spring 7.0.9, embedded Tomcat 11.0.27. The first
+sandboxed compiler run failed while reading cached `spring-boot-jdbc` before
+tests; the elevated retry compiled. Two initial fixture setup errors were
+corrected before the final parser run. They did not reach the HTTP test and are
+not counted as parser outcomes.
+
+From the local `hotelapp/` directory:
+
+```powershell
+mvn -o -ntp -Dmaven.repo.local=<local Maven repository> -Dtest=MultipartParserCleanupTest test
+```
+
+Final result: **1 test, 0 failures, 0 errors, 0 skipped; BUILD SUCCESS**. A
+well-formed one-part control parsed into exactly one 4-byte temp file before
+required-part binding raised `MissingServletRequestPartException`; the file was
+gone after the response. One truncated boundary then raised Spring
+`MultipartException` with Tomcat `IOFileUploadException` and
+`MalformedStreamException` causes before handler selection. The spool remained
+empty at exception, after response, and after one health GET (200). Mock message
+and storage services had zero interactions. The test tears down Tomcat and uses
+a fresh JUnit temporary directory.
+
+This verifies one bounded parser/cleanup path for the current embedded
+Tomcat/Spring resolver. It is not a full app/auth/deployment or proxy test, a
+stress/large-upload test, a general parser guarantee or a CVE/vulnerability
+finding. See the [sanitized evidence and source](audit/2026-10-24-a05-multipart-cleanup/README.md).
+
 ## E05 textarea parser-context acceptance — 24 October 2026
 
 Source base `532be7ac01e82fbe0612749ead6d3cb39f0be7e9` plus the scoped E05
