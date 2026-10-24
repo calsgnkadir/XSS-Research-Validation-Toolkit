@@ -1,21 +1,16 @@
 # Güncel devam noktası — 24 Ekim 2026
 
-## Son doğrulanan teslim — A05 parser retesti ve E05 textarea
+## Son teslim — A05 parser retesti, E05 textarea ve belge uzlaştırması
 
-Başlangıç kaynak commit'i `532be7ac01e82fbe0612749ead6d3cb39f0be7e9`.
-24 Ekim'deki birleşik Git fetch komutları `.git/FETCH_HEAD` yazma izni
-hatası verdi. Sonraki bağımsız yükseltilmiş `git fetch origin` başarılı oldu;
-yerel HEAD ve upstream farkı `0/0` olarak doğrulandı. GitHub `/branches/main`
-API kontrolü de başlangıçtaki aynı `532be7a` hash'ini verdi.
-
-GitHub job metadata'sı 24 Ekim'de yeniden kontrol edildi: bu commit'in
-[general CI 39955815522](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815522)
-ana analyzer, required authenticated-browser ve optional dxadom browser
-job'ları `completed/success`;
-[K01 Linux 39955815291](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/39955815291)
-job'ı da `completed/success`. Önceki fix commit'inin CI `39954873774`
-required authenticated-browser job'ı da artık başarılı. Bu metadata kontrolünde
-yerel test çalıştırılmadı, CI artifact'leri indirilip incelenmedi.
+Bu durum uzlaştırması `e56ae6048e9e74a75816f485673a9ba2086333a8` kanıt teslimi
+üzerinde başladı. Başlangıçta `git fetch origin` sonrası yerel `main` ile
+`origin/main` farkı `0/0`, çalışma ağacı temizdi. Bu teslim A05 multipart
+fixture kanıtını içerir. Commit için
+[general CI 40086961102](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961102)
+analyzer, required authenticated-browser ve optional dxadom-browser job'ları
+`completed/success`; [K01 Linux 40086961111](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961111)
+da başarılı. Bu metadata/job kontrolüdür; hosted artifact'ler indirilip ayrıca
+incelenmedi. Bu turda toolkit testleri yeniden çalıştırılmadı.
 
 - **E02:** bounded kabul tamam; SARIF değişikliği unreleased, yayımlanmış
   `v0.1.0` wheel asset'i değişmedi.
@@ -42,8 +37,9 @@ yerel test çalıştırılmadı, CI artifact'leri indirilip incelenmedi.
   browser CI seçimine eklendi. Yeni wheel'in izole kurulumunda 9 kontrol geçti;
   11 modül kaynak/wheel/kurulum hash'i eşleşti. [Kabul ve sınırlar](audit/2026-10-24-e05-context/README.md).
 
-Kod/test/kanıt teslimi `77199075a271227bce7cb6386d571f34f0213b5d` olarak push
-edildi; sonraki fetch yerel HEAD ve origin/main eşitliğini doğruladı. Bu SHA'nın
+Önceki kod/test/kanıt teslimi `77199075a271227bce7cb6386d571f34f0213b5d` olarak push
+edilmişti. Daha sonra A05 parser retesti kaydı `e56ae6048e9e74a75816f485673a9ba2086333a8`
+olarak push edildi; güncel fetch HEAD/origin eşitliğini doğruladı. Önceki SHA'nın
 [CI 40083275086](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275086)
 ana, required authenticated-browser ve optional browser işleri başarılı.
 Hosted ana suite **887 passed / 62 skipped**, ardından 94 negatif kontrol ve
@@ -51,9 +47,10 @@ Hosted ana suite **887 passed / 62 skipped**, ardından 94 negatif kontrol ve
 **224 passed**, ardından corpus/auth/demo ve sıfır-skip evidence gate başarılı.
 [K01 Linux 40083275084](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40083275084)
 başarılı. Bu hosted metadata/log gözlemidir; artifact indirilip incelenmedi.
-Sonraki adım: A05'in daha geniş ürün/bağımlılık disposition'ını ayrı değerlendir;
-parser sonucunu bu Tomcat/Spring fixture'ının dışına genelleme. E05 uzantısı
-için yeni ölçülmüş bağlam açığı gerekir. Yeni release yayımlanmadı.
+Sonraki adımlar: A05'in daha geniş ürün/bağımlılık disposition'ını sürdür;
+parser sonucunu bu Tomcat/Spring fixture'ının dışına genelleme. E05 için başka
+probe ancak yeni, bağımsız ölçülmüş parser-context açığı varsa eklenmeli. README
+ve roadmap'in güncel özetleri bu handoff ile hizalandı. Yeni release yayımlanmadı.
 [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 
 ## Önceki doğrulanan teslim — E02 SARIF, 23 Ekim 2026

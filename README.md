@@ -22,31 +22,29 @@ authorized to test.
 ## Current status
 
 This is an experimental research toolkit, not a general-purpose vulnerability
-scanner. Technical acceptance for R0–R6 is complete. The `0.1.0` GitHub Release
-is available; PyPI publication is excluded. The
-bounded Python AST pilot (R8) and declared operational/reproducibility scope
-(R9) are complete. R7 research uses the authorized local Kadrom scope: the
-tested two-role list routes had no observed candidate, and the advisory lookup
-remains inconclusive. See [STATUS](STATUS.md), the [roadmap](ROADMAP.md), and
-the [validation log](VALIDATION.md) for current limits and evidence.
+scanner. The `v0.1.0` GitHub Release remains available; this source checkout has
+later unreleased changes and PyPI publication is excluded. Bounded acceptance
+for R0–R6, the Python AST pilot (R8), and the declared operational scope (R9)
+is complete. E05's measured textarea parser-context extension is accepted
+within its narrow scope. A04 is bounded complete for the selected local GET
+routes. A05 remains partial: one malformed multipart cleanup fixture passed,
+while broader product/dependency disposition remains open. R7's bounded local
+research is complete; this does not establish vulnerability absence. Current
+handoff, open work and evidence limits are in [STATUS](STATUS.md), the
+[roadmap](ROADMAP.md), and the [validation log](VALIDATION.md).
 
-The 17 October review retested source commit `451361b` locally on
-Windows/Python 3.10.11: the analyzer suite passed **789 tests**, with **38
-skipped and no failures**. The required Chrome selection passed **218/218**;
-the full Chrome DOM suite passed **80/80**. For that same commit,
-[general hosted CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38984494777)
-passed all three jobs and
-[K01 Linux CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/38984494765)
-succeeded. The downloaded R3/R4 artifact passed its acceptance checker;
-the K01 artifact's hashes, JUnit and five control outcomes were inspected.
-The full K01 validation function was not rerun during that artifact review.
-See the [review evidence](audit/2026-10-17-delivery-review/README.md) for
-provenance and limits. These results belong to `451361b`. Commit `c58c74b`
-later pushed the C10/C13, S02 and K03 follow-up; commit `2650ede` records its
-remote delivery status. Hosted CI completed successfully for both commits.
-See [STATUS](STATUS.md) for remote hashes, run IDs and scope. These are bounded
-regression and workflow results, not broad detection-accuracy or
-vulnerability-discovery measurements.
+The A05/E05 evidence delivery is `e56ae60` on `main`; local HEAD matched
+`origin/main` when checked. Its
+[hosted CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961102)
+analyzer, required authenticated-browser and optional dxadom-browser jobs
+completed successfully; [K01 Linux CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961111)
+also succeeded. These are hosted job results; artifacts were not downloaded
+for independent review. The latest local E05 selected acceptance passed
+**381 tests with zero skips** and its installed CLI gate passed **9 controls**;
+the A05 parser fixture passed **1 test**. These bounded checks are not broad
+detection-accuracy or vulnerability-discovery measurements. See the respective
+[E05 evidence](audit/2026-10-24-e05-context/README.md) and
+[A05 evidence](audit/2026-10-24-a05-multipart-cleanup/README.md).
 
 ## Selected evidence-backed cases
 

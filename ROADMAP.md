@@ -1,6 +1,6 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-**23 Ekim güncel durum — A04 / A05 / R7 / R3–R6:** A04'ün roadmap'teki seçilmiş GET
+**24 Ekim güncel durum — A04 / A05 / E05 / R7 / R3–R6:** A04'ün roadmap'teki seçilmiş GET
 rotaları için bounded kabulü tamamlandı; ürün-geneli güvenlik iddiası değildir.
 BCrypt'in 72 UTF-8 bayt düzeltmesi ve Boot 4.1.1 / Security 7.1.1 yükseltmesi
 sonrasında önceki kaynakta 665/665 Kadrom testi geçti; güncel test-only commit
@@ -21,8 +21,13 @@ bu güncel kaynak için başarılı. `b374095` ve bu oturumun üç yerel değiş
 Önceki
 `d96b835`
 backend hatasının public log erişimi 403 olduğu için kök neden bilinmiyor.
-Multipart olağan işlevsel testleri 6/6 geçti; malformed parser cleanup hâlâ
-doğrulanmadı. A05 Sort invalid-property HTTP 500 için dar 400 düzeltmesi ve
+Multipart olağan işlevsel testleri 6/6 geçti. 24 Ekim'de güncel Kadrom
+`eb031a1` kaynağında embedded Tomcat 11/Spring MVC fixture'ı ile malformed
+parser cleanup kontrolü de 1/1 geçti: pozitif kontrolün 4 baytlık temp dosyası
+response sonrasında temizlendi; hatalı boundary handler seçilmeden reddedildi,
+spool boş kaldı ve health GET 200 döndü. Bu dar fixture sonucu tam app/auth/
+proxy veya genel parser garantisi değildir; A05'in daha geniş ürün/bağımlılık
+disposition'ı kısmi kalır. A05 Sort invalid-property HTTP 500 için dar 400 düzeltmesi ve
 3 kontrol geçti; bu DoS/CVE düzeltmesi iddiası değil. R7 bounded yerel
 araştırması güncel applicability disposition ile tamamlandı. Kadrom kaynak
 kimliği `b374095`, public tag/release veya formel destek politikası yok;
@@ -31,6 +36,13 @@ satır/0 eşleşme verdi; bu üretim ağacı veya CVE yokluğu kanıtı değil. 
 report workspace'e teslim edildi; dış disclosure yapılmadı.
 [R7 kimliği](audit/2026-10-23-r7-source-identity/README.md).
 R3/R4/R5/R6 kabul kapsamı tamam; [uzlaştırma](audit/2026-10-22-r3-r6-acceptance-reconciliation/README.md).
+E05 textarea RCDATA uzantısında ölçülen bir bağlam açığı için inert probe eklendi;
+bağımsız browser oracle dahil seçilmiş yerel kabul 381/381 geçti. Bu parser marker
+yerleşimini ölçer, execution/açıklık sonucu değildir. Ayrıntı:
+[E05 kabulü](audit/2026-10-24-e05-context/README.md). A05/E05 kanıt teslimi
+`e56ae60`; bu SHA için GitHub CI `40086961102` ve K01 Linux `40086961111`
+tüm job'larıyla başarılı. Source checkout'taki bu değişiklikler unreleased;
+`v0.1.0` release asset'i değiştirilmedi.
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla
