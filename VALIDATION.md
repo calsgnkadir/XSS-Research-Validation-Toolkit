@@ -28,6 +28,21 @@ unstarted container and internal network used only for source copying were
 removed; no application process or request ran. The historical bypass and
 fix/retest remain unverified. [K04 audit](audit/2026-10-24-k04-independent-retest/README.md).
 
+## A05 authorized environment availability — read-only
+
+Authorized Kadrom checkout `.dxa/a04-kadrom-source` is `eb031a1`. Docker
+metadata inspection only: A05 app/DB containers are `Created` or `Exited`; no
+running application built from the reviewed commit was identified. The local
+JAR predates `eb031a1`. Development and production-shaped Compose files exist,
+including Caddy, but no active app/proxy/WAF runtime was identified. No request,
+authentication, container start/stop, volume inspection, source read of
+credentials, or test was performed. Existing A04/A05 volumes were left intact.
+This means source and embedded-fixture review are available, while deployment,
+authenticated-runtime, effective proxy/WAF, production graph, and stress claims
+have no current suitable environment. A future isolated local stack needs a
+fresh synthetic database volume; it would not establish production behavior.
+[Environment review](audit/2026-10-24-a05-authorized-environment/README.md).
+
 ## A05 current-source dependency reconciliation — source-only
 
 Kadrom `main` `eb031a19f9f6b0715d8b302751542f631216cdd5`, fetched and equal to

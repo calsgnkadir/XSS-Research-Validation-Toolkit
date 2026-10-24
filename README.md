@@ -31,8 +31,10 @@ routes. A05's selected advisory dispositions have now been rebound to current
 Kadrom source `eb031a1`; the regenerated 248-coordinate dependency tree matches
 the prior query hash, with no new applicable candidate among the reviewed leads.
 A05 remains partial: one malformed multipart cleanup fixture passed, while
-deployment-wide and broader runtime conditions remain open. R7's bounded local
-research is complete; this does not establish vulnerability absence. Current
+deployment-wide and broader runtime conditions remain open. The local authorized
+Kadrom checkout exists, but no current-source app deployment or active proxy/WAF
+is available for those checks. R7's bounded local research is complete; this
+does not establish vulnerability absence. Current
 handoff, open work and evidence limits are in [STATUS](STATUS.md), the
 [roadmap](ROADMAP.md), and the [validation log](VALIDATION.md).
 The current feature-freeze decision, CVE-source roles, and evidence-based CV
@@ -47,6 +49,12 @@ current login-IP sanitizer path does not match the historical regex
 reassembly claim, so no faithful K04 runtime retest was run. See the separate
 [K03](audit/2026-10-24-k03-independent-retest/README.md) and
 [K04](audit/2026-10-24-k04-independent-retest/README.md) records.
+Three evidence-based case drafts for K01, E05, and the known BCrypt issue are in
+the [portfolio preparation audit](audit/2026-10-24-portfolio-cases/README.md).
+The follow-up found no faithful local K04 image for a runtime retest and no
+currently running current-source Kadrom deployment for broad A05 checks; see
+[K04 testability](audit/2026-10-24-k04-retest-followup/README.md) and
+[A05 environment readiness](audit/2026-10-24-a05-authorized-environment/README.md).
 
 The A05/E05 evidence delivery is `e56ae60` on `main`; local HEAD matched
 `origin/main` when checked. Its

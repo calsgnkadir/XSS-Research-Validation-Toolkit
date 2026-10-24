@@ -26,6 +26,15 @@
 - Recorded the feature-freeze/portfolio decision and CVE-source roles: next
   priority is a small evidence-backed portfolio, not broad bot feature growth.
   [CVE and portfolio review](audit/2026-10-24-cve-portfolio-review/README.md).
+- Prepared three CV-ready case drafts grounded in retained K01, E05, and known
+  BCrypt-CVE evidence, with English/Turkish wording and explicit scope limits.
+  [Portfolio cases](audit/2026-10-24-portfolio-cases/README.md).
+- Read-only A05 environment review found no running app built from current
+  `eb031a1`, no active proxy/WAF, and only an older JAR; deployment-wide checks
+  are not currently testable. [Environment audit](audit/2026-10-24-a05-authorized-environment/README.md).
+- K04 follow-up confirmed no local historical image/source path matching the
+  writeup's regex-reassembly claim; no faithful runtime retest was run.
+  [K04 retestability](audit/2026-10-24-k04-retest-followup/README.md).
 
 ## Unreleased — 2026-10-24 E05 textarea context
 

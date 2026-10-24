@@ -54,13 +54,22 @@ Bot için yeni feature genişletmesi şu an öncelik değil. K03 bağımsız Jui
 20.2.0 replay'i tamamlandı; 17 istekte lab davranışları tekrarlandı, tarihsel
 oturum/CVE iddiası doğrulanmadı. K04 bağımsız pinned-source incelemesi
 tamamlandı; mevcut route historical regex claim'ini çalıştırmadığı için inert
-runtime oracle bulunmadı ve HTTP/browser retesti yapılmadı. Sonraki iş mevcut
-kanıttan 2–3 portföy vakası hazırlamak; yeniden kodlama ancak yeni ölçülmüş
+runtime oracle bulunmadı ve HTTP/browser retesti yapılmadı. Üç portföy vaka
+taslağı hazırlandı; yeniden kodlama ancak yeni ölçülmüş
 bağlam/corpus açığı veya net kullanıcı kabul ihtiyacı doğarsa açılmalı.
 CVE/meslek değerlendirmesi ve CV'de kullanılabilecek ölçülü ifadeler için
 [araştırma kaydı](audit/2026-10-24-cve-portfolio-review/README.md) ·
 [K03 replay](audit/2026-10-24-k03-independent-retest/README.md) ·
 [K04 test edilebilirlik](audit/2026-10-24-k04-independent-retest/README.md).
+Üç CV/portföy vaka taslağı koordinatör tarafından kanıt ve sınırları açısından
+incelendi: [K01, E05, bilinen BCrypt CVE'si](audit/2026-10-24-portfolio-cases/README.md).
+Yayımlama/isim kullanımı ayrıca gözden geçirilmeden dışarıya paylaşılmadı.
+A05 için mevcut Kadrom checkout'u kaynak/fixture işi destekliyor; çalışan güncel
+deployment, aktif Caddy/proxy/WAF ve güncel kaynağa bağlı JAR yok. A05 runtime
+ve deployment iddiaları için şu an uygun ortam mevcut değil; ayrıntı
+[salt-okunur ortam incelemesinde](audit/2026-10-24-a05-authorized-environment/README.md).
+K04 faithful retest için tarihsel imaj/source commit ve eşleşen route/sanitizer
+artifaktı gerekiyor; yalnız Juice Shop 20.2.0 var. [Takip incelemesi](audit/2026-10-24-k04-retest-followup/README.md).
 
 **19 Ekim devamı:** C10/C13 ve S02 belge kabulü tamamlandı. K03 SQLi/JWT/BOLA
 kontrolleri yerel Juice Shop 20.2.0 imajında yeni, sürümlü ham HTTP kaydıyla

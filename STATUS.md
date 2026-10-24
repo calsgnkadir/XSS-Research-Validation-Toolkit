@@ -72,13 +72,28 @@ inspection için oluşturulan durdurulmuş/geçici Docker kaynakları kaldırıl
 aktif istek yok. Tarihsel execution iddiası author-reported/bağımsız kanıtsız
 kalmaya devam ediyor. [Audit](audit/2026-10-24-k04-independent-retest/README.md).
 
-**Yön kararı:** E05 textarea ölçülmüş parser-context açığı dar kapsamda tamam;
-yeni bağımsız ölçüm yoksa ek probe gerekmez. Bot feature genişletmesi şu an
-öncelikli değil; yeni ölçülmüş kabul boşluğu dışında kodlama açma. Sıradaki
-portföy işi: doğrulanmış stored-XSS proof/fix/retest, parser/DOM pozitif-negatif
-kontrolü ve sınırları açık dependency/CVE disposition'ından 2–3 kısa vaka
-hazırlamak; OWASP WSTG/ASVS ve PortSwigger XSS lab ilerlemesini ayrı kaydetmek.
-[CVE ve CV değerlendirmesi](audit/2026-10-24-cve-portfolio-review/README.md).
+**K04 takip:** ayrı specialist ikinci kez mevcut pinned artifact'leri salt
+okunur inceledi; yalnız Juice Shop 20.2.0 imajı var, historical regex
+reassembly yolu bu imajdaki route'ta kullanılmıyor. Sadık retest için 28 Eylül
+claim'ine denk düşen historical image digest veya source commit, route,
+sanitizer sürümü ve render path gerekli. Bu yokken runtime retesti yapılmadı.
+[Takip audit'i](audit/2026-10-24-k04-retest-followup/README.md).
+
+**A05 ortam hazırlığı değerlendirmesi:** güncel authorized Kadrom source
+checkout'u var; A05 container'ları `Created`/`Exited`, güncel `eb031a1` ile
+bağlı çalışan uygulama yok, JAR daha eski ve aktif Caddy/proxy/WAF yok. Mevcut
+source/embedded-fixture çalışmaları mümkün; deployment/auth-runtime/proxy/WAF/
+production graph/stress iddiaları için uygun ortam şu an yok. Volume'lar
+korundu; envanter salt-okunurdu. [Ortam audit'i](audit/2026-10-24-a05-authorized-environment/README.md).
+
+**Portföy taslakları hazır:** K01 stored-XSS proof/fix/retest, E05 inert
+textarea parser-context ölçümü ve bilinen BCrypt CVE applicability/remediation
+üç vaka olarak düzenlendi; Türkçe/İngilizce CV maddeleri ve sınırlar eklendi.
+[Taslak](audit/2026-10-24-portfolio-cases/README.md). E05 textarea ölçülmüş
+parser-context açığı dar kapsamda tamam; yeni bağımsız ölçüm yoksa ek probe
+gerekmez. Bot feature genişletmesi öncelikli değil; yeni ölçülmüş kabul boşluğu
+çıkmadıkça kodlama açma. OWASP WSTG/ASVS ve PortSwigger lab ilerlemesini ayrı
+kaydet. [CVE ve CV değerlendirmesi](audit/2026-10-24-cve-portfolio-review/README.md).
 K03/K04, A05 ve E05 değerlendirmesi tamamlandı; yeni release yayımlanmadı.
 [Uzlaştırma kaydı](audit/2026-10-24-status-reconciliation/README.md).
 
