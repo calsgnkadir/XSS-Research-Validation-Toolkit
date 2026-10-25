@@ -1,90 +1,56 @@
-# XSS Research Lab & Bot
+# XSS Research Toolkit
 
-An experimental Python CLI toolkit for XSS research and evidence collection.
-Project work combines static source/sink candidate analysis, bounded HTTP
-reflection checks, and browser observations in controlled labs. Reports keep
-those observations separate from CID-matched JavaScript execution and from
-vulnerability triage. The project is a research-support prototype, not a
-general-purpose autonomous scanner.
+An evidence-oriented Python CLI toolkit for researching and validating XSS
+behavior in controlled labs. It combines heuristic source/sink candidate
+analysis, bounded HTTP checks, and browser-based observations. Reports keep
+reflection, parser placement, callback receipt, JavaScript execution, and
+vulnerability triage as distinct evidence states.
 
-**Project summary:** The work focuses on implementing and validating a
-repeatable analysis workflow: inspect candidate source/sink paths, observe
-bounded HTTP/browser behavior, preserve evidence boundaries, and test fixes in
-local fixtures. The retained acceptance includes controlled corpus and
-loopback-fixture checks; it does not establish broad real-world detection
-accuracy, independent product findings, competitor superiority, or newly
-discovered CVEs. Install the package with:
+**Current release:** [`dxa-research-toolkit 0.2.0` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.0/) ·
+[GitHub release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.2.0) ·
+[Run the local demos](docs/PORTFOLIO-DEMO.md)
+
+The toolkit provides heuristic source/sink candidate rules for JavaScript and
+TypeScript, Java, C#, PHP, and Python; bounded HTTP reflection and stored-input
+checks; browser proof workflows for local fixtures; and HTML, JSON, and SARIF
+reports. Analysis depth varies by language, and the static analyzer is not a
+sound, interprocedural data-flow engine. This is a research-support prototype,
+not a general-purpose autonomous scanner.
 
 ```console
 python -m pip install dxa-research-toolkit
+dxa --help
+dxadyn --help
+dxaprove --help
+dxa-sarif --help
 ```
 
-The accepted `0.1.0` wheel remains available through the historical
-[GitHub Release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.1.0).
-Current tag and artifact status is recorded in [STATUS](STATUS.md). Use the
-tools only on systems you own or are explicitly authorized to test.
-
-## Current status
-
-This is an experimental research toolkit, not a general-purpose vulnerability
-scanner. The `v0.1.0` GitHub Release remains available as a historical release;
-this source checkout includes later changes. Bounded acceptance
-for R0–R6, the Python AST pilot (R8), and the declared operational scope (R9)
-is complete. E05's measured textarea parser-context extension is accepted
-within its narrow scope. A04 is bounded complete for the selected local GET
-routes. A05's selected advisory dispositions have now been rebound to current
-Kadrom source `eb031a1`; the regenerated 248-coordinate dependency tree matches
-the prior query hash, with no new applicable candidate among the reviewed leads.
-A05 remains partial: one malformed multipart cleanup fixture passed, while
-deployment-wide and broader runtime conditions remain open. The local authorized
-Kadrom checkout exists, but no current-source app deployment or active proxy/WAF
-was available for those checks. A fresh isolated runtime attempt built the
-current JAR, but host-to-MySQL connectivity failed before the app bound its
-health port; no health/auth requests were sent. R7's bounded local research is complete; this
-does not establish vulnerability absence. See the [A05 runtime attempt](audit/2026-10-24-a05-isolated-runtime/README.md).
-Current handoff, open work and evidence limits are in [STATUS](STATUS.md), the
-[roadmap](ROADMAP.md), and the [validation log](VALIDATION.md).
-The current feature-freeze decision, CVE-source roles, and evidence-based CV
-wording are in the [CVE and portfolio review](audit/2026-10-24-cve-portfolio-review/README.md).
-
-On 24 October, an independent K03 replay completed 17 requests against the
-existing local Juice Shop 20.2.0 image in an internal-only lab; it reproduced
-the documented SQLi-shaped login, unsigned JWT, and synthetic cross-account
-basket behaviors. This is a new training-lab replay, not validation of the old
-sessions or a CVE finding. K04 source review found that the pinned image's
-current login-IP sanitizer path does not match the historical regex
-reassembly claim, so no faithful K04 runtime retest was run. See the separate
-[K03](audit/2026-10-24-k03-independent-retest/README.md) and
-[K04](audit/2026-10-24-k04-independent-retest/README.md) records.
-Three evidence-based case drafts for K01, E05, and the known BCrypt issue are in
-the [portfolio preparation audit](audit/2026-10-24-portfolio-cases/README.md).
-The concise [CV draft](docs/PORTFOLIO-CV-DRAFT.md) is separate from the
-supporting evidence. K04's local artifact search found no matching historical
-Juice Shop source/image; its retest remains blocked on that artifact.
-The follow-up found no faithful local K04 image for a runtime retest and no
-currently running current-source Kadrom deployment for broad A05 checks; see
-[K04 testability](audit/2026-10-24-k04-retest-followup/README.md) and
-[K04 local artifact search](audit/2026-10-24-k04-artifact-search-retest/README.md),
-and [A05 environment readiness](audit/2026-10-24-a05-authorized-environment/README.md).
-
-The A05/E05 evidence delivery is `e56ae60` on `main`; local HEAD matched
-`origin/main` when checked. Its
-[hosted CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961102)
-analyzer, required authenticated-browser and optional dxadom-browser jobs
-completed successfully; [K01 Linux CI](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/actions/runs/40086961111)
-also succeeded. These are hosted job results; artifacts were not downloaded
-for independent review. The latest local E05 selected acceptance passed
-**381 tests with zero skips** and its installed CLI gate passed **9 controls**;
-the A05 parser fixture passed **1 test**. These bounded checks are not broad
-detection-accuracy or vulnerability-discovery measurements. See the respective
-[E05 evidence](audit/2026-10-24-e05-context/README.md) and
-[A05 evidence](audit/2026-10-24-a05-multipart-cleanup/README.md).
-
-## Selected evidence-backed cases
+## Selected evidence-backed work
 
 - **Stored XSS proof → fix → retest:** [K01 local fixture](cases/k01-stored-comment/README.md)
-  records one CID-matched browser execution, four negative controls, HTML text
-  encoding, and retest. It is a training fixture, not a product/CVE claim.
+  records a CID-matched browser execution, negative controls, output encoding,
+  and a successful retest. This is a training fixture, not a third-party
+  product finding.
+- **Parser-context coverage test:** [E05 case](audit/2026-10-24-portfolio-cases/e05-case.md)
+  measures inert marker placement in a `textarea` context with JavaScript
+  disabled. It does not claim JavaScript execution or a confirmed vulnerability.
+- **Installable release:** version 0.2.0 is published on PyPI; package and CLI
+  installation checks are recorded in [the release audit](audit/2026-10-24-pypi-0.2.0/README.md).
+
+## Project status and scope
+
+The 0.2.0 release includes the offline SARIF CLI and E05 parser-context
+extension. A04 is complete only for its selected local routes. A05 is frozen as
+partial after one bounded multipart cleanup fixture; broader runtime and
+deployment checks were not completed. K04's historical bypass has not been
+faithfully retested: the matching artifact was not found in the searched local
+paths, and the Docker image inventory could not be checked.
+These limits, current handoff, and validation records are documented in
+[STATUS](STATUS.md), the [roadmap](ROADMAP.md), and [VALIDATION](VALIDATION.md).
+Use the tools only on systems you own or are explicitly authorized to test.
+
+## Additional engineering evidence
+
 - **Tooling failure → regression:** [R9 browser-fixture follow-up](audit/2026-10-16-r6-r9-final-source/README.md)
   records serial fixture failures, the threaded-server correction, and the
   full local Chrome DOM suite. This measures fixture reliability, not scanner
@@ -94,45 +60,40 @@ detection-accuracy or vulnerability-discovery measurements. See the respective
   fixtures with escaped controls. Some outcomes remain inconclusive; it is not
   a fresh scanner comparison or a vulnerability ranking.
 
-[Install and run the local demos](docs/PORTFOLIO-DEMO.md).
+### Evidence handling
 
-Stored/stored-auto blind denemeleri artık yansıma olmasa da kalıcı kaydedilir;
-tarama sonrası callback kontrolü ve JSON/HTML kayıt raporu vardır.
-[Kullanım ve kapsam](tools/dom-xss-analyzer/BLIND-JOURNAL.md). Callback, JS proof değildir.
+Stored blind attempts are retained even when no reflection appears, then checked
+against the callback collector and reported in JSON/HTML journals. A callback
+is resource evidence, not JavaScript execution. See the [blind journal contract](tools/dom-xss-analyzer/BLIND-JOURNAL.md).
 
-HTTP modları ortak bulgu üreticisi kullanır: ham marker ve JSON yanıtı execution
-sayılmaz. `--json-out` ve `--html` aynı finding'leri raporlar.
-[Kanıt modeli ve uyumluluk değişiklikleri](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
+HTTP modes share a finding producer, and `--json-out` and `--html` report the
+same findings. A raw marker or JSON response is not execution evidence. See the
+[HTTP evidence contract](tools/dom-xss-analyzer/HTTP-EVIDENCE.md).
 
-Source checkouts also provide offline [SARIF 2.1.0 export](tools/dom-xss-analyzer/SARIF.md):
+The 0.2.0 package includes offline [SARIF 2.1.0 export](tools/dom-xss-analyzer/SARIF.md):
 `dxa-sarif evidence.json --output evidence.sarif`. Results preserve observation
 and triage categories as review records, without vulnerability severity or
-execution claims. This addition is unreleased; the existing release asset is unchanged.
+execution claims.
 
-**R1 kabul kapsamı tamamlandı:** resmî kanıt sözleşmesi, statik/HTTP/DOM/journal
-ortak raporları, hata/atlama olayları ve rol/sink ayrımını koruyan dedup.
-[Madde bazında kapanış](audit/2026-10-05-r1/R1-KAPANIS.md).
-R2 HTTP kabulü tamam: [oturum kontrolü, rate ve CSRF sözleşmesi](tools/dom-xss-analyzer/SESSION-CONTRACT.md).
-R3 loopback browser proof, observer direct eval, SPA route bütçesi ve allowlist header aktarımı kabul edildi; WebSocket/genel ağ sandboxı kapsam dışı.
-[R3 demo ve kapsam](tools/dom-xss-analyzer/BROWSER-PROOF.md).
+The accepted R1–R3 work covers shared evidence reporting, HTTP session/rate/CSRF
+controls, and a bounded loopback browser-proof workflow. It does not provide a
+general network sandbox. See the [R1 closure](audit/2026-10-05-r1/R1-KAPANIS.md),
+[HTTP session contract](tools/dom-xss-analyzer/SESSION-CONTRACT.md), and
+[browser-proof scope](tools/dom-xss-analyzer/BROWSER-PROOF.md).
 
-**İlk güncel vaka:** [K01 stored yorum — execution → fix → retest](cases/k01-stored-comment/README.md).
-Yerel fixture'da ayrı okuyucu tarayıcısıyla 5/5 kontrol geçti; aynı payload output
-encoding sonrası düz metin kaldı. Bu vaka kanıtıdır; genel bot execution motoru değildir.
+Historical reviews are available in the [2026-09-28 audit report](audit/2026-09-28/DENETIM-RAPORU-TR.md)
+and [file-by-file review](audit/2026-09-28/DOSYA-INCELEMESI-TR.md).
 
-[Denetim raporu](audit/2026-09-28/DENETIM-RAPORU-TR.md) ve
-[dosya bazında inceleme](audit/2026-09-28/DOSYA-INCELEMESI-TR.md) depoda bulunur.
+- [Current status and limitations](STATUS.md)
+- [Project roadmap](ROADMAP.md)
+- [Historical original-ZIP file-to-task mapping](DOSYA-KAPSAM.md)
+- [Validation record](VALIDATION.md)
+- [Changelog](CHANGELOG.md)
+- [Historical message review](HISTORY-NOTES.md)
 
-- [Güncel durum ve sınırlar](STATUS.md)
-- [Ana proje roadmap'i: bot, rapor/kanıt, portfolyo, staj, araştırma/CVE](ROADMAP.md)
-- [76 dosyanın görev eşlemesi](DOSYA-KAPSAM.md)
-- [Test ve doğrulama kaydı](VALIDATION.md)
-- [Değişiklik kaydı](CHANGELOG.md)
-- [Eski mesajın değerlendirmesi](HISTORY-NOTES.md)
+## Tools and boundaries
 
-## Araçlar
-
-| Bileşen | İşlev | Sınır |
+| Component | Function | Boundary |
 |---|---|---|
 | `dxa.py` | Static source/sink candidates, with a bounded Python AST pilot | Language coverage differs; this is not general sound data-flow analysis |
 | `dxadyn.py` | HTTP reflection, stored checks, and bounded same-origin discovery | Findings are candidates/reflections; they do not alone establish XSS |
@@ -140,16 +101,17 @@ encoding sonrası düz metin kaldı. Bu vaka kanıtıdır; genel bot execution m
 | `dxa_callback.py` | Local callback collection and lookup | A matched callback is `resource-callback`, not JavaScript execution |
 | `dxa2dyn.py` | Parameter hints from static candidates | A hint is not a complete source-to-sink proof |
 
-Payload corpus metadata includes 50 base variants and 18 mutation definitions.
-The historical generator count of 950 payload strings (895 after removing
-CID-specific uniqueness) describes generated test inputs only; it is not a
-count of working exploits, successful executions, WAF bypasses, or findings.
-HTTP/statik çekirdek stdlib kullanır; testler pytest, tarayıcı gözlemcisi Playwright ve uygun browser gerektirir.
+Payload-corpus metadata lists 50 base variants and 18 mutation definitions.
+The historical generator count of 950 strings (895 after removing CID-specific
+uniqueness) describes generated inputs only; it is not a count of working
+exploits, successful executions, WAF bypasses, or findings. The HTTP and static
+core use the Python standard library; tests use pytest, and browser observation
+uses Playwright with a supported browser.
 
-## Yerel kurulum ve smoke kontrolü
+## Install from this checkout
 
-Python 3.10 veya üstü gerekir. Depo kökünde temel CLI'ları sanal ortama kurup
-yardım ekranlarını kontrol et:
+Python 3.10 or later is required. From the repository root, create an environment
+and install the checkout:
 
 ```console
 python -m venv .venv
@@ -163,6 +125,7 @@ python -m pip install .
 dxa --help
 dxadyn --help
 dxaprove --help
+dxa-sarif --help
 ```
 
 macOS/Linux:
@@ -173,11 +136,12 @@ python -m pip install .
 dxa --help
 dxadyn --help
 dxaprove --help
+dxa-sarif --help
 ```
 
-Temel kurulumun zorunlu çalışma zamanı bağımlılığı yoktur. Browser proof demo'su
-için aynı ortamda isteğe bağlı, `playwright==1.63.0` sürümüne sabitlenmiş
-browser extra'yı kur ve Chromium binary'sini ayrıca yükle:
+The base install has no required runtime dependencies. To run the browser-proof
+demo, install the optional browser extra, pinned to `playwright==1.63.0`, and
+install the Chromium browser:
 
 ```console
 python -m pip install ".[browser]"
@@ -185,38 +149,36 @@ python -m playwright install chromium
 dxaprove --demo --output demo-evidence
 ```
 
-Demo kendi geçici loopback fixture'ını açıp kapatır. Yeni bir çıktı klasörü
-kullan. `execution-observed` yalnız bu fixture'daki canary gözlemidir; açıklık
-triage'ı veya genel tarayıcı doğruluğu değildir. İzinli başka bir loopback lab
-için `dxaprove --spec <yerel-json>` kullanılabilir; bu proof sözleşmesi `dxa`
-ve `dxadyn` tarama config'lerinden ayrıdır. Tarama komutlarını yalnız kendi
-yerel fixture'larında veya açıkça yetkili hedeflerde çalıştır.
+The demo starts and stops its own temporary loopback fixture. Choose a fresh
+output directory for each run. `execution-observed` records a canary observed
+in this fixture; it is not vulnerability triage or a claim about general browser
+accuracy. For another authorized loopback lab, use `dxaprove --spec <local.json>`;
+this proof contract is separate from `dxa` and `dxadyn` scan configuration. Run
+scans only against your own fixtures or explicitly authorized targets.
 
-Depo metadata'sında ilk araştırma sürümü `dxa-research-toolkit 0.1.0` olarak
-seçilmiştir. Bu checkout sürüm ve release notlarını hazırlar; PyPI yayını veya
-Git release etiketi yapıldığı anlamına gelmez. Ürün deneysel bir araştırma
-yardımcısıdır; kapsam ve kanıt sınırları için aşağıdaki notları ve ilgili audit
-kayıtlarını inceleyin. CLI'ları kaynak dosyalarından doğrudan çalıştırmak da
-mümkündür.
+The current published package is `dxa-research-toolkit 0.2.0`; `0.1.0` remains
+the historical GitHub release. The tool is an experimental research assistant;
+see [STATUS](STATUS.md) and the linked audits for scope and evidence limits.
 
-`dxadyn` için `--dom`, `--stored` ve `--flow` ana modları birlikte seçilemez.
-Stored/flow hedefi kendi seçeneklerinden verilir; positional URL eklenmez.
-`--dom` HTTP oturum seçeneklerini (`--login`, `--auth-flow`, `--auth-check`,
-`--cookie`, `--header`, `--csrf-refresh`, `--csrf-header`) kabul etmez.
-Desteklenmeyen birleşimler ağ/browser işlemi ve rapor yazımı başlamadan exit 2
-verir. Oturumlu browser proof için `dxaprove` kullanılır.
+For `dxadyn`, the `--dom`, `--stored`, and `--flow` modes are mutually
+exclusive. Stored/flow targets are supplied through their mode options rather
+than a positional URL. `--dom` does not accept HTTP session options such as
+`--login`, `--auth-flow`, `--auth-check`, `--cookie`, `--header`,
+`--csrf-refresh`, or `--csrf-header`. Unsupported combinations exit with code 2
+before network/browser activity or report writes. Use `dxaprove` for a
+session-aware browser proof.
 
-Statik `dxa` CLI için isteğe bağlı JSON config örneği:
+### Static `dxa` configuration
 
 ```json
 {"schema_version": 1, "min_confidence": "medium"}
 ```
 
-`dxa <yerel-kaynak> --config scan.json` komutunda öncelik
-`--min-confidence` > config > varsayılan `low` şeklindedir. Bu dar config
-sözleşmesi yalnız statik CLI için geçerlidir; dosyaya oturum bilgisi koymayın.
+For `dxa <local-source> --config scan.json`, precedence is
+`--min-confidence` > config > the default `low`. This limited config contract
+applies only to the static CLI; do not put session data in the file.
 
-Dynamic `dxadyn` has a separate, limited HTTP tuning config:
+The dynamic `dxadyn` CLI has a separate, limited HTTP tuning config:
 
 ```json
 {"schema_version": 1, "depth": 1, "parallel": 1, "rate": 0}
@@ -235,24 +197,28 @@ Targets, credentials and output paths are not config fields. `dxaprove --spec`
 retains its separate proof contract.
 [Config scope and validation](audit/2026-10-15-r6-config-release/README.md).
 
-## Staj ve araştırma kayıtları
+## Historical research records
 
-- [11 tarihsel teknik yazı](writeups/README.md): XSS, SQLi, JWT, BOLA ve araç geliştirme.
-- [Ham v3.10 raporları](reports/2026-09-26-v310-live/README.md): 50 JSON-only,
-  iki Bludit dinamik kayıt ve 78 statik MEDIUM aday; bağımsız açık toplamı değil.
-- [Görseller](screenshots/README.md): çalışma ve bazı challenge/source/filtre adımlarının kanıtı;
-  tüm anlatılan execution sonuçlarının bağımsız ispatı değil.
-- [Araştırma kayıtları](research/README.md): tarihsel duplicate/yeniden üretim beyanları;
-  kabul kayıtları ve yeni CVE kredisi bu ZIP'ten bağımsız doğrulanamıyor.
+- [Historical technical writeups](writeups/README.md): XSS, SQL injection, JWT,
+  BOLA, and tool development.
+- [Raw v3.10 reports](reports/2026-09-26-v310-live/README.md): 50 JSON-only
+  rows, two Bludit HTTP records, and 78 static MEDIUM candidates; these are not
+  an independently verified vulnerability total.
+- [Screenshots](screenshots/README.md): evidence of workflow and selected
+  challenge/source/filter steps, not independent proof of every claimed
+  execution.
+- [Research records](research/README.md): historical reproduction/duplicate
+  claims; acceptance evidence and any new-CVE credit are not independently
+  established by these archives.
 
-Güncel bir vaka için sürüm, komut, maskeli request/response, canary proof,
-negatif kontrol ve fix sonrası retest birlikte yayımlanacak. Geçmiş iddiaların
-kanıt seviyesi STATUS ve roadmap tarafından sınırlandırılır.
+For a current case, publish the version and command with masked request/response,
+canary proof, negative controls, and a post-fix retest. Historical claims remain
+bounded by the evidence recorded in STATUS and the roadmap.
 
-## Öncelik
+## Research principle
 
-Doğru kanıt modeli → güvenilir oturum/istek → tarayıcı entegrasyonu → doğru
-benchmark → tekrar üretilebilir XSS vakası → kullanılabilir sürüm.
-Genel recon, çok dilli AST ve plugin ekosistemi bu zincirin önüne geçmez.
+Treat candidate detection, reflection, browser execution, and vulnerability
+triage as separate claims. The [roadmap](ROADMAP.md) records current priorities;
+historical plans are not current acceptance evidence.
 
-[MIT lisansı](LICENSE). [Eski README](README-LEGACY.md) yalnız tarihsel kayıttır.
+[MIT License](LICENSE). [Legacy README](README-LEGACY.md) is historical only.

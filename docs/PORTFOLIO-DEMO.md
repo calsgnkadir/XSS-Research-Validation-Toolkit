@@ -1,11 +1,11 @@
-# Local research demo
+# Published package demo and local K01 case
 
-This guide installs the `0.1.0` research candidate and runs two disposable
-loopback demonstrations. Nothing here targets a public site. The built-in
-`dxaprove` demo shows a matching canary event in its own fixture; the K01 case
-shows one stored-comment payload before and after output encoding.
-The version's [release notes](../CHANGELOG.md) are preparation only; current
-[project status and limitations](../STATUS.md) remain authoritative.
+This guide installs the published `dxa-research-toolkit==0.2.0` package from
+PyPI and runs two disposable loopback demonstrations. Nothing here targets a
+public site. The built-in `dxaprove` demo shows a matching canary event in its
+own fixture; the K01 case runs from this checkout and shows one stored-comment
+payload before and after output encoding. See the [0.2.0 release record](../audit/2026-10-24-pypi-0.2.0/README.md)
+and current [project status and limitations](../STATUS.md).
 
 ## Requirements
 
@@ -17,7 +17,7 @@ Run these commands from the repository root. On Windows PowerShell:
 
 ```powershell
 py -3.10 -m venv .venv-portfolio
-.venv-portfolio\Scripts\python.exe -m pip install ".[browser]"
+.venv-portfolio\Scripts\python.exe -m pip install "dxa-research-toolkit[browser]==0.2.0"
 .venv-portfolio\Scripts\python.exe -m playwright install chromium
 New-Item -ItemType Directory -Force .dxa | Out-Null
 ```
@@ -26,7 +26,7 @@ On macOS or Linux, use:
 
 ```console
 python3 -m venv .venv-portfolio
-.venv-portfolio/bin/python -m pip install '.[browser]'
+.venv-portfolio/bin/python -m pip install 'dxa-research-toolkit[browser]==0.2.0'
 .venv-portfolio/bin/python -m playwright install chromium
 mkdir -p .dxa
 ```
@@ -37,13 +37,13 @@ Choose a new output directory; the command refuses to overwrite an existing
 one.
 
 ```powershell
-.venv-portfolio\Scripts\dxaprove.exe --demo --output .dxa/portfolio-demo-2026-10-17
+.venv-portfolio\Scripts\dxaprove.exe --demo --output .dxa/portfolio-demo-2026-10-25
 ```
 
 On macOS or Linux:
 
 ```console
-.venv-portfolio/bin/dxaprove --demo --output .dxa/portfolio-demo-2026-10-17
+.venv-portfolio/bin/dxaprove --demo --output .dxa/portfolio-demo-2026-10-25
 ```
 
 Expected result: `execution-observed`, exit code 0, with `result.json` and
@@ -61,14 +61,14 @@ exists.
 
 ```powershell
 .venv-portfolio\Scripts\python.exe cases/k01-stored-comment/check_repro.py `
-  --profile local --output .dxa/k01-portfolio-demo-2026-10-17
+  --profile local --output .dxa/k01-portfolio-demo-2026-10-25
 ```
 
 On macOS or Linux, run:
 
 ```console
 .venv-portfolio/bin/python cases/k01-stored-comment/check_repro.py \
-  --profile local --output .dxa/k01-portfolio-demo-2026-10-17
+  --profile local --output .dxa/k01-portfolio-demo-2026-10-25
 ```
 
 Expected result: exit code 0, `5/5` controls and `5/5` fixture ports closed.
@@ -92,7 +92,10 @@ The wheel metadata, clean-venv gate and packaged demo evidence are in the
   negative result. Keep each run's result directory for review.
 - `execution-observed` belongs only to that run's local fixture. Triage remains
   separate; a callback, reflection or dialog alone is not execution proof.
-- The `0.1.0` candidate is not tagged or published. Installation from this
-  checkout does not mean it is available from PyPI.
+- The published package is `dxa-research-toolkit==0.2.0`. Its production
+  clean-venv installation and four CLI help checks are recorded in the
+  [release audit](../audit/2026-10-24-pypi-0.2.0/README.md).
+- Demo 1 uses the published package; Demo 2 uses the K01 fixture in this
+  repository checkout. They are separate demonstrations with separate scope.
 - Product coverage, broad detection accuracy, reverse-proxy/DNS deployment,
   external targets and non-HTTP network isolation are outside this demo.

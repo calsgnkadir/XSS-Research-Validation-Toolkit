@@ -18,6 +18,9 @@
   E05 inert parser-context vakası, BCrypt bilinen upstream CVE uygunluk örneği.
   [Paket](audit/2026-10-24-portfolio-cases/README.md) ·
   [CV taslağı](docs/PORTFOLIO-CV-DRAFT.md). Dış yayın yapılmadı.
+- Public README ve demo kılavuzu `0.2.0` PyPI/GitHub sürümüyle eşitlendi; demo
+  artık yayımlanmış paketi kuruyor ve K01 yerel fixture'ını ondan ayrı açıklıyor.
+  Bu dokümantasyon değişikliğinde kaynak kodu veya testler değiştirilmedi.
 - A04 yalnız seçilmiş yerel rotalarda bounded tamam; A05 partial/frozen; K04
   dokümantasyon tamam, tarihsel retest için eşleşen artifact bekliyor. Ayrıntı
   ve yeniden açma koşulları [ROADMAP](ROADMAP.md) başındadır.
