@@ -4,8 +4,8 @@
 
 - Corrected the public README and demo guide to reflect the published 0.2.0
   PyPI/GitHub release, included SARIF CLI, and current bounded evidence limits;
-  the demo now installs the published package and separates it from the local
-  K01 fixture.
+  added copy-ready static/HTTP/DOM/proof commands; the demo now installs the
+  published package and separates it from the local K01 fixture.
 - Aligned the current ROADMAP summary with the published `v0.2.0` PyPI/GitHub
   release and bounded A04, frozen A05, and K04 retestability status; dated
   historical snapshots remain unchanged.

@@ -25,6 +25,35 @@ dxaprove --help
 dxa-sarif --help
 ```
 
+## How to use the toolkit
+
+Create an ignored `.dxa/` output directory, then run the modes you need against
+your own code and explicitly authorized local lab. These commands are separate
+checks; the toolkit does not automatically turn one mode's result into proof
+from another.
+
+```text
+# 1. Find heuristic source/sink candidates in a source tree.
+dxa ./path/to/source --json-out .dxa/static.json --html .dxa/static.html --sarif-out .dxa/static.sarif
+
+# 2. Check a reflected input on an authorized local HTTP target.
+dxadyn "http://127.0.0.1:8000/search?q=demo" --json-out .dxa/http.json --html .dxa/http.html
+
+# 3. Optionally collect bounded browser/DOM observations for a local page.
+dxadyn "http://127.0.0.1:8000/" --dom --json-out .dxa/dom.json
+
+# 4. Run the isolated canary demo; this starts its own loopback fixture.
+dxaprove --demo --output .dxa/proof-demo
+```
+
+Static matches are candidates; an HTTP reflection is not proof of execution.
+DOM observations are a separate browser result. The `dxaprove` demo proves a
+canary only inside its own disposable fixture; it does not scan the HTTP target
+above. Review the JSON/HTML/SARIF records and preserve these evidence boundaries
+when triaging a result. The `--dom` and `dxaprove` commands require the optional
+browser extra and Chromium described below; use a fresh proof output directory
+for each run.
+
 ## Selected evidence-backed work
 
 - **Stored XSS proof → fix → retest:** [K01 local fixture](cases/k01-stored-comment/README.md)
