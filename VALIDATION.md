@@ -1,6 +1,6 @@
 # Doğrulama kaydı — 2026-10-30
 
-## R8 JSX and R6 package 0.2.2 preparation — 30 October
+## R8 JSX and R6 package 0.2.2 release — 30 October
 
 Base accbec2f815353f2c6b8d20380e05b3ddfcbcddb. Python 3.10.11 / Windows:
 independent JSX baseline 26 failed/28 passed; combined nine-file suite 350
@@ -14,6 +14,15 @@ module hashes match. Twelve isolated installed-CLI checks cover four entry
 points and eight inert-source cases for all three changes. This is local
 package acceptance, not live publication or hosted CI. Live verification is
 recorded separately in [the release audit](audit/2026-10-30-r8-jsx-release-022/README.md).
+
+Production closing: Twine uploaded wheel and sdist successfully. The first
+production install did not yet see 0.2.2 and was treated as failed. After normal
+index/release JSON visibility was confirmed, a new venv installed 0.2.2 from
+production PyPI with no cache/dependencies. All 12 installed checks and 11
+source/wheel/install module hashes passed. Live UTF-8 description and both
+artifact SHA-256 values match prepared files; 0.2.1 hashes remain unchanged.
+Source commit a192b7373677b5c7b538c52de080fa576030398e was remotely verified.
+[Final production evidence](audit/2026-10-30-r8-jsx-release-022/publication.json).
 
 ## 30 October — PyPI 0.2.1 documentation maintenance
 

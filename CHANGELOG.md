@@ -2,6 +2,10 @@
 
 ## 0.2.2 — 2026-10-30
 
+- Published [0.2.2 on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.2/)
+  with all three accepted static changes. Live description/artifact hashes,
+  clean production install, eleven module hashes and twelve CLI checks were
+  verified. Historical 0.2.1 files remain unchanged.
 - Add bounded JSX/TSX intrinsic anchor `href` source candidates, with fixed
   literal/custom component/text controls, physical attribute lines and scoped
   local provenance. Candidates do not establish unsafe schemes or execution.

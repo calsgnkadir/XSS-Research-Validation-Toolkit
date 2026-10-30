@@ -9,9 +9,12 @@ the new distribution containing all three accepted static-source changes:
 2. Bounded executable inline HTML message-source tracking.
 3. Bounded intrinsic JSX/TSX anchor href URL-control candidates.
 
-Publication status is recorded separately in `publication.json` once live
-verification completes. This source acceptance record does not itself assert
-that an upload or production install succeeded.
+[PyPI 0.2.2](https://pypi.org/project/dxa-research-toolkit/0.2.2/) is published.
+[Final production verification](publication.json) records matching description,
+wheel/sdist SHA-256, eleven module hashes and twelve installed CLI checks.
+`acceptance.json` remains the prepublication local acceptance snapshot.
+Source delivery `a192b7373677b5c7b538c52de080fa576030398e` was pushed and
+verified against origin/main. Historical 0.2.1 artifact hashes are unchanged.
 
 ## JSX behavior and independent acceptance
 
@@ -61,7 +64,12 @@ imports. Twelve installed checks cover four help entry points and eight inert
 source cases: receiver exclusions, genuine sinks, inline message, JSX/TSX
 source tracking/unknown/control cases, and explicit malformed-HTML error.
 Fixture source is never executed. Published hashes and a production-PyPI
-installation must be verified before claiming a live release.
+installation were verified separately after upload.
+
+The first production install only saw 0.2.0/0.2.1 and failed. A subsequent
+normal simple-index/release JSON check confirmed 0.2.2 visibility; a fresh
+production venv then installed it with no cache or dependencies and passed all
+twelve checks. The first failed attempt is not counted as a successful install.
 
 Three native roles worked in parallel with disjoint ownership: engine dxa.py,
 QA test_static_jsx_href.py, and report specialist package metadata/description/

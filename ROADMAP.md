@@ -1,12 +1,13 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
-**30 Ekim güncel R8/R6 — JSX ve 0.2.2 hazırlığı:** JSX/TSX intrinsic anchor
+**30 Ekim güncel R8/R6 — JSX ve 0.2.2 yayını:** JSX/TSX intrinsic anchor
 href kaynağı için dar aday takibi kabul edildi: baseline 26 failed/28 passed,
 birleşik dokuz dosya 350 passed, sıfır failure/error/skip. Aynı kaynaklarda
 önceki 10 yanlış alarm düzeltmesi korundu; A'da 8 yeni medium URL-kontrol
 adayı, B'de değişiklik yok. Bu adaylar açıklık değildir. Receiver, inline-message
-ve JSX birlikte 0.2.2 paketi için doğrulanıyor; canlı yayın sonucu
-[teslim kaydında](audit/2026-10-30-r8-jsx-release-022/README.md) ayrıca tutulur.
+ve JSX birlikte PyPI 0.2.2'de yayımlandı; canlı açıklama ve iki dosyanın SHA-256 değeri,
+temiz production kurulumunda 11 modül eşitliği ve 12 CLI kontrolü doğrulandı.
+[Teslim ve yayın kaydı](audit/2026-10-30-r8-jsx-release-022/README.md).
 Sonraki araştırma konusu Leaflet HTML API string/HTMLElement sınırı; bu teslim
 Leaflet/Jinja/genel JSX AST kapsamını genişletmez.
 
