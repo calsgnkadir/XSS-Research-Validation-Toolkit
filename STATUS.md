@@ -2,6 +2,9 @@
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- Teslim `7c4e735e6fc97f343654c71d92faee42510fccfc` olarak origin/main'e
+  push edildi; `git ls-remote` aynı uzak SHA'yı doğruladı. Uzak CI sonucu
+  bu teslimde kontrol edilmedi; yerel paket kontrollerinden ayrıdır.
 - PyPI açıklaması 0.2.1 bakım sürümüyle güncellendi; canlı JSON açıklaması ve
   iki artifact SHA-256 değeri doğrulandı. Twine 2/2, production-PyPI kurulumundan
   CLI help 4/4; 11 kaynak/wheel modülü birebir aynı. Runtime kodu değişmedi.
