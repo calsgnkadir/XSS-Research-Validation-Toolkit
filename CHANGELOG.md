@@ -1,5 +1,16 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-30 Python helper returns
+
+- Track bounded same-file Python single-return helpers for source/argument
+  returns and HTML-body encoder hints. Preserve raw provenance in template,
+  script/style/attribute contexts and decline ambiguous binding/mutation proofs.
+- Independent exact-base regression: 9 failed/59 passed; final 68 passed.
+  Combined twelve-file suite: 498 passed, zero failure/error/skip; local
+  self-scan passed. Twelve labeled source-signal examples retain two explicit
+  unsupported misses; no general accuracy or vulnerability claim.
+  [Acceptance](audit/2026-10-30-r8-python-helpers/README.md). PyPI 0.2.2 unchanged.
+
 ## Unreleased — 2026-10-30 Leaflet source coverage
 
 - Add bounded ES-import Leaflet marker bindPopup, popup setContent and direct

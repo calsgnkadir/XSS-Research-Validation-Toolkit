@@ -1,5 +1,24 @@
 # Güncel devam noktası — 30 Ekim 2026
 
+## Son kabul — R8 Python yardımcı fonksiyon akışı
+
+- `ea76fa5` üzerinde başlanan dar geliştirme tamam: aynı dosyada benzersiz
+  üst düzey tek-return Python yardımcıları için kaynak dönüşü, parametre
+  dönüşü ve HTML-body encoder ipucu taşınıyor. Script/style/attribute ve
+  template-source bağlamlarında ham kaynak izi korunuyor.
+- Bağımsız 68 regresyon: kesin baseline 9 failed/59 passed; final 68 passed.
+  Koordinatörün 12 dosyalık birleşik kabulü **498 passed**, hata/skip 0;
+  yerel CI self-scan geçti. [Komutlar ve hashler](audit/2026-10-30-r8-python-helpers/README.md).
+- Ayrı 12 etiketli kaynak-sinyali örneği: TP/FP/FN/TN 5/3/4/0 -> 7/0/2/3.
+  Kalan iki kaçırma destek dışı helper zinciri ve dallı return'dür. Bu
+  genel doğruluk oranı veya açıklık ölçümü değildir; medium adaylar kalır.
+- Üç native uzman ayrı dosyalarda uygulama, QA ve bağlam/belge işi yaptı;
+  koordinatör oracle/kod incelemesi ve entegrasyonu tamamladı. Görevler kapalı,
+  aktif arka plan işi yok. Uygulama/HTTP/browser veya özel proje tekrarı yok.
+- PyPI 0.2.2 değişmedi; Leaflet ve bu helper uzantısı unreleased. Uzak CI
+  kontrol edilmedi. Sonraki R8 adımı gerçek kullanıcı örneklerinde yeni
+  ölçülmüş kapsam boşluğunu seçmek; genel alias/call-graph/branch desteği açık.
+
 ## Güncel çalışma — 30 Ekim 2026
 
 - Leaflet R8 dar kaynak kabulü tamam: ES default/namespace import ile marker

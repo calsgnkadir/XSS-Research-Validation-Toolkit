@@ -1,8 +1,8 @@
 # Static source analysis: 0.2.2 scope
 
 Version **0.2.2** includes the three released refinements described before the
-separate **UNRELEASED** Leaflet section. The accepted Leaflet source extension
-is not part of the published 0.2.2 package.
+separate **UNRELEASED** sections. The Leaflet and same-file Python helper
+source extensions are not part of the published 0.2.2 package.
 Historical PyPI 0.2.1 artifacts retain
 their earlier runtime baseline. Static output is a review candidate, not
 JavaScript execution or a confirmed vulnerability. Confidence describes source
@@ -145,3 +145,62 @@ Static results remain `candidate` / `unreviewed`. Neither reflection,
 sink observation nor resource callback is browser execution; execution itself
 still requires separate vulnerability triage. See the
 [evidence contract](EVIDENCE-CONTRACT.md) and [browser proof](BROWSER-PROOF.md).
+
+## UNRELEASED — same-file Python return helpers (R8)
+
+The Python AST pilot can substitute a narrow same-file helper's return
+expression into a later call, both in assignments and directly at supported
+sinks. This adds local return summaries, not a general interprocedural graph.
+Only a unique top-level, synchronous, undecorated function with one `return`
+statement and ordinary positional parameters is eligible. Calls must follow
+the definition in source order and supply exactly those positional arguments.
+Defaults, keyword arguments, starred arguments, methods, closures, async
+functions, helper-to-helper calls and recursive returns are outside this subset.
+
+Return expressions may use their parameters, constants, recognized source
+reads and recognized encoder calls. Unknown free names or arbitrary function
+calls prevent a summary. Conflicting helper definitions, imports, assignments,
+parameter shadows, exception/pattern bindings and use of the helper as a value
+prevent substitution. A wildcard import disables these local summaries.
+Unsupported helpers retain the ordinary conservative argument provenance;
+source reads hidden inside an unsupported helper may still be missed.
+
+Raw provenance and the HTML-body mitigation view remain separate. For example,
+`def encode(value): return html.escape(value)` can provide the same limited
+HTML-body hint as the recognized direct encoder spelling. It does not erase
+raw provenance used for template-source or embedded script/style/attribute
+contexts. Mixed encoded and raw terms retain the raw term. Encoder rebinding
+defeats the wrapper's mitigation hint conservatively. Recognized spellings do
+not validate library origin, configuration, runtime behavior or output safety.
+An encoded HTML-body sink remains a review candidate at lowered confidence.
+The new wrapper check treats detected receiver/property writes and explicit
+dynamic mutation constructs conservatively, even when they occur in unrelated
+code. It does not resolve arbitrary runtime mutation, alias-based changes or
+the effects of unknown calls.
+
+The return expression is limited to 64 AST nodes and 16 parameters. Input
+expressions are limited to 32 KiB and 2,048 AST nodes; expansion allows at most
+64 substitutions, a 2,048-node total budget and a 32 KiB output limit.
+Exceeding a bound retains the affected call or unexpanded expression. Branch
+feasibility,
+side effects, arbitrary call effects, aliases, packages and transitive flow
+are not resolved. Other language rules and the separate sibling-import
+prepass do not gain these summaries. Python `eval` is not a supported sink;
+the generic encoder warning about eval is not a Python sink-coverage claim.
+
+These labeled examples define source-evidence expectations for local checks,
+not an estimate of scanner accuracy or application vulnerability:
+
+| Example at a supported sink | Expected source-evidence result |
+|---|---|
+| `read(): return request.args["q"]`; `HTMLResponse(read())` | High candidate: source returned by a supported helper |
+| `identity(value): return value`; source argument passed through it | High candidate: raw argument survives |
+| `encode(value): return html.escape(value)` into an ordinary HTML body | Medium candidate: limited mitigation hint; no safety verdict |
+| The same encoded result as `render_template_string` template source | High candidate: HTML encoding does not remove raw template-source provenance |
+| Encoded helper result concatenated with a raw source | High candidate: raw residual survives |
+| Fixed literal source text or a constant-return helper | No invented high source signal; an ordinary sink candidate can remain |
+| A source read hidden in a branch-bearing or chained helper | Outside the subset; absence of high confidence can be a miss |
+
+New test results, source hashes and any measured confusion counts belong to
+the dated acceptance record. They must identify the exact labeled examples;
+they do not establish general precision, recall, browser execution or XSS.

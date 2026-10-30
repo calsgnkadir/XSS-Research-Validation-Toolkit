@@ -1068,20 +1068,202 @@ def _lang_for(path):
     return "cs", CS_SINKS, CS_SOURCES, ASSIGN, False
 
 
+def _python_helper_expansion(tree, source):
+    """One-hop local return summaries; uncertainty keeps the original call.
+
+    This deliberately rejects aliases, conflicting bindings and arbitrary calls.
+    It is a bounded expression substitution, not a call graph or safety proof.
+    """
+    definitions = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            definitions.setdefault(node.name, []).append(node)
+    parent = {child: node for node in ast.walk(tree) for child in ast.iter_child_nodes(node)}
+    summaries = {}
+    rebound = _rebound_html_encoders(source.splitlines())
+    uncertain_bindings = set()
+    wildcard_import = False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ExceptHandler) and node.name:
+            uncertain_bindings.add(node.name)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+            uncertain_bindings.add(node.name)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            uncertain_bindings.add(node.rest)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                wildcard_import |= alias.name == '*'
+                # The documented encoder spelling is permitted for its own
+                # module only; an unrelated import alias is not that module.
+                if alias.asname and alias.asname != alias.name:
+                    uncertain_bindings.add(alias.asname)
+                elif isinstance(node, ast.ImportFrom):
+                    uncertain_bindings.add(alias.asname or alias.name)
+    # A receiver replacement also invalidates a wrapper's encoder spelling.
+    roots_written = {node.id for node in ast.walk(tree)
+                     if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))}
+    roots_written.update(node.arg for node in ast.walk(tree) if isinstance(node, ast.arg))
+    roots_written.update(uncertain_bindings)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Attribute, ast.Subscript)) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            receiver = node
+            while isinstance(receiver, (ast.Attribute, ast.Subscript)):
+                receiver = receiver.value
+            if isinstance(receiver, ast.Name):
+                roots_written.add(receiver.id)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            roots_written.add(node.name)
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            # Explicit mutation through a namespace dictionary defeats the
+            # same spelling hint as a direct namespace/property assignment.
+            if any(isinstance(part, ast.Attribute) and part.attr == '__dict__'
+                   for part in ast.walk(node.func)):
+                roots_written.update(part.id for part in ast.walk(node.func)
+                                     if isinstance(part, ast.Name))
+    encoder_names = re.compile(_HTML_ENCODER_NAMES)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            name = ast.unparse(node.func)
+            if encoder_names.fullmatch(name) and name.split('.')[0] in roots_written:
+                rebound.add(name)
+        elif isinstance(node, ast.Attribute) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            rebound.add(ast.unparse(node))
+    # Dynamic attribute mutation is not resolved. It disables new wrapper
+    # mitigation without changing the legacy direct-encoder contract.
+    dynamic_mutation = any(isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                           and node.func.id in ('setattr', 'delattr', 'exec', 'eval')
+                           for node in ast.walk(tree))
+    if wildcard_import or dynamic_mutation:
+        rebound.update(ast.unparse(node.func) for node in ast.walk(tree)
+                       if isinstance(node, ast.Call) and encoder_names.fullmatch(ast.unparse(node.func)))
+    for function in tree.body:
+        if not isinstance(function, ast.FunctionDef):
+            continue
+        args = function.args
+        parameters = args.posonlyargs + args.args
+        if (wildcard_import or dynamic_mutation or function.name in uncertain_bindings
+                or len(definitions[function.name]) != 1 or function.decorator_list
+                or args.defaults or args.kw_defaults or args.vararg or args.kwarg
+                or args.kwonlyargs or len(parameters) > 16
+                or len(function.body) != 1 or not isinstance(function.body[0], ast.Return)
+                or function.body[0].value is None):
+            continue
+        conflict = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name) and node.id == function.name:
+                owner = parent.get(node)
+                if not (isinstance(node.ctx, ast.Load) and isinstance(owner, ast.Call)
+                        and owner.func is node):
+                    conflict = True
+            elif isinstance(node, ast.arg) and node.arg == function.name:
+                conflict = True
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                if any((alias.asname or alias.name.split('.')[0]) == function.name
+                       for alias in node.names):
+                    conflict = True
+        value = function.body[0].value
+        nodes = list(ast.walk(value))
+        if conflict or len(nodes) > 64:
+            continue
+        allowed_names = {arg.arg for arg in parameters}
+        valid = True
+        for node in nodes:
+            text = ast.unparse(node)
+            if isinstance(node, ast.Call):
+                callee = ast.unparse(node.func)
+                if (node.keywords or any(isinstance(arg, ast.Starred) for arg in node.args)
+                        or not (encoder_names.fullmatch(callee)
+                                or source_hits(callee + '(', PY_SOURCES, False))):
+                    valid = False
+                    break
+                allowed_names.update(item.id for item in ast.walk(node.func)
+                                     if isinstance(item, ast.Name))
+            elif isinstance(node, (ast.Attribute, ast.Subscript)) and source_hits(text, PY_SOURCES, False):
+                allowed_names.update(item.id for item in ast.walk(node)
+                                     if isinstance(item, ast.Name))
+            elif isinstance(node, (ast.Lambda, ast.NamedExpr, ast.Await, ast.Yield,
+                                   ast.YieldFrom, ast.ListComp, ast.SetComp,
+                                   ast.DictComp, ast.GeneratorExp)):
+                valid = False
+                break
+        if valid and all(node.id in allowed_names for node in nodes if isinstance(node, ast.Name)):
+            summaries[function.name] = (function.end_lineno, [arg.arg for arg in parameters], value)
+
+    class Substitute(ast.NodeTransformer):
+        def __init__(self, bindings):
+            self.bindings = bindings
+
+        def visit_Name(self, node):
+            return self.bindings.get(node.id, node)
+
+    def expand(expression, text=None, line=None):
+        # Reparse before substitution so the original source tree is untouched.
+        text = text if text is not None else (ast.get_source_segment(source, expression) or ast.unparse(expression))
+        if len(text) > 32768:
+            return text, set()
+        original_line = line if line is not None else getattr(expression, 'lineno', 0)
+        try:
+            copied = ast.parse(text, mode='eval')
+        except (SyntaxError, ValueError, RecursionError):
+            return text, set()
+        if sum(1 for _ in ast.walk(copied)) > 2048:
+            return text, set()
+
+        class Expand(ast.NodeTransformer):
+            remaining = 64
+            expanded = False
+            growth_budget = 2048 - sum(1 for _ in ast.walk(copied))
+
+            def visit_Call(self, node):
+                self.generic_visit(node)
+                summary = summaries.get(node.func.id) if isinstance(node.func, ast.Name) else None
+                if (summary is None or self.remaining <= 0 or original_line <= summary[0]
+                        or node.keywords or len(node.args) != len(summary[1])
+                        or any(isinstance(arg, ast.Starred) for arg in node.args)):
+                    return node
+                self.remaining -= 1
+                value = ast.parse(ast.unparse(summary[2]), mode='eval').body
+                value = Substitute(dict(zip(summary[1], node.args))).visit(value)
+                old_size = sum(1 for _ in ast.walk(node))
+                new_size = 0
+                for _ in ast.walk(value):
+                    new_size += 1
+                    if new_size > old_size + self.growth_budget:
+                        return node
+                self.growth_budget -= max(0, new_size - old_size)
+                self.expanded = True
+                return value
+
+        transformer = Expand()
+        try:
+            transformed = ast.fix_missing_locations(transformer.visit(copied))
+            rendered = ast.unparse(transformed.body)
+        except (RecursionError, ValueError):
+            return text, set()
+        if len(rendered) > 32768:
+            return text, set()
+        return rendered, (rebound if transformer.expanded else set())
+
+    return expand
+
+
 def _python_ast_analysis(source):
     """Return bounded Python taint snapshots and syntax-level sources.
 
     This is a single-language pilot, not a sound data-flow analysis. It handles
     ordinary assignments (including matching tuple/list unpacking) in lexical
-    statement order. Conditional bodies are merged monotonically; aliases,
-    interprocedural flow, class/closure scopes and dynamic imports are not
-    resolved. Invalid Python returns None so the legacy heuristic remains the
-    fallback.
+    statement order. A separate bounded substitution handles one-hop local
+    single-return helpers. Conditional bodies are merged monotonically; aliases,
+    general interprocedural graphs, class/closure scopes and dynamic imports are
+    not resolved. Invalid Python returns None so the legacy heuristic remains
+    the fallback.
     """
     try:
         tree = ast.parse(source)
     except (SyntaxError, ValueError, TypeError):
         return None
+
+    expand_helpers = _python_helper_expansion(tree, source)
 
     source_lines = {}
 
@@ -1124,10 +1306,19 @@ def _python_ast_analysis(source):
     source_lines_text = source.splitlines()
 
     def expr_tainted(node, names):
-        if source_names(node):
+        text, _ = expand_helpers(node)
+        try:
+            normalized = ast.parse(text, mode='eval')
+        except (SyntaxError, ValueError, RecursionError):
+            # Starred unpack members and unparenthesized walrus segments are
+            # valid within their original tree but not standalone eval input.
+            return bool(source_names(node)) or any(
+                isinstance(item, ast.Name) and isinstance(item.ctx, ast.Load)
+                and item.id in names for item in ast.walk(node))
+        if source_names_in(normalized, text):
             return True
         return any(isinstance(item, ast.Name) and isinstance(item.ctx, ast.Load)
-                   and item.id in names for item in ast.walk(node))
+                   and item.id in names for item in ast.walk(normalized))
 
     def bind(target, value, raw_value, html_value, rebound_names):
         if isinstance(target, (ast.Tuple, ast.List)):
@@ -1147,13 +1338,13 @@ def _python_ast_analysis(source):
                 html_tainted.add(target.id)
 
     def expr_tainted_text(node, names, raw_names, rebound_names):
-        segment = ast.get_source_segment(source, node) or ""
+        segment, helper_rebound = expand_helpers(node)
         if _ambiguous_html_context(segment):
             return expr_tainted(node, raw_names)
-        residual = _html_residual(segment, rebound_names)
+        residual = _html_residual(segment, rebound_names | helper_rebound)
         try:
             residual_ast = ast.parse(residual, mode="eval")
-        except SyntaxError:
+        except (SyntaxError, ValueError, RecursionError):
             return expr_tainted(node, names)
         if source_names_in(residual_ast, residual):
             return True
@@ -1222,8 +1413,27 @@ def _python_ast_analysis(source):
                 visit_statements(block, local_rebound)
 
     visit_statements(tree.body)
+
+    def evaluate_sink(text, line, html_body, scoped_rebound):
+        try:
+            node = ast.parse(text.strip(), mode='eval').body
+            expanded, helper_rebound = expand_helpers(node, text.strip(), line)
+            if html_body and _ambiguous_html_context(expanded):
+                html_body = False
+            if html_body:
+                expanded = _html_residual(expanded, scoped_rebound | helper_rebound)
+            normalized = ast.parse(expanded, mode='eval')
+        except (SyntaxError, ValueError, RecursionError):
+            return None
+        names = (html_at_line if html_body else raw_at_line).get(line, set())
+        return (sorted(source_names_in(normalized, expanded)),
+                sorted({item.id for item in ast.walk(normalized)
+                        if isinstance(item, ast.Name) and isinstance(item.ctx, ast.Load)
+                        and item.id in names}))
+
     return {"raw": raw_at_line, "html": html_at_line,
-            "sources": source_lines, "rebound": rebound_at_line}
+            "sources": source_lines, "rebound": rebound_at_line,
+            "evaluate_sink": evaluate_sink}
 
 
 def _jsx_lexical_view(text):
@@ -1948,6 +2158,9 @@ def scan_file(path, cross_file_funcs=None):
                     name for name in ast_names
                     if re.search(r'(?<!\w)' + re.escape(name) + r'\b', evaluated)
                 })
+                helper_result = python_ast["evaluate_sink"](expr, lineno, html_body, rebound)
+                if helper_result is not None:
+                    srcs, tvars = helper_result
                 if xfuncs:
                     tvars = sorted(set(tvars) | set(legacy_tvars))
             # Phase 0.4: cross-file call directly on the sink line - upgrade

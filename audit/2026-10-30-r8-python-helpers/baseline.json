@@ -1,0 +1,11 @@
+{
+  "base_commit": "ea76fa5",
+  "scanner_sha256": "1b9aa186f58794affe0597f105c60845d0e3d9a586f08ec435e9577b8e8049fa",
+  "test_sha256": "08fc28028cf1fc3459e9dd91625f044f9f05f8984d37172a906d2fec88de860c",
+  "tests": 68,
+  "failures": 9,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 59,
+  "origin": "Independent QA exact-base run; historical input to the final acceptance runner"
+}

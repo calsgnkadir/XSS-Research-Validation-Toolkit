@@ -1,0 +1,121 @@
+{
+  "meaning": "HIGH source-provenance signal labels, not vulnerability accuracy",
+  "scanner_sha256": "1b9aa186f58794affe0597f105c60845d0e3d9a586f08ec435e9577b8e8049fa",
+  "measurement_sha256": "e549d36cbdbc91aa0dc9b3b2c82a46b6680c7f91d8a433252d013ea54f6faa14",
+  "counts": {
+    "TP": 5,
+    "FP": 3,
+    "FN": 4,
+    "TN": 0
+  },
+  "cases": [
+    {
+      "id": "source-return-direct",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": false,
+      "outcome": "FN",
+      "confidence": "medium",
+      "source_sha256": "9f7bc263c7d84f1ed23c9a64d26d4c4ae2a30934f335889129c29013bc5e8c12"
+    },
+    {
+      "id": "source-return-assignment",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": false,
+      "outcome": "FN",
+      "confidence": "medium",
+      "source_sha256": "86a5e640d9663a34dac1383c173a767bb58eee6efafb7c02ce2de883832bfdd4"
+    },
+    {
+      "id": "identity-argument",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "source_sha256": "956fe6be39cd6fbec7e2815386748292756c59a2030395f6b110d3c95a5df93b"
+    },
+    {
+      "id": "encoder-body-direct",
+      "scope": "supported",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "source_sha256": "db9913186e2f6da8b89ba93fb71eec1711754b9375139536285d58867dd57262"
+    },
+    {
+      "id": "encoder-body-assignment",
+      "scope": "supported",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "source_sha256": "b223f5dea522f9f13834c57a48ac3ee5fec15985ac190c80effc83d846fcadff"
+    },
+    {
+      "id": "encoder-template-source",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "source_sha256": "52436d801aca4d224a104935ec3e4965020f40789fe1b7d65e17476f47ec98db"
+    },
+    {
+      "id": "encoder-attribute-context",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "source_sha256": "525dc6581b64a003413351bf72917f14ae482ca82f8b63f84ab6e094f5e52bf6"
+    },
+    {
+      "id": "mixed-encoded-raw",
+      "scope": "supported",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "source_sha256": "884be5d6672f81344356e75f873a358238f380de39c4bda841bc5b7e1e29fbd1"
+    },
+    {
+      "id": "literal-return",
+      "scope": "supported",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "source_sha256": "59016e0c8c7ca8362e2e349e4afe420d726af7afd411b9e692e81a2ae03d422f"
+    },
+    {
+      "id": "rebound-encoder",
+      "scope": "conservative-control",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "source_sha256": "173f983844f404acf76478e52740403449c77d905a476ae1366c8d4f0cc017b5"
+    },
+    {
+      "id": "unsupported-helper-chain",
+      "scope": "unsupported-boundary",
+      "expected_high": true,
+      "observed_high": false,
+      "outcome": "FN",
+      "confidence": "medium",
+      "source_sha256": "23cae5d43f8e2e5c837a7a29d8a1b3ea2185dffd281332af77a8eb58637560d3"
+    },
+    {
+      "id": "unsupported-branch-return",
+      "scope": "unsupported-boundary",
+      "expected_high": true,
+      "observed_high": false,
+      "outcome": "FN",
+      "confidence": "medium",
+      "source_sha256": "ba404706bfece9f8b2d62b920f91302d7f238cf97ac1c43a350e67e069e8c405"
+    }
+  ]
+}

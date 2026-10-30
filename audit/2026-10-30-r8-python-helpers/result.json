@@ -1,0 +1,62 @@
+{
+  "roadmap": "R8",
+  "base_commit": "ea76fa5",
+  "environment": {
+    "os": "Windows",
+    "python": "3.10.11"
+  },
+  "release_status": "unreleased; PyPI 0.2.2 unchanged",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "c526399c1927ae529be35ad4a398b88ba4fbe8637f45952a5ac5ac4863d1c605",
+    "tools/dom-xss-analyzer/test_static_python_helpers.py": "08fc28028cf1fc3459e9dd91625f044f9f05f8984d37172a906d2fec88de860c",
+    "tools/dom-xss-analyzer/test_static_leaflet.py": "9964cbe65b35448971e486cff753d6fe22af60fbca9b868a78331437844e2a21",
+    "tools/dom-xss-analyzer/test_static_jsx_href.py": "6fd0f267e2c717aef7c43e67161e22fe7a69ba4991d249943949ced56f42d598",
+    "tools/dom-xss-analyzer/test_static_inline_messages.py": "caa9bffeb7f9a0c8e701617117d93ba035bb7cdc5bdfe26b9f0c03bb4dbc526c",
+    "tools/dom-xss-analyzer/test_static_receiver_bindings.py": "6a22eba402c8794bfd4339d4996c30fd4541bfd3fb4218dee757b25def5e0812",
+    "tools/dom-xss-analyzer/test_dxa.py": "c8d78449c45d08384142f2b411cda7ec7ec2f17b6ddf4f6baeaaa762d270210b",
+    "tools/dom-xss-analyzer/test_static_context.py": "f444baf937b70fd42da747d86edd5f1f3bc0e302b9f45640a181736fa5e9ec58",
+    "tools/dom-xss-analyzer/test_dxa_config.py": "091ecc0e70259d88b96d52c3dfdf6c153414a7a6916112c09db8eb2899104674",
+    "tools/dom-xss-analyzer/test_r8_sanitizer.py": "978e0365126abdc31db2847a79e9840bc4c358148b43ebb4a1d46cfe0da64f19",
+    "tools/dom-xss-analyzer/test_r8_ast_pilot.py": "cbe1573b3e91bb5b9a7d76872fbe01eaf8491f61c7743b4a1490cc55d3902b16",
+    "tools/dom-xss-analyzer/test_sarif.py": "f11edd6714d75ed6633b53debff4aa975add91f589f969643e5e498205e01db1",
+    "tools/dom-xss-analyzer/test_r6_cli_modes.py": "6da82223ba5982a0bb2bc15c9f40b082744aac5a8f6da494cf8538edb93039db"
+  },
+  "baseline": {
+    "tests": 68,
+    "failures": 9,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 59
+  },
+  "baseline_scanner_sha256": "1b9aa186f58794affe0597f105c60845d0e3d9a586f08ec435e9577b8e8049fa",
+  "baseline_origin": "Independent QA recorded baseline.json; not reexecuted by this runner",
+  "fixed": {
+    "tests": 498,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 498,
+    "exit_code": 0
+  },
+  "test_files": [
+    "tools/dom-xss-analyzer/test_static_python_helpers.py",
+    "tools/dom-xss-analyzer/test_static_leaflet.py",
+    "tools/dom-xss-analyzer/test_static_jsx_href.py",
+    "tools/dom-xss-analyzer/test_static_inline_messages.py",
+    "tools/dom-xss-analyzer/test_static_receiver_bindings.py",
+    "tools/dom-xss-analyzer/test_dxa.py",
+    "tools/dom-xss-analyzer/test_static_context.py",
+    "tools/dom-xss-analyzer/test_dxa_config.py",
+    "tools/dom-xss-analyzer/test_r8_sanitizer.py",
+    "tools/dom-xss-analyzer/test_r8_ast_pilot.py",
+    "tools/dom-xss-analyzer/test_sarif.py",
+    "tools/dom-xss-analyzer/test_r6_cli_modes.py"
+  ],
+  "local_ci_self_scan_exit": 0,
+  "measurement_exit": 0,
+  "measurement": "measurement-final.json",
+  "hosted_ci": "not checked",
+  "evidence_level": "candidate",
+  "triage": "unreviewed",
+  "limits": "Synthetic source only; no target application/HTTP/browser or general accuracy claim"
+}

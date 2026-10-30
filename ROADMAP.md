@@ -1,5 +1,17 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**30 Ekim R8 — bounded Python helper kaynak kabulü:** benzersiz üst düzey
+tek-return aynı-dosya yardımcılarında kaynak/parametre dönüşü ve HTML-body
+encoder ipucu taşınıyor; diğer bağlamlarda ham iz korunuyor. Kesin baseline
+9 failed/59 passed; bağımsız final 68 passed; 12 dosyalık birleşik kabul
+498 passed, hata/skip 0. Yerel CI self-scan geçti. Ayrı 12 etiketli kaynak
+sinyali örneğinde TP/FP/FN/TN 5/3/4/0 -> 7/0/2/3; kalan iki kaçırma destek
+dışı zincir ve dallı return'dür, genel doğruluk/açıklık ölçümü değildir.
+[Kabul ve sınırlar](audit/2026-10-30-r8-python-helpers/README.md).
+Bu değişiklik ve Leaflet unreleased; PyPI 0.2.2 değişmedi. Sonraki genişleme
+ölçülmüş yeni kullanıcı örneği/kapsam boşluğuna bağlı; genel alias, call graph,
+branch-return ve bağlam analizi tamamlanmış değildir.
+
 **30 Ekim R8 — bounded Leaflet kaynak kabulü:** kanıtlı ES default/namespace
 import ile marker bindPopup, popup setContent ve doğrudan divIcon html
 adayları eklendi; sabit içerik ve kanıtlı div/span node ayrımı korundu.

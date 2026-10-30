@@ -1,5 +1,22 @@
 # Doğrulama kaydı — 2026-10-30
 
+## R8 Python helper returns — 30 October, unreleased source acceptance
+
+Base `ea76fa5`; Windows / Python 3.10.11. Independent 68-case exact-base
+regression: 9 failed/59 passed, zero errors/skips; final independent 68 passed.
+Coordinator twelve-file combined acceptance: **498 passed**, no failure/error/
+skip. Local `bench/ci_self_scan.py` passed. Commands, final source/test hashes
+and machine-readable results: [acceptance package](audit/2026-10-30-r8-python-helpers/README.md).
+Reproduce final: `py -3.10 audit/2026-10-30-r8-python-helpers/run_validation.py`.
+
+Twelve separate synthetic HIGH source-signal labels changed TP/FP/FN/TN from
+5/3/4/0 to 7/0/2/3. Unsupported helper chains and branched returns account for
+the remaining two misses. This is no general scanner accuracy/vulnerability
+measurement. No app/HTTP/browser, owned-source comparison, package publication
+or hosted CI check was run. PyPI 0.2.2 is unchanged. Three native specialists
+completed exclusive implementation/test/document work; coordinator reviewed
+counterexamples and ran integration. Source identity is bound in `result.json`.
+
 ## R8 Leaflet — 30 October, unreleased source acceptance
 
 Base `1b1c1027af6b0d5cf43f14b8dbcc4b91d529a71a`, Windows / Python 3.10.11.
