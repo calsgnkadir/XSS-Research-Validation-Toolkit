@@ -1,5 +1,16 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-10-30 Leaflet source coverage
+
+- Add bounded ES-import Leaflet marker bindPopup, popup setContent and direct
+  divIcon html review candidates, with fixed-string and proven div/span-node
+  controls. Preserve earlier native HTML candidates and candidate/unreviewed
+  evidence semantics. PyPI 0.2.2 is unchanged.
+- Independent baseline: 39 failed/28 passed; combined selected suite: 417
+  passed, no failure/error/skip. Seven separate inert Leaflet 1.9.4 DOM checks
+  passed. Two unchanged owned source scopes retain 20/129 prior candidates;
+  no new Leaflet candidates. [Acceptance](audit/2026-10-30-r8-leaflet/README.md).
+
 ## 0.2.2 — 2026-10-30
 
 - Published [0.2.2 on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.2/)

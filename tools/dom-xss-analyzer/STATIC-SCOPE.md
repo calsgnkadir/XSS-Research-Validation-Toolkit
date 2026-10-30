@@ -1,6 +1,8 @@
 # Static source analysis: 0.2.2 scope
 
-Version **0.2.2** includes the source refinements below.
+Version **0.2.2** includes the three released refinements described before the
+separate **UNRELEASED** Leaflet section. The accepted Leaflet source extension
+is not part of the published 0.2.2 package.
 Historical PyPI 0.2.1 artifacts retain
 their earlier runtime baseline. Static output is a review candidate, not
 JavaScript execution or a confirmed vulnerability. Confidence describes source
@@ -48,8 +50,8 @@ Malformed HTML rejected by the parser retains generic matches and emits an
 analysis error event. It must not be counted as a successful clean scan.
 
 Legacy JavaScript-file message heuristics are unchanged; the new HTML subset
-does not claim general JS control-flow precision. Leaflet HTML and
-Jinja-in-JavaScript context coverage remain separate work.
+does not claim general JS control-flow precision. The separate Leaflet source
+extension is described below; Jinja-in-JavaScript context coverage remains separate.
 
 [Inline acceptance](../../audit/2026-10-30-r8-inline-message/README.md) records
 source hashes, baseline failures, independent controls and local results.
@@ -71,3 +73,75 @@ absence of a candidate is not evidence of safety. A candidate remains
 `candidate` / `unreviewed`; confidence describes source evidence, not impact.
 No browser execution, confirmed vulnerability or general accuracy improvement
 is inferred.
+
+## UNRELEASED — Leaflet HTML API candidates (R8)
+
+This accepted narrow source extension is **UNRELEASED**. Leaflet support is
+not included in the historical PyPI 0.2.2 features above.
+
+Only ES default/namespace imports from literal `leaflet` establish the intended
+library binding: `import L from 'leaflet'` or `import * as ns from 'leaflet'`.
+In JavaScript-family source files, the supported subset is
+`ns.marker(...).bindPopup(content)`, `ns.popup().setContent(content)`, exact local
+`const` marker/popup factory receivers calling those respective methods, and
+`ns.divIcon({html: content})`. Namespace escapes, rebinding, property writes and
+namespace/receiver shadowing defeat library proof, conservatively even when
+elsewhere in the file. Arbitrary methods with the same names do not establish
+it. Receiver aliases and intervening chains are unsupported. DivIcon options
+must be a direct object with ordinary identifier keys and exactly one `html`
+property; spreads, computed/quoted keys and methods are unsupported.
+
+Calls and local binding/provenance lookups are bounded to 32 KiB. Immutable
+`const` expansion is limited to depth 16 and 64 provenance reads. Fixed quoted
+strings and templates without interpolation, including supported const chains,
+are excluded. Simple template identifier/member interpolations can supply source
+evidence; complex expressions are not general template evaluation. Adjacent
+interpolations are kept separate and literal text cannot invent source tokens.
+A separate interpolation walk invalidates binding/DOM proofs on executable
+references, bounded to 32 KiB per interpolation and nesting 32. Uncertain or
+malformed syntax cannot establish those proofs. This is lexical recognition,
+not full AST, type, closure or control-flow analysis. Direct/tracked source
+evidence gives high confidence; unknown content remains medium confidence.
+
+Leaflet's [1.9.4 API](https://leafletjs.com/reference.html#layer-bindpopup)
+permits string, element, function and Popup content for `bindPopup`.
+Binding sets up an overlay; it does not itself prove rendering.
+[Popup binding source](https://github.com/Leaflet/Leaflet/blob/v1.9.4/src/layer/Popup.js#L375-L394).
+[`setContent`](https://leafletjs.com/reference.html#popup-setcontent) stores
+content; when updated on a map, resolved strings reach `innerHTML`, while
+nonstring node content is appended. Function results follow the same split.
+[Overlay source](https://github.com/Leaflet/Leaflet/blob/v1.9.4/src/layer/DivOverlay.js#L162-L189),
+[content update](https://github.com/Leaflet/Leaflet/blob/v1.9.4/src/layer/DivOverlay.js#L269-L282).
+[`divIcon` HTML](https://leafletjs.com/reference.html#divicon-html) appends an
+`Element`; other values take its `innerHTML` branch when the icon is created.
+[Icon source](https://github.com/Leaflet/Leaflet/blob/v1.9.4/src/layer/marker/DivIcon.js#L41-L50).
+
+Fixed strings and templates without interpolation are negative controls for
+this dynamic-content rule. The DOM exclusion recognizes unshadowed, unmodified
+`document.createElement('div')` / `document.createElement('span')`, directly or
+through supported unique immutable const bindings, including empty elements and those
+populated through `textContent`: passing such an element is not a new string
+parse. A `textContent` assignment is not required for that branch distinction.
+This does not clear prior
+`innerHTML` or unsafe `setAttribute` operations. Arbitrary DOM tags, including
+created script elements, do not inherit that exclusion or a safety verdict.
+Unknown string/DOM types remain conservative review candidates. DomUtil.create
+is not part of the DOM proof. Absence of a Leaflet candidate does not establish safety.
+Function-return analysis, Popup-instance overload tracking, named/CommonJS
+imports, global `L`, arbitrary aliases, option spreads and general control-flow
+analysis are outside this subset. Inline HTML scripts do not gain this Leaflet rule.
+
+Coordinator acceptance for `dxa.py` SHA-256
+`1b9aa186f58794affe0597f105c60845d0e3d9a586f08ec435e9577b8e8049fa`:
+combined local suite **417 passed**, zero failures/errors/skips. Separately,
+seven inert Leaflet 1.9.4 browser DOM checks passed, confirming string parsing,
+node non-reparsing and retention of prior markup, with zero external requests.
+They used no application visit, event payload, callback or execution canary.
+The two unchanged owned source scopes retained 20/129 candidates and produced
+zero new Leaflet candidates. These are coordinator-run results, not tests rerun
+for this documentation edit or a general accuracy/safety measurement.
+
+Static results remain `candidate` / `unreviewed`. Neither reflection,
+sink observation nor resource callback is browser execution; execution itself
+still requires separate vulnerability triage. See the
+[evidence contract](EVIDENCE-CONTRACT.md) and [browser proof](BROWSER-PROOF.md).

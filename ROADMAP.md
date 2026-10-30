@@ -1,5 +1,16 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**30 Ekim R8 — bounded Leaflet kaynak kabulü:** kanıtlı ES default/namespace
+import ile marker bindPopup, popup setContent ve doğrudan divIcon html
+adayları eklendi; sabit içerik ve kanıtlı div/span node ayrımı korundu.
+Baseline 39 failed/28 passed; birleşik 417 passed, failure/error/skip 0.
+Ayrı yerel Leaflet 1.9.4 fixture'ında 7 inert DOM kontrolü geçti. Aynı sahipli
+kaynaklarda 20/129 aday ve 233/47 hash korundu; yeni Leaflet adayı yok.
+[Kabul ve sınırlar](audit/2026-10-30-r8-leaflet/README.md).
+Bu kaynak teslimi unreleased; PyPI 0.2.2 değişmedi. Genel Leaflet/JS kapsamı
+tamamlanmadı. Sonraki dar R8 işleri çıktı kodlaması ve yardımcı fonksiyon
+akışları; etiketli örneklerde kaçırılan/yanlış alarm ölçümü ayrıca açık.
+
 **30 Ekim güncel R8/R6 — JSX ve 0.2.2 yayını:** JSX/TSX intrinsic anchor
 href kaynağı için dar aday takibi kabul edildi: baseline 26 failed/28 passed,
 birleşik dokuz dosya 350 passed, sıfır failure/error/skip. Aynı kaynaklarda
@@ -8,7 +19,7 @@ adayı, B'de değişiklik yok. Bu adaylar açıklık değildir. Receiver, inline
 ve JSX birlikte PyPI 0.2.2'de yayımlandı; canlı açıklama ve iki dosyanın SHA-256 değeri,
 temiz production kurulumunda 11 modül eşitliği ve 12 CLI kontrolü doğrulandı.
 [Teslim ve yayın kaydı](audit/2026-10-30-r8-jsx-release-022/README.md).
-Sonraki araştırma konusu Leaflet HTML API string/HTMLElement sınırı; bu teslim
+Bu tarihsel yayında sonraki konu Leaflet HTML API string/HTMLElement sınırıydı; 0.2.2
 Leaflet/Jinja/genel JSX AST kapsamını genişletmez.
 
 **30 Ekim bakım teslimi — R6 / K01 / A01–A03:** PyPI açıklaması 0.2.1

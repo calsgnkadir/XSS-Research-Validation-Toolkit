@@ -1,0 +1,75 @@
+{
+    "roadmap":  "R8",
+    "date":  "2026-10-30",
+    "base_commit":  "1b1c1027af6b0d5cf43f14b8dbcc4b91d529a71a",
+    "release_status":  "unreleased; published PyPI 0.2.2 unchanged",
+    "environment":  {
+                        "os":  "Windows",
+                        "python":  "3.10.11"
+                    },
+    "source_sha256":  {
+                          "tools/dom-xss-analyzer/dxa.py":  "1b9aa186f58794affe0597f105c60845d0e3d9a586f08ec435e9577b8e8049fa",
+                          "tools/dom-xss-analyzer/test_static_leaflet.py":  "9964cbe65b35448971e486cff753d6fe22af60fbca9b868a78331437844e2a21"
+                      },
+    "baseline":  {
+                     "passed":  28,
+                     "scanner_sha256":  "bdab8fbfca54e807715ddee17a5fecc20b4a86834a084f5013696dd302420162",
+                     "tests":  67,
+                     "errors":  0,
+                     "failed":  39,
+                     "skipped":  0
+                 },
+    "fixed":  {
+                  "passed":  417,
+                  "exit_code":  0,
+                  "failed":  0,
+                  "test_files":  [
+                                     "test_static_leaflet.py",
+                                     "test_static_jsx_href.py",
+                                     "test_static_inline_messages.py",
+                                     "test_static_receiver_bindings.py",
+                                     "test_dxa.py",
+                                     "test_static_context.py",
+                                     "test_dxa_config.py",
+                                     "test_r8_sanitizer.py",
+                                     "test_r8_ast_pilot.py",
+                                     "test_sarif.py"
+                                 ],
+                  "tests":  417,
+                  "errors":  0,
+                  "skipped":  0
+              },
+    "local_ci_self_scan":  "exit 0; high-confidence static candidates; not execution proof",
+    "hosted_ci":  "not checked",
+    "owned_scopes":  {
+                         "A":  {
+                                   "prior_candidates":  20,
+                                   "current_candidates":  20,
+                                   "new_leaflet_candidates":  0,
+                                   "new_sink_counts":  {
+
+                                                       },
+                                   "prior_candidates_retained":  true,
+                                   "source_hashes_unchanged":  233,
+                                   "event_kinds":  {
+
+                                                   }
+                               },
+                         "B":  {
+                                   "prior_candidates":  129,
+                                   "current_candidates":  129,
+                                   "new_leaflet_candidates":  0,
+                                   "new_sink_counts":  {
+
+                                                       },
+                                   "prior_candidates_retained":  true,
+                                   "source_hashes_unchanged":  47,
+                                   "event_kinds":  {
+                                                       "skip":  1
+                                                   }
+                               }
+                     },
+    "evidence_level":  "candidate",
+    "triage":  "unreviewed",
+    "library_oracle":  "inert-library-result.json"
+}

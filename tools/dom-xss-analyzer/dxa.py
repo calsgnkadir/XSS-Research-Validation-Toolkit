@@ -1411,6 +1411,437 @@ def _jsx_href_candidates(text):
                 pos += literal.end()
 
 
+def _leaflet_proof_view(text, view):
+    """Expose executable template references only to invalidate type proofs.
+
+    Literal template text, quotes and comments stay masked. Interpolations are
+    capped at 32 KiB and nesting at 32; uncertainty prevents type proof. This
+    lexical walk neither evaluates expressions nor establishes new bindings.
+    """
+    proof = list(view)
+
+    def code(pos, interpolation=False, nesting=0):
+        if nesting >= 32:
+            return None
+        first, braces = pos, 1
+        while pos < len(text):
+            if interpolation and pos - first > 32768:
+                return None
+            if text.startswith('//', pos):
+                end = text.find('\n', pos)
+                pos = len(text) if end < 0 else end
+                continue
+            if text.startswith('/*', pos):
+                end = text.find('*/', pos + 2)
+                if end < 0:
+                    return None
+                pos = end + 2
+                continue
+            char = text[pos]
+            if char in "\"'":
+                quote, end = char, pos + 1
+                while end < len(text) and text[end] != quote:
+                    end += 2 if text[end] == '\\' else 1
+                if end >= len(text):
+                    return None
+                if interpolation:
+                    proof[pos] = '0'
+                pos = end + 1
+                continue
+            if char == '`':
+                pos = template(pos + 1, nesting + 1)
+                if pos is None:
+                    return None
+                continue
+            if char == '/' and re.search(r'(?:[=(:,!\[;]|\breturn)\s*$', text[max(0, pos - 128):pos]):
+                # Match the existing lexical view's opaque regex boundary.
+                end, bracket = pos + 1, False
+                while end < len(text) and text[end] != '\n':
+                    if text[end] == '\\':
+                        end += 2
+                        continue
+                    if text[end] == '[':
+                        bracket = True
+                    elif text[end] == ']':
+                        bracket = False
+                    elif text[end] == '/' and not bracket:
+                        end += 1
+                        break
+                    end += 1
+                pos = end
+                continue
+            if interpolation:
+                if char == '{':
+                    braces += 1
+                elif char == '}':
+                    braces -= 1
+                    if braces == 0:
+                        return pos + 1
+                proof[pos] = char
+            pos += 1
+        return None if interpolation else pos
+
+    def template(pos, nesting):
+        if nesting >= 32:
+            return None
+        while pos < len(text):
+            if text[pos] == '\\':
+                pos += 2
+            elif text[pos] == '`':
+                return pos + 1
+            elif text.startswith('${', pos):
+                pos = code(pos + 2, True, nesting + 1)
+                if pos is None:
+                    return None
+            else:
+                pos += 1
+        return None
+
+    return ''.join(proof) if code(0) is not None else None
+
+
+def _leaflet_candidates(text):
+    """Bounded Leaflet 1.9.4 ES-import/factory proof, not general JS typing.
+
+    Only default/namespace literal imports, marker.bindPopup, popup.setContent
+    and direct divIcon object literals participate. No CommonJS/global/named
+    imports, constructors, receiver aliases, arbitrary chains or computed keys.
+    Calls and provenance prefixes are bounded to 32 KiB. Ambiguous bindings
+    cannot prove library identity or an HTMLElement exclusion. Such exclusions
+    describe this API's node append only, never preceding DOM operations.
+    """
+    view = _jsx_lexical_view(text)
+    proof_view = _leaflet_proof_view(text, view)
+    if proof_view is None:
+        return
+    ident = r'[A-Za-z_$][\w$]*'
+    # Pair delimiters in the masked view; strings/comments/templates are opaque.
+    pairs, stack, scopes = {}, [], []
+    for token in re.finditer(r'[(){}\[\]]', view):
+        pos, char = token.start(), token.group()
+        if char in '({[':
+            stack.append((char, pos))
+            if char == '{':
+                scopes.append(pos)
+        elif stack and stack[-1][0] == {')': '(', '}': '{', ']': '['}[char]:
+            opening, start = stack.pop()
+            pairs[start] = pos
+            if opening == '{':
+                scopes.pop()
+        else:
+            # Malformed delimiter structure cannot support a receiver proof.
+            return
+
+    def scope_at(pos):
+        return tuple(sorted(start for start, end in pairs.items()
+                            if view[start] == '{' and start < pos < end))
+
+    def parts(start, stop):
+        """Top-level comma spans, preserving original literal content."""
+        result, first, pos = [], start, start
+        while pos < stop:
+            if pos in pairs:
+                pos = pairs[pos] + 1
+                continue
+            if view[pos] == ',':
+                result.append((first, pos))
+                first = pos + 1
+            pos += 1
+        result.append((first, stop))
+        return result
+
+    def call_end(opening):
+        end = pairs.get(opening)
+        return end if end is not None and end - opening <= 32768 else None
+
+    def bare_refs(name, code=proof_view):
+        # A factory property Maps.popup is not a read of a local named popup.
+        # Check the preceding token as well as adjacent characters so spaced
+        # members (Maps . popup) and masked comments obey the same rule. Bare
+        # reassignments, declarations, parameters and receiver writes remain.
+        for ref in re.finditer(r'(?<![\w$])' + re.escape(name) + r'(?![\w$])', code):
+            if not re.search(r'\.\s*$', code[:ref.start()]):
+                yield ref
+
+    imports = {}
+    for match in re.finditer(
+            r'\bimport\s+(?:\*\s+as\s+)?(' + ident + r')\s+from\s*'
+            r'''(['"])leaflet\2\s*;?''', text):
+        name = match.group(1)
+        if (view[match.start():match.start() + 6] != 'import'
+                or scope_at(match.start())):
+            continue
+        valid = True
+        for ref in re.finditer(r'(?<![\w$])' + re.escape(name) + r'(?![\w$])', proof_view):
+            if ref.start() == match.start(1):
+                continue
+            # Every other namespace use must be an ordinary member call.
+            # Bare escapes, parameters, redefinitions and property writes lose
+            # proof for the alias throughout the file, deliberately conservative.
+            tail = proof_view[ref.end():]
+            if (not re.match(r'\s*\.\s*' + ident + r'(?:\s*\.\s*' + ident + r')?\s*\(', tail)
+                    or re.search(r'(?:\.|\bnew)\s*$', proof_view[max(0, ref.start() - 32):ref.start()])):
+                valid = False
+                break
+        if valid and name not in imports:
+            imports[name] = match.end()
+
+    def const_value(name, before):
+        """Unique immutable lexical binding; uncertain shadows defeat proof."""
+        escaped = re.escape(name)
+        refs = list(bare_refs(name))
+        declarations = list(re.finditer(r'\bconst\s+(' + escaped + r')\s*=(?!=)', view))
+        if len(declarations) != 1:
+            return None
+        decl = declarations[0]
+        if not decl.end() < before or before - decl.start() > 32768:
+            return None
+        own = scope_at(decl.start())
+        if scope_at(before)[:len(own)] != own:
+            return None
+        for ref in refs:
+            if ref.start() == decl.start(1):
+                continue
+            if (ref.start() < decl.end()
+                    or re.match(r'\s*(?:=(?!=|>)|\+\+|--|[+*/%&|^?-]=)', proof_view[ref.end():])
+                    or re.search(r'\b(?:const|let|var|class|function|import)\s*$', proof_view[max(0, ref.start()-32):ref.start()])):
+                return None
+        # Includes function, arrow, catch and simple method parameter lists.
+        for header in re.finditer(r'\(([^()]*)\)\s*(?:=>\s*)?\{|\b(' + ident + r')\s*=>', view):
+            if any(bare_refs(name, header.group(1) or header.group(2) or '')):
+                return None
+        # Reject destructuring/redeclaration and unmodelled bare binding syntax.
+        for binding in re.finditer(r'\b(?:const|let|var)\s+[^;\n=]+', view):
+            if binding.start() != decl.start() and re.search(r'\b' + escaped + r'\b', binding.group()):
+                return None
+        end = decl.end()
+        pos = end
+        while pos < len(view):
+            # Preserve a complete multiline literal initializer rather than
+            # treating its masked physical newline as an ASI boundary.
+            if text[pos] == '`':
+                literal_end = _js_template_end(text, pos)
+                if literal_end is None:
+                    return None
+                pos = literal_end
+                continue
+            if text[pos] in "\"'":
+                quote, literal_end = text[pos], pos + 1
+                while literal_end < len(text) and text[literal_end] != quote:
+                    literal_end += 2 if text[literal_end] == '\\' else 1
+                if literal_end >= len(text):
+                    return None
+                pos = literal_end + 1
+                continue
+            if pos in pairs:
+                pos = pairs[pos] + 1
+                continue
+            if view[pos] in ';\n':
+                break
+            pos += 1
+        return text[end:pos].strip(), decl.start()
+
+    def node_content(expr, before, depth=0):
+        # Only benign literal element factories are recognized. No claim about
+        # script/unknown tags, shadowed document, or mutation of its factory.
+        expr = expr.strip()
+        if depth >= 16:
+            return False
+        if re.fullmatch(ident, expr):
+            binding = const_value(expr, before)
+            return bool(binding and node_content(binding[0], binding[1], depth + 1))
+        if re.fullmatch(r'''document\s*\.\s*createElement\s*\(\s*(['"])(?:div|span)\1\s*\)''', expr):
+            docrefs = list(re.finditer(r'\bdocument\b', proof_view))
+            return all(re.match(r'\s*\.\s*(?:createElement\s*\(|(?:URL|referrer|cookie|baseURI)\b)', proof_view[r.end():])
+                       and not re.search(r'(?:\.|\bnew)\s*$', proof_view[max(0, r.start()-20):r.start()])
+                       for r in docrefs)
+        return False
+
+    def evaluated(expr):
+        # Reveal only simple template interpolation; text between interpolations
+        # cannot invent a source. Complex interpolation remains unknown.
+        result, pos = [], 0
+        while pos < len(expr):
+            if expr.startswith('//', pos):
+                end = expr.find('\n', pos)
+                pos = len(expr) if end < 0 else end
+                result.append(' ')
+            elif expr.startswith('/*', pos):
+                end = expr.find('*/', pos + 2)
+                pos = len(expr) if end < 0 else end + 2
+                result.append(' ')
+            elif expr[pos] == '`':
+                end = _js_template_end(expr, pos)
+                if end is None:
+                    break
+                template = expr[pos:end]
+                result.extend(' ' + m.group(1) + ' ' for m in re.finditer(
+                    r'(?<!\\)\$\{\s*(' + ident + r'(?:\.' + ident + r')*)\s*\}', template))
+                pos = end
+            elif expr[pos] in "\"'":
+                quote, end = expr[pos], pos + 1
+                while end < len(expr) and expr[end] != quote:
+                    end += 2 if expr[end] == '\\' else 1
+                pos = end + 1
+                result.append(' ')
+            else:
+                result.append(expr[pos])
+                pos += 1
+        return ''.join(result)
+
+    def fixed_content(expr, before, depth=0):
+        if depth >= 16:
+            return False
+        if re.fullmatch(ident, expr):
+            binding = const_value(expr, before)
+            return bool(binding and fixed_content(binding[0], binding[1], depth + 1))
+        fixed = re.fullmatch(r'''(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)''', expr, re.S)
+        if not fixed:
+            return False
+        if not expr.startswith('`'):
+            return True
+        # An escaped dollar is text, not interpolation (including even/odd
+        # backslash parity). No template value evaluation is performed here.
+        pos = 1
+        while pos < len(expr) - 1:
+            if expr[pos] == '\\':
+                pos += 2
+            elif expr.startswith('${', pos):
+                return False
+            else:
+                pos += 1
+        return True
+
+    def const_provenance(expr, before):
+        """Keep raw source evidence through at most 64 immutable const reads.
+
+        Initializers use the same literal/template masking as direct content.
+        Scope, uniqueness, mutation and parameter checks remain in const_value;
+        calls never establish safety merely from an encoder/validator name.
+        Only referenced content bindings participate, never sibling options.
+        """
+        remaining = [64]
+
+        def expand(value, position, depth):
+            if depth >= 16 or remaining[0] <= 0:
+                return ''
+            pieces = [value]
+            for name in dict.fromkeys(re.findall(r'(?<![\w$.])(' + ident + r')(?![\w$])', value)):
+                if remaining[0] <= 0:
+                    break
+                remaining[0] -= 1
+                binding = const_value(name, position)
+                if binding:
+                    pieces.append(expand(evaluated(binding[0]), binding[1], depth + 1))
+            return ' '.join(pieces)
+
+        result = {}
+        for name in dict.fromkeys(re.findall(r'(?<![\w$.])(' + ident + r')(?![\w$])', expr)):
+            if remaining[0] <= 0:
+                break
+            remaining[0] -= 1
+            binding = const_value(name, before)
+            if binding:
+                result[name] = expand(evaluated(binding[0]), binding[1], 0)
+        return result
+
+    def content(offset, start, end, sink):
+        expr = text[start:end].strip()
+        if not expr:
+            return None
+        if fixed_content(expr, offset):
+            return None
+        if node_content(expr, offset):
+            return None
+        value = evaluated(expr)
+        return offset, sink, value, const_provenance(value, offset)
+
+    def method(opening, factory):
+        end = call_end(opening)
+        if end is None:
+            return None
+        method_name = 'bindPopup' if factory == 'marker' else 'setContent'
+        match = re.match(r'\s*\.\s*' + method_name + r'\s*\(', view[end + 1:])
+        if not match:
+            return None
+        method_start = end + 1 + match.start() + match.group().index('.') + 1
+        while view[method_start].isspace():
+            method_start += 1
+        arg = end + 1 + match.end() - 1
+        stop = call_end(arg)
+        if stop is not None:
+            first, last = parts(arg + 1, stop)[0]
+            return content(method_start, first, last, 'leaflet-popup-html')
+        return None
+
+    yielded = set()
+    for name, imported_at in imports.items():
+        factory_rx = re.compile(r'(?<![\w$.])' + re.escape(name) + r'\s*\.\s*(marker|popup|divIcon)\s*\(')
+        for match in factory_rx.finditer(view):
+            if (match.start() < imported_at or re.search(r'\bnew\s*$', view[max(0, match.start()-16):match.start()])):
+                continue
+            opening = match.end() - 1
+            end = call_end(opening)
+            if end is None:
+                continue
+            factory = match.group(1)
+            if factory == 'divIcon':
+                args = parts(opening + 1, end)
+                start, stop = args[0]
+                while start < stop and view[start].isspace():
+                    start += 1
+                if (start >= stop or view[start] != '{'
+                        or pairs.get(start) != start + len(view[start:stop].rstrip()) - 1):
+                    continue
+                properties = parts(start + 1, pairs[start])
+                # Spreads, duplicate/computed keys and methods are unsupported.
+                parsed = []
+                for first, last in properties:
+                    key = re.match(r'\s*(' + ident + r')\s*:', view[first:last])
+                    if not key:
+                        if view[first:last].strip():
+                            parsed = []
+                            break
+                        continue
+                    parsed.append((key.group(1), first + key.start(1), first + key.end(), last))
+                if len([p for p in parsed if p[0] == 'html']) != 1:
+                    continue
+                _, offset, first, last = next(p for p in parsed if p[0] == 'html')
+                row = content(offset, first, last, 'leaflet-divicon-html')
+                if row:
+                    yield row
+                continue
+            row = method(opening, factory)
+            if row:
+                yielded.add(row[0])
+                yield row
+            # Local receiver: exact const initializer only; no arbitrary chains.
+            declaration = re.search(r'\bconst\s+(' + ident + r')\s*=\s*$', view[:match.start()])
+            after = view[end + 1:]
+            if (not declaration or (after.lstrip()[:1] not in (';', '')
+                                    and not re.match(r'[^\S\n]*\n', after))):
+                continue
+            receiver = declaration.group(1)
+            method_name = 'bindPopup' if factory == 'marker' else 'setContent'
+            receiver_refs = list(bare_refs(receiver))
+            if any(ref.start() != declaration.start(1) and not re.match(
+                    r'\s*\.\s*' + method_name + r'\s*\(', proof_view[ref.end():])
+                   for ref in receiver_refs):
+                continue
+            for use in re.finditer(r'(?<![\w$.])' + re.escape(receiver) + r'\s*\.\s*(' + method_name + r')\s*\(', view):
+                binding = const_value(receiver, use.start())
+                if not binding or binding[1] != declaration.start():
+                    continue
+                stop = call_end(use.end() - 1)
+                if stop is None or use.start(1) in yielded:
+                    continue
+                first, last = parts(use.end(), stop)[0]
+                row = content(use.start(1), first, last, 'leaflet-popup-html')
+                if row:
+                    yielded.add(row[0])
+                    yield row
+
+
 def scan_file(path, cross_file_funcs=None):
     """Scan a single file for XSS-family sinks. Phase 0.4: optional
     `cross_file_funcs` set is passed through to compute_taint AND used to
@@ -1549,6 +1980,24 @@ def scan_file(path, cross_file_funcs=None):
                 'severity': 'medium', 'confidence': 'high' if srcs or tvars else 'medium',
                 'description': 'JSX anchor href URL-control candidate; review URL validation and allowed schemes. '
                                'Static evidence does not establish an unsafe scheme or execution.',
+                'code': lines[lineno - 1].strip()[:200], 'sources': srcs,
+                'tainted_vars': tvars, 'xfunc_calls': [],
+            })
+    if lang == 'js':
+        for offset, sink, evaluated, const_sources in _leaflet_candidates(source_text):
+            lineno = source_text.count('\n', 0, offset) + 1
+            srcs = source_hits(evaluated, sources, msg_active)
+            prefix = _jsx_taint_prefix(source_text[:offset])
+            tainted = compute_taint(prefix, sources, msg_active, assign_re)
+            tvars = sorted({v for v in tainted if re.search(
+                r'(?<![\w$])' + re.escape(v) + r'(?![\w$])', evaluated)}
+                | {name for name, value in const_sources.items()
+                   if source_hits(value, sources, msg_active)})
+            findings.append({
+                'file': path, 'line': lineno, 'sink': sink, 'lang': lang,
+                'severity': 'high', 'confidence': 'high' if srcs or tvars else 'medium',
+                'description': 'Leaflet HTML-content review candidate: string content may be parsed as HTML when rendered. '
+                               'Unknown content may be an HTMLElement; static evidence does not establish execution.',
                 'code': lines[lineno - 1].strip()[:200], 'sources': srcs,
                 'tainted_vars': tvars, 'xfunc_calls': [],
             })

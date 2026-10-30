@@ -1,5 +1,21 @@
 # Doğrulama kaydı — 2026-10-30
 
+## R8 Leaflet — 30 October, unreleased source acceptance
+
+Base `1b1c1027af6b0d5cf43f14b8dbcc4b91d529a71a`, Windows / Python 3.10.11.
+Final 67 independent Leaflet cases: baseline 39 failed/28 passed. Final
+ten-file combined suite: 417 passed, zero failures/errors/skips. The local
+`py -3.10 bench/ci_self_scan.py` check also passed; hosted CI was not checked.
+Exact test files, commands and SHA-256 source identity are recorded in the
+[acceptance package](audit/2026-10-30-r8-leaflet/README.md).
+
+Read-only comparison retained 20/129 candidates against unchanged 233/47
+owned source hashes, with no new Leaflet candidate. B retains one vendor
+skip; no application runtime or safety conclusion is made. Separately,
+Leaflet 1.9.4 / Playwright 1.63.0 / Chrome 156.0.8078.79 passed seven inert
+DOM branch assertions, with zero external requests. This is library semantics,
+not attacker execution or vulnerability evidence. PyPI 0.2.2 remains unchanged.
+
 ## R8 JSX and R6 package 0.2.2 release — 30 October
 
 Base accbec2f815353f2c6b8d20380e05b3ddfcbcddb. Python 3.10.11 / Windows:

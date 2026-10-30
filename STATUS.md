@@ -2,6 +2,19 @@
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- Leaflet R8 dar kaynak kabulü tamam: ES default/namespace import ile marker
+  bindPopup, popup setContent ve divIcon html adayları eklendi. String/sabit
+  içerik ve kanıtlı div/span node ayrımı var; genel Leaflet/JS analizi değildir.
+  Baseline 39 failed/28 passed; final birleşik 417 passed, failure/error/skip 0.
+  Ayrı Leaflet 1.9.4 fixture'ında 7 inert DOM kontrolü geçti; XSS execution
+  veya uygulama açıklığı kanıtı değildir. Aynı sahipli kaynaklarda 20/129 aday
+  korundu, yeni Leaflet adayı yok, 233/47 hash aynı; B'deki vendor skip sürüyor.
+  Üç native uzman görev aldı ve kapatıldı; koordinatör son entegrasyonu
+  doğruladı. Aktif arka plan işi yok.
+  [Kabul ve kaynak hashleri](audit/2026-10-30-r8-leaflet/README.md).
+  PyPI 0.2.2 değişmedi; bu Leaflet teslimi unreleased. Uzak CI kontrol edilmedi.
+  Sonraki R8 işi çıktı kodlaması/yardımcı fonksiyon akışları ve etiketli
+  örneklerde yakalanan/kaçırılan/yanlış alarm ölçümü; genel başarı oranı yok.
 - PyPI `dxa-research-toolkit==0.2.2` canlı: receiver yanlış alarm düzeltmesi,
   bounded inline HTML message-source ve JSX/TSX anchor href adayları birlikte
   yayımlandı. Canlı açıklama ve iki artifact SHA-256 değeri doğrulandı;
@@ -14,7 +27,7 @@
   A'da 8 yeni medium URL-kontrol adayı var, B değişmedi. Bunlar açıklık değildir.
   Özel hedef raporları ignored; hedef uygulama/HTTP/browser testi yapılmadı.
 - Üç native uzman ayrı dosyalarda çalıştı ve kapatıldı; aktif arka plan işi yok.
-  Sonraki dar R8 konusu Leaflet HTML API string/HTMLElement sınırı; bu teslim
+  Önceki 0.2.2 tesliminde sonraki konu Leaflet idi; tarihsel yayın
   genel JSX AST, Leaflet veya Jinja desteği iddia etmez. Uzak CI kontrol edilmedi.
 
 ## Önceki teslimler — 30 Ekim 2026
