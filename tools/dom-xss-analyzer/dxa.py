@@ -31,6 +31,7 @@ import argparse
 import ast
 import dxa_evidence as evidence
 import html
+from html.parser import HTMLParser
 import json
 import os
 import re
@@ -244,8 +245,13 @@ def source_hits(text, sources, msg_active):
                 continue  # write target, not a read
             hits.append(name)
             break
-    if msg_active and MSG_DATA.search(text):
-        hits.append("postMessage.data")
+    if msg_active:
+        # Existing JS callers keep their historical broad heuristic. Inline
+        # HTML supplies a callback-specific regex and requires a lexical read.
+        message_text = _js_binding_view(text) if isinstance(msg_active, re.Pattern) else text
+        message_rx = msg_active if isinstance(msg_active, re.Pattern) else MSG_DATA
+        if message_text is not None and message_rx.search(message_text):
+            hits.append("postMessage.data")
     return hits
 
 
@@ -407,6 +413,139 @@ def _raw_return_names(paths):
                 if depth <= 0:
                     current, depth = None, 0
     return tainted_funcs
+
+
+class _InlineScriptSpans(HTMLParser):
+    """Executable inline HTML script offsets only; never execute document code."""
+
+    _INERT = {'template', 'noscript', 'textarea', 'title', 'xmp', 'iframe',
+              'noembed', 'noframes', 'style', 'svg', 'math'}
+    _TYPES = {'', 'module', 'text/javascript', 'application/javascript',
+              'text/ecmascript', 'application/ecmascript'}
+
+    def __init__(self, source):
+        super().__init__(convert_charrefs=False)
+        self.offsets = [0]
+        for match in re.finditer('\n', source):
+            self.offsets.append(match.end())
+        self.inert, self.script, self.spans = [], None, []
+        self.ambiguous = False
+
+    def _offset(self):
+        line, column = self.getpos()
+        return self.offsets[line - 1] + column
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'script':
+            values = dict(attrs)
+            executable = (not self.inert and not self.ambiguous and len(values) == len(attrs)
+                          and 'src' not in values
+                          and (values.get('type') or '').strip().lower() in self._TYPES
+                          and (values.get('language') or 'javascript').lower() in
+                          {'javascript', 'ecmascript'})
+            self.script = (self._offset() + len(self.get_starttag_text()), executable)
+        elif tag in self._INERT:
+            self.inert.append(tag)
+
+    def handle_endtag(self, tag):
+        if tag == 'script' and self.script is not None:
+            start, executable = self.script
+            if executable:
+                self.spans.append((start, self._offset()))
+            self.script = None
+        elif tag in self.inert:
+            self.inert = self.inert[:self.inert.index(tag)]
+
+    def handle_startendtag(self, tag, attrs):
+        # Self-closing scripts are ambiguous in HTML, so supply no proof.
+        if tag == 'script' or tag in self._INERT:
+            self.ambiguous = True
+
+
+def _inline_message_regions(source, path):
+    """Bounded HTML message provenance, not a JavaScript/HTML execution proof.
+
+    Supported: .html/.htm executable inline scripts, literal direct window
+    addEventListener('message', single_parameter => {...}) or function(parameter)
+    callbacks, flat bodies up to 32 KiB. Nested blocks/functions, templates,
+    slash ambiguity, options, onmessage, destructuring and aliases are outside
+    this subset. Parameter mutation/escape ends the supported source interval;
+    propagation after that boundary is deliberately not inferred. Other sinks
+    remain ordinary existing candidates with their physical source lines.
+    """
+    parser = _InlineScriptSpans(source)
+    try:
+        parser.feed(source)
+        parser.close()
+    except AssertionError:
+        # HTMLParser rejects malformed marked declarations with AssertionError.
+        # Abandon provenance, preserve generic findings, expose the parse error.
+        REPORT_EVENTS.append(evidence.ReportEvent(
+            'static-inline-html', 'error', 'HTMLParser rejected malformed markup', str(path)))
+        return []
+    regions = []
+    identifier = r'[A-Za-z_$][\w$]*'
+    header_rx = re.compile(
+        r'(?<![\w$.])window\s*\.\s*addEventListener\s*\(\s*'
+        r'([\'"])message\1\s*,\s*(?:'
+        r'(?P<arrow>' + identifier + r')\s*=>|'
+        r'\(\s*(?P<paren>' + identifier + r')\s*\)\s*=>|'
+        r'function\s*\(\s*(?P<function>' + identifier + r')\s*\))\s*\{')
+    for script_start, script_end in parser.spans:
+        script = source[script_start:script_end]
+        view = _js_binding_view(script)
+        if view is None:
+            continue
+        if '<!--' in view or '-->' in view:
+            # Legacy HTML-comment JavaScript syntax is not in this subset.
+            continue
+        for header in header_rx.finditer(script):
+            if _js_binding_view(header.group()) != view[header.start():header.end()]:
+                continue
+            start = header.end()
+            end = view.find('}', start, start + 32769)
+            if end < 0:
+                continue
+            body = view[start:end]
+            if (re.search(r'[{}?]|=>|\b(?:function|class|for|while|switch|try|with)\b', body)
+                    or not re.match(r'\s*\)', view[end + 1:])):
+                continue
+            receiver = header.group('arrow') or header.group('paren') or header.group('function')
+            name = re.escape(receiver)
+            # Unknown receiver escapes and writes cannot remain event reads.
+            # Direct .origin reads permit a flat guard, without proving safety.
+            stop = len(body)
+            for use in re.finditer(r'(?<![\w$.])' + name + r'(?![\w$])', body):
+                after = body[use.end():]
+                prop = re.match(r'\s*\.\s*(?:data|origin)\b', after)
+                if (prop is None
+                        or re.search(r'(?:\+\+|--|\bdelete)\s*$', body[:use.start()])
+                        or re.match(r'\s*(?:=(?!=)|(?:\*\*|&&|\|\||\?\?|[+*/%&|^-])=|\+\+|--)',
+                                    after[prop.end():])):
+                    stop = use.start()
+                    break
+            message_rx = re.compile(r'(?<![\w$.])' + name + r'\s*\.\s*data\b')
+            regions.append((script_start + start, script_start + start + stop,
+                            message_rx, body[:stop]))
+    return regions
+
+
+def _inline_taint_prefix(source):
+    """Split flat callback statements without splitting quoted semicolons."""
+    view = _js_binding_view(source)
+    if view is None:
+        return []
+    statements, start = [], 0
+    for separator in re.finditer(r'[;\n]', view):
+        code = view[start:separator.start()]
+        if code.strip():
+            first = start + len(code) - len(code.lstrip())
+            statements.append(source[first:separator.start()])
+        start = separator.end()
+    if view[start:].strip():
+        first = start + len(view[start:]) - len(view[start:].lstrip())
+        statements.append(source[first:])
+    return statements
 
 
 def _js_template_end(text, start, nesting=0):
@@ -1119,10 +1258,13 @@ def scan_file(path, cross_file_funcs=None):
         if xfuncs else None)
 
     findings = []
+    inline_messages = (_inline_message_regions(source_text, path)
+                       if os.path.splitext(path)[1].lower() in ('.html', '.htm') else [])
     js_view = _js_binding_view(source_text) if lang == 'js' else None
     constructor_shadows = _js_constructor_shadows(js_view) if lang == 'js' else []
     source_offset = 0
     for lineno, line in enumerate(lines, 1):
+        line_offset = source_offset
         matches = {sid: [m for m in rx.finditer(line)
                          if not (lang == 'js' and _js_non_sink_binding(
                              js_view, source_offset, line, m, sid,
@@ -1145,12 +1287,39 @@ def scan_file(path, cross_file_funcs=None):
         for sid, rx, severity, desc in sinks:
             if sid not in matched_here or sid in suppressed:
                 continue
-            expr = _sink_expression(line, matches[sid][0], sid)
+            sink_match = matches[sid][0]
+            expr = _sink_expression(line, sink_match, sid)
             html_body = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(expr)
             evaluated = _html_residual(expr, rebound) if html_body else expr
             srcs = source_hits(evaluated, sources, msg_active)
             tvars = sorted(v for v in (html_tainted if html_body else tainted)
                            if re.search(r'(?<!\w)' + re.escape(v) + r'\b', evaluated))
+            # Keep the original first-match evidence; add only actual message
+            # evidence from supported matches on this same physical line.
+            for candidate in matches[sid] if inline_messages else ():
+                candidate_expr = _sink_expression(line, candidate, sid)
+                position = line_offset + candidate.start()
+                expression_end = line_offset + candidate.end() + len(candidate_expr)
+                message_context = next((region for region in inline_messages
+                                        if region[0] <= position < region[1]
+                                        and expression_end <= region[1]
+                                        and region[3][position - region[0]:
+                                                      position - region[0] + len(candidate.group())]
+                                        == candidate.group()), None)
+                if message_context is None:
+                    continue
+                callback_start, _, message_rx, _ = message_context
+                candidate_html = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(candidate_expr)
+                candidate_evaluated = (_html_residual(candidate_expr, rebound)
+                                       if candidate_html else candidate_expr)
+                callback_scope = _inline_taint_prefix(
+                    source_text[callback_start:position])
+                message_tainted = compute_taint(callback_scope, [], message_rx,
+                                                 html_context=candidate_html)
+                srcs = sorted(set(srcs) | set(source_hits(candidate_evaluated, [], message_rx)))
+                message_evaluated = _js_binding_view(candidate_evaluated) or ''
+                tvars = sorted(set(tvars) | {name for name in message_tainted
+                                           if re.search(r'(?<!\w)' + re.escape(name) + r'\b', message_evaluated)})
             legacy_tvars = tvars
             # Python AST does not resolve the separate sibling-import provider map.
             xfunc_hits = ([fname for fname in xfuncs

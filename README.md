@@ -85,6 +85,12 @@ Use the tools only on systems you own or are explicitly authorized to test.
 
 ## Additional engineering evidence
 
+- **Owned-source static evaluation (unreleased refinements):** measured and
+  fixed FormData/router false positives on two owned source scopes, then added
+  bounded inline HTML message-source tracking. See the [static scope](tools/dom-xss-analyzer/STATIC-SCOPE.md)
+  and [acceptance](audit/2026-10-30-r8-inline-message/README.md). This is source
+  analysis, not live deployment penetration testing or XSS discovery; published
+  PyPI 0.2.1 remains unchanged.
 - **Tooling failure → regression:** [R9 browser-fixture follow-up](audit/2026-10-16-r6-r9-final-source/README.md)
   records serial fixture failures, the threaded-server correction, and the
   full local Chrome DOM suite. This measures fixture reliability, not scanner

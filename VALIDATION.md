@@ -1,6 +1,16 @@
-﻿# Doğrulama kaydı — 2026-10-24
+# Doğrulama kaydı — 2026-10-30
 
 ## 30 October — PyPI 0.2.1 documentation maintenance
+
+### R8 inline HTML coverage — final local source delivery
+
+Base accepted receiver commit 4708e967a6456617bcb169fc3eb626c2caf5d525.
+Independent inline regression baseline: 16 failed / 15 passed. Combined eight
+selected files: 296 passed, no failure/error/skip, Windows/Python 3.10.11.
+Final scanner hash matches both suite and same-source project comparison:
+22->12 and 129->129, no added candidate, 233/47 source hashes unchanged;
+one known vendor skip remains. No app/HTTP/browser or fixture JavaScript ran.
+PyPI 0.2.1 unchanged; hosted CI not claimed. [Evidence](audit/2026-10-30-r8-inline-message/README.md).
 
 ### R8 receiver follow-up — later local source delivery
 

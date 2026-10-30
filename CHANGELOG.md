@@ -2,6 +2,9 @@
 
 ## Unreleased — R8 measured static false positives
 
+- Add bounded inline HTML message-source provenance with executable-script,
+  callback-receiver, same-line evidence and malformed-markup controls; preserve
+  static candidate semantics. JSX/Leaflet/Jinja coverage remains separate.
 - Distinguish bounded native FormData append and React router location
   declarations from HTML insertion and browser navigation; retain genuine
   sinks and ambiguous receivers with independent regression controls.

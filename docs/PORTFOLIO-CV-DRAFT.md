@@ -53,6 +53,9 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
 ## Evidence and presentation notes
 
 - [K01 article](K01-CASE-STUDY.md) presents the retained local proof/fix/retest.
+- [Owned-source false-positive acceptance](../audit/2026-10-30-r8-receiver-fix/README.md)
+  supports the source-evaluation bullet. These static source refinements are
+  unreleased and are not included in published PyPI 0.2.1.
 - [Historical CVE research review (Turkish)](CVE-RESEARCH-REVIEW-TR.md)
   distinguishes research experience, known-CVE reproduction, and unverified
   historical duplicate claims from personal discovery credit.

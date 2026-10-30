@@ -22,6 +22,14 @@ Sonraki dar kapsam inline HTML postMessage source parity; gerçek script
 bağlamı/handler receiver negatifleri ve fiziksel satır bilgisi korunmalı.
 Bu kabul önceki tarihli baseline kaydını silmez ve uygulama güvenliği sonucu değildir.
 
+**30 Ekim sıralı R8 kapsam kabulü:** inline HTML message-source desteği gerçek
+script/receiver sınırlarıyla eklendi. Bağımsız baseline 16 failed/15 passed;
+birleşik seçilmiş kabul 296 passed, sıfır failure/error/skip. Önceki receiver
+düzeltmeleri aynı sahipli kaynaklarda korundu. [Kabul](audit/2026-10-30-r8-inline-message/README.md).
+Sonraki dar iş JSX anchor href: direct source/tracked identifier adayları;
+fixed URL, ordinary text ve custom-component negatifleri. Leaflet/Jinja ayrı.
+Bu kaynak değişiklikleri henüz PyPI'ye yayımlanmadı.
+
 **25 Ekim güncel durum — yayın ve A04/A05/K04:** `dxa-research-toolkit==0.2.0`
 PyPI'de yayımlandı; temiz production venv kurulumu ile dört CLI girişi doğrulandı.
 GitHub `v0.2.0` Release'i mevcut, `v0.1.0` tarihsel release olarak korundu.

@@ -1,7 +1,14 @@
-# Güncel devam noktası — 25 Ekim 2026
+# Güncel devam noktası — 30 Ekim 2026
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- Receiver teslimi `4708e967a6456617bcb169fc3eb626c2caf5d525` olarak push edildi;
+  uzak SHA doğrulandı. Yerel kabul aşağıdadır; uzak CI sonucu kontrol edilmedi.
+- Sıralı ikinci adım yerel kabul: bounded inline HTML message-source takibi
+  eklendi. Bağımsız baseline 16 failed/15 passed; sekiz dosyalık birleşik koşu
+  296 passed, sıfır failure/error/skip. Aynı kaynaklarla 22->12 / 129->129
+  sonucu ve önceki on yanlış alarm düzeltmesi korundu. [Kabul](audit/2026-10-30-r8-inline-message/README.md).
+  Tüm uzmanlar kapatıldı, aktif arka plan işi yok. Hedef kod/veri değişmedi.
 - R8 FormData/React yanlış alarm teslimi yerel kabul: son baseline 23 failed /
   20 passed; düzeltilmiş seçilmiş suite 146 passed, sıfır failure/error/skip.
   Aynı kaynaklarda adaylar A 22->12 (5 append + 5 router), B 129->129;
@@ -9,9 +16,10 @@
   `.dxa/fp-fix-20261030/`; [genel kabul](audit/2026-10-30-r8-receiver-fix/README.md).
   Gerçek projelerde statik kaynak denemesidir; canlı uygulama/browser testi
   veya doğrulanmış XSS iddiası değildir. PyPI 0.2.1 runtime henüz değişmedi.
-- Sıradaki XSS kapsam işi: gerçek inline script içindeki postMessage kaynak
-  takibi ve HTML/JS provenance farkını dar sentetik oracle ile gidermek.
-  JSX/Leaflet/Jinja ayrı kalıyor. Önceki sıradaki receiver işi artık tamam.
+- Sıradaki R8 işi: JSX intrinsic anchor href için dar statik aday semantiği;
+  direct source/tracked identifier pozitifleri, fixed URL/ordinary text/custom
+  component negatifleri. Leaflet/Jinja ayrı. Kaynak değişiklikleri unreleased;
+  PyPI 0.2.1 çalışma kodu aynı. [Statik kapsam](tools/dom-xss-analyzer/STATIC-SCOPE.md).
 - İki kullanıcı-sahipli yerel proje için ilk kaynak incelemesi tamamlandı.
   Kurulu PyPI 0.2.1 statik tarama ve üç native uzmanın kaynak/QA incelemesi
   yapıldı; uygulamalar/HTTP/browser çalıştırılmadı, hedef kod/veri değişmedi.

@@ -1,0 +1,48 @@
+{
+  "base_commit": "4708e967a6456617bcb169fc3eb626c2caf5d525",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "c141f498fef7d63a39603bf0de2de787462fafe0d54d4f57c4a8211edf15b6d8",
+    "tools/dom-xss-analyzer/test_static_inline_messages.py": "caa9bffeb7f9a0c8e701617117d93ba035bb7cdc5bdfe26b9f0c03bb4dbc526c",
+    "tools/dom-xss-analyzer/test_static_receiver_bindings.py": "6a22eba402c8794bfd4339d4996c30fd4541bfd3fb4218dee757b25def5e0812"
+  },
+  "baseline_inline_regression": {
+    "tests": 31,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 0
+  },
+  "combined_selected_suite": {
+    "tests": 296,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "same_source_comparison": {
+    "owned_scope_A": {
+      "before": 22,
+      "after": 12,
+      "removed": 10,
+      "added": 0,
+      "removed_sinks": {
+        "navigation": 5,
+        "jquery-html": 5
+      },
+      "event_kinds": {},
+      "source_hashes_unchanged": 233
+    },
+    "owned_scope_B": {
+      "before": 129,
+      "after": 129,
+      "removed": 0,
+      "added": 0,
+      "removed_sinks": {},
+      "event_kinds": {
+        "skip": 1
+      },
+      "source_hashes_unchanged": 47
+    }
+  },
+  "scope": "bounded static inline-script message provenance; no JavaScript/browser or application execution; PyPI 0.2.1 unchanged"
+}
