@@ -7,6 +7,14 @@ değişmedi. [K01 yazısı](docs/K01-CASE-STUDY.md) hazır;
 kanıtı olmadığını koruyor. [Teslim kanıtı](audit/2026-10-30-pypi-portfolio/README.md).
 A05 frozen ve K04 artifact bekleme koşulları değişmedi.
 
+**30 Ekim R7/A04 seçilmiş sahipli kaynak incelemesi:** İki yeni yerel
+kaynak kapsamı statik bot/elle inceleme ile karşılaştırıldı; uygulama/runtime
+ve önceki A04 kabulü genişletilmedi. Özel proje raporları ignored tutuldu.
+R8 için FormData append ve React location binding yanlış alarmları ölçüldü;
+sonraki dar kabul, gerçek jQuery/navigation pozitiflerini koruyan receiver/
+binding ayrımıdır. JSX/Leaflet ve message-source boşlukları ayrıca ölçüldü;
+henüz düzeltme yapılmadı. [Genel kayıt](audit/2026-10-30-owned-source-baseline/README.md).
+
 **25 Ekim güncel durum — yayın ve A04/A05/K04:** `dxa-research-toolkit==0.2.0`
 PyPI'de yayımlandı; temiz production venv kurulumu ile dört CLI girişi doğrulandı.
 GitHub `v0.2.0` Release'i mevcut, `v0.1.0` tarihsel release olarak korundu.

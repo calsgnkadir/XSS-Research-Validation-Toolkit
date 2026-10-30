@@ -2,6 +2,19 @@
 
 ## 30 October — PyPI 0.2.1 documentation maintenance
 
+### Later source-only owned-project comparison
+
+Installed PyPI 0.2.1 dxa scanned two owner-authorized local source scopes;
+reports remain ignored/private. No target application or HTTP/browser test ran.
+Python 3.10.11 coordinator source-only synthetic scans produced 16 observations;
+12 assertions verified baseline coverage/false-positive behavior, including
+existing deficiencies. Installed dxa bytes match checkout SHA-256
+`2561203de267961cc3e247aa3708b29bca82f903d6a0e4fdb1ccb68e9ec6b718`.
+No scanner fix, pytest pass count or app-safety claim is made.
+[Public method and limits](audit/2026-10-30-owned-source-baseline/README.md).
+
+### Earlier packaging acceptance
+
 Windows / Python 3.10.11, new ignored `.dxa/pypi-refresh-021` venv.
 `python -m build --outdir .dxa/pypi-refresh-021-dist` succeeded;
 `python -m twine check .dxa/pypi-refresh-021-dist/*` passed 2/2.

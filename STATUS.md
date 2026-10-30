@@ -2,6 +2,18 @@
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- İki kullanıcı-sahipli yerel proje için ilk kaynak incelemesi tamamlandı.
+  Kurulu PyPI 0.2.1 statik tarama ve üç native uzmanın kaynak/QA incelemesi
+  yapıldı; uygulamalar/HTTP/browser çalıştırılmadı, hedef kod/veri değişmedi.
+  Ayrıntılar özel ignored `.dxa/owned-review-20261030/README.md` içinde;
+  uygulama kodu/ham rapor/bulgu ayrıntıları public teslimde yok.
+- Bot için FormData.append ve React location binding yanlış alarmı ile
+  JSX/Leaflet/message-source kapsam sınırları sentetik kaynakta ölçüldü.
+  12 baseline assertion mevcut davranışı doğruladı; düzeltme veya uygulama
+  güvenliği testi değildir. Sonraki R8 işi ilk iki yanlış alarm için dar
+  düzeltme + gerçek jQuery/navigation pozitiflerini koruyan regresyondur.
+  [Genel yöntem/kanıt sınırı](audit/2026-10-30-owned-source-baseline/README.md).
+  Toolkit kodu bu incelemede değişmedi; tüm uzmanlar kapatıldı.
 - Teslim `7c4e735e6fc97f343654c71d92faee42510fccfc` olarak origin/main'e
   push edildi; `git ls-remote` aynı uzak SHA'yı doğruladı. Uzak CI sonucu
   bu teslimde kontrol edilmedi; yerel paket kontrollerinden ayrıdır.
