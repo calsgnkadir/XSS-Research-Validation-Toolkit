@@ -1,5 +1,20 @@
 # Doğrulama kaydı — 2026-10-30
 
+## R8 JSX and R6 package 0.2.2 preparation — 30 October
+
+Base accbec2f815353f2c6b8d20380e05b3ddfcbcddb. Python 3.10.11 / Windows:
+independent JSX baseline 26 failed/28 passed; combined nine-file suite 350
+passed, zero failure/error/skip. Same-source comparison retained prior
+candidates and ten reviewed false-alarm removals; eight new medium JSX
+candidates in owned scope A, none in B. 233/47 source hashes unchanged;
+one known vendor-directory skip remains in B. No target app/HTTP/browser ran.
+
+0.2.2 wheel/sdist build and Twine checks passed; eleven source/wheel/install
+module hashes match. Twelve isolated installed-CLI checks cover four entry
+points and eight inert-source cases for all three changes. This is local
+package acceptance, not live publication or hosted CI. Live verification is
+recorded separately in [the release audit](audit/2026-10-30-r8-jsx-release-022/README.md).
+
 ## 30 October — PyPI 0.2.1 documentation maintenance
 
 ### R8 inline HTML coverage — final local source delivery

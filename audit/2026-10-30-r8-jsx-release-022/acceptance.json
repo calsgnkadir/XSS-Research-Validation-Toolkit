@@ -1,0 +1,136 @@
+{
+  "base_commit": "accbec2f815353f2c6b8d20380e05b3ddfcbcddb",
+  "version_prepared": "0.2.2",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "bdab8fbfca54e807715ddee17a5fecc20b4a86834a084f5013696dd302420162",
+    "tools/dom-xss-analyzer/test_static_jsx_href.py": "6fd0f267e2c717aef7c43e67161e22fe7a69ba4991d249943949ced56f42d598",
+    "pyproject.toml": "00c500408f42664b3af5a09ca24d4f188fff8eaeb1f2bb2e585b3e1b7fbcaf0d",
+    "docs/PYPI-README.md": "7e6dd761c17a7c010f6f54303ab337d37777e7c05bf95f36ae20a043c51921b3"
+  },
+  "jsx_baseline_regression": {
+    "tests": 54,
+    "failures": 26,
+    "errors": 0,
+    "skipped": 0
+  },
+  "combined_selected_suite": {
+    "tests": 350,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "same_source_comparison": {
+    "owned_scope_A": {
+      "released_021_candidates": 22,
+      "prior_source_candidates": 12,
+      "current_candidates": 20,
+      "reviewed_false_alarms_removed": 10,
+      "new_jsx_candidates": 8,
+      "new_jsx_confidence": {
+        "medium": 8
+      },
+      "prior_candidates_retained": true,
+      "event_kinds": {},
+      "source_hashes_unchanged": 233
+    },
+    "owned_scope_B": {
+      "released_021_candidates": 129,
+      "prior_source_candidates": 129,
+      "current_candidates": 129,
+      "reviewed_false_alarms_removed": 0,
+      "new_jsx_candidates": 0,
+      "new_jsx_confidence": {},
+      "prior_candidates_retained": true,
+      "event_kinds": {
+        "skip": 1
+      },
+      "source_hashes_unchanged": 47
+    }
+  },
+  "publication_state": "prepared; live verification recorded separately",
+  "scope": "static source only; no application/browser/HTTP test; candidates are unreviewed observations",
+  "artifact_proof": {
+    "version": "0.2.2",
+    "artifact_sha256": {
+      "dxa_research_toolkit-0.2.2-py3-none-any.whl": "a5abc6b07d51959615127871350436588caa8078932ec84813be8cc29637246e",
+      "dxa_research_toolkit-0.2.2.tar.gz": "f1dbfa012cd15a2bcc59d539cb5e02012d0b0c4e38e6234ca45deb263e0fd3dd"
+    },
+    "source_wheel_modules_equal": 11,
+    "description_matches_wheel_and_sdist": true,
+    "archive_sensitive_path_check": "passed"
+  },
+  "local_installed_proof": {
+    "version": "0.2.2",
+    "source_wheel_install_modules_equal": 11,
+    "module_sha256": {
+      "dxa": "bdab8fbfca54e807715ddee17a5fecc20b4a86834a084f5013696dd302420162",
+      "dxadyn": "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199",
+      "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+      "dxadom": "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+      "dxa_evidence": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+      "dxa_callback": "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+      "dxa_attempts": "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+      "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+      "dxa2dyn": "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+      "dxa_sarif": "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+      "dxa_sarif_cli": "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5"
+    },
+    "checks": {
+      "dxa_help": {
+        "exit_code": 0
+      },
+      "dxadyn_help": {
+        "exit_code": 0
+      },
+      "dxaprove_help": {
+        "exit_code": 0
+      },
+      "dxa-sarif_help": {
+        "exit_code": 0
+      },
+      "receiver_exclusions": {
+        "exit_code": 0,
+        "candidate_count": 0,
+        "status": "expected_behavior_verified"
+      },
+      "genuine_sinks": {
+        "exit_code": 1,
+        "candidate_count": 2,
+        "status": "expected_behavior_verified"
+      },
+      "inline_message": {
+        "exit_code": 1,
+        "candidate_count": 1,
+        "status": "expected_behavior_verified"
+      },
+      "jsx_tracked": {
+        "exit_code": 1,
+        "candidate_count": 1,
+        "status": "expected_behavior_verified"
+      },
+      "tsx_direct": {
+        "exit_code": 1,
+        "candidate_count": 1,
+        "status": "expected_behavior_verified"
+      },
+      "jsx_unknown": {
+        "exit_code": 1,
+        "candidate_count": 1,
+        "status": "expected_behavior_verified"
+      },
+      "jsx_controls": {
+        "exit_code": 0,
+        "candidate_count": 0,
+        "status": "expected_behavior_verified"
+      },
+      "malformed_html": {
+        "exit_code": 2,
+        "candidate_count": 1,
+        "status": "expected_behavior_verified"
+      }
+    },
+    "scope": "installed CLI on inert source fixtures only; fixture code never executed; no app/browser/HTTP test"
+  }
+}

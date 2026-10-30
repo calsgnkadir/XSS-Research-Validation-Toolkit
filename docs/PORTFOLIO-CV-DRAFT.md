@@ -13,7 +13,7 @@ not assign a professional level or claim a new CVE.
   regressions and a comparison against unchanged source hashes. This was
   source analysis, not live deployment penetration testing or XSS discovery.
 
-**Current release:** [`dxa-research-toolkit==0.2.1` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.1/).
+**Current release:** [`dxa-research-toolkit==0.2.2` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.2/).
 The release includes the offline SARIF CLI and E05 parser-context extension;
 `v0.1.0` remains the historical GitHub Release.
 
@@ -55,7 +55,7 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
 - [K01 article](K01-CASE-STUDY.md) presents the retained local proof/fix/retest.
 - [Owned-source false-positive acceptance](../audit/2026-10-30-r8-receiver-fix/README.md)
   supports the source-evaluation bullet. These static source refinements are
-  unreleased and are not included in published PyPI 0.2.1.
+  included in 0.2.2; historical PyPI 0.2.1 retains its earlier behavior.
 - [Historical CVE research review (Turkish)](CVE-RESEARCH-REVIEW-TR.md)
   distinguishes research experience, known-CVE reproduction, and unverified
   historical duplicate claims from personal discovery credit.
@@ -73,7 +73,7 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
   it is not a new application CVE or production-impact demonstration. Its
   supporting source/remediation records are internal and need review before
   public linking.
-- The public toolkit release is `0.2.1`; E05 is included in that package.
+- The public toolkit release is `0.2.2`; E05 is included in that package.
   The `v0.1.0` GitHub Release is historical and does not include E05.
 - Do not include private raw captures, credentials, real account data, or an
   application/company name without the owner's approval. Keep test counts out

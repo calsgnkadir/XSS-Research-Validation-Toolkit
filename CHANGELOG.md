@@ -1,6 +1,10 @@
 # Değişiklik kaydı
 
-## Unreleased — R8 measured static false positives
+## 0.2.2 — 2026-10-30
+
+- Add bounded JSX/TSX intrinsic anchor `href` source candidates, with fixed
+  literal/custom component/text controls, physical attribute lines and scoped
+  local provenance. Candidates do not establish unsafe schemes or execution.
 
 - Add bounded inline HTML message-source provenance with executable-script,
   callback-receiver, same-line evidence and malformed-markup controls; preserve
@@ -9,7 +13,7 @@
   declarations from HTML insertion and browser navigation; retain genuine
   sinks and ambiguous receivers with independent regression controls.
 - Compared the source analyzer against two unchanged owned source scopes;
-  details remain private. Published PyPI 0.2.1 is unchanged.
+  details remain private. Historical PyPI 0.2.1 artifacts remain unchanged.
 
 ## 0.2.1 — 2026-10-30
 

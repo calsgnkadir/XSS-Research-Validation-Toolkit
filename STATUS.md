@@ -2,6 +2,13 @@
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- Yeni kullanıcı talimatı: JSX href takibi paralel native uzmanlarla geliştirildi;
+  önceki receiver ve inline-message değişiklikleriyle 0.2.2 yayını hazırlanıyor.
+  JSX baseline 26 failed/28 passed; birleşik dokuz dosya 350 passed, sıfır
+  failure/error/skip. Aynı kaynaklarda önceki adaylar ve 10 yanlış alarm
+  düzeltmesi korundu; A'da 8 yeni medium JSX URL-kontrol adayı var, B değişmedi.
+  Bu adaylar açıklık değildir. PyPI 0.2.2 henüz yayımlanmadı; paket/izole kurulum
+  ve canlı digest doğrulaması sırada. Özel hedef raporları ignored kalıyor.
 - Receiver teslimi `4708e967a6456617bcb169fc3eb626c2caf5d525` olarak push edildi;
   uzak SHA doğrulandı. Yerel kabul aşağıdadır; uzak CI sonucu kontrol edilmedi.
 - Sıralı ikinci adım yerel kabul: bounded inline HTML message-source takibi

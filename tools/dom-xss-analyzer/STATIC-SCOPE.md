@@ -1,8 +1,10 @@
-# Static source analysis: current source-checkout refinements
+# Static source analysis: 0.2.2 scope
 
-These refinements are **unreleased**. Published PyPI 0.2.1 remains the earlier
-runtime baseline. Static output is a review candidate, not JavaScript execution
-or a confirmed vulnerability. Confidence describes source evidence, not impact.
+Version **0.2.2** includes the source refinements below.
+Historical PyPI 0.2.1 artifacts retain
+their earlier runtime baseline. Static output is a review candidate, not
+JavaScript execution or a confirmed vulnerability. Confidence describes source
+evidence, not impact or measured scanner accuracy.
 
 ## Receiver false positives
 
@@ -46,8 +48,26 @@ Malformed HTML rejected by the parser retains generic matches and emits an
 analysis error event. It must not be counted as a successful clean scan.
 
 Legacy JavaScript-file message heuristics are unchanged; the new HTML subset
-does not claim general JS control-flow precision. JSX URL, Leaflet HTML and
-Jinja-in-JavaScript context coverage are separate follow-up work.
+does not claim general JS control-flow precision. Leaflet HTML and
+Jinja-in-JavaScript context coverage remain separate work.
 
 [Inline acceptance](../../audit/2026-10-30-r8-inline-message/README.md) records
 source hashes, baseline failures, independent controls and local results.
+
+## JSX anchor href candidates
+
+In `.jsx` and `.tsx` files, the analyzer recognizes flat lowercase intrinsic
+`<a href={...}>` opening tags. Opening-tag scanning and local source-provenance
+lookup are each bounded to 32 KiB. Supported direct source expressions and
+locally tracked identifiers receive high source-evidence confidence; unknown
+nonliteral href expressions remain medium-confidence review candidates.
+
+Fixed URLs and ordinary JSX text are negative controls for this rule.
+Spread attributes, nested braces, custom components, namespaced tags and guard
+resolution are unsupported. The rule does not provide full AST analysis,
+coverage of all JSX props or arbitrary expressions, component rendering,
+interprocedural propagation or runtime URL behavior. An unsupported form or
+absence of a candidate is not evidence of safety. A candidate remains
+`candidate` / `unreviewed`; confidence describes source evidence, not impact.
+No browser execution, confirmed vulnerability or general accuracy improvement
+is inferred.

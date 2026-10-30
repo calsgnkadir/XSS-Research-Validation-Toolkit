@@ -6,12 +6,14 @@ analysis, bounded HTTP checks, and browser-based observations. Reports keep
 reflection, parser placement, callback receipt, JavaScript execution, and
 vulnerability triage as distinct evidence states.
 
-**Current release:** [`dxa-research-toolkit 0.2.1` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.1/) ·
-[GitHub release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.2.0) ·
+**Current release:** [`dxa-research-toolkit 0.2.2` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.2/) ·
+[Historical GitHub v0.2.0 release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.2.0) ·
 [Run the local demos](docs/PORTFOLIO-DEMO.md)
 
-Version 0.2.1 refreshes the PyPI description and package metadata; runtime
-behavior is unchanged from 0.2.0. See [publication evidence](audit/2026-10-30-pypi-portfolio/README.md).
+Version 0.2.2 includes measured FormData/router false-positive fixes, bounded
+inline HTML message-source tracking and JSX anchor URL-control candidates.
+See the [scope](tools/dom-xss-analyzer/STATIC-SCOPE.md) and
+[acceptance and release record](audit/2026-10-30-r8-jsx-release-022/README.md).
 
 The toolkit provides heuristic source/sink candidate rules for JavaScript and
 TypeScript, Java, C#, PHP, and Python; bounded HTTP reflection and stored-input
@@ -68,8 +70,8 @@ for each run.
 - **Parser-context coverage test:** [E05 case](audit/2026-10-24-portfolio-cases/e05-case.md)
   measures inert marker placement in a `textarea` context with JavaScript
   disabled. It does not claim JavaScript execution or a confirmed vulnerability.
-- **Installable release:** version 0.2.0 is published on PyPI; package and CLI
-  installation checks are recorded in [the release audit](audit/2026-10-24-pypi-0.2.0/README.md).
+- **Installable release:** version 0.2.2 package and installed-CLI validation
+  are recorded in [the release audit](audit/2026-10-30-r8-jsx-release-022/README.md).
 
 ## Project status and scope
 
@@ -85,12 +87,12 @@ Use the tools only on systems you own or are explicitly authorized to test.
 
 ## Additional engineering evidence
 
-- **Owned-source static evaluation (unreleased refinements):** measured and
+- **Owned-source static evaluation:** measured and
   fixed FormData/router false positives on two owned source scopes, then added
   bounded inline HTML message-source tracking. See the [static scope](tools/dom-xss-analyzer/STATIC-SCOPE.md)
   and [acceptance](audit/2026-10-30-r8-inline-message/README.md). This is source
-  analysis, not live deployment penetration testing or XSS discovery; published
-  PyPI 0.2.1 remains unchanged.
+  analysis, not live deployment penetration testing or XSS discovery. These
+  refinements and bounded JSX href candidates are included in 0.2.2.
 - **Tooling failure → regression:** [R9 browser-fixture follow-up](audit/2026-10-16-r6-r9-final-source/README.md)
   records serial fixture failures, the threaded-server correction, and the
   full local Chrome DOM suite. This measures fixture reliability, not scanner
@@ -196,7 +198,7 @@ accuracy. For another authorized loopback lab, use `dxaprove --spec <local.json>
 this proof contract is separate from `dxa` and `dxadyn` scan configuration. Run
 scans only against your own fixtures or explicitly authorized targets.
 
-The current published package is `dxa-research-toolkit 0.2.1`; `0.1.0` remains
+The current published package is `dxa-research-toolkit 0.2.2`; `0.1.0` remains
 the historical GitHub release. The tool is an experimental research assistant;
 see [STATUS](STATUS.md) and the linked audits for scope and evidence limits.
 

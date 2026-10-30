@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dxa-research-toolkit"
-version = "0.2.1"
+version = "0.2.2"
 description = "Research CLI for XSS candidate analysis and local proof labs"
 readme = "docs/PYPI-README.md"
 requires-python = ">=3.10"

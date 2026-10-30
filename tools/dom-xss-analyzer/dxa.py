@@ -1226,6 +1226,191 @@ def _python_ast_analysis(source):
             "sources": source_lines, "rebound": rebound_at_line}
 
 
+def _jsx_lexical_view(text):
+    """Mask opaque JS tokens without changing offsets or physical lines.
+
+    Unlike the receiver-proof view, closing JSX tags are not slash expressions.
+    This is a bounded lexical convenience, not a JSX/TypeScript parser.
+    """
+    out = list(text)
+    i = 0
+    jsx_depth, in_tag, closing_tag, tag_braces = 0, False, False, 0
+    text_expression = 0
+    while i < len(text):
+        # JSX child text is not JavaScript: apostrophes and URL slashes there
+        # cannot start quoted literals/comments and hide subsequent anchors.
+        if jsx_depth and not in_tag and not text_expression:
+            if text[i] == '{':
+                text_expression = 1
+                i += 1
+                continue
+            if text[i] != '<':
+                if text[i] != '\n':
+                    out[i] = ' '
+                i += 1
+                continue
+        tag = re.match(r'<(/?)(?:[A-Za-z][\w:.-]*(?=\s|/?>)|(?=>))', text[i:]) if text[i] == '<' else None
+        if tag and not in_tag:
+            in_tag, closing_tag, tag_braces = True, bool(tag.group(1)), 0
+            i += len(tag.group())
+            continue
+        if in_tag:
+            if text[i] == '{':
+                tag_braces += 1
+            elif text[i] == '}':
+                tag_braces -= 1
+            elif text[i] == '>' and not tag_braces:
+                if closing_tag:
+                    jsx_depth = max(0, jsx_depth - 1)
+                elif text[i - 1:i] != '/':
+                    jsx_depth += 1
+                in_tag = False
+        elif text_expression:
+            if text[i] == '{':
+                text_expression += 1
+            elif text[i] == '}':
+                text_expression -= 1
+        end = None
+        if text.startswith('//', i):
+            end = text.find('\n', i)
+            end = len(text) if end < 0 else end
+        elif text.startswith('/*', i):
+            stop = text.find('*/', i + 2)
+            end = len(text) if stop < 0 else stop + 2
+        elif text[i] in ('"', "'", '`'):
+            quote, end = text[i], i + 1
+            if quote == '`':
+                end = _js_template_end(text, i) or len(text)
+            else:
+                while end < len(text) and text[end] != quote:
+                    end += 2 if text[end] == '\\' else 1
+                end = min(end + 1, len(text))
+        elif text[i] == '/' and re.search(r'(?:[=(:,!\[;]|\breturn)\s*$', text[max(0, i - 128):i]):
+            # Opaque regex literal, including escaped slashes and character sets.
+            end, bracket = i + 1, False
+            while end < len(text) and text[end] != '\n':
+                if text[end] == '\\':
+                    end += 2
+                    continue
+                if text[end] == '[':
+                    bracket = True
+                elif text[end] == ']':
+                    bracket = False
+                elif text[end] == '/' and not bracket:
+                    end += 1
+                    break
+                end += 1
+        if end is None:
+            i += 1
+            continue
+        out[i:end] = ''.join('\n' if c == '\n' else ' ' for c in text[i:end])
+        i = end
+    return ''.join(out)
+
+
+def _jsx_taint_prefix(text):
+    """Keep statements only from module/current open lexical blocks.
+
+    Closed sibling bodies never contribute local provenance. Function/arrow
+    parameter identifiers conservatively shadow outer bindings. This bounded
+    lexical subset does not resolve closures, destructuring or control flow.
+    Beyond 32 KiB, retain the candidate without asserting identifier provenance;
+    cutting into an unknown enclosing body could invent a module binding.
+    """
+    if len(text) > 32768:
+        return []
+    view = _jsx_lexical_view(text)
+    stack, statements, shadows = [], [], {}
+    first = 0
+    for match in re.finditer(r'[{};\n]', view):
+        token, pos = match.group(), match.start()
+        statement = view[first:pos].strip()
+        if token == '{':
+            header = view[max(0, first):pos]
+            params = re.search(r'(?:\bfunction\s*\w*\s*\(([^()]*)\)|\(([^()]*)\)\s*=>|\b([A-Za-z_$][\w$]*)\s*=>)\s*$', header)
+            stack.append(pos)
+            if params:
+                shadows[pos] = set(re.findall(r'[A-Za-z_$][\w$]*', next(g for g in params.groups() if g is not None)))
+        elif token == '}':
+            if stack:
+                closed = stack.pop()
+                statements = [(owners, value) for owners, value in statements if closed not in owners]
+        elif statement:
+            statements.append((tuple(stack), statement))
+        first = match.end()
+    active = set(stack)
+    result = []
+    for owners, statement in statements:
+        binding = ASSIGN.match(statement)
+        if binding and any(binding.group(1) in names and frame in active and frame not in owners
+                           for frame, names in shadows.items()):
+            continue
+        if set(owners) <= active:
+            result.append(statement)
+    return result
+
+
+def _jsx_href_candidates(text):
+    """Yield (href offset, expression) for flat intrinsic anchor attributes.
+
+    Opening tags are capped at 32 KiB. Spreads, nested braces, namespaced and
+    custom components are outside this subset. Unknown calls remain candidates;
+    neither a validator name nor HTML escaping establishes URL safety.
+    """
+    view = _jsx_lexical_view(text)
+    for anchor in re.finditer(r'<a(?=\s|/?>)', view):
+        start = anchor.end()
+        depth, stop, unsupported = 0, None, False
+        for pos in range(start, min(len(view), start + 32768)):
+            char = view[pos]
+            if char == '{':
+                depth += 1
+                unsupported |= depth > 1
+            elif char == '}':
+                depth -= 1
+                unsupported |= depth < 0
+            elif char == '>' and depth == 0:
+                stop = pos
+                break
+            elif char == '<' and depth == 0:
+                break
+        if stop is None or unsupported or re.search(r'\{\s*\.\.\.', view[start:stop]):
+            continue
+        # Consume attributes in order: href-like text inside another attribute's
+        # expression must not be reinterpreted as an anchor attribute.
+        pos = start
+        while pos < stop:
+            attr = re.match(r'\s*([A-Za-z_$][\w$:.-]*)\s*(=)?', view[pos:stop])
+            if attr is None:
+                break
+            name, assigned = attr.group(1), attr.group(2)
+            offset = pos + attr.start(1)
+            pos += attr.end()
+            if not assigned:
+                continue
+            while pos < stop and text[pos].isspace():
+                pos += 1
+            if pos < stop and view[pos] == '{':
+                end = view.find('}', pos + 1, stop)
+                if end < 0:
+                    break
+                expr = text[pos + 1:end].strip()
+                expression_view = _jsx_lexical_view(expr).strip()
+                fixed_scalar = re.fullmatch(r'(?:null|undefined|true|false|\d+(?:\.\d+)?)', expression_view)
+                if name == 'href' and expression_view and not fixed_scalar:
+                    yield offset, expr
+                pos = end + 1
+            else:
+                # Quoted JSX attribute values are opaque in the lexical view.
+                # Advance over their original extent rather than swallowing the
+                # next attribute after the masked whitespace.
+                original = text[pos:stop]
+                literal = re.match(r'''(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')''', original)
+                if literal is None:
+                    break
+                pos += literal.end()
+
+
 def scan_file(path, cross_file_funcs=None):
     """Scan a single file for XSS-family sinks. Phase 0.4: optional
     `cross_file_funcs` set is passed through to compute_taint AND used to
@@ -1349,6 +1534,23 @@ def scan_file(path, cross_file_funcs=None):
                 "code": line.strip()[:200], "sources": srcs, "tainted_vars": tvars,
                 "xfunc_calls": xfunc_hits,           # Phase 0.4: which cross-file
                                                      # tainted funcs this sink calls
+            })
+    if os.path.splitext(path)[1].lower() in ('.jsx', '.tsx'):
+        for offset, expr in _jsx_href_candidates(source_text):
+            lineno = source_text.count('\n', 0, offset) + 1
+            evaluated = _jsx_lexical_view(expr)
+            srcs = source_hits(evaluated, sources, msg_active)
+            prefix = _jsx_taint_prefix(source_text[:offset])
+            tainted = compute_taint(prefix, sources, msg_active, assign_re)
+            tvars = sorted(v for v in tainted
+                           if re.search(r'(?<![\w$])' + re.escape(v) + r'(?![\w$])', evaluated))
+            findings.append({
+                'file': path, 'line': lineno, 'sink': 'jsx-href', 'lang': lang,
+                'severity': 'medium', 'confidence': 'high' if srcs or tvars else 'medium',
+                'description': 'JSX anchor href URL-control candidate; review URL validation and allowed schemes. '
+                               'Static evidence does not establish an unsafe scheme or execution.',
+                'code': lines[lineno - 1].strip()[:200], 'sources': srcs,
+                'tainted_vars': tvars, 'xfunc_calls': [],
             })
     return findings
 

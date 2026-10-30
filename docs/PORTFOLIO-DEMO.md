@@ -1,10 +1,10 @@
 # Published package demo and local K01 case
 
-This guide installs the published `dxa-research-toolkit==0.2.0` package from
+This guide installs the published `dxa-research-toolkit==0.2.2` package from
 PyPI and runs two disposable loopback demonstrations. Nothing here targets a
 public site. The built-in `dxaprove` demo shows a matching canary event in its
 own fixture; the K01 case runs from this checkout and shows one stored-comment
-payload before and after output encoding. See the [0.2.0 release record](../audit/2026-10-24-pypi-0.2.0/README.md)
+payload before and after output encoding. See the [0.2.2 release record](../audit/2026-10-30-r8-jsx-release-022/README.md)
 and current [project status and limitations](../STATUS.md).
 
 ## Requirements
@@ -17,7 +17,7 @@ Run these commands from the repository root. On Windows PowerShell:
 
 ```powershell
 py -3.10 -m venv .venv-portfolio
-.venv-portfolio\Scripts\python.exe -m pip install "dxa-research-toolkit[browser]==0.2.0"
+.venv-portfolio\Scripts\python.exe -m pip install "dxa-research-toolkit[browser]==0.2.2"
 .venv-portfolio\Scripts\python.exe -m playwright install chromium
 New-Item -ItemType Directory -Force .dxa | Out-Null
 ```
@@ -26,7 +26,7 @@ On macOS or Linux, use:
 
 ```console
 python3 -m venv .venv-portfolio
-.venv-portfolio/bin/python -m pip install 'dxa-research-toolkit[browser]==0.2.0'
+.venv-portfolio/bin/python -m pip install 'dxa-research-toolkit[browser]==0.2.2'
 .venv-portfolio/bin/python -m playwright install chromium
 mkdir -p .dxa
 ```
@@ -92,7 +92,7 @@ The wheel metadata, clean-venv gate and packaged demo evidence are in the
   negative result. Keep each run's result directory for review.
 - `execution-observed` belongs only to that run's local fixture. Triage remains
   separate; a callback, reflection or dialog alone is not execution proof.
-- The published package is `dxa-research-toolkit==0.2.0`. Its production
+- The published package is `dxa-research-toolkit==0.2.2`. Its production
   clean-venv installation and four CLI help checks are recorded in the
   [release audit](../audit/2026-10-24-pypi-0.2.0/README.md).
 - Demo 1 uses the published package; Demo 2 uses the K01 fixture in this
