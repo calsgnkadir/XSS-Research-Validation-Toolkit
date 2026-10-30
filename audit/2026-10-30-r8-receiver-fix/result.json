@@ -1,0 +1,47 @@
+{
+  "base_commit": "1bd74b0126ed1568bd53ae54c72f430cf70649dd",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "d2a068c148a6b6c06399af99ba9a3407df9f8a12fcd80c5d830b9dd2a7184c56",
+    "tools/dom-xss-analyzer/test_static_receiver_bindings.py": "6a22eba402c8794bfd4339d4996c30fd4541bfd3fb4218dee757b25def5e0812"
+  },
+  "baseline_regression": {
+    "tests": 43,
+    "failures": 23,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixed_selected_suite": {
+    "tests": 146,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "same_source_comparison": {
+    "owned_scope_A": {
+      "before": 22,
+      "after": 12,
+      "removed": 10,
+      "added": 0,
+      "removed_sinks": {
+        "navigation": 5,
+        "jquery-html": 5
+      },
+      "event_kinds": {},
+      "source_hashes_unchanged": 233
+    },
+    "owned_scope_B": {
+      "before": 129,
+      "after": 129,
+      "removed": 0,
+      "added": 0,
+      "removed_sinks": {},
+      "event_kinds": {
+        "skip": 1
+      },
+      "source_hashes_unchanged": 47
+    }
+  },
+  "scope": "static source only; no app/browser/HTTP execution; no vulnerability or app-wide security claim; PyPI runtime unchanged"
+}

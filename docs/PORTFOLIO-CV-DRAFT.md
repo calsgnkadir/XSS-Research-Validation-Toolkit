@@ -8,6 +8,11 @@ not assign a professional level or claim a new CVE.
 
 **Project:** Python XSS research CLI and controlled validation fixtures
 
+- Evaluated the static analyzer on two owned application source scopes;
+  reproduced and fixed FormData/router false positives with independent
+  regressions and a comparison against unchanged source hashes. This was
+  source analysis, not live deployment penetration testing or XSS discovery.
+
 **Current release:** [`dxa-research-toolkit==0.2.1` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.1/).
 The release includes the offline SARIF CLI and E05 parser-context extension;
 `v0.1.0` remains the historical GitHub Release.
@@ -27,6 +32,11 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
 ## Türkçe
 
 **Proje:** Python XSS araştırma CLI aracı ve kontrollü doğrulama fixture'ları
+
+- Statik analiz aracını kendime ait iki uygulamanın kaynaklarında denedim;
+  FormData/router yanlış alarmlarını bağımsız regresyonlar ve aynı kaynak
+  hash'leri üzerinde önce/sonra karşılaştırmasıyla düzelttim. Bu çalışma canlı
+  deployment pentesti veya yeni XSS keşfi değildir.
 
 - Geçici yerel fixture üzerinde CID eşleşmeli browser canary'si, ayrı yazar ve
   okuyucu bağlamları, pozitif/negatif kontroller ve HTML metin bağlamında çıktı

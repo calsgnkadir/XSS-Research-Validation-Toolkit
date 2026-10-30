@@ -2,6 +2,16 @@
 
 ## Güncel çalışma — 30 Ekim 2026
 
+- R8 FormData/React yanlış alarm teslimi yerel kabul: son baseline 23 failed /
+  20 passed; düzeltilmiş seçilmiş suite 146 passed, sıfır failure/error/skip.
+  Aynı kaynaklarda adaylar A 22->12 (5 append + 5 router), B 129->129;
+  233/47 kaynak hash'i aynı. Diğer adaylar korundu. Detaylar özel ignored
+  `.dxa/fp-fix-20261030/`; [genel kabul](audit/2026-10-30-r8-receiver-fix/README.md).
+  Gerçek projelerde statik kaynak denemesidir; canlı uygulama/browser testi
+  veya doğrulanmış XSS iddiası değildir. PyPI 0.2.1 runtime henüz değişmedi.
+- Sıradaki XSS kapsam işi: gerçek inline script içindeki postMessage kaynak
+  takibi ve HTML/JS provenance farkını dar sentetik oracle ile gidermek.
+  JSX/Leaflet/Jinja ayrı kalıyor. Önceki sıradaki receiver işi artık tamam.
 - İki kullanıcı-sahipli yerel proje için ilk kaynak incelemesi tamamlandı.
   Kurulu PyPI 0.2.1 statik tarama ve üç native uzmanın kaynak/QA incelemesi
   yapıldı; uygulamalar/HTTP/browser çalıştırılmadı, hedef kod/veri değişmedi.

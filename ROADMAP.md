@@ -15,6 +15,13 @@ sonraki dar kabul, gerçek jQuery/navigation pozitiflerini koruyan receiver/
 binding ayrımıdır. JSX/Leaflet ve message-source boşlukları ayrıca ölçüldü;
 henüz düzeltme yapılmadı. [Genel kayıt](audit/2026-10-30-owned-source-baseline/README.md).
 
+**30 Ekim devam — R8 receiver yerel kabul:** iki ölçülmüş yanlış alarm
+düzeltildi; 146/146 seçilmiş regresyon, aynı kaynaklarda tam 10 yanlış alarmın
+kaldırılması ve diğer adayların korunması doğrulandı. [Kabul](audit/2026-10-30-r8-receiver-fix/README.md).
+Sonraki dar kapsam inline HTML postMessage source parity; gerçek script
+bağlamı/handler receiver negatifleri ve fiziksel satır bilgisi korunmalı.
+Bu kabul önceki tarihli baseline kaydını silmez ve uygulama güvenliği sonucu değildir.
+
 **25 Ekim güncel durum — yayın ve A04/A05/K04:** `dxa-research-toolkit==0.2.0`
 PyPI'de yayımlandı; temiz production venv kurulumu ile dört CLI girişi doğrulandı.
 GitHub `v0.2.0` Release'i mevcut, `v0.1.0` tarihsel release olarak korundu.

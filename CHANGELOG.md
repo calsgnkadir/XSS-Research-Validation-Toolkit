@@ -1,5 +1,13 @@
 # Değişiklik kaydı
 
+## Unreleased — R8 measured static false positives
+
+- Distinguish bounded native FormData append and React router location
+  declarations from HTML insertion and browser navigation; retain genuine
+  sinks and ambiguous receivers with independent regression controls.
+- Compared the source analyzer against two unchanged owned source scopes;
+  details remain private. Published PyPI 0.2.1 is unchanged.
+
 ## 0.2.1 — 2026-10-30
 
 - Prepared a dedicated PyPI description with absolute documentation links and

@@ -409,6 +409,230 @@ def _raw_return_names(paths):
     return tainted_funcs
 
 
+def _js_template_end(text, start, nesting=0):
+    """Skip an opaque template, including balanced interpolation/nesting.
+
+    Slash expressions inside interpolation are uncertain; do not infer a
+    lexical proof from such a template. This helper never analyzes its values.
+    """
+    if nesting >= 32:
+        return None
+    i, depth = start + 1, 0
+    while i < len(text):
+        char = text[i]
+        if char == '\\':
+            i += 2
+            continue
+        if depth == 0:
+            if char == '`':
+                return i + 1
+            if text.startswith('${', i):
+                depth = 1
+                i += 2
+                continue
+        elif char == '`':
+            i = _js_template_end(text, i, nesting + 1)
+            if i is None:
+                return None
+            continue
+        elif char in ('"', "'"):
+            quote = char
+            i += 1
+            while i < len(text) and text[i] != quote:
+                i += 2 if text[i] == '\\' else 1
+            if i >= len(text):
+                return None
+        elif char == '/':
+            return None
+        elif char == '{':
+            depth += 1
+        elif char == '}':
+            depth -= 1
+        i += 1
+    return None
+
+
+def _js_binding_view(text):
+    """Offset-preserving lexical view for narrow receiver proofs only.
+
+    Comments and quoted literals cannot supply declarations. Opaque templates
+    and slash expressions invalidate a proof only in its relevant interval.
+    This is not a JavaScript parser or a general receiver type analysis.
+    """
+    out = list(text)
+    i = 0
+    while i < len(text):
+        if text.startswith('//', i):
+            end = text.find('\n', i)
+            end = len(text) if end < 0 else end
+        elif text.startswith('/*', i):
+            end = text.find('*/', i + 2)
+            if end < 0:
+                return ''.join(out[:i]) + '?' * (len(text) - i)
+            end += 2
+        elif text[i] in ('"', "'"):
+            quote, end = text[i], i + 1
+            while end < len(text) and text[end] != quote:
+                if text[end] == '\\':
+                    end += 1
+                elif text[end] == '\n':
+                    return ''.join(out[:i]) + '?' * (len(text) - i)
+                end += 1
+            if end >= len(text):
+                return ''.join(out[:i]) + '?' * (len(text) - i)
+            end += 1
+            # A literal is an opaque value, not whitespace between tokens.
+            out[i:end] = '0' + ' ' * (end - i - 1)
+            i = end
+            continue
+        elif text[i] == '`':
+            end = _js_template_end(text, i)
+            if end is None:
+                # Keep earlier proofs available, but nothing after an opaque
+                # boundary can establish a declaration/receiver identity.
+                out[i:] = '?' * (len(text) - i)
+                return ''.join(out)
+            # Preserve uncertainty and possible constructor mutation hidden in
+            # interpolation; never treat template text as ordinary code.
+            marker = '?FormData?' if re.search(r'\bFormData\b', text[i:end]) else '?'
+            out[i:end] = marker + ' ' * (end - i - len(marker))
+            i = end
+            continue
+        elif text[i] == '/':
+            end = text.find('\n', i)
+            end = len(text) if end < 0 else end
+            marker = '?FormData?' if re.search(r'\bFormData\b', text[i:end]) else '?'
+            out[i:end] = marker + ' ' * (end - i - len(marker))
+            i = end
+            continue
+        else:
+            i += 1
+            continue
+        out[i:end] = ''.join('\n' if c == '\n' else ' ' for c in text[i:end])
+        i = end
+    return ''.join(out)
+
+
+def _js_constructor_shadows(view):
+    """Index lexical constructor shadows without resolving JavaScript values.
+
+    Only explicit local declarations/recognized function parameters are local.
+    Imports, unresolved references and mutations without a local binding stay
+    global barriers. Block boundaries are lexical, not a control-flow model.
+    """
+    if view is None:
+        return [(0, 0)]
+    scopes = [{'start': 0, 'end': len(view), 'parent': None}]
+    stack, references, bodies = [0], [], {}
+    for token in re.finditer(r'[{}]|\bFormData\b', view):
+        if token.group() == '{':
+            index = len(scopes)
+            scopes.append({'start': token.start(), 'end': len(view), 'parent': stack[-1]})
+            bodies[token.start()] = index
+            stack.append(index)
+        elif token.group() == '}':
+            if len(stack) > 1:
+                scopes[stack.pop()]['end'] = token.end()
+        elif not re.search(r'\bnew\s+$', view[max(0, token.start() - 32):token.start()]):
+            references.append((token.start(), stack[-1]))
+    parameters = []
+    for header in re.finditer(
+            r'\bfunction(?:\s+[\w$]+)?\s*\([^{};]*\)\s*\{'
+            r'|(?:\([^{};]*\)|\bFormData)\s*=>\s*\{', view):
+        body = bodies.get(header.end() - 1)
+        if body is not None:
+            header_text = header.group()[:-1]
+            # Recognize bare parameter bindings, not FormData reads/mutations
+            # in a default expression or a nested parameter expression.
+            if header_text.count('(') == header_text.count(')') == 1:
+                for parameter in re.finditer(r'(?<=[(,])\s*FormData\b(?=\s*[,)=])', header_text):
+                    position = header.start() + header_text.index('FormData', parameter.start())
+                    parameters.append((position, position + len('FormData'), body))
+            elif re.fullmatch(r'FormData\s*=>\s*', header_text):
+                parameters.append((header.start(), header.start() + len('FormData'), body))
+    bindings, owners = set(), {}
+    for position, scope in references:
+        parameter = next((body for start, end, body in parameters
+                          if start <= position < end), None)
+        if parameter is not None:
+            owner = parameter
+        elif re.search(r'\b(?:const|let|class)\s+$', view[max(0, position - 32):position]):
+            owner = scope
+        elif re.search(r'\bvar\s+$', view[max(0, position - 32):position]):
+            # Hoisted var in an uncertain block/function stays conservative.
+            owner = 0
+        else:
+            continue
+        bindings.add(owner)
+        owners[position] = owner
+    barriers = set()
+    for position, scope in references:
+        owner = owners.get(position)
+        # A property such as window.FormData can mutate the global constructor
+        # even when the surrounding function also has a local FormData name.
+        if re.search(r'\.\s*$', view[max(0, position - 32):position]):
+            owner = 0
+        if owner is None:
+            while scope not in bindings and scopes[scope]['parent'] is not None:
+                scope = scopes[scope]['parent']
+            owner = scope if scope in bindings else 0
+        barriers.add(owner)
+    return [(scopes[index]['start'], scopes[index]['end']) for index in barriers]
+
+
+def _js_non_sink_binding(view, offset, line, match, sid, constructor_shadows):
+    """Prove only measured FormData append / React declaration false alarms.
+
+    Scope transitions, aliases and uncertain syntax retain the candidate. A
+    proof applies to this match, never to every sink on its line or in a file.
+    Receiver lookup is bounded to 32 KiB before the match, not the file start.
+    Unresolved constructor references remain global barriers; explicit local
+    shadows affect their lexical region only. This does not resolve imports,
+    computed property mutation, dynamic execution or arbitrary call effects.
+    """
+    if sid not in ('jquery-html', 'navigation'):
+        return False
+    if view is None:
+        return False
+    position = offset + match.start()
+    if view[position:offset + match.end()] != match.group():
+        return False
+    start = max(0, position - 32768)
+    before = ('?' if start else '') + view[start:position]
+    if sid == 'navigation':
+        # Only the declaration itself, never later location writes or hrefs.
+        return (bool(re.fullmatch(r'location\s*=', match.group()))
+                and bool(re.search(r'(?:^|[;{}\n])[^\S\n]*const\s+$', before))
+                and bool(re.match(r'\s*useLocation\s*\(\s*\)\s*(?:;|$)',
+                                  line[match.end():])))
+    if not re.fullmatch(r'\.append\s*\(', match.group()):
+        return False
+    if any(start <= position < end for start, end in constructor_shadows):
+        return False
+    receiver = re.search(r'(?<![\w$.])([A-Za-z_$][\w$]*)\s*$', before)
+    if receiver is None:
+        return False
+    name = re.escape(receiver.group(1))
+    declarations = list(re.finditer(
+        r'(?:^|[;{}\n])[^\S\n]*(?:const|let|var)\s+' + name
+        + r'\s*=\s*new\s+FormData\s*\(\s*'
+        + r'(?:[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*)?'
+        + r'[^\S\n]*\)[^\S\n]*(?:;|\n)', before))
+    if not declarations:
+        return False
+    declaration = declarations[-1]
+    between = before[declaration.end():receiver.start()]
+    # No scope transition/loop, rebinding, escape, or unknown receiver use.
+    # A condition-only `if (caption)` is allowed; a receiver reference in that
+    # condition (including an assignment) fails the remaining-name check below.
+    if re.search(r'[{}?]|\b(?:for|while|switch|try|with|function|class|FormData)\b|=>', between):
+        return False
+    uses = re.sub(r'(?<![\w$])' + name + r'\s*\.\s*append\s*\(', '(', between)
+    if re.search(r'(?<![\w$])' + name + r'(?![\w$])', uses):
+        return False
+    return True
+
+
 def _closing_paren(text, opening):
     """Small lexical helper, not a language parser. Fail closed on truncation."""
     depth, quote, escaped = 0, None, False
@@ -895,8 +1119,17 @@ def scan_file(path, cross_file_funcs=None):
         if xfuncs else None)
 
     findings = []
+    js_view = _js_binding_view(source_text) if lang == 'js' else None
+    constructor_shadows = _js_constructor_shadows(js_view) if lang == 'js' else []
+    source_offset = 0
     for lineno, line in enumerate(lines, 1):
-        matched_here = {sid for sid, rx, *_ in sinks if rx.search(line)}
+        matches = {sid: [m for m in rx.finditer(line)
+                         if not (lang == 'js' and _js_non_sink_binding(
+                             js_view, source_offset, line, m, sid,
+                             constructor_shadows))]
+                   for sid, rx, *_ in sinks}
+        source_offset += len(line) + 1
+        matched_here = {sid for sid, found in matches.items() if found}
         if not matched_here:
             continue
         scope = _scope_lines(taint_view, lineno - 1, lang)
@@ -912,7 +1145,7 @@ def scan_file(path, cross_file_funcs=None):
         for sid, rx, severity, desc in sinks:
             if sid not in matched_here or sid in suppressed:
                 continue
-            expr = _sink_expression(line, rx.search(line), sid)
+            expr = _sink_expression(line, matches[sid][0], sid)
             html_body = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(expr)
             evaluated = _html_residual(expr, rebound) if html_body else expr
             srcs = source_hits(evaluated, sources, msg_active)

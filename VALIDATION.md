@@ -2,6 +2,16 @@
 
 ## 30 October — PyPI 0.2.1 documentation maintenance
 
+### R8 receiver follow-up — later local source delivery
+
+Windows / Python 3.10.11. Final independent regression baseline: 23 failed,
+20 passed. Fixed selected five-file suite: 146 passed, no failure/error/skip.
+Two owner-supplied source scopes were statically rescanned against unchanged
+233/47 file hashes: 22->12 candidates (five append and five router false alarms)
+and 129->129; no added candidate. One known vendor-directory skip remains.
+No application, HTTP or browser ran. No PyPI runtime update or hosted CI claim.
+[Source hashes, commands and limits](audit/2026-10-30-r8-receiver-fix/README.md).
+
 ### Later source-only owned-project comparison
 
 Installed PyPI 0.2.1 dxa scanned two owner-authorized local source scopes;
