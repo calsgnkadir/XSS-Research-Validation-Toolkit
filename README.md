@@ -6,9 +6,12 @@ analysis, bounded HTTP checks, and browser-based observations. Reports keep
 reflection, parser placement, callback receipt, JavaScript execution, and
 vulnerability triage as distinct evidence states.
 
-**Current release:** [`dxa-research-toolkit 0.2.0` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.0/) ·
+**Current release:** [`dxa-research-toolkit 0.2.1` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.1/) ·
 [GitHub release](https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/releases/tag/v0.2.0) ·
 [Run the local demos](docs/PORTFOLIO-DEMO.md)
+
+Version 0.2.1 refreshes the PyPI description and package metadata; runtime
+behavior is unchanged from 0.2.0. See [publication evidence](audit/2026-10-30-pypi-portfolio/README.md).
 
 The toolkit provides heuristic source/sink candidate rules for JavaScript and
 TypeScript, Java, C#, PHP, and Python; bounded HTTP reflection and stored-input
@@ -56,6 +59,8 @@ for each run.
 
 ## Selected evidence-backed work
 
+- **Read the case study:** [K01: stored XSS, output encoding, and retest](docs/K01-CASE-STUDY.md)
+  explains the root cause, browser proof, negative controls, and reproducible lab.
 - **Stored XSS proof → fix → retest:** [K01 local fixture](cases/k01-stored-comment/README.md)
   records a CID-matched browser execution, negative controls, output encoding,
   and a successful retest. This is a training fixture, not a third-party
@@ -185,7 +190,7 @@ accuracy. For another authorized loopback lab, use `dxaprove --spec <local.json>
 this proof contract is separate from `dxa` and `dxadyn` scan configuration. Run
 scans only against your own fixtures or explicitly authorized targets.
 
-The current published package is `dxa-research-toolkit 0.2.0`; `0.1.0` remains
+The current published package is `dxa-research-toolkit 0.2.1`; `0.1.0` remains
 the historical GitHub release. The tool is an experimental research assistant;
 see [STATUS](STATUS.md) and the linked audits for scope and evidence limits.
 

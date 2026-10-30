@@ -1,0 +1,17 @@
+{
+  "version": "0.2.1",
+  "live_description_matches": true,
+  "source_wheel_modules_equal": 11,
+  "artifact_sha256": {
+    "dxa_research_toolkit-0.2.1-py3-none-any.whl": "fed18563f28f65b08d536aafcb46bfba915ee9cd8f85bffbd9aa8a98391c3767",
+    "dxa_research_toolkit-0.2.1.tar.gz": "0be8e721160c095c838be37061cbfe9245eaf93a0b212ed3afa42eca885e7a0b"
+  },
+  "cli_help_exit_codes": {
+    "dxa": 0,
+    "dxadyn": 0,
+    "dxaprove": 0,
+    "dxa-sarif": 0
+  },
+  "python": "3.10.11",
+  "scope": "packaging and help checks only; no browser/toolkit suite rerun"
+}

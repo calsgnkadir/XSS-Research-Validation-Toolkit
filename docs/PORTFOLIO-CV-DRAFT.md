@@ -8,7 +8,7 @@ not assign a professional level or claim a new CVE.
 
 **Project:** Python XSS research CLI and controlled validation fixtures
 
-**Current release:** [`dxa-research-toolkit==0.2.0` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.0/).
+**Current release:** [`dxa-research-toolkit==0.2.1` on PyPI](https://pypi.org/project/dxa-research-toolkit/0.2.1/).
 The release includes the offline SARIF CLI and E05 parser-context extension;
 `v0.1.0` remains the historical GitHub Release.
 
@@ -42,6 +42,11 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
 
 ## Evidence and presentation notes
 
+- [K01 article](K01-CASE-STUDY.md) presents the retained local proof/fix/retest.
+- [Historical CVE research review (Turkish)](CVE-RESEARCH-REVIEW-TR.md)
+  distinguishes research experience, known-CVE reproduction, and unverified
+  historical duplicate claims from personal discovery credit.
+
 - **Primary case, K01:** [case brief](../audit/2026-10-24-portfolio-cases/k01-case.md)
   · [fixture/evidence](../cases/k01-stored-comment/README.md). The execution
   evidence is from the repository's disposable training fixture, not a
@@ -55,7 +60,7 @@ The release includes the offline SARIF CLI and E05 parser-context extension;
   it is not a new application CVE or production-impact demonstration. Its
   supporting source/remediation records are internal and need review before
   public linking.
-- The public toolkit release is `0.2.0`; E05 is included in that package.
+- The public toolkit release is `0.2.1`; E05 is included in that package.
   The `v0.1.0` GitHub Release is historical and does not include E05.
 - Do not include private raw captures, credentials, real account data, or an
   application/company name without the owner's approval. Keep test counts out

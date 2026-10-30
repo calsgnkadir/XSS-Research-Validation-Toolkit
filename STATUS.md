@@ -1,5 +1,20 @@
 # Güncel devam noktası — 25 Ekim 2026
 
+## Güncel çalışma — 30 Ekim 2026
+
+- PyPI açıklaması 0.2.1 bakım sürümüyle güncellendi; canlı JSON açıklaması ve
+  iki artifact SHA-256 değeri doğrulandı. Twine 2/2, production-PyPI kurulumundan
+  CLI help 4/4; 11 kaynak/wheel modülü birebir aynı. Runtime kodu değişmedi.
+- Üç native uzman ayrı dosyalarda K01 yazısı, CVE incelemesi ve paket açıklamasını
+  hazırladı; koordinatör inceleyip entegre etti. Görevler tamam, aktif uzman yok.
+- K01 yazısı `docs/K01-CASE-STUDY.md` içinde mevcut tarihli kanıttan hazırlandı;
+  bu çalışma yeni browser testi değildir. Dış hedef testi/gönderim yok.
+- `docs/CVE-RESEARCH-REVIEW-TR.md`: tarihsel WordPress duplicate/SQLi için
+  doğrulayıcı paket eksik; kişisel CVE kredisi gösterilmiyor. Sonraki adım eski
+  ürün/sürüm/triage belgelerini bulmak veya yazılı kapsamlı tek ürün seçmektir.
+- Kanıt: `audit/2026-10-30-pypi-portfolio/`. Browser/toolkit suite koşulmadı.
+  A05 frozen ve K04 artifact bekleme koşulları aynı.
+
 ## Son kapanış — PyPI 0.2.0
 
 - `dxa-research-toolkit==0.2.0` PyPI'de canlı; temiz production venv kurulumu

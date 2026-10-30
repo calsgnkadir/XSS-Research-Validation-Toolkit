@@ -1,5 +1,12 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**30 Ekim bakım teslimi — R6 / K01 / A01–A03:** PyPI açıklaması 0.2.1
+ile güncellendi; canlı metadata ve iki artifact hash'i doğrulandı. Runtime kodu
+değişmedi. [K01 yazısı](docs/K01-CASE-STUDY.md) hazır;
+[tarihsel CVE incelemesi](docs/CVE-RESEARCH-REVIEW-TR.md) yeni keşif/kredi
+kanıtı olmadığını koruyor. [Teslim kanıtı](audit/2026-10-30-pypi-portfolio/README.md).
+A05 frozen ve K04 artifact bekleme koşulları değişmedi.
+
 **25 Ekim güncel durum — yayın ve A04/A05/K04:** `dxa-research-toolkit==0.2.0`
 PyPI'de yayımlandı; temiz production venv kurulumu ile dört CLI girişi doğrulandı.
 GitHub `v0.2.0` Release'i mevcut, `v0.1.0` tarihsel release olarak korundu.

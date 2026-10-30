@@ -1,5 +1,16 @@
 # Değişiklik kaydı
 
+## 0.2.1 — 2026-10-30
+
+- Prepared a dedicated PyPI description with absolute documentation links and
+  installed-package browser demo commands. Runtime modules are unchanged.
+- Added an English K01 portfolio article using retained proof/fix/retest evidence;
+  no new browser or toolkit test result is claimed.
+- Published wheel and sdist to PyPI; production JSON description and both
+  SHA-256 digests match the prepared artifacts. Twine checks passed 2/2;
+  production-PyPI installation and four CLI help checks passed. All 11 module
+  files match current source bytes.
+
 ## Unreleased — 2026-10-25 roadmap and portfolio documentation
 
 - Corrected the public README and demo guide to reflect the published 0.2.0

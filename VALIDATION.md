@@ -1,5 +1,17 @@
 ﻿# Doğrulama kaydı — 2026-10-24
 
+## 30 October — PyPI 0.2.1 documentation maintenance
+
+Windows / Python 3.10.11, new ignored `.dxa/pypi-refresh-021` venv.
+`python -m build --outdir .dxa/pypi-refresh-021-dist` succeeded;
+`python -m twine check .dxa/pypi-refresh-021-dist/*` passed 2/2.
+Local wheel install and production-PyPI reinstall passed. `dxa`, `dxadyn`,
+`dxaprove`, `dxa-sarif --help` passed 4/4. All 11 wheel module bytes match
+current source. Production PyPI JSON confirms 0.2.1, exact UTF-8 description,
+and matching wheel/sdist SHA-256. No browser/toolkit suite was rerun.
+K01 article cites dated existing evidence; CVE review is documentation analysis.
+[Acceptance and hashes](audit/2026-10-30-pypi-portfolio/result.json).
+
 ## C01–C09 writeup reconciliation, A05 freeze, K04 artifact search — 24 October
 
 Documentation-only changes aligned writeups 01–09 with their historical

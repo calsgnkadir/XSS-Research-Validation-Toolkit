@@ -4,12 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dxa-research-toolkit"
-version = "0.2.0"
+version = "0.2.1"
 description = "Research CLI for XSS candidate analysis and local proof labs"
-readme = "README.md"
+readme = "docs/PYPI-README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit"
+Documentation = "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/blob/main/README.md"
+Issues = "https://github.com/calsgnkadir/XSS-Research-Validation-Toolkit/issues"
 
 [project.optional-dependencies]
 browser = ["playwright==1.63.0"]
