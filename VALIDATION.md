@@ -1,4 +1,25 @@
-# Doğrulama kaydı — 2026-10-30
+# Doğrulama kaydı — 2026-11-03
+
+## R8 fixed-arm JavaScript conditions — 3 November, unreleased
+
+Windows / Python 3.10.11, exact base `1c01c69`. Final 65 independent
+regressions against the original scanner: **16 failed / 49 passed**, no
+errors/skips. Final immutable thirteen-file combined suite: **563 passed**,
+zero failure/error/skip, exit 0; local CI self-scan passed. Source/test hashes,
+commands and baseline identity: [acceptance](audit/2026-11-03-r8-followup/README.md).
+Reproduce final: `py -3.10 audit/2026-11-03-r8-followup/run_validation.py`.
+
+Twelve fixed synthetic source-evidence labels changed TP/FP/FN/TN 8/4/0/0
+to 8/0/0/4. This is not general scanner accuracy or vulnerability measurement.
+The actual trigger requires a project provider-map scan; a single-file scan
+already gave medium and was not used as false-positive proof. No app/HTTP/
+browser tests or package publication; PyPI 0.2.2 unchanged. Hosted CI not checked.
+An earlier draft integration was rejected by the source/test hash guard;
+the final run above verified unchanged hashes throughout.
+Final owned-source comparison retained 129 candidates on 47 unchanged source
+hashes; only the targeted condition signal changed high to medium, all other
+rows identical. No errors; one known excluded vendor-directory skip remains.
+The other owned scope was not rerun. [Sanitized summary](audit/2026-11-03-r8-followup/owned-comparison.json).
 
 ## R8 Python helper returns — 30 October, unreleased source acceptance
 

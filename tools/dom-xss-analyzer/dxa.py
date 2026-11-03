@@ -652,6 +652,108 @@ def _js_binding_view(text):
     return ''.join(out)
 
 
+def _js_fixed_conditional_view(text):
+    """Discard condition-only provenance for two fixed quoted JS arms.
+
+    This is a narrow lexical value approximation, not branch feasibility or
+    helper/sanitizer inference. Opaque or unsupported syntax is left intact.
+    Offsets and physical lines remain unchanged for sink matching and reports.
+    """
+    ident = r'[A-Za-z_$][\w$]*'
+    literal = r'''(?:"(?:\\[^\r\n]|[^"\\\r\n])*"|'(?:\\[^\r\n]|[^'\\\r\n])*')'''
+    conditional = re.compile(
+        r'(?P<boundary>^|[=(,])\s*'
+        r'(?P<value>(?P<condition>!?\s*' + ident + r'(?:\s*\.\s*' + ident + r')*)'
+        r'\s*(?P<question>\?)\s*(?P<yes>' + literal + r')'
+        r'\s*(?P<colon>:)\s*(?P<no>' + literal + r'))'
+        r'(?=\s*(?:[),;]|$))')
+    view = _js_binding_view(text)
+    out = list(text)
+    for match in conditional.finditer(text):
+        start, end = match.span('value')
+        if end - start > 32768:
+            continue
+        if (match.group('boundary') == '=' and match.start('boundary') > 0
+                and text[match.start('boundary') - 1] in '=!<>+-*/%&|^?'):
+            # The final '=' of equality/compound operators is not an
+            # assignment boundary for the supported simple condition.
+            continue
+        # A textual example in a comment, template, string or regex is not
+        # executable conditional syntax. Literal tokens must also be exact.
+        code_groups = ('boundary', 'condition', 'question', 'colon')
+        if any(view[match.start(name):match.end(name)] != match.group(name)
+               for name in code_groups):
+            continue
+        if any(view[match.start(name):match.end(name)] !=
+               '0' + ' ' * (len(match.group(name)) - 1)
+               for name in ('yes', 'no')):
+            continue
+        out[start:end] = ['\n' if char == '\n' else ' ' for char in text[start:end]]
+        out[start] = '0'
+    return ''.join(out)
+
+
+def _js_bounded_sink_expression(text, match, sid):
+    """Recover a complete recognized JS argument/RHS, at most 32 KiB.
+
+    Incomplete or uncertain delimiters retain the legacy single-line view.
+    Recovery keeps raw siblings and tails visible when a conditional spans
+    several physical lines; it does not resolve arbitrary JavaScript syntax.
+    """
+    text = text[:32768]
+    assignment = (sid in ('innerHTML', 'navigation', 'src-href')
+                  and '=' in match.group())
+    call = match.group().endswith('(')
+    if not assignment and not call:
+        return None
+    view = _js_binding_view(text)
+    start = match.end()
+    stack = ['('] if call else []
+    closing = {')': '(', ']': '[', '}': '{'}
+    for index in range(start, len(view)):
+        char = view[index]
+        if char == '?' and text[index] != '?':
+            # Template/regex/slash uncertainty is opaque to this recovery.
+            # Broadening to its literal text would invent source/name hits.
+            return None
+        if char == '\n' and not stack:
+            prefix = view[start:index].rstrip()
+            suffix = view[index + 1:].lstrip()
+            before, after = prefix[-1:], suffix[:1]
+            before_at = start + len(prefix) - 1
+            after_at = len(view) - len(suffix)
+            # Do not merge an ASI-terminated assignment with a later statement.
+            # Open delimiters are handled by the stack; at top level require
+            # an explicit operator continuation or the final semicolon.
+            operators = '?:,+-*/%&|^=<>'
+            before_operator = (before and before in operators
+                               and text[before_at] == before
+                               and not prefix.endswith(('++', '--')))
+            after_operator = (after and after in operators + ';'
+                              and text[after_at] == after)
+            if suffix.startswith(('++', '--')) and not before_operator:
+                return text[start:index]
+            if not (before_operator or after_operator):
+                # A following identifier statement requires ASI; `in` and
+                # `instanceof` instead continue an expression. Other uncertain
+                # forms (including opaque slash/template markers) fall back.
+                identifier = re.match(r'[A-Za-z_$][\w$]*', suffix)
+                if (identifier and identifier.group() not in ('in', 'instanceof')
+                        and (before not in operators or prefix.endswith(('++', '--')))):
+                    return text[start:index]
+                return None
+        if char in '([{':
+            stack.append(char)
+        elif char in closing:
+            if not stack or stack.pop() != closing[char]:
+                return None
+            if call and not stack:
+                return text[start:index]
+        elif char == ';' and not stack:
+            return text[start:index]
+    return None
+
+
 def _js_constructor_shadows(view):
     """Index lexical constructor shadows without resolving JavaScript values.
 
@@ -2074,7 +2176,10 @@ def scan_file(path, cross_file_funcs=None):
     # Java/C# statements often span lines (ternaries, long argument lists,
     # generic types); join by `;` before taint so multi-line sanitize()
     # wraps are visible. JS/PHP/Python usually single-line - default OK.
-    taint_view = _joined_for_taint(lines) if lang in ("java", "cs") else lines
+    provenance_text = _js_fixed_conditional_view(source_text) if lang == 'js' else source_text
+    provenance_lines = provenance_text.split('\n')
+    taint_view = (_joined_for_taint(lines) if lang in ("java", "cs")
+                  else provenance_lines)
     dynamic = re.compile(r'[A-Za-z_$@][\w$]*')
 
     # Phase 0.4: precompiled sink-line xfunc detector (empty regex if map empty).
@@ -2115,8 +2220,32 @@ def scan_file(path, cross_file_funcs=None):
                 continue
             sink_match = matches[sid][0]
             expr = _sink_expression(line, sink_match, sid)
+            recovered_js = False
+            if lang == 'js':
+                original_complete = _js_bounded_sink_expression(
+                    source_text[line_offset:line_offset + 32768], sink_match, sid)
+                original_view = (_js_binding_view(original_complete)
+                                 if original_complete is not None else '')
+                # Recovery belongs to this conditional refinement only. Do
+                # not broaden unrelated multiline calls into literal-token
+                # provenance under the legacy regex source/variable matcher.
+                conditional = any(
+                    char == '?' and original_complete[index] == '?'
+                    and (index == 0 or original_view[index - 1] != '?')
+                    and original_view[index + 1:index + 2] not in ('?', '.')
+                    for index, char in enumerate(original_view))
+                if conditional:
+                    complete = _js_bounded_sink_expression(
+                        provenance_text[line_offset:line_offset + 32768], sink_match, sid)
+                    if complete is not None:
+                        expr = complete
+                        recovered_js = True
             html_body = sid in _HTML_BODY_SINKS and not _ambiguous_html_context(expr)
             evaluated = _html_residual(expr, rebound) if html_body else expr
+            if recovered_js:
+                # Quoted literal text is content, not executable source/name
+                # tokens. Keep the original expression for context handling.
+                evaluated = _js_binding_view(evaluated)
             srcs = source_hits(evaluated, sources, msg_active)
             tvars = sorted(v for v in (html_tainted if html_body else tainted)
                            if re.search(r'(?<!\w)' + re.escape(v) + r'\b', evaluated))
@@ -2150,7 +2279,8 @@ def scan_file(path, cross_file_funcs=None):
             # Python AST does not resolve the separate sibling-import provider map.
             xfunc_hits = ([fname for fname in xfuncs
                           if re.search(r'(?<!\w)' + re.escape(fname) + r'\s*\(', evaluated)]
-                          if xfunc_call_re and xfunc_call_re.search(line) else [])
+                          if xfunc_call_re and xfunc_call_re.search(
+                              evaluated if recovered_js else line) else [])
             if python_ast is not None:
                 srcs = sorted(python_ast["sources"].get(lineno, set()))
                 ast_names = (python_ast["html"] if html_body else python_ast["raw"]).get(lineno, set())

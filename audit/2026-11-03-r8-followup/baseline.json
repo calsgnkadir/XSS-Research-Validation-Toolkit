@@ -1,0 +1,12 @@
+{
+  "base_commit": "1c01c69",
+  "scanner_sha256": "c526399c1927ae529be35ad4a398b88ba4fbe8637f45952a5ac5ac4863d1c605",
+  "test_sha256": "ce16903fbe3979e03d079fda211d03780d14dee86f21de6a7b42f3641fddad3b",
+  "tests": 65,
+  "failures": 16,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 49,
+  "pytest_exit": 1,
+  "meaning": "Independent exact-base regression against final frozen tests; historical result, not rerun by run_validation.py"
+}

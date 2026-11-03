@@ -1,5 +1,15 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**3 Kasım R8 — sabit çıktılı JS koşulu:** gerçek sahipli kaynakta proje
+provider-map taramasıyla ölçülen kontrol/içerik yanlış sinyali düzeltildi.
+İki sabit quoted-string dalında basit koşulun verisi içerik izi sayılmıyor;
+çok satırlı sink ifadelerinde ham ek terimler korunuyor. Kesin baseline
+16 failed/49 passed; birleşik 13 dosya 563 passed, hata/skip 0. Ayrı 12 etiketli
+kaynak-sinyali örneği 8/4/0/0 -> 8/0/0/4. Genel doğruluk/açıklık ölçümü değil.
+[Kabul](audit/2026-11-03-r8-followup/README.md). PyPI 0.2.2 değişmedi;
+genel JS helper/call-graph/branch analizi tamamlanmadı. Yeni genişleme ancak
+ölçülmüş gerçek kapsam boşluğuyla seçilir.
+
 **30 Ekim R8 — bounded Python helper kaynak kabulü:** benzersiz üst düzey
 tek-return aynı-dosya yardımcılarında kaynak/parametre dönüşü ve HTML-body
 encoder ipucu taşınıyor; diğer bağlamlarda ham iz korunuyor. Kesin baseline

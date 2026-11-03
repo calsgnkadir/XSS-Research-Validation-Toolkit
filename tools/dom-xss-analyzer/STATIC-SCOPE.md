@@ -204,3 +204,51 @@ not an estimate of scanner accuracy or application vulnerability:
 New test results, source hashes and any measured confusion counts belong to
 the dated acceptance record. They must identify the exact labeled examples;
 they do not establish general precision, recall, browser execution or XSS.
+
+## UNRELEASED — fixed-arm JavaScript conditional provenance (R8)
+
+For supported JavaScript-family sink expressions, a narrow conditional with
+two fixed single- or double-quoted string arms does not carry its condition's
+source contents into its result. For example, `render(flag ? 'first' : 'second')`
+can remain an ordinary medium-confidence sink candidate without inheriting
+the source evidence of `flag`. This rule does not validate `render`, trust an
+encoder name, or infer that either fixed string or the resulting HTML is safe.
+
+The supported condition is a simple identifier or dotted identifier, optionally
+negated with `!`. Quoted strings must be recognized as actual JavaScript
+literals in code. This is bounded lexical recognition, not a JavaScript AST,
+type inference or branch-feasibility analysis. Nested/complex conditionals,
+template-literal arms and uncertain syntax retain conservative behavior.
+
+Conditional sink-expression extraction applies only when the original
+complete expression contains a code ternary question mark; optional chaining
+and nullish-coalescing tokens do not enable it. It can include multiline
+assignments and call arguments within a 32 KiB bound, with a complete closing
+call delimiter, assignment semicolon or narrowly recognized automatic-semicolon
+boundary before a new identifier/update statement. Physical finding lines stay
+at the original sink. Unconsumed raw terms, additional arguments and
+concatenation after a conditional retain their source evidence. The entire recognized fixed-arm
+conditional is replaced by an inert literal in the content-provenance view,
+so text inside its string arms cannot invent a source signal either.
+Recovered-expression source, variable and provider-name checks also use a
+lexical view that excludes quoted literal text, after the existing HTML
+context check. This does not infer the behavior of an arbitrary helper.
+Failure to obtain a complete supported expression retains the legacy
+evidence path. Multiline recovery declines uncertain statement boundaries
+rather than merging a later statement into the sink argument. Opaque
+template/slash markers prevent that recovery; literal HTML text in a
+multiline template must not acquire source evidence from a matching
+variable name. Other languages, JSX-specific href analysis and Leaflet-specific
+provenance are not extended by this rule.
+
+Acceptance must include an imported source-returning provider: a single-file
+scan without the project provider map can already yield medium confidence
+and does not reproduce the measured false source signal. Owned-project
+comparisons remain private and must bind their source hashes to the actual
+provider-map scan. Synthetic source-signal labels do not measure general
+scanner accuracy or establish reflection, browser execution or a confirmed
+vulnerability.
+
+The [sanitized owned-source comparison](../../audit/2026-11-03-r8-followup/owned-comparison.json)
+records the accepted scanner hashes and the single confidence change. Full
+private row details and target source hashes are excluded from that artifact.

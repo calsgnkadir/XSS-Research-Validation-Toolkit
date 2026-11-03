@@ -1,0 +1,40 @@
+{
+  "roadmap": "R8",
+  "base_commit": "1c01c69",
+  "environment": {
+    "os": "Windows",
+    "python": "3.10.11"
+  },
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "5401e79a676bb4b7deed4b9ca0233c93591718c498e6a37573160519672c5a4c",
+    "audit\\2026-11-03-r8-followup\\measure.py": "feaa5aa06daf11d616bbb845854ff339df62a21e1faa7e5b6268b0cc808c3899",
+    "tools/dom-xss-analyzer/test_static_r8_followup.py": "ce16903fbe3979e03d079fda211d03780d14dee86f21de6a7b42f3641fddad3b",
+    "tools/dom-xss-analyzer/test_static_python_helpers.py": "08fc28028cf1fc3459e9dd91625f044f9f05f8984d37172a906d2fec88de860c",
+    "tools/dom-xss-analyzer/test_static_leaflet.py": "9964cbe65b35448971e486cff753d6fe22af60fbca9b868a78331437844e2a21",
+    "tools/dom-xss-analyzer/test_static_jsx_href.py": "6fd0f267e2c717aef7c43e67161e22fe7a69ba4991d249943949ced56f42d598",
+    "tools/dom-xss-analyzer/test_static_inline_messages.py": "caa9bffeb7f9a0c8e701617117d93ba035bb7cdc5bdfe26b9f0c03bb4dbc526c",
+    "tools/dom-xss-analyzer/test_static_receiver_bindings.py": "6a22eba402c8794bfd4339d4996c30fd4541bfd3fb4218dee757b25def5e0812",
+    "tools/dom-xss-analyzer/test_dxa.py": "c8d78449c45d08384142f2b411cda7ec7ec2f17b6ddf4f6baeaaa762d270210b",
+    "tools/dom-xss-analyzer/test_static_context.py": "f444baf937b70fd42da747d86edd5f1f3bc0e302b9f45640a181736fa5e9ec58",
+    "tools/dom-xss-analyzer/test_dxa_config.py": "091ecc0e70259d88b96d52c3dfdf6c153414a7a6916112c09db8eb2899104674",
+    "tools/dom-xss-analyzer/test_r8_sanitizer.py": "978e0365126abdc31db2847a79e9840bc4c358148b43ebb4a1d46cfe0da64f19",
+    "tools/dom-xss-analyzer/test_r8_ast_pilot.py": "cbe1573b3e91bb5b9a7d76872fbe01eaf8491f61c7743b4a1490cc55d3902b16",
+    "tools/dom-xss-analyzer/test_sarif.py": "f11edd6714d75ed6633b53debff4aa975add91f589f969643e5e498205e01db1",
+    "tools/dom-xss-analyzer/test_r6_cli_modes.py": "6da82223ba5982a0bb2bc15c9f40b082744aac5a8f6da494cf8538edb93039db"
+  },
+  "fixed": {
+    "tests": 563,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 563
+  },
+  "pytest_exit": 0,
+  "measurement_exit": 0,
+  "local_self_scan_exit": 0,
+  "release_status": "unreleased; PyPI 0.2.2 unchanged",
+  "hosted_ci": "not checked",
+  "evidence_level": "candidate",
+  "triage": "unreviewed",
+  "limits": "Local synthetic sources; no application/HTTP/browser or general accuracy claim"
+}

@@ -1,0 +1,121 @@
+{
+  "meaning": "HIGH source-evidence labels; not vulnerability accuracy",
+  "scanner_sha256": "c526399c1927ae529be35ad4a398b88ba4fbe8637f45952a5ac5ac4863d1c605",
+  "measurement_sha256": "feaa5aa06daf11d616bbb845854ff339df62a21e1faa7e5b6268b0cc808c3899",
+  "counts": {
+    "TP": 8,
+    "FP": 4,
+    "FN": 0,
+    "TN": 0
+  },
+  "cases": [
+    {
+      "id": "fixed-direct",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "ae19a101e1831b78dc986151aff5632cef12482814b58677315cb9c14b5c735c"
+    },
+    {
+      "id": "fixed-helper",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "13d4b6bbb37e116b2685f8a77b821fb4f72af279732a8511519f12a5dfd156c8"
+    },
+    {
+      "id": "fixed-assignment",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "e6a21e1c2b2a72838048868bf92fc1a47c3fdb131e6fcf05934d2863e07b1790"
+    },
+    {
+      "id": "fixed-provider-multiline",
+      "expected_high": false,
+      "observed_high": true,
+      "outcome": "FP",
+      "confidence": "high",
+      "provider_map": true,
+      "source_sha256": "e245f550cd3cdb406b2a4f9878f1b382e6e2462103dc131ec51ad3a887ae8ae0"
+    },
+    {
+      "id": "raw-true-arm",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "0e309763ec604e669de61854dab68fd435e5e150e6b90dfb503929fef3831c92"
+    },
+    {
+      "id": "raw-false-arm",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "cc19dd535d846b197d8164e6d9280ae81549a669efbbab0f41ac49682168828a"
+    },
+    {
+      "id": "raw-extra-argument",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "dbbbec348c6c556b47aba9d84b048bb25bf33649c259bfa15e7415388148f735"
+    },
+    {
+      "id": "raw-multiline-extra-argument",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "35ba010f04774d5cb3aec3918f047acbd322d8cc040c37c7cf36a3b567d773c0"
+    },
+    {
+      "id": "raw-multiline-residual",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "0e501164c0bac3593ac6006da4c40e1c2b3a25d83b1af2791ded2859d710bc8c"
+    },
+    {
+      "id": "raw-provider-arm",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": true,
+      "source_sha256": "83a1448bc2efe5349c49c79faf44120b72b446712b10b717ac43d4d1e466ee3a"
+    },
+    {
+      "id": "dynamic-template-arm",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "5a5fcc35c054aef8890cc4f3072d2707c699853a1ea34f7a816bf3e8f356f3aa"
+    },
+    {
+      "id": "unsupported-call-condition",
+      "expected_high": true,
+      "observed_high": true,
+      "outcome": "TP",
+      "confidence": "high",
+      "provider_map": false,
+      "source_sha256": "13158d394430fdd3179266727211d1c32fbf95fd32ada91c952b1e94868a2910"
+    }
+  ]
+}

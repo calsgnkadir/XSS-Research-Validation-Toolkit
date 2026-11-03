@@ -1,5 +1,15 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-11-03 JavaScript conditional provenance
+
+- Exclude condition-only source evidence when a bounded JavaScript conditional
+  selects two fixed quoted strings; retain sink candidates and raw operands.
+  Recover bounded multiline sink expressions with ASI and operator controls.
+- Independent exact-base regression: 16 failed/49 passed; final combined
+  thirteen-file suite 563 passed, zero failure/error/skip. Twelve labeled
+  source-signal examples changed TP/FP/FN/TN 8/4/0/0 to 8/0/0/4.
+  [Acceptance](audit/2026-11-03-r8-followup/README.md). PyPI 0.2.2 unchanged.
+
 ## Unreleased — 2026-10-30 Python helper returns
 
 - Track bounded same-file Python single-return helpers for source/argument

@@ -1,0 +1,26 @@
+{
+  "roadmap": "R8",
+  "scope": "Read-only static source comparison on one previously authorized owned scope; source code and private target locations omitted",
+  "baseline_scanner_sha256": "c526399c1927ae529be35ad4a398b88ba4fbe8637f45952a5ac5ac4863d1c605",
+  "final_scanner_sha256": "5401e79a676bb4b7deed4b9ca0233c93591718c498e6a37573160519672c5a4c",
+  "source_files": 47,
+  "source_hashes_unchanged_before_after": true,
+  "baseline": {
+    "candidates": 129,
+    "confidence": {"high": 2, "medium": 127},
+    "sink_counts": {"innerHTML": 125, "src-href": 4},
+    "scan_errors": 0
+  },
+  "final": {
+    "candidates": 129,
+    "confidence": {"high": 1, "medium": 128},
+    "sink_counts": {"innerHTML": 125, "src-href": 4},
+    "scan_errors": 0
+  },
+  "discovery_skips": 1,
+  "discovery_skip_note": "Existing excluded vendor directory; not scanned and not counted as safe",
+  "changed_rows": 1,
+  "change": "The measured fixed-arm conditional retained its innerHTML candidate while condition-only source evidence changed high to medium; all other compared rows were identical",
+  "method": "Each scanner version built its project import provider map and scanned the same supported source inventory; private source hashes and row comparison retained locally",
+  "limits": "No application, HTTP or browser execution; no confirmed XSS, global accuracy, or application-safety claim; other owned scope not rerun"
+}

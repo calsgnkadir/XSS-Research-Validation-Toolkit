@@ -1,4 +1,30 @@
-# Güncel devam noktası — 30 Ekim 2026
+# Güncel devam noktası — 3 Kasım 2026
+
+## Son kabul — R8 sabit çıktılı JavaScript koşulu
+
+- Başlangıç `1c01c69`; fetch sonrası HEAD/origin farkı 0/0, çalışma ağacı temizdi.
+- Kullanıcı paralel geliştirmeyi sürdürmeyi onayladı. Üç native uzman: engine
+  `dxa.py`, QA yeni regresyon/ölçüm dosyaları, security statik kapsam belgesi.
+  Koordinatör ilerleme belgeleri ve entegrasyonu yönetiyor.
+- Değişmeyen sahipli kaynakta proje provider-map taraması, yalnız iki sabit
+  metinden birini seçen çok satırlı koşulun kontrol verisini HIGH içerik izi
+  saydığını yeniden üretti. Tek dosya taraması medium; kök neden ayrımı korundu.
+- Dar düzeltmenin kesin baseline'ı 16 failed/49 passed; son 65 bağımsız
+  regresyonu içeren 13 dosyalık birleşik kabul **563 passed**, hata/skip 0.
+  Kaynak/test hashleri koşu boyunca sabit; yerel CI self-scan geçti.
+- Ayrı 12 etiketli kaynak-sinyali örneği TP/FP/FN/TN 8/4/0/0 -> 8/0/0/4.
+  Genel doğruluk veya açıklık ölçümü değil. ASI, dinamik dal/ham ek terimler
+  ve sabit şablon metninin kaynak sanılmasına karşı kontroller var.
+- Ham kaynak/raporlar ignored; uygulama/HTTP/browser testi yok. PyPI 0.2.2
+  değişmedi; yeni kaynak teslimi unreleased, uzak CI kontrol edilmedi.
+  [Kabul kaydı](audit/2026-11-03-r8-followup/README.md).
+- Sahipli tek kapsamda 47 kaynak hash'i değişmedi, 129 aday korundu; yalnız
+  hedef satır HIGH -> medium oldu, diğer satırlar aynı. Hata 0; bilinen vendor
+  skip'i 1, güvenli sonuç sayılmadı. Diğer sahipli proje bu turda yeniden taranmadı.
+- Sonraki kapsam genişlemesi gerçek kullanıcı örneğinde yeni ölçülmüş boşluğa
+  bağlı. Genel JS helper/call-graph/branch desteği açık; Python zincir/dallı
+  return sınırları değişmedi. Üç uzman işi tamamlandı; aktif arka plan işi yok.
+  Git teslim kapanışı koordinatörde; yeni geliştirme görevi başlatılmadı.
 
 ## Son kabul — R8 Python yardımcı fonksiyon akışı
 
