@@ -53,7 +53,11 @@ class _Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         qs = urllib.parse.parse_qs(parsed.query)
-        if parsed.path == "/echo-land":
+        if parsed.path == "/":
+            # Stored auto-check always visits the origin root. Keep this seed
+            # valid so its declared mock scan surface can actually complete.
+            self._send(200, "<html><body>Local benchmark fixture</body></html>")
+        elif parsed.path == "/echo-land":
             self._send(200, '<html><body><a href="/echo?q=seed">echo</a></body></html>')
         elif parsed.path == "/safe-echo-land":
             self._send(200, '<html><body><a href="/safe-echo?q=seed">safe</a></body></html>')

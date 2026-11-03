@@ -1,5 +1,18 @@
 # Doğrulama kaydı — 2026-11-03
 
+## R4 HTTP completion — fresh local acceptance
+
+Starting commit `3e34515774b16a20c99aa6761f425f2bb36aebdf` plus the reviewed
+HTTP adapter/fixture patch; Windows, Python 3.10.11. Final frozen command:
+`py -3.10 -m pytest bench/test_bench.py bench/test_http_completion.py bench/test_runner_isolation.py -q -p no:cacheprovider --tb=short`:
+**115 passed**, zero failure/error/skip. Earlier 111 passed / 2 failed was
+rejected: stored discovery requested the mock root which returned 404. A
+benign root page fixed the fixture without ignoring HTTP errors. The final
+run includes real connection refusal, actual 404, positive and encoded-negative
+controls. Strict three-mock CLI run completed 3/3, TP/FP/FN 2/0/0. Candidate
+counts are not confirmed XSS. Broader source acceptance is still running.
+[Root cause and changes](audit/2026-11-03-http-bench-completion/README.md).
+
 ## R8-M1 JSX candidate coverage — 3 November, unreleased
 
 Base `220bbd2`, Windows / Python 3.10.11. Before code edits, 19 purposive

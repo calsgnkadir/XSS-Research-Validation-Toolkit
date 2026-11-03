@@ -1,5 +1,16 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-11-03 HTTP benchmark completion
+
+- Gate dxadyn benchmark completion on a fresh structured report. Transport
+  errors, incomplete probes and missing/malformed reports are unscored and
+  fail strict acceptance; console summaries cannot grant completion.
+- Repair the stored mock's root discovery seed; preserve an actual 404
+  incomplete-run regression. Frozen HTTP/runner suite: 115 passed, no skips;
+  strict selected mock coverage 3/3. No scanner exit-code/schema change.
+- Prepare the JSX technical case with exact revisions and a runnable
+  [2–3 minute demo](docs/R8-M1-DEMO.md). No package publication.
+
 ## Unreleased — 2026-11-03 R8-M1 JSX candidate coverage
 
 - Preserve flat intrinsic JSX href candidates beside balanced unrelated

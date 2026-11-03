@@ -188,16 +188,21 @@ def test_parse_dxadyn_no_findings():
 def test_end_to_end_runner_on_mock_corpus(monkeypatch):
     """The whole harness against the real dxadyn CLI on the mock corpus.
     This is the smoke test that guards regressions in the parser or corpus.
-    Docker targets are opt-in (BENCH_ENABLE_DOCKER=1); this test runs with
-    them skipped so the mock corpus is the whole scoring surface."""
+    The selected mock surface must complete without errors or skips. Docker
+    availability must not determine this acceptance oracle."""
     monkeypatch.delenv("BENCH_ENABLE_DOCKER", raising=False)
     corpus = bench_run.load_corpus(HERE / "targets.json")
-    report = bench_run.run_all(corpus, ["dxadyn"], only=None)
+    selected = [case["id"] for case in corpus["targets"] if case["kind"] == "mock"]
+    assert len(selected) == 3
+    report = bench_run.run_all(corpus, ["dxadyn"], only=selected)
     totals = report["totals"]["dxadyn"]
     # dxadyn must catch both vulnerable mock targets and not FP on the safe one.
     assert totals["tp"] >= 2, f"expected >=2 TP, got {totals}"
     assert totals["fp"] == 0, f"expected 0 FP, got {totals}"
     assert totals["fn"] == 0, f"expected 0 FN, got {totals}"
+    assert totals["selected"] == totals["completed"] == 3, totals
+    assert totals["error"] == totals["skipped"] == totals["invalid"] == totals["timeout"] == 0, totals
+    assert not bench_run.strict_failed(report)
 
 
 # --- Phase 7.0: docker target adapter ---------------------------------------

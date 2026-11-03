@@ -1,5 +1,24 @@
 # Güncel devam noktası — 3 Kasım 2026
 
+## Güncel teslim — HTTP kapanışı ve sabit sürüm kabulü
+
+- R4 HTTP adapter düzeltmesi yerel kabul aldı: konsol özeti yerine R1
+  raporundaki hata/atlama ve rapor geçerliliği okunuyor. Bağlantı reddi
+  completed veya FN sayılmıyor. Mock stored keşfinin `/` seed'i 200 yapıldı;
+  gerçek 404 hâlâ eksik/skorsuz. Son dondurulmuş üç dosyalı koşu 115 passed,
+  hata/skip 0; strict üç mock koşusu completed 3/3, TP/FP/FN 2/0/0.
+- JSX seçilmiş kabulü bu oturumda yeniden 607 passed; 19 vaka ve self-scan
+  geçti. Zorunlu yerel browser paketi 224 passed, hata/skip 0; oturumlu
+  loopback demo execution-observed verdi. Bunlar gerçek uygulama açığı değildir.
+- Yeni offline wheel/sdist ve temiz venv kabulü: 11 modül hash eşitliği,
+  9 installed CLI kontrolü ve 19 kurulu JSX vakası geçti. PyPI 0.2.2 değişmedi.
+- Teknik özet ve 2:40 canlı demo akışı hazır; sabit önce/sonra motor demosu
+  koordinatörce çalıştırıldı. Tüm araç/bench pytest koşusu ve açık Chrome
+  yoluyla dxadom tekrarı sürüyor; tamamlanmadan başarı yazılmayacak.
+- Üç native uzman dosya sahipliğiyle çalıştı; görevleri tamamlandı. Koordinatör
+  bütünleştirme/kabul ve Git teslimini yönetiyor. İlgili kayıt:
+  [HTTP kapanışı](audit/2026-11-03-http-bench-completion/README.md).
+
 ## Son kabul — R8-M1 JSX bağlantı adayı kapsamı
 
 - Üç native uzman dar uygulama, bağımsız QA ölçümü ve gerçek kaynak/kapsam

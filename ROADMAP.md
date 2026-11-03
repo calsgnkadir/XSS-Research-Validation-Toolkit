@@ -1,5 +1,14 @@
 # Ana proje roadmap'i — XSS botu ve staj araştırması
 
+**3 Kasım R4 / R6 / P04 takip:** HTTP benchmark tamamlanması yapılandırılmış
+R1 hata/atlama raporuna bağlandı; bağlantı hatası artık FN/completed değil.
+Stored mock'un geçersiz kök keşif seed'i düzeltildi; gerçek 404 kontrolü korundu.
+Dondurulmuş odaklı kabul 115 passed, strict mock tamamlanması 3/3.
+[HTTP kanıtı](audit/2026-11-03-http-bench-completion/README.md).
+Mevcut JSX vakası için [teknik özet](docs/R8-M1-CASE-STUDY.md) ve
+[2–3 dakikalık demo](docs/R8-M1-DEMO.md) hazır; sabit sürümün geniş kabulü
+koordinatörce tamamlanıyor. Yeni motor kapsamı başlatılmadı.
+
 **3 Kasım R8 — sabit çıktılı JS koşulu:** gerçek sahipli kaynakta proje
 provider-map taramasıyla ölçülen kontrol/içerik yanlış sinyali düzeltildi.
 İki sabit quoted-string dalında basit koşulun verisi içerik izi sayılmıyor;

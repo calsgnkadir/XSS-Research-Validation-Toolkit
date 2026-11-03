@@ -256,18 +256,62 @@ def run_dxadyn(target: Dict[str, Any], base_url: str, budget: int) -> Dict[str, 
         # reflected mode: url as positional
         cmd = [sys.executable, str(DXADYN), url]
     try:
-        proc = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=budget, check=False,
-        )
-        out = (proc.stdout or "") + (proc.stderr or "")
+        # Console summaries also appear after failed HTTP requests. Only the
+        # structured report can distinguish a completed scan from that case.
+        with tempfile.TemporaryDirectory(prefix="dxa-http-bench-") as directory:
+            report_path = pathlib.Path(directory) / "report.json"
+            proc = subprocess.run(
+                cmd + ["--json-out", str(report_path)], capture_output=True,
+                text=True, timeout=budget, check=False,
+            )
+            out = (proc.stdout or "") + (proc.stderr or "")
+            if proc.returncode not in (0, 1) or "Traceback (most recent call last)" in out:
+                return {"status": "error", "ok": False, "returncode": proc.returncode,
+                        "wall": time.time() - started, "raw_tail": out[-400:]}
+            try:
+                document = json.loads(report_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                return {"status": "invalid", "ok": False,
+                        "reason": "missing or invalid HTTP report", "wall": time.time() - started}
+            return _parse_dxadyn_report(document, time.time() - started,
+                                        stored=target["expect"]["stored"] > 0)
     except subprocess.TimeoutExpired:
         return {"status": "timeout", "ok": False, "wall": time.time() - started}
     except OSError as exc:
         return {"status": "error", "ok": False, "reason": str(exc)}
-    if proc.returncode not in (0, 1) or "Traceback (most recent call last)" in out:
-        return {"status": "error", "ok": False, "returncode": proc.returncode,
-                "wall": time.time() - started, "raw_tail": out[-400:]}
-    return _parse_dxadyn(out, time.time() - started)
+
+
+def _parse_dxadyn_report(document, wall, *, stored):
+    """R1 observations are candidate counts; operational failures are unscored."""
+    invalid = {"status": "invalid", "ok": False, "wall": round(wall, 2),
+               "reason": "invalid HTTP report contract"}
+    if (not isinstance(document, dict) or type(document.get("schema_version")) is not int
+            or document["schema_version"] != 1
+            or document.get("mode") not in (("stored", "stored-auto") if stored else ("reflected",))
+            or not isinstance(document.get("findings"), list)
+            or not isinstance(document.get("events"), list)
+            or type(document.get("skipped_submits")) is not int
+            or document["skipped_submits"] < 0):
+        return invalid
+    findings, events = document["findings"], document["events"]
+    if any(not isinstance(row, dict) or row.get("kind") not in ("error", "skip", "info")
+           for row in events):
+        return invalid
+    if any(not isinstance(row, dict) or row.get("schema_version") != 1
+           or not isinstance(row.get("finding_id"), str) or not row["finding_id"]
+           or row.get("evidence_level") not in ("candidate", "reflection", "sink-observed", "resource-callback")
+           for row in findings):
+        return invalid
+    if any(row["kind"] == "error" for row in events):
+        return {"status": "error", "ok": False, "wall": round(wall, 2),
+                "reason": "HTTP report contains operational errors"}
+    if document["skipped_submits"] or any(row["kind"] == "skip" for row in events):
+        return {"status": "skipped", "ok": False, "wall": round(wall, 2),
+                "reason": "HTTP report contains incomplete probes"}
+    return {"status": "completed", "ok": True, "wall": round(wall, 2),
+            "reflected": 0 if stored else len(findings),
+            "stored": len(findings) if stored else 0, "dom": 0,
+            "measurement": "candidate-counts-not-confirmed-xss"}
 
 
 def _parse_dxadyn(out: str, wall: float) -> Dict[str, Any]:
@@ -292,8 +336,8 @@ def _parse_dxadyn(out: str, wall: float) -> Dict[str, Any]:
         "stored": stored,
         "dom": 0,  # Phase 2
         "wall": round(wall, 2),
-        "ok": bool(re.search(r"candidate|No unencoded reflections|No stored", out)),
-        "status": "completed" if re.search(r"candidate|No unencoded reflections|No stored", out) else "error",
+        "ok": False,
+        "status": "error",  # Legacy display parser cannot establish completion.
         "measurement": "candidate-counts-not-confirmed-xss",
         "raw_tail": out[-400:],
     }
