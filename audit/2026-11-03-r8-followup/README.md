@@ -96,3 +96,8 @@ rerun. [Sanitized comparison](owned-comparison.json) binds scanner identities;
 full rows, target paths and source hashes remain private and ignored.
 
 All three specialist tasks are complete; no background work remains active.
+
+Source/test/evidence delivery was pushed as
+`1d68895f455e855a1902108fb3af66efad76f95b`; `git ls-remote origin refs/heads/main`
+returned that exact SHA after the push. The working tree was clean. Hosted CI
+was not checked; this remote-commit verification is separate from local tests.

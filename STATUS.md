@@ -24,7 +24,9 @@
 - Sonraki kapsam genişlemesi gerçek kullanıcı örneğinde yeni ölçülmüş boşluğa
   bağlı. Genel JS helper/call-graph/branch desteği açık; Python zincir/dallı
   return sınırları değişmedi. Üç uzman işi tamamlandı; aktif arka plan işi yok.
-  Git teslim kapanışı koordinatörde; yeni geliştirme görevi başlatılmadı.
+  Kod/test/kanıt teslimi `1d68895f455e855a1902108fb3af66efad76f95b` olarak
+  push edildi; `git ls-remote origin refs/heads/main` aynı uzak SHA'yı doğruladı.
+  Uzak CI kontrol edilmedi; yeni geliştirme görevi başlatılmadı.
 
 ## Son kabul — R8 Python yardımcı fonksiyon akışı
 
