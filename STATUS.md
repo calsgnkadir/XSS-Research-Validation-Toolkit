@@ -1,6 +1,6 @@
 # Güncel devam noktası — 3 Kasım 2026
 
-## Güncel teslim — HTTP kapanışı ve sabit sürüm kabulü
+## Son kabul — HTTP kapanışı, sabit sürüm ve JSX sunum paketi
 
 - R4 HTTP adapter düzeltmesi yerel kabul aldı: konsol özeti yerine R1
   raporundaki hata/atlama ve rapor geçerliliği okunuyor. Bağlantı reddi
@@ -12,12 +12,24 @@
   loopback demo execution-observed verdi. Bunlar gerçek uygulama açığı değildir.
 - Yeni offline wheel/sdist ve temiz venv kabulü: 11 modül hash eşitliği,
   9 installed CLI kontrolü ve 19 kurulu JSX vakası geçti. PyPI 0.2.2 değişmedi.
-- Teknik özet ve 2:40 canlı demo akışı hazır; sabit önce/sonra motor demosu
-  koordinatörce çalıştırıldı. Tüm araç/bench pytest koşusu ve açık Chrome
-  yoluyla dxadom tekrarı sürüyor; tamamlanmadan başarı yazılmayacak.
+- İncelenen kaynak `ccdf661abae8a887c30e78e9cbf644133c7f686e` olarak
+  sabitlendi. Araç/bench suite'i 2055 passed / 38 skipped, failure/error 0.
+  Bu 38 dxadom vakasının hepsi açık Chrome yoluyla ayrı 80/80 koşuda geçti;
+  tek sıfır-skip full run iddia edilmiyor. Root cases/ ve bağımsız ürün suite'leri
+  bu genel koşunun parçası değil. Kaynak/test hashleri son freeze'dan sonra aynı.
+- Sabit commit'te paket/kurulum yeniden geçti. Strict browser corpus 17/17,
+  TP/FP/FN 8/0/0. Yerel JUnit, label/identity/skor, kaynak/corpus hash,
+  JSON/Markdown ve demo canary tutarlılığı doğrulandı. Linux CI checker'ı
+  Windows/Python 3.10 ortamını reddetti (exit 1); uzak CI sonucu değildir.
+- Teknik özet ve 2:40 canlı demo hazır ve komutu doğrulandı; video kaydı yok.
+  [Sabit kabul paketi](audit/2026-11-03-release-acceptance/README.md).
 - Üç native uzman dosya sahipliğiyle çalıştı; görevleri tamamlandı. Koordinatör
-  bütünleştirme/kabul ve Git teslimini yönetiyor. İlgili kayıt:
-  [HTTP kapanışı](audit/2026-11-03-http-bench-completion/README.md).
+  bütünleştirme/kabulü tamamladı; kaynak commit'i yukarıda, ayrı kanıt tesliminin
+  SHA'sı Git geçmişinden izlenir. Aktif uzman/arka plan işi yok. Uzak CI sonucu
+  bu yerel kabulde doğrulanmadı.
+- Sonraki adım: bu tek vaka paketiyle sunum provası/CV uyarlaması. Yeni R8
+  genişlemesi yeni gerçek ölçülmüş boşluğa bağlı; A05 uygun izinli runtime,
+  K04 eşleşen tarihsel artifact bekliyor. PyPI/tag yayını yapılmadı.
 
 ## Son kabul — R8-M1 JSX bağlantı adayı kapsamı
 

@@ -1,5 +1,39 @@
 # Doğrulama kaydı — 2026-11-03
 
+## Pinned local acceptance — ccdf661
+
+Reviewed source `ccdf661abae8a887c30e78e9cbf644133c7f686e`, Windows /
+Python 3.10.11 / Playwright 1.63.0 / Chrome 156.0.8078.80. This is a new local
+run, separate from the user's ZIP repeat and earlier historical acceptances.
+
+| Actual run | Result |
+|---|---|
+| Full `tools/dom-xss-analyzer bench`, `DXA_REQUIRE_BROWSER=1` | 2055 passed, 38 skipped, zero failures/errors |
+| Explicit `DXA_BROWSER` repeat of complete `test_dxadom.py` | 80 passed, zero skips; all 38 original skipped IDs passed |
+| Final frozen HTTP + benchmark + isolation | 115 passed, zero skips |
+| Required twelve-file R3/R4 browser selection | 224 passed, zero skips |
+| JSX fifteen-file + frozen measurement + self-scan repeat | 607 passed; 19 cases completed, no mismatches; self-scan exit 0 |
+| Strict HTTP mock / browser corpus | completed 3/3, TP/FP/FN 2/0/0 / completed 17/17, 8/0/0 |
+| New isolated local package install on pinned commit | 11 source/wheel/sdist/install module hashes equal; 9 CLI + 19 JSX checks passed |
+| Pinned before/after JSX terminal demo | exit 0; development 1/0/2/3 -> 3/0/0/3, evaluation 0/0/6/4 -> 6/0/0/4 |
+| Authenticated local browser demo | execution-observed, matching canary, no events |
+
+Counts overlap and are not summed. The first full run had no explicit browser
+path; its 38 dxadom skips remain skips in that run. No single zero-skip full run
+is claimed. Root `cases/` and independent products were not fully retested.
+Source/test manifest remained unchanged after HTTP freeze; the full JUnit
+includes the final 404 regression. JSX/runtime files also match earlier runs.
+Local artifact label/identity/score, source/corpus hash, JSON/Markdown and demo
+checks passed. The Linux CI checker was attempted and returned 1 because it
+requires Python 3.12/Linux (and its CI invocation); this Windows run is not
+accepted as Linux CI. No hosted CI result is claimed.
+
+[Commands, scope and limitations](audit/2026-11-03-release-acceptance/README.md) ·
+[Machine-readable result and source hashes](audit/2026-11-03-release-acceptance/result.json) ·
+[Pinned package result](audit/2026-11-03-release-acceptance/package-pinned-result.json).
+Local artifacts retain 0.2.2 metadata but were not published. Historical
+owned-source comparisons were not rerun; known vendor skip remains.
+
 ## R4 HTTP completion — fresh local acceptance
 
 Starting commit `3e34515774b16a20c99aa6761f425f2bb36aebdf` plus the reviewed
@@ -10,7 +44,7 @@ rejected: stored discovery requested the mock root which returned 404. A
 benign root page fixed the fixture without ignoring HTTP errors. The final
 run includes real connection refusal, actual 404, positive and encoded-negative
 controls. Strict three-mock CLI run completed 3/3, TP/FP/FN 2/0/0. Candidate
-counts are not confirmed XSS. Broader source acceptance is still running.
+counts are not confirmed XSS. Broader source acceptance is recorded above.
 [Root cause and changes](audit/2026-11-03-http-bench-completion/README.md).
 
 ## R8-M1 JSX candidate coverage — 3 November, unreleased

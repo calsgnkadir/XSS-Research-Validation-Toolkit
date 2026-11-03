@@ -7,7 +7,13 @@ Dondurulmuş odaklı kabul 115 passed, strict mock tamamlanması 3/3.
 [HTTP kanıtı](audit/2026-11-03-http-bench-completion/README.md).
 Mevcut JSX vakası için [teknik özet](docs/R8-M1-CASE-STUDY.md) ve
 [2–3 dakikalık demo](docs/R8-M1-DEMO.md) hazır; sabit sürümün geniş kabulü
-koordinatörce tamamlanıyor. Yeni motor kapsamı başlatılmadı.
+tamamlandı: kaynak `ccdf661`, full tools/bench 2055 passed / 38 skipped;
+atlanan dxadom vakalarının tamamı ayrı açık-Chrome 80/80 koşusunda geçti.
+Paket kurulumunda 11 modül eşitliği, 9 CLI + 19 JSX kontrolü; strict browser
+corpus 17/17. [Sabit sürüm ve sınırlar](audit/2026-11-03-release-acceptance/README.md).
+Linux CI gate'i yerel Windows ortamını reddetti; uzak CI doğrulanmadı. Sonraki
+iş tek vakanın sunum provasıdır; yeni motor kapsamı başlatılmadı. A05/K04
+bekleme koşulları ve PyPI 0.2.2 korunuyor.
 
 **3 Kasım R8 — sabit çıktılı JS koşulu:** gerçek sahipli kaynakta proje
 provider-map taramasıyla ölçülen kontrol/içerik yanlış sinyali düzeltildi.

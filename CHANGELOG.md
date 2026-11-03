@@ -10,6 +10,11 @@
   strict selected mock coverage 3/3. No scanner exit-code/schema change.
 - Prepare the JSX technical case with exact revisions and a runnable
   [2–3 minute demo](docs/R8-M1-DEMO.md). No package publication.
+- Pin reviewed source at `ccdf661`; fresh tools/bench suite 2055 passed,
+  38 dxadom skips subsequently covered by a separate explicit-Chrome 80/80
+  run. Required browser selection 224/224; strict proof corpus 17/17;
+  clean installed package 11 module hashes, 9 CLI + 19 JSX checks passed.
+  [Local evidence and CI limitations](audit/2026-11-03-release-acceptance/README.md).
 
 ## Unreleased — 2026-11-03 R8-M1 JSX candidate coverage
 

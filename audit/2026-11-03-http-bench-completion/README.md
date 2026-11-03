@@ -68,3 +68,6 @@ control; the final 115-pass run includes it. Strict CLI smoke with exactly
 `mock-reflected-easy,mock-reflected-escaped,mock-stored-guestbook` completed
 3/3, TP/FP/FN 2/0/0, exit 0 (`BENCH_STRICT=1`, `--no-history`). Runtime
 source and test hashes are bound in the final acceptance package.
+
+Reviewed implementation commit: `ccdf661abae8a887c30e78e9cbf644133c7f686e`.
+[Full local acceptance and reproducible commands](../2026-11-03-release-acceptance/README.md).

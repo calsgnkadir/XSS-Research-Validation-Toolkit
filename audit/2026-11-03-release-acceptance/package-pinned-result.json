@@ -1,0 +1,254 @@
+{
+  "roadmap": "R6/R8-M1",
+  "source_commit": "ccdf661abae8a887c30e78e9cbf644133c7f686e",
+  "python": "3.10.11",
+  "platform": "Windows",
+  "source_sha256": {
+    "tools/dom-xss-analyzer/dxa.py": "1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4",
+    "tools/dom-xss-analyzer/dxadyn.py": "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199",
+    "tools/dom-xss-analyzer/dxaprove.py": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "tools/dom-xss-analyzer/dxadom.py": "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+    "tools/dom-xss-analyzer/dxa_evidence.py": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "tools/dom-xss-analyzer/dxa_callback.py": "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+    "tools/dom-xss-analyzer/dxa_attempts.py": "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+    "tools/dom-xss-analyzer/dxa_proof_lab.py": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+    "tools/dom-xss-analyzer/dxa2dyn.py": "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+    "tools/dom-xss-analyzer/dxa_sarif.py": "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+    "tools/dom-xss-analyzer/dxa_sarif_cli.py": "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5",
+    "pyproject.toml": "00c500408f42664b3af5a09ca24d4f188fff8eaeb1f2bb2e585b3e1b7fbcaf0d",
+    "bench/check_installed_cli.py": "233ace07c5531746e2809627a3d7d7894bd2454b6e8ac1fd36996208edadaa5c",
+    "audit/2026-11-03-release-acceptance/package_check.py": "c899cc478b47d7e4b588f1b1a4de38c02e5ae2998ef65490826361b8ee6e2a2c",
+    "audit/2026-11-03-r8-m1/cases.json": "64023591294ab7a5c7ddb859dcfea73314b32452d63cdd7afcf3989a2d12c002",
+    "audit/2026-11-03-r8-m1/split-manifest.json": "cb7ee6b8d3699594073fb6e5c983cf73a9f5bc883bd7bc5a3508131734a6ddea"
+  },
+  "commands": [
+    {
+      "argv": [
+        "<python>",
+        "-c",
+        "import setuptools.build_meta as b,sys; output=sys.argv[1]; print(b.build_sdist(output))",
+        "<run>\\dist"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "<python>",
+        "-c",
+        "import setuptools.build_meta as b,sys; output=sys.argv[1]; print(b.build_wheel(output))",
+        "<run>\\dist"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "<python>",
+        "-m",
+        "venv",
+        "<run>\\venv"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "<run>\\venv\\Scripts\\python.exe",
+        "-m",
+        "pip",
+        "install",
+        "--no-index",
+        "--no-deps",
+        "<run>\\dist\\dxa_research_toolkit-0.2.2-py3-none-any.whl"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "<python>",
+        "<repo>\\bench\\check_installed_cli.py",
+        "--bin-dir",
+        "<run>\\venv\\Scripts",
+        "--wheel",
+        "<run>\\dist\\dxa_research_toolkit-0.2.2-py3-none-any.whl",
+        "--output",
+        "<run>\\installed.json"
+      ],
+      "cwd": "<repo>",
+      "exit_code": 0
+    }
+  ],
+  "accepted": true,
+  "limits": [
+    "Local unreleased build; version metadata remains 0.2.2",
+    "No PyPI/GitHub publication or hosted CI check",
+    "Synthetic static JSX candidates; no XSS/browser claim"
+  ],
+  "artifact_sha256": {
+    "dxa_research_toolkit-0.2.2-py3-none-any.whl": "08ec403ccb10bc410cfaf8e9c47de14c839a5596e0eb0e802863aec7cd14d31a",
+    "dxa-research-toolkit-0.2.2.tar.gz": "2e4e2370a4e13e0f286b3c57451783d699c5fb8f186a40c3127164c1a7ee4123"
+  },
+  "installed_checks": {
+    "dxa_help": {
+      "exit_code": 0
+    },
+    "dxadyn_help": {
+      "exit_code": 0
+    },
+    "dxaprove_help": {
+      "exit_code": 0
+    },
+    "dxa-sarif_help": {
+      "exit_code": 0
+    },
+    "sarif_offline": {
+      "exit_code": 0,
+      "invalid_input_exit_code": 2,
+      "observation_level_preserved": true,
+      "skip_not_success": true,
+      "prior_output_preserved": true
+    },
+    "static_config": {
+      "configured_findings": 1,
+      "override_findings": 2
+    },
+    "config": {
+      "exit_code": 0,
+      "depth": 1,
+      "observed_routes": [
+        "/",
+        "/child",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "cli_override": {
+      "exit_code": 0,
+      "depth": 0,
+      "observed_routes": [
+        "/",
+        "/child?<query>"
+      ],
+      "html_json_depth_match": true,
+      "fixture_thread_closed": true
+    },
+    "invalid_config": {
+      "exit_code": 2,
+      "secret_not_echoed": true
+    }
+  },
+  "installed_module_sha256": {
+    "dxa": "1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4",
+    "dxadyn": "36bf8ad8780771893efd50e0c595b1560a7b01629d4693cc1a1de08ca8bfb199",
+    "dxaprove": "8012650ef77269491373b0a4fb7f434ac6353d8c51563b10e70d2fa448211d01",
+    "dxadom": "8687d124185002146684954bc7361da48ee126cbc13031e63df7a570e61fd4cc",
+    "dxa_evidence": "426f1d89852a2dff32e797a3832e43242d33b5df25abc37fd1d074625b5d8561",
+    "dxa_callback": "9f4341decd5f976a6893da89969982b14d8de5cf32ccfa7dd5fc53743c227cc1",
+    "dxa_attempts": "b93242e0005d53b41bb38d514c79d49fa15504d5d07116c6840c00d0478c7add",
+    "dxa_proof_lab": "3c42901cf68a0670502960b7c6292a6a9aca3906419983d6f7947a7f9f3181d1",
+    "dxa2dyn": "861e70abc43423829744752e27d5e0827518e2fb9edf7d4b1e442bbb6c1afc6c",
+    "dxa_sarif": "77ec0e4b00fc50cf2d0e45d420cd329d1d167aaf1917418217a6ab8930103d4b",
+    "dxa_sarif_cli": "f3e87f705fe220a7e3426cc4e895b888b56e64b151bfda10f2cc606aea9540d5"
+  },
+  "installed_jsx": {
+    "dev-flat": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "dev-style-after": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "dev-style-before": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "dev-fixed-url": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "dev-custom-component": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "dev-no-href": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "eval-config-after": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-multiline-tsx": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-object-before-tsx": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-two-objects": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-unrelated-source": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-tracked-source": {
+      "exit_code": 1,
+      "expected_candidates": 1,
+      "observed_candidates": 1
+    },
+    "eval-literal-quoted-url": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "eval-custom-with-object": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "eval-comment-inert": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "eval-string-inert": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "boundary-object-href": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "boundary-nested-call-href": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    },
+    "boundary-conditional-object-href": {
+      "exit_code": 0,
+      "expected_candidates": 0,
+      "observed_candidates": 0
+    }
+  },
+  "source_unchanged": true
+}
