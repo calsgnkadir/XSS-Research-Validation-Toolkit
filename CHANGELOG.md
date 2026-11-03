@@ -1,5 +1,20 @@
 # Değişiklik kaydı
 
+## Unreleased — 2026-11-03 R8-M1 JSX candidate coverage
+
+- Preserve flat intrinsic JSX href candidates beside balanced unrelated
+  expression props. Bound brace depth and reject duplicate href/partial tags;
+  retain spread and nested-href exclusions.
+- Freeze 6 development, 10 separate evaluation and 3 boundary cases before
+  implementation. Evaluation restores 6 omitted review candidates while
+  retaining 4 negative controls; no vulnerability or general accuracy claim.
+- Same-source comparison: A 20->23 (three medium JSX href candidates), B
+  129->129; all 233/47 source hashes unchanged and previous rows preserved.
+  One known vendor skip remains. Selected combined suite 607 passed, no
+  failure/error/skip; local self-scan passed. PyPI 0.2.2 unchanged.
+- Add [one-page case and scoped CV draft](docs/R8-M1-CASE-STUDY.md).
+  [Evidence](audit/2026-11-03-r8-m1/README.md).
+
 ## Unreleased — 2026-11-03 JavaScript conditional provenance
 
 - Exclude condition-only source evidence when a bounded JavaScript conditional

@@ -1665,52 +1665,73 @@ def _jsx_taint_prefix(text):
 def _jsx_href_candidates(text):
     """Yield (href offset, expression) for flat intrinsic anchor attributes.
 
-    Opening tags are capped at 32 KiB. Spreads, nested braces, namespaced and
-    custom components are outside this subset. Unknown calls remain candidates;
-    neither a validator name nor HTML escaping establishes URL safety.
+    Opening tags are capped at 32 KiB and 32 brace levels. Balanced non-href
+    expressions are skipped without analyzing their values. Spreads, nested
+    href braces, namespaced and custom components remain outside this subset.
+    Unknown calls remain candidates; neither a validator name nor HTML escaping
+    establishes URL safety.
     """
     view = _jsx_lexical_view(text)
     for anchor in re.finditer(r'<a(?=\s|/?>)', view):
         start = anchor.end()
-        depth, stop, unsupported = 0, None, False
+        braces, pairs, stop, unsupported = [], {}, None, False
         for pos in range(start, min(len(view), start + 32768)):
             char = view[pos]
             if char == '{':
-                depth += 1
-                unsupported |= depth > 1
+                braces.append(pos)
+                if len(braces) > 32:
+                    unsupported = True
+                    break
             elif char == '}':
-                depth -= 1
-                unsupported |= depth < 0
-            elif char == '>' and depth == 0:
+                if not braces:
+                    unsupported = True
+                    break
+                pairs[braces.pop()] = pos
+            elif char == '>' and not braces:
                 stop = pos
                 break
-            elif char == '<' and depth == 0:
+            elif char == '<' and not braces:
                 break
         if stop is None or unsupported or re.search(r'\{\s*\.\.\.', view[start:stop]):
             continue
-        # Consume attributes in order: href-like text inside another attribute's
-        # expression must not be reinterpreted as an anchor attribute.
+        # Consume complete attributes in order: sibling expressions cannot
+        # supply href attributes or provenance. Buffer candidates until the
+        # whole opening tag is understood, including attributes after href.
         pos = start
+        pending, valid, href_seen = [], True, False
         while pos < stop:
+            if view[pos:stop].strip() in ('', '/'):
+                break
             attr = re.match(r'\s*([A-Za-z_$][\w$:.-]*)\s*(=)?', view[pos:stop])
             if attr is None:
+                valid = False
                 break
             name, assigned = attr.group(1), attr.group(2)
             offset = pos + attr.start(1)
             pos += attr.end()
+            if name == 'href':
+                if href_seen:
+                    valid = False
+                    break
+                href_seen = True
             if not assigned:
                 continue
             while pos < stop and text[pos].isspace():
                 pos += 1
             if pos < stop and view[pos] == '{':
-                end = view.find('}', pos + 1, stop)
-                if end < 0:
+                end = pairs.get(pos)
+                if end is None:
+                    valid = False
                     break
-                expr = text[pos + 1:end].strip()
-                expression_view = _jsx_lexical_view(expr).strip()
-                fixed_scalar = re.fullmatch(r'(?:null|undefined|true|false|\d+(?:\.\d+)?)', expression_view)
-                if name == 'href' and expression_view and not fixed_scalar:
-                    yield offset, expr
+                if name == 'href':
+                    expr = text[pos + 1:end].strip()
+                    expression_view = _jsx_lexical_view(expr).strip()
+                    fixed_scalar = re.fullmatch(r'(?:null|undefined|true|false|\d+(?:\.\d+)?)', expression_view)
+                    if '{' in expression_view or '}' in expression_view:
+                        valid = False
+                        break
+                    if expression_view and not fixed_scalar:
+                        pending.append((offset, expr))
                 pos = end + 1
             else:
                 # Quoted JSX attribute values are opaque in the lexical view.
@@ -1719,8 +1740,11 @@ def _jsx_href_candidates(text):
                 original = text[pos:stop]
                 literal = re.match(r'''(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')''', original)
                 if literal is None:
+                    valid = False
                     break
                 pos += literal.end()
+        if valid:
+            yield from pending
 
 
 def _leaflet_proof_view(text, view):

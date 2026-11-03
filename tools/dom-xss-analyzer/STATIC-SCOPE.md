@@ -58,15 +58,25 @@ source hashes, baseline failures, independent controls and local results.
 
 ## JSX anchor href candidates
 
-In `.jsx` and `.tsx` files, the analyzer recognizes flat lowercase intrinsic
-`<a href={...}>` opening tags. Opening-tag scanning and local source-provenance
+In `.jsx` and `.tsx` files, the analyzer recognizes flat href expressions on
+lowercase intrinsic `<a href={...}>` opening tags. Opening-tag scanning and local source-provenance
 lookup are each bounded to 32 KiB. Supported direct source expressions and
 locally tracked identifiers receive high source-evidence confidence; unknown
 nonliteral href expressions remain medium-confidence review candidates.
 
+UNRELEASED R8-M1 extension: balanced expression props unrelated to href, such as
+`style={{color: 'navy'}}`, can be skipped without suppressing the separate flat
+href candidate. Nested braces in those sibling props are bounded to depth 32
+within the existing 32 KiB opening-tag limit. Their contents do not supply href
+attributes, source provenance or URL-safety evidence. This addresses review
+candidate coverage; the real source examples have URL guards and are not
+demonstrated missed XSS findings. See the [selection record](../../audit/2026-11-03-r8-m1/problem-selection.md)
+for the baseline and the separate evaluation requirement.
+
 Fixed URLs and ordinary JSX text are negative controls for this rule.
-Spread attributes, nested braces, custom components, namespaced tags and guard
-resolution are unsupported. The rule does not provide full AST analysis,
+Spread syntax (including a sibling object's spread), nested braces in the href expression, duplicate/ambiguous
+href attributes, unbalanced or excessive nesting, custom components, namespaced
+tags and guard resolution are unsupported. The rule does not provide full AST analysis,
 coverage of all JSX props or arbitrary expressions, component rendering,
 interprocedural propagation or runtime URL behavior. An unsupported form or
 absence of a candidate is not evidence of safety. A candidate remains

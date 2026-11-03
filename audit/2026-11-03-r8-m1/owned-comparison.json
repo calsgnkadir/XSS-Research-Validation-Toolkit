@@ -1,0 +1,105 @@
+{
+  "roadmap": "R8-M1",
+  "meaning": "Static JSX href candidate coverage; not vulnerability recall",
+  "baseline_scanner_sha256": "5401e79a676bb4b7deed4b9ca0233c93591718c498e6a37573160519672c5a4c",
+  "final_scanner_sha256": "1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4",
+  "baseline_artifact_sha256": "b9a5f4628afa593b48377d14a1eac4350b2052fcb2d4dd0a162371975b066c12",
+  "scopes": {
+    "A": {
+      "source_files": 233,
+      "source_hashes_unchanged_before_after": true,
+      "baseline": {
+        "candidates": 20,
+        "by_sink": {
+          "innerHTML": 1,
+          "jsx-href": 8,
+          "navigation": 7,
+          "react-dangerous": 2,
+          "src-href": 2
+        },
+        "by_confidence": {
+          "medium": 20
+        }
+      },
+      "final": {
+        "candidates": 23,
+        "by_sink": {
+          "innerHTML": 1,
+          "jsx-href": 11,
+          "navigation": 7,
+          "react-dangerous": 2,
+          "src-href": 2
+        },
+        "by_confidence": {
+          "medium": 23
+        }
+      },
+      "added": {
+        "candidates": 3,
+        "by_sink": {
+          "jsx-href": 3
+        },
+        "by_confidence": {
+          "medium": 3
+        }
+      },
+      "removed": {
+        "candidates": 0,
+        "by_sink": {},
+        "by_confidence": {}
+      },
+      "changed_locations": 0,
+      "baseline_events": {
+        "error": 0,
+        "skip": 0
+      },
+      "final_events": {}
+    },
+    "B": {
+      "source_files": 47,
+      "source_hashes_unchanged_before_after": true,
+      "baseline": {
+        "candidates": 129,
+        "by_sink": {
+          "innerHTML": 125,
+          "src-href": 4
+        },
+        "by_confidence": {
+          "high": 1,
+          "medium": 128
+        }
+      },
+      "final": {
+        "candidates": 129,
+        "by_sink": {
+          "innerHTML": 125,
+          "src-href": 4
+        },
+        "by_confidence": {
+          "high": 1,
+          "medium": 128
+        }
+      },
+      "added": {
+        "candidates": 0,
+        "by_sink": {},
+        "by_confidence": {}
+      },
+      "removed": {
+        "candidates": 0,
+        "by_sink": {},
+        "by_confidence": {}
+      },
+      "changed_locations": 0,
+      "baseline_events": {
+        "error": 0,
+        "skip": 1
+      },
+      "final_events": {
+        "skip": 1
+      }
+    }
+  },
+  "limits": "No app/HTTP/browser execution, confirmed XSS, user-time measurement or general accuracy claim. A known excluded vendor directory remains unscanned.",
+  "scanner_hash_unchanged_during_comparison": true
+}

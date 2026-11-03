@@ -1,0 +1,26 @@
+{
+  "schema": "dxa-r8-m1-cases/1",
+  "meaning": "Expected jsx-href review-candidate presence at intrinsic anchors; no unsafe/XSS labels",
+  "selection": "Purposive synthetic contrasts around real flat href identifiers omitted when an unrelated prop contains object braces. Development covers the minimal reproducer/order and fixed/custom controls. Separate evaluation varies equivalent unrelated props, layout and JSX/TSX; boundaries keep nested actual href expressions outside the selected scope. Not random or representative.",
+  "cases": [
+    {"id": "dev-flat", "split": "development", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a href={target}>go</a>;\n"},
+    {"id": "dev-style-after", "split": "development", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a href={target} style={{color:'navy'}}>go</a>;\n"},
+    {"id": "dev-style-before", "split": "development", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a style={{color:'navy'}} href={target}>go</a>;\n"},
+    {"id": "dev-fixed-url", "split": "development", "extension": "jsx", "expected_candidates": 0, "source": "const view = <a href={'/home'} style={{color:'navy'}}>go</a>;\n"},
+    {"id": "dev-custom-component", "split": "development", "extension": "jsx", "expected_candidates": 0, "source": "const view = <Card href={target} style={{color:'navy'}}>go</Card>;\n"},
+    {"id": "dev-no-href", "split": "development", "extension": "jsx", "expected_candidates": 0, "source": "const view = <a style={{color:'navy'}}>go</a>;\n"},
+    {"id": "eval-config-after", "split": "evaluation", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a href={destination} settings={{compact:true}}>go</a>;\n"},
+    {"id": "eval-multiline-tsx", "split": "evaluation", "extension": "tsx", "expected_candidates": 1, "expected_line": 3, "expected_confidence": "medium", "source": "const view = (\n  <a\n    href={destination}\n    style={{display:'block'}}\n  >go</a>\n);\n"},
+    {"id": "eval-object-before-tsx", "split": "evaluation", "extension": "tsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a ariaState={{expanded:false}} href={destination}>go</a>;\n"},
+    {"id": "eval-two-objects", "split": "evaluation", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a style={{color:'teal'}} href={destination} options={{compact:true}}>go</a>;\n"},
+    {"id": "eval-unrelated-source", "split": "evaluation", "extension": "jsx", "expected_candidates": 1, "expected_line": 1, "expected_confidence": "medium", "source": "const view = <a href={destination} settings={{label:location.hash}}>go</a>;\n"},
+    {"id": "eval-tracked-source", "split": "evaluation", "extension": "tsx", "expected_candidates": 1, "expected_line": 2, "expected_confidence": "high", "source": "const destination = location.search;\nconst view = <a style={{display:'inline'}} href={destination}>go</a>;\n"},
+    {"id": "eval-literal-quoted-url", "split": "evaluation", "extension": "tsx", "expected_candidates": 0, "source": "const view = <a style={{display:'block'}} href=\"/help\">go</a>;\n"},
+    {"id": "eval-custom-with-object", "split": "evaluation", "extension": "tsx", "expected_candidates": 0, "source": "const view = <Link options={{compact:true}} href={destination}>go</Link>;\n"},
+    {"id": "eval-comment-inert", "split": "evaluation", "extension": "jsx", "expected_candidates": 0, "source": "// const view = <a href={destination} style={{color:'teal'}}>go</a>;\n"},
+    {"id": "eval-string-inert", "split": "evaluation", "extension": "jsx", "expected_candidates": 0, "source": "const example = \"<a href={destination} style={{color:'teal'}}>go</a>\";\n"},
+    {"id": "boundary-object-href", "split": "boundary", "extension": "jsx", "expected_candidates": 0, "source": "const view = <a href={{url:destination}} style={{color:'teal'}}>go</a>;\n"},
+    {"id": "boundary-nested-call-href", "split": "boundary", "extension": "jsx", "expected_candidates": 0, "source": "const view = <a href={choose({url:destination})} style={{color:'teal'}}>go</a>;\n"},
+    {"id": "boundary-conditional-object-href", "split": "boundary", "extension": "tsx", "expected_candidates": 0, "source": "const view = <a href={flag ? destination : {url:destination}} style={{color:'teal'}}>go</a>;\n"}
+  ]
+}

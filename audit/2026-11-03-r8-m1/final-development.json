@@ -1,0 +1,120 @@
+{
+  "meaning": "Intrinsic jsx-href review-candidate labels, not XSS/general accuracy",
+  "split": "development",
+  "python": "3.10.11",
+  "scanner_sha256": "7b999618f85fa56c24c054ae357b1df14041025c31c30f2d6ffabe6118988af1",
+  "measure_sha256": "7f829af79468f4e93cbfb94cc4451f5db2fe6d32e314c1a01e49a19a5f8edc59",
+  "manifest_sha256": "cb7ee6b8d3699594073fb6e5c983cf73a9f5bc883bd7bc5a3508131734a6ddea",
+  "counts": {
+    "development": {
+      "TP": 3,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "completed": 6,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 3,
+      "property_mismatches": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "dev-flat",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "67e1450c80e2081b12ae898a7d0e4b31285a508ca3e22286de4215734c01a8b1",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-style-after",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "80f76b6f3dfba3808248fb74c32cedd5eea9d9791520842944ed6a1746135485",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-style-before",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "5441a57b93775f604224580636ff1526bf3393bb2090d277273cf47488cf7d44",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-fixed-url",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "e7ee20629e817dfc18e162d2c56b8e3110aaf8170813816bea5c753cb32d3faa",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "dev-custom-component",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "720a8d4400802587c957f8732e496e8b270ecbc87c3e0acc25f2963f82672333",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "dev-no-href",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "ec5071776bf08b8b5e6c26771e94150f11be6c0ac333b5fc26e9fbea0c377b7a",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    }
+  ]
+}

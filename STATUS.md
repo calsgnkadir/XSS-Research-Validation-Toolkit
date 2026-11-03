@@ -1,5 +1,36 @@
 # Güncel devam noktası — 3 Kasım 2026
 
+## Son kabul — R8-M1 JSX bağlantı adayı kapsamı
+
+- Üç native uzman dar uygulama, bağımsız QA ölçümü ve gerçek kaynak/kapsam
+  işi yaptı; koordinatör kod/oracle incelemesini ve bütünleşik kabulü tamamladı.
+  [Görev ve kanıt kaydı](audit/2026-11-03-r8-m1/README.md).
+- Python helper zinciri gerçek tetikleyici bulunmadığı için seçilmedi.
+  Seçilen sorun: düz JSX href ifadesinin yanındaki style nesnesi tüm bağlantı
+  adayını eleyebiliyor. İki gerçek bağlantıda beklenen 1, gözlenen 0; kaynak
+  hashleri değişmedi. Bu kaçırılan inceleme adayıdır, kaçırılmış XSS değildir.
+- Koordinatörün izinli statik baseline koşusu exit 0: düz sentetik href 1/1,
+  style nesneli aynı href 0/1. A/B taze envanteri 233/47 dosya, 20/129 aday;
+  B'de bilinen bir vendor skip'i var. Uygulama/HTTP/browser testi yok.
+- QA'nın 19 vakası ve hash manifest'i motor değişmeden sabitlendi. Başlangıç:
+  6 geliştirme vakasında 2, ayrı 10 değerlendirme vakasında 6 inceleme adayı
+  eksik; 3 sınır kontrolü mevcut dışlamayı koruyor. Sentetik koşu hata/skip 0.
+- Son motor hash'i sabitlenince açılan ilk ayrı değerlendirmede 6 eksik aday
+  geri geldi, 4 negatif kontrol ve 3 destek dışı href kontrolü korundu.
+  Değerlendirme sonrası kod değişmedi; ortak dosya sistemi dış körlük sağlamaz.
+- Gerçek kaynakta A 20->23 (üç yeni medium JSX href), B 129->129;
+  233/47 kaynak hash'i ve önceki satırlar aynı. Üçüncü örnek seçim aşamasında
+  bulundu; görülmemiş gerçek proje örneği değildir. B'nin vendor skip'i sürüyor.
+- Seçilmiş 15 dosyalı birleşik koşu 607 passed, hata/skip 0; yerel self-scan
+  geçti. Son kaynak hash'i `1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4`.
+  İlk sandbox Python hataları başarı sayılmadı; gerçek koşuları koordinatör yaptı.
+- [Bir sayfalık vaka ve CV taslağı](docs/R8-M1-CASE-STUDY.md) tamam. Ölçüt
+  aday kapsamasıdır; genel doğruluk/XSS/zaman kazancı iddiası yok. PyPI 0.2.2
+  değişmedi, uzak CI kontrol edilmedi. Aktif uzman/arka plan işi yok.
+- Sonraki adım: vaka/CV metnini kişisel CV biçimine uyarlamak; yeni motor
+  genişlemesi ayrıca ölçülmüş gerçek davranış gerektirir. Kaynak/test kimlikleri
+  kabul paketinde sabit; bu teslimin Git SHA'sı commit geçmişinden izlenir.
+
 ## Son kabul — R8 sabit çıktılı JavaScript koşulu
 
 - Başlangıç `1c01c69`; fetch sonrası HEAD/origin farkı 0/0, çalışma ağacı temizdi.

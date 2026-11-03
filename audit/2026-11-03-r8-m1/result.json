@@ -1,0 +1,83 @@
+{
+  "roadmap": "R8-M1",
+  "base_commit": "220bbd2",
+  "environment": {
+    "os": "Windows",
+    "python": "3.10.11"
+  },
+  "source_sha256": {
+    "tools\\dom-xss-analyzer\\dxa.py": "1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4",
+    "audit\\2026-11-03-r8-m1\\cases.json": "64023591294ab7a5c7ddb859dcfea73314b32452d63cdd7afcf3989a2d12c002",
+    "audit\\2026-11-03-r8-m1\\split-manifest.json": "cb7ee6b8d3699594073fb6e5c983cf73a9f5bc883bd7bc5a3508131734a6ddea",
+    "audit\\2026-11-03-r8-m1\\measure.py": "7f829af79468f4e93cbfb94cc4451f5db2fe6d32e314c1a01e49a19a5f8edc59",
+    "audit\\2026-11-03-r8-m1\\run_validation.py": "bf16432801f464455356f31e0a3d3d779fdf60f50d18b3a819fb0b7ea9291adc",
+    "tools\\dom-xss-analyzer\\test_static_m1.py": "27c039ea69e5aa1d1734dc13cbd0c31a14bff9b4e13f393780937ccf3f6068bf",
+    "tools\\dom-xss-analyzer\\test_m1_parser_boundaries.py": "8819faa6e42a60746b43af399582b12c99f7aed8d185c5399bbfc94214b5a77a",
+    "tools\\dom-xss-analyzer\\test_static_r8_followup.py": "ce16903fbe3979e03d079fda211d03780d14dee86f21de6a7b42f3641fddad3b",
+    "tools\\dom-xss-analyzer\\test_static_python_helpers.py": "08fc28028cf1fc3459e9dd91625f044f9f05f8984d37172a906d2fec88de860c",
+    "tools\\dom-xss-analyzer\\test_static_leaflet.py": "9964cbe65b35448971e486cff753d6fe22af60fbca9b868a78331437844e2a21",
+    "tools\\dom-xss-analyzer\\test_static_jsx_href.py": "6fd0f267e2c717aef7c43e67161e22fe7a69ba4991d249943949ced56f42d598",
+    "tools\\dom-xss-analyzer\\test_static_inline_messages.py": "caa9bffeb7f9a0c8e701617117d93ba035bb7cdc5bdfe26b9f0c03bb4dbc526c",
+    "tools\\dom-xss-analyzer\\test_static_receiver_bindings.py": "6a22eba402c8794bfd4339d4996c30fd4541bfd3fb4218dee757b25def5e0812",
+    "tools\\dom-xss-analyzer\\test_dxa.py": "c8d78449c45d08384142f2b411cda7ec7ec2f17b6ddf4f6baeaaa762d270210b",
+    "tools\\dom-xss-analyzer\\test_static_context.py": "f444baf937b70fd42da747d86edd5f1f3bc0e302b9f45640a181736fa5e9ec58",
+    "tools\\dom-xss-analyzer\\test_dxa_config.py": "091ecc0e70259d88b96d52c3dfdf6c153414a7a6916112c09db8eb2899104674",
+    "tools\\dom-xss-analyzer\\test_r8_sanitizer.py": "978e0365126abdc31db2847a79e9840bc4c358148b43ebb4a1d46cfe0da64f19",
+    "tools\\dom-xss-analyzer\\test_r8_ast_pilot.py": "cbe1573b3e91bb5b9a7d76872fbe01eaf8491f61c7743b4a1490cc55d3902b16",
+    "tools\\dom-xss-analyzer\\test_sarif.py": "f11edd6714d75ed6633b53debff4aa975add91f589f969643e5e498205e01db1",
+    "tools\\dom-xss-analyzer\\test_r6_cli_modes.py": "6da82223ba5982a0bb2bc15c9f40b082744aac5a8f6da494cf8538edb93039db"
+  },
+  "tests": {
+    "tests": 607,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 607
+  },
+  "pytest_exit": 0,
+  "measurement_exit": 0,
+  "measurement_counts": {
+    "development": {
+      "TP": 3,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "completed": 6,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 3,
+      "property_mismatches": 0
+    },
+    "evaluation": {
+      "TP": 6,
+      "FP": 0,
+      "FN": 0,
+      "TN": 4,
+      "completed": 10,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 6,
+      "property_mismatches": 0
+    },
+    "boundary": {
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "completed": 3,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 0,
+      "property_mismatches": 0
+    }
+  },
+  "local_self_scan_exit": 0,
+  "accepted": true,
+  "evaluation": "Repeat of frozen cases; first evaluation is recorded separately in final.json",
+  "limits": "Local synthetic source only; no app/HTTP/browser, general accuracy or user-time claim",
+  "release": "Unreleased source; PyPI 0.2.2 unchanged",
+  "hosted_ci": "not checked"
+}

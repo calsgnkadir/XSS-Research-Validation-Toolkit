@@ -1,5 +1,29 @@
 # Doğrulama kaydı — 2026-11-03
 
+## R8-M1 JSX candidate coverage — 3 November, unreleased
+
+Base `220bbd2`, Windows / Python 3.10.11. Before code edits, 19 purposive
+cases were frozen: 6 development, 10 separate evaluation, 3 boundary controls.
+Baseline development TP/FP/FN/TN 1/0/2/3 -> 3/0/0/3; evaluation
+0/0/6/4 -> 6/0/0/4; boundary 0/0/0/3 unchanged. Labels mean review-candidate
+presence, not XSS or general accuracy. Engine did not inspect evaluation
+specifics before final source freeze. No evaluation-driven code edits followed.
+First evaluation: [final.json](audit/2026-11-03-r8-m1/final.json).
+
+Final fifteen-file selected suite **607 passed**, zero failure/error/skip;
+measurement and local CI self-scan exit 0. Source/case/manifest/runner/test
+hashes were unchanged through acceptance: [result.json](audit/2026-11-03-r8-m1/result.json).
+Repeat local acceptance without overwriting historical first evaluation:
+`py -3.10 audit/2026-11-03-r8-m1/run_validation.py`.
+
+Actual source baseline reproduced two omitted guarded anchors. Full comparison
+on identical 233/47 source hashes yielded A 20->23 (three medium JSX href
+candidates), B 129->129; no previous rows removed or changed, no errors.
+One excluded vendor skip persists in B. Third same-behavior occurrence was
+found during selection, not reserved evaluation. No app/HTTP/browser test,
+measured user-time gain or package publication; PyPI 0.2.2 unchanged, hosted CI
+not checked. [Acceptance and chronology](audit/2026-11-03-r8-m1/README.md).
+
 ## R8 fixed-arm JavaScript conditions — 3 November, unreleased
 
 Windows / Python 3.10.11, exact base `1c01c69`. Final 65 independent

@@ -987,6 +987,47 @@ Bu 9 Ekim kaydı tarihsel ve dar teslimi anlatır; 16 Ekim kapanış matrisi aş
 - [x] `safe.py` template kaynağına girdi birleştirmez; template parametresi kullanır; SSTI ve XSS ayrı test beklentileridir.
 - [x] Python AST pilotu tek dille başlar; pozitif/negatif etiketli corpus üzerinde ölçülür; temiz projede açık bulma kotası yoktur.
 
+### R8-M1 — Tek davranış için ölçülmüş iyileştirme ve vaka anlatımı (tamam, seçilmiş kapsam)
+
+3 Kasım kullanıcı önerisi: mevcut araçta gerçekten kötü çalışan tek davranış
+seçilir; başlangıç ölçümü, tek dar iyileştirme ve ayrı vakalarda karşılaştırma
+ile kullanıcıya etkisi incelenir. Yeni özellik listesi veya test sayısı hedefi
+oluşturulmaz. Bu takip maddesi önceki sınırlı R8 kabullerini yeniden açmaz.
+
+- [x] İzinli gerçek kaynakta tek problem yeniden üretilir; beklenen/gözlenen
+  davranış ve kullanıcının inceleme kararına etkisi yazılır. Son sabit çıktılı
+  JS koşulu önceki örnektir; seçilen yeni sorun JSX href'in ilgisiz style nesnesi
+  yüzünden atlanmasıdır. İki gerçek bağlantıda beklenen 1, gözlenen 0 yeniden üretildi.
+- [x] Değişiklikten önce kaynak/sürüm kimlikleri, vaka seçim yöntemi ve
+  beklenen etiketler sabitlenir. Düzeltmeyi geliştiren örnekler ile ayrı
+  değerlendirme vakaları ayrılır; değerlendirme sırasında değişiklik yapılırsa
+  bunun etkisi açıklanır, bu vakalar artık görülmemiş sayılmaz.
+- [x] Tek dar iyileştirme aynı girdilerle önce/sonra karşılaştırılır. Yanlış
+  kaynak sinyali ve kaçırılan beklenen sinyal gibi davranışa uygun ölçüler;
+  değişmeyen adaylar, hatalar, timeout ve skip'ler birlikte raporlanır.
+  İnceleme süresi veya kullanıcı emeği kazancı ancak ayrıca ölçülürse yazılır.
+- [x] Bir sayfalık vaka hazırlanır: problem, başlangıç, denenen değişiklik,
+  ayrı vakalarda sonuç, başarısız/kapsam dışı durumlar ve kanıt bağlantıları.
+  İyileşme görülmezse sonuç olduğu gibi kaydedilir; başarı zorunlu değildir.
+- [x] CV cümlesi yalnız doğrulanan kapsam ve kişisel katkıyla yazılır;
+  koordinatör/uzman rolleri belirtilir. Test sayısı doğrulama kanıtıdır;
+  küçük kümedeki sonuç genel doğruluk, kullanıcı faydası veya XSS kanıtı değildir.
+
+Mevcut dayanak: [3 Kasım R8 kabulü](audit/2026-11-03-r8-followup/README.md).
+Bu kayıttaki 12 etiketli örnek için görülmemiş değerlendirme kümesi iddiası
+yoktur. Bir adayın HIGH -> medium değişmesi adayın kaldırılması veya ölçülmüş
+inceleme süresi kazancı olarak sunulmaz.
+
+3 Kasım kabulü: 6 geliştirme / 10 ayrı değerlendirme / 3 sınır vakası motor
+değişmeden sabitlendi. Ayrı değerlendirmede 6 eksik inceleme adayı geri geldi,
+4 negatif kontrol korundu; 3 sınır dışlaması aynı kaldı. Gerçek A kapsamı 20->23
+(üç medium JSX href adayı), B 129->129; 233/47 kaynak hash'i aynı, önceki
+satırlar değişmedi. B'de bilinen vendor skip'i var. Seçilmiş 15 dosya 607 passed,
+hata/skip 0; yerel self-scan geçti. Bu test sayısı kullanıcı faydası ölçüsü değildir.
+[Bir sayfalık vaka ve CV taslağı](docs/R8-M1-CASE-STUDY.md) ·
+[Kabul](audit/2026-11-03-r8-m1/README.md). Uygulama/HTTP/browser veya zaman
+kazancı ölçümü yok; PyPI 0.2.2 değişmedi, uzak CI kontrol edilmedi.
+
 ## R9 — Operasyon, kapsam ve tekrar üretim (bot; tamam, bounded scope)
 
 Dosyalar: callback servisi, CLI, bench compose dosyaları, README/CI.

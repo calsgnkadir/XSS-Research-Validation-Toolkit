@@ -1,0 +1,348 @@
+{
+  "meaning": "Intrinsic jsx-href review-candidate labels, not XSS/general accuracy",
+  "split": "all",
+  "python": "3.10.11",
+  "scanner_sha256": "1d3baa91fcf85e60d1be0e8bc4da06c99442e34b89ffe8b868190b3d985a70b4",
+  "measure_sha256": "7f829af79468f4e93cbfb94cc4451f5db2fe6d32e314c1a01e49a19a5f8edc59",
+  "manifest_sha256": "cb7ee6b8d3699594073fb6e5c983cf73a9f5bc883bd7bc5a3508131734a6ddea",
+  "counts": {
+    "development": {
+      "TP": 3,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "completed": 6,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 3,
+      "property_mismatches": 0
+    },
+    "evaluation": {
+      "TP": 6,
+      "FP": 0,
+      "FN": 0,
+      "TN": 4,
+      "completed": 10,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 6,
+      "property_mismatches": 0
+    },
+    "boundary": {
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 3,
+      "completed": 3,
+      "errors": 0,
+      "skips": 0,
+      "timeouts": 0,
+      "candidates": 0,
+      "property_mismatches": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "dev-flat",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "67e1450c80e2081b12ae898a7d0e4b31285a508ca3e22286de4215734c01a8b1",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-style-after",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "80f76b6f3dfba3808248fb74c32cedd5eea9d9791520842944ed6a1746135485",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-style-before",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "5441a57b93775f604224580636ff1526bf3393bb2090d277273cf47488cf7d44",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "dev-fixed-url",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "e7ee20629e817dfc18e162d2c56b8e3110aaf8170813816bea5c753cb32d3faa",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "dev-custom-component",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "720a8d4400802587c957f8732e496e8b270ecbc87c3e0acc25f2963f82672333",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "dev-no-href",
+      "split": "development",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "ec5071776bf08b8b5e6c26771e94150f11be6c0ac333b5fc26e9fbea0c377b7a",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "eval-config-after",
+      "split": "evaluation",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "c5230cfa601d0a47395d13e33722c4f9524068388a59f27499b7d03d6ccc67ec",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "eval-multiline-tsx",
+      "split": "evaluation",
+      "extension": "tsx",
+      "expected_candidates": 1,
+      "expected_line": 3,
+      "expected_confidence": "medium",
+      "source_sha256": "05309ae0345648eeaec534dadcc7d160cc7e90548f31c1cff0435beef81ebd1a",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 3,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "eval-object-before-tsx",
+      "split": "evaluation",
+      "extension": "tsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "9e9e5ee3daa3c78656a0f3740b1dcadde7c4a9429a161b3f05886d288ffc8200",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "eval-two-objects",
+      "split": "evaluation",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "c885824cf416a7a45481949e17d4b823f5a3f02aee0b675137a0483d6aec1857",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "eval-unrelated-source",
+      "split": "evaluation",
+      "extension": "jsx",
+      "expected_candidates": 1,
+      "expected_line": 1,
+      "expected_confidence": "medium",
+      "source_sha256": "77d6bb0282b7a4317b98679b467ad1ed95e44c06d8b1951a6ee8c9a2e92662d9",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 1,
+          "sink": "jsx-href",
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "id": "eval-tracked-source",
+      "split": "evaluation",
+      "extension": "tsx",
+      "expected_candidates": 1,
+      "expected_line": 2,
+      "expected_confidence": "high",
+      "source_sha256": "2b2111ef516bdd76dbb173f33aa9b7de4d8d5dbee1374bc874e29bc036e079f1",
+      "status": "completed",
+      "observed_candidates": 1,
+      "outcome": "TP",
+      "properties_ok": true,
+      "observations": [
+        {
+          "line": 2,
+          "sink": "jsx-href",
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "id": "eval-literal-quoted-url",
+      "split": "evaluation",
+      "extension": "tsx",
+      "expected_candidates": 0,
+      "source_sha256": "d66bc04cf74dc23f090349ffe8ad52d5379c74be2667441730c87ba457a8ada4",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "eval-custom-with-object",
+      "split": "evaluation",
+      "extension": "tsx",
+      "expected_candidates": 0,
+      "source_sha256": "6b1b8e9d9fa18d543f01b57eb618b0da3796a4eaff2f3c57bb9e48abee453231",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "eval-comment-inert",
+      "split": "evaluation",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "50db308833d1afd101699b43be04af63c45fd58c886e27e377cafb97bcd8f8d3",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "eval-string-inert",
+      "split": "evaluation",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "3325611aae42cd2aa54eeaa1f809eb6b736b22756a36d13a48f4fc1afbc918fb",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "boundary-object-href",
+      "split": "boundary",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "cebe1680869eebf0eba0373d8009ed8b5829cc92443603b31ec871e590ce6ec0",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "boundary-nested-call-href",
+      "split": "boundary",
+      "extension": "jsx",
+      "expected_candidates": 0,
+      "source_sha256": "5a9f4cc7cd3e89009648425e7466ea6542edadedf8e04ebd3a7ecd702bb1e015",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    },
+    {
+      "id": "boundary-conditional-object-href",
+      "split": "boundary",
+      "extension": "tsx",
+      "expected_candidates": 0,
+      "source_sha256": "9bfd65cc46b0bb978a6e1b69ffefb4719d672fb30a107a71a81b2b408ef42257",
+      "status": "completed",
+      "observed_candidates": 0,
+      "outcome": "TN",
+      "properties_ok": true,
+      "observations": []
+    }
+  ]
+}
